@@ -1,0 +1,588 @@
+module ietf-l3vpn-svc-ext {
+ 
+ yang-version 1.1;
+
+ namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-svc-ext";
+ 
+ prefix l3vpn-svc-ext;
+ 
+ import ietf-inet-types {
+  prefix inet;
+ }
+ import ietf-yang-types {
+  prefix yang;
+ }
+ import ietf-routing-types {
+    prefix rt-types;
+ }
+
+ import ietf-l3vpn-svc {
+    prefix l3vpn-svc;
+ }
+ 
+ import ietf-routing-policy {
+    prefix rt-pol;
+ }
+ 
+ organization
+  "IETF ...";
+ contact
+  "WG List: <mailto:???@ietf.com>
+   Editor:
+    
+  ";
+ description
+  "This YANG module extends the service configuration model
+   for Layer 3 VPNs (l3vpn-svc). This extension aims to include
+   additional svc params for multi-domain orchestration.
+
+   The module, as its current form, contains errors due to
+   structures and definitions that are to be included from
+   external models.
+   ";
+ 
+ revision 2019-03-15 {
+  description
+   "First revision. Including ";
+ }
+
+
+  // ...
+
+  grouping ie-profiles-params {
+    description "Grouping to specify rules for route import and export";
+    
+    container ie-profiles {
+
+      list ie-profile {
+
+        key "ie-profile-id";
+
+        leaf ie-profile-id {
+          type string;
+        }
+
+        container vpn-targets {
+          description
+            "Set of route-targets to match for import and export routes
+             to/from VRF";
+          uses rt-types:vpn-route-targets;
+          leaf route-policy {
+            type leafref {
+              path "/rt-pol:routing-policy/rt-pol:policy-definitions/" +
+              "rt-pol:policy-definition/rt-pol:name";
+              require-instance true;
+            }
+            description
+              "Reference to the route policy containing set of route-targets.";
+           }
+        }
+      }
+    }
+  }
+
+  grouping vpn-md-transport-cfg {
+   description
+    "";
+
+   container ie-profiles {
+    description
+     "";
+
+//    container vpn-resources {
+
+
+//      leaf rd {
+//        type rt-types:route-distinguisher;
+//        description
+//         "";
+//      }
+
+      uses ie-profiles-params;
+
+//    }
+   }
+
+  }
+
+  identity external {
+    base l3vpn-svc:site-network-access-type;
+    description
+     "Identity for point-to-point connection.";
+  }
+
+  grouping vpn-md-ext-access-cfg {
+   description
+    "";
+
+   container far-end {
+    description
+     "";
+
+    leaf address {
+      type inet:ip-address;
+
+      description
+        "";
+    }
+   }
+
+  }
+
+    grouping vpn-md-bearer-cfg {
+   description
+    "";
+
+   container ethernet {
+    description
+     "";
+
+   container connection {
+        leaf encapsulation-type {
+          type identityref {
+            base encapsulation-type;
+          }
+          default "ethernet";
+          description
+            "Encapsulation type.  By default, the
+             encapsulation type is set to 'ethernet'.";
+        }
+        leaf eth-inf-type {
+          type identityref {
+            base eth-inf-type;
+          }
+          default "untagged";
+          description
+            "Ethernet interface type.  By default, the
+             Ethernet interface type is set to 'untagged'.";
+        }
+        container tagged-interface {
+          leaf type {
+            type identityref {
+              base tagged-inf-type;
+            }
+            default "priority-tagged";
+            description
+              "Tagged interface type.  By default,
+               the type of the tagged interface is
+               'priority-tagged'.";
+          }
+          container dot1q-vlan-tagged {
+            when "derived-from-or-self(../type, "
+               + "'l2vpn-svc:dot1q')" {
+              description
+                "Only applies when the type of the tagged
+                 interface is 'dot1q'.";
+            }
+            if-feature "dot1q";
+            leaf tg-type {
+              type identityref {
+                base tag-type;
+              }
+              default "c-vlan";
+              description
+                "Tag type.  By default, the tag type is
+                 'c-vlan'.";
+            }
+            leaf cvlan-id {
+              type uint16;
+              mandatory true;
+              description
+                "VLAN identifier.";
+            }
+            description
+              "Tagged interface.";
+          }
+          container priority-tagged {
+            when "derived-from-or-self(../type, "
+               + "'l2vpn-svc:priority-tagged')" {
+              description
+                "Only applies when the type of the tagged
+                 interface is 'priority-tagged'.";
+            }
+            leaf tag-type {
+              type identityref {
+                base tag-type;
+              }
+              default "c-vlan";
+              description
+                "Tag type.  By default, the tag type is
+                 'c-vlan'.";
+            }
+            description
+              "Priority tagged.";
+          }
+          container qinq {
+            when "derived-from-or-self(../type, "
+               + "'l2vpn-svc:qinq')" {
+              description
+                "Only applies when the type of the tagged
+                 interface is 'qinq'.";
+            }
+            if-feature "qinq";
+            leaf tag-type {
+              type identityref {
+                base tag-type;
+              }
+              default "c-s-vlan";
+              description
+                "Tag type.  By default, the tag type is
+                 'c-s-vlan'.";
+            }
+            leaf svlan-id {
+              type uint16;
+              mandatory true;
+              description
+                "SVLAN identifier.";
+            }
+            leaf cvlan-id {
+              type uint16;
+              mandatory true;
+              description
+                "CVLAN identifier.";
+            }
+            description
+              "QinQ.";
+          }
+          container qinany {
+            when "derived-from-or-self(../type, "
+               + "'l2vpn-svc:qinany')" {
+              description
+                "Only applies when the type of the tagged
+                 interface is 'qinany'.";
+            }
+            if-feature "qinany";
+            leaf tag-type {
+              type identityref {
+                base tag-type;
+              }
+              default "s-vlan";
+              description
+                "Tag type.  By default, the tag type is
+                 's-vlan'.";
+            }
+            leaf svlan-id {
+              type uint16;
+              mandatory true;
+              description
+                "SVLAN ID.";
+            }
+            description
+              "Container for QinAny.";
+          }
+          container vxlan {
+            when "derived-from-or-self(../type, "
+               + "'l2vpn-svc:vxlan')" {
+              description
+                "Only applies when the type of the tagged
+                 interface is 'vxlan'.";
+            }
+            if-feature "vxlan";
+            leaf vni-id {
+              type uint32;
+              mandatory true;
+              description
+                "VXLAN Network Identifier (VNI).";
+            }
+            leaf peer-mode {
+              type identityref {
+                base vxlan-peer-mode;
+              }
+              default "static-mode";
+              description
+                "Specifies the VXLAN access mode.  By default,
+                 the peer mode is set to 'static-mode'.";
+            }
+            list peer-list {
+              key "peer-ip";
+              leaf peer-ip {
+                type inet:ip-address;
+                description
+                  "Peer IP.";
+              }
+              description
+                "List of peer IP addresses.";
+            }
+            description
+              "QinQ.";
+          }
+          description
+            "Container for tagged interfaces.";
+        }
+        container untagged-interface {
+          leaf speed {
+            type uint32;
+            units "mbps";
+            default "10";
+            description
+              "Port speed.";
+          }
+          leaf mode {
+            type neg-mode;
+            default "auto-neg";
+            description
+              "Negotiation mode.";
+          }
+          leaf phy-mtu {
+            type uint32;
+            units "bytes";
+            description
+              "PHY MTU.";
+          }
+          leaf lldp {
+            type boolean;
+            default "false";
+            description
+              "LLDP.  Indicates that LLDP is supported.";
+          }
+          container oam-802.3ah-link {
+            if-feature "oam-3ah";
+            leaf enabled {
+              type boolean;
+              default "false";
+              description
+                "Indicates whether or not to support
+                 OAM 802.3ah links.";
+            }
+            description
+              "Container for OAM 802.3ah links.";
+          }
+          leaf uni-loop-prevention {
+            type boolean;
+            default "false";
+            description
+              "If this leaf is set to 'true', then the port
+               automatically goes down when a physical
+               loopback is detected.";
+          }
+          description
+            "Container of untagged interface attribute
+             configurations.";
+        }
+        container lag-interfaces {
+          if-feature "lag-interface";
+          list lag-interface {
+            key "index";
+            leaf index {
+              type string;
+              description
+                "LAG interface index.";
+            }
+            container lacp {
+              if-feature "lacp";
+              leaf enabled {
+                type boolean;
+                default "false";
+                description
+                  "LACP on/off.  By default, LACP is disabled.";
+              }
+              leaf mode {
+                type neg-mode;
+                description
+                  "LACP mode.  LACP modes have active mode and
+                   passive mode ('false').  'Active mode' means
+                   initiating the auto-speed negotiation and
+                   trying to form an Ethernet channel with the
+                   other end.  'Passive mode' means not initiating
+                   the negotiation but responding to LACP packets
+                   initiated by the other end (e.g., full duplex
+                   or half duplex).";
+              }
+              leaf speed {
+                type uint32;
+                units "mbps";
+                default "10";
+                description
+                  "LACP speed.  By default, the LACP speed is 10
+                   Mbps.";
+              }
+              leaf mini-link-num {
+                type uint32;
+                description
+                  "Defines the minimum number of links that must
+                   be active before the aggregating link is put
+                   into service.";
+              }
+              leaf system-priority {
+                type uint16;
+                default "32768";
+                description
+                  "Indicates the LACP priority for the system.
+                   The range is from 0 to 65535.
+                   The default is 32768.";
+              }
+              container micro-bfd {
+                if-feature "micro-bfd";
+                leaf enabled {
+                  type enumeration {
+                    enum on {
+                      description
+                        "Micro-bfd on.";
+                    }
+                    enum off {
+                      description
+                        "Micro-bfd off.";
+                    }
+                  }
+                  default "off";
+                  description
+                    "Micro-BFD on/off.  By default, micro-BFD
+                     is set to 'off'.";
+                }
+                leaf interval {
+                  type uint32;
+                  units "milliseconds";
+                  description
+                    "BFD interval.";
+                }
+                leaf hold-timer {
+                  type uint32;
+                  units "milliseconds";
+                  description
+                    "BFD hold timer.";
+                }
+                description
+                  "Container of micro-BFD configurations.";
+              }
+              container bfd {
+                if-feature "bfd";
+                leaf enabled {
+                  type boolean;
+                  default "false";
+                  description
+                    "BFD activation.  By default, BFD is not
+                     activated.";
+                }
+                choice holdtime {
+                  default "fixed";
+                  case profile {
+                    leaf profile-name {
+                      type leafref {
+                        path "/l2vpn-svc/vpn-profiles/"
+                           + "valid-provider-identifiers"
+                           + "/bfd-profile-identifier";
+                      }
+                      description
+                        "SP well-known profile.";
+                    }
+                    description
+                      "SP well-known profile.";
+                  }
+                  case fixed {
+                    leaf fixed-value {
+                      type uint32;
+                      units "milliseconds";
+                      description
+                        "Expected hold time expressed in
+                         milliseconds.";
+                    }
+                  }
+                  description
+                    "Choice for the hold-time flavor.";
+                }
+                description
+                  "Container for BFD.";
+              }
+              container member-links {
+                list member-link {
+                  key "name";
+                  leaf name {
+                    type string;
+                    description
+                      "Member link name.";
+                  }
+                  leaf speed {
+                    type uint32;
+                    units "mbps";
+                    default "10";
+                    description
+                      "Port speed.";
+                  }
+                  leaf mode {
+                    type neg-mode;
+                    default "auto-neg";
+                    description
+                      "Negotiation mode.";
+                  }
+                  leaf link-mtu {
+                    type uint32;
+                    units "bytes";
+                    description
+                      "Link MTU size.";
+                  }
+                  container oam-802.3ah-link {
+                    if-feature "oam-3ah";
+                    leaf enabled {
+                      type boolean;
+                      default "false";
+                      description
+                        "Indicates whether OAM 802.3ah links are
+                         supported.";
+                    }
+                    description
+                      "Container for OAM 802.3ah links.";
+                  }
+                  description
+                    "Member link.";
+                }
+                description
+                  "Container of the member link list.";
+              }
+              leaf flow-control {
+                type boolean;
+                default "false";
+                description
+                  "Flow control.  Indicates whether flow control
+                   is supported.";
+              }
+              leaf lldp {
+                type boolean;
+                default "false";
+                description
+                  "LLDP.  Indicates whether LLDP is supported.";
+              }
+              description
+                "LACP.";
+            }
+            description
+              "List of LAG interfaces.";
+          }
+          description
+            "Container of LAG interface attribute
+             configurations.";
+        }
+        
+        description
+          "Container for connection requirements.";
+      }
+   }
+
+  }
+ 
+  ///l3vpn-svc:site-network-accesses/l3vpn-svc:site-network-access
+
+  augment "/l3vpn-svc:l3vpn-svc/l3vpn-svc:sites/l3vpn-svc:site/l3vpn-svc:site-network-accesses/l3vpn-svc:site-network-access" {
+    description
+     "";
+
+    uses vpn-md-transport-cfg;
+
+  }
+
+  augment "/l3vpn-svc:l3vpn-svc/l3vpn-svc:sites/l3vpn-svc:site/l3vpn-svc:site-network-accesses/l3vpn-svc:site-network-access" {
+    description
+     "";
+
+    uses vpn-md-ext-access-cfg;
+
+  }
+
+  augment "/l3vpn-svc:l3vpn-svc/l3vpn-svc:sites/l3vpn-svc:site/l3vpn-svc:site-network-accesses/l3vpn-svc:site-network-access/l3vpn-svc:bearer" {
+    description
+     "";
+
+    uses vpn-md-bearer-cfg;
+
+  }
+
+ }
