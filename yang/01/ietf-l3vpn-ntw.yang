@@ -1,7 +1,7 @@
 module ietf-l3vpn-ntw {
  yang-version 1.1;
  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
- prefix l3vpn-svc;
+ prefix l3vpn-ntw;
  import ietf-inet-types {
   prefix inet;
  }
@@ -163,6 +163,41 @@ module ietf-l3vpn-ntw {
   description
   "Defines a type for the address family.";
  }
+
+  typedef ie-type {
+   type enumeration {
+     enum "import" {
+       value 0;
+       description "Import routing profile.";
+     }
+     enum "export" {
+      value 1;
+      description "Export routing profile";
+     }
+     enum "both" {
+      value 2;
+      description "Import/Export routing profile";
+     }
+   }
+  }
+
+  typedef operational-type {
+   type enumeration {
+     enum "up" {
+       value 0;
+       description "Operational status UP.";
+     }
+     enum "down" {
+      value 1;
+      description "Operational status DOWN";
+     }
+     enum "unknown" {
+      value 2;
+      description "Operational status UNKNOWN";
+     }
+   }
+  }
+
  /* Identities */
  identity site-network-access-type {
   description
@@ -173,6 +208,13 @@ module ietf-l3vpn-ntw {
   description
   "Identity for point-to-point connection.";
  }
+ /* Extension */
+ identity pseudowire {
+  base site-network-access-type;
+  description
+  "Identity for pseudowire connection.";
+ }
+ /* End of Extension */
  identity multipoint {
   base site-network-access-type;
   description
@@ -585,6 +627,171 @@ identity urllc {
    "Identity for both WAN-to-Site direction
    and Site-to-WAN direction.";
  }
+
+ /* Extended Identities */
+
+ identity encapsulation-type {
+    description
+      "Identity for the encapsulation type.";
+  }
+
+  identity ethernet {
+    base encapsulation-type;
+    description
+      "Identity for Ethernet type.";
+  }
+
+  identity vlan {
+    base encapsulation-type;
+    description
+      "Identity for the VLAN type.";
+  }
+
+  identity eth-inf-type {
+    description
+      "Identity of the Ethernet interface type.";
+  }
+
+  identity tagged {
+    base eth-inf-type;
+    description
+      "Identity of the tagged interface type.";
+  }
+
+  identity untagged {
+    base eth-inf-type;
+    description
+      "Identity of the untagged interface type.";
+  }
+
+  identity lag {
+    base eth-inf-type;
+    description
+      "Identity of the LAG interface type.";
+  }
+
+  identity tagged-inf-type {
+    description
+      "Identity for the tagged interface type.";
+  }
+
+  identity priority-tagged {
+    base tagged-inf-type;
+    description
+      "Identity for the priority-tagged interface.";
+  }
+
+  identity qinq {
+    base tagged-inf-type;
+    description
+      "Identity for the QinQ tagged interface.";
+  }
+
+  identity dot1q {
+    base tagged-inf-type;
+    description
+      "Identity for the dot1Q VLAN tagged interface.";
+  }
+
+  identity qinany {
+    base tagged-inf-type;
+    description
+      "Identity for the QinAny tagged interface.";
+  }
+
+  identity vxlan {
+    base tagged-inf-type;
+    description
+      "Identity for the VXLAN tagged interface.";
+  }
+
+  identity tag-type {
+    description
+      "Base identity from which all tag types are derived.";
+  }
+
+  identity c-vlan {
+    base tag-type;
+    description
+      "A CVLAN tag, normally using the 0x8100 Ethertype.";
+  }
+
+  identity s-vlan {
+    base tag-type;
+    description
+      "An SVLAN tag.";
+  }
+
+  identity c-s-vlan {
+    base tag-type;
+    description
+      "Using both a CVLAN tag and an SVLAN tag.";
+  }
+
+  identity vxlan-peer-mode {
+    description
+      "Base identity for the VXLAN peer mode.";
+  }
+
+  identity static-mode {
+    base vxlan-peer-mode;
+    description
+      "Identity for VXLAN access in the static mode.";
+  }
+
+  identity bgp-mode {
+    base vxlan-peer-mode;
+    description
+      "Identity for VXLAN access by BGP EVPN learning.";
+  }
+
+  identity bw-direction {
+    description
+      "Identity for the bandwidth direction.";
+  }
+
+  identity input-bw {
+    base bw-direction;
+    description
+      "Identity for the input bandwidth.";
+  }
+
+  identity output-bw {
+    base bw-direction;
+    description
+      "Identity for the output bandwidth.";
+  }
+
+  identity bw-type {
+    description
+      "Identity of the bandwidth type.";
+  }
+
+  identity bw-per-cos {
+    base bw-type;
+    description
+      "Bandwidth is per CoS.";
+  }
+
+  identity bw-per-port {
+    base bw-type;
+    description
+      "Bandwidth is per site network access.";
+  }
+
+  identity bw-per-site {
+    base bw-type;
+    description
+      "Bandwidth is per site.  It is applicable to
+       all the site network accesses within the site.";
+  }
+
+  identity bw-per-svc {
+    base bw-type;
+    description
+      "Bandwidth is per VPN service.";
+  }
+
  /* Groupings */
  grouping vpn-service-cloud-access {
   container cloud-accesses {
@@ -593,7 +800,7 @@ identity urllc {
     key cloud-identifier;
     leaf cloud-identifier {
      type leafref {
-      path "/l3vpn-svc/vpn-profiles/"+
+      path "/l3vpn-ntw/vpn-profiles/"+
       "valid-provider-identifiers/cloud-identifier/id";
      }
      description
@@ -611,7 +818,7 @@ identity urllc {
      case deny-any-except {
       leaf-list permit-site {
        type leafref {
-        path "/l3vpn-svc/sites/site/site-id";
+        path "/l3vpn-ntw/sites/site/site-id";
        }
        description
        "Site ID to be authorized.";
@@ -620,7 +827,7 @@ identity urllc {
      case permit-any-except {
       leaf-list deny-site {
        type leafref {
-       path "/l3vpn-svc/sites/site/site-id";
+       path "/l3vpn-ntw/sites/site/site-id";
       }
       description
       "Site ID to be denied.";
@@ -797,7 +1004,7 @@ identity urllc {
      }
      container bsr-candidates {
        when "derived-from-or-self(../rp-discovery-type, "+
-           "'l3vpn-svc:bsr-rp')" {
+           "'l3vpn-ntw:bsr-rp')" {
        description
        "Only applicable if discovery type
        is BSR-RP.";
@@ -1286,7 +1493,7 @@ identity urllc {
       "Standard QoS profile.";
       leaf profile {
        type leafref {
-       path "/l3vpn-svc/vpn-profiles/valid-provider-identifiers"+
+       path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers"+
            "/qos-profile-identifier/id";
        }
        description
@@ -1327,6 +1534,7 @@ identity urllc {
                    Expressed as percentage of the service
                    bandwidth.";
         }
+
         container latency {
          choice flavor {
           case lowest {
@@ -1459,7 +1667,7 @@ identity urllc {
      case provider-profile {
       leaf profile-name {
        type leafref {
-        path "/l3vpn-svc/vpn-profiles/valid-provider-identifiers"+
+        path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers"+
                 "/encryption-profile-identifier/id";
        }
          description
@@ -1537,6 +1745,16 @@ identity urllc {
      description
      "Bearer-specific parameters.
      To be augmented.";
+
+     uses ethernet-params;
+
+     /* TODO: Verify the path ../site-network-access-type */
+     uses pseudowire-params {
+      when "../site-network-access-type='pseudowire'" {
+        description "";
+      }
+     }
+
   }
   description
   "Defines physical properties of a site attachment.";
@@ -1552,8 +1770,30 @@ identity urllc {
      description
      "Type of routing protocol.";
     }
+
+    list routing-profiles {
+      key "id";
+      
+      leaf id {
+       type leafref {
+        path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers"+
+             "/routing-profile-identifier/id";
+       }
+       description
+       "Routing profile to be used.";
+      }
+
+      leaf type {
+        type ie-type;
+        description
+        "Import, export or both.";
+      }
+
+
+    }
+
     container ospf {
-     when "derived-from-or-self(../type, 'l3vpn-svc:ospf')" {
+     when "derived-from-or-self(../type, 'l3vpn-ntw:ospf')" {
      description
      "Only applies when protocol is OSPF.";
      }
@@ -1581,6 +1821,20 @@ identity urllc {
          in the routing state calculation and
          path selection.";
      }
+     
+     /* Extension */
+
+
+     leaf mtu {
+         type uint16;
+         description "Maximum transmission unit for a given
+         OSPF link.";
+     }
+
+     uses security-params;
+
+     /* End of Extension */
+
      container sham-links {
       if-feature rtg-ospf-sham-link;
       list sham-link {
@@ -1610,7 +1864,7 @@ identity urllc {
      "OSPF-specific configuration.";
     }
     container bgp {
-     when "derived-from-or-self(../type, 'l3vpn-svc:bgp')" {
+     when "derived-from-or-self(../type, 'l3vpn-ntw:bgp')" {
       description
       "Only applies when protocol is BGP.";
      }
@@ -1631,11 +1885,28 @@ identity urllc {
          contains at least one address family
          to be activated.";
      }
+     /*  Extension  */
+     leaf neighbor {
+        type inet:ip-address;
+         description
+         "IP address of the BGP neighbor.";
+     }
+
+     leaf multihop {
+        type uint8;
+        mandatory false;
+         description
+         "Describes the number of hops allowed between the
+         given BGP neighbor and the PE router.";
+     }
+
+     uses security-params;
+
      description
      "BGP-specific configuration.";
     }
     container static {
-     when "derived-from-or-self(../type, 'l3vpn-svc:static')" {
+     when "derived-from-or-self(../type, 'l3vpn-ntw:static')" {
        description
        "Only applies when protocol is static.
        BGP activation requires the SP to know
@@ -1694,7 +1965,7 @@ identity urllc {
      "Configuration specific to static routing.";
     }
     container rip {
-     when "derived-from-or-self(../type, 'l3vpn-svc:rip')" {
+     when "derived-from-or-self(../type, 'l3vpn-ntw:rip')" {
       description
       "Only applies when the protocol is RIP.  For IPv4,
       the model assumes that RIP version 2 is used.";
@@ -1713,7 +1984,7 @@ identity urllc {
      "Configuration specific to RIP routing.";
     }
     container vrrp {
-     when "derived-from-or-self(../type, 'l3vpn-svc:vrrp')" {
+     when "derived-from-or-self(../type, 'l3vpn-ntw:vrrp')" {
       description
       "Only applies when protocol is VRRP.";
      }
@@ -1748,9 +2019,9 @@ identity urllc {
       type identityref {
        base address-allocation-type;
      }
-     must "not(derived-from-or-self(current(), 'l3vpn-svc:slaac') or "+
+     must "not(derived-from-or-self(current(), 'l3vpn-ntw:slaac') or "+
          "derived-from-or-self(current(), "+
-         "'l3vpn-svc:provider-dhcp-slaac'))" {
+         "'l3vpn-ntw:provider-dhcp-slaac'))" {
      error-message "SLAAC is only applicable to IPv6";
      }
      description
@@ -1760,7 +2031,7 @@ identity urllc {
     }
    container provider-dhcp {
      when "derived-from-or-self(../address-allocation-type, "+
-     "'l3vpn-svc:provider-dhcp')" {
+     "'l3vpn-ntw:provider-dhcp')" {
      description
      "Only applies when addresses are allocated by DHCP.";
    }
@@ -1843,7 +2114,7 @@ identity urllc {
     }
  container dhcp-relay {
    when "derived-from-or-self(../address-allocation-type, "+
-   "'l3vpn-svc:provider-dhcp-relay')" {
+   "'l3vpn-ntw:provider-dhcp-relay')" {
      description
      "Only applies when provider is required to implement
      DHCP relay function.";
@@ -1889,7 +2160,7 @@ identity urllc {
 }
  container addresses {
    when "derived-from-or-self(../address-allocation-type, "+
-   "'l3vpn-svc:static-address')" {
+   "'l3vpn-ntw:static-address')" {
    description
    "Only applies when protocol allocation type is static.";
     }
@@ -1935,9 +2206,9 @@ identity urllc {
 
    container provider-dhcp {
       when "derived-from-or-self(../address-allocation-type, "+
-      "'l3vpn-svc:provider-dhcp') "+
+      "'l3vpn-ntw:provider-dhcp') "+
       "or derived-from-or-self(../address-allocation-type, "+
-      "'l3vpn-svc:provider-dhcp-slaac')" {
+      "'l3vpn-ntw:provider-dhcp-slaac')" {
       description
       "Only applies when addresses are allocated by DHCP.";
        }
@@ -2021,7 +2292,7 @@ identity urllc {
         }
    container dhcp-relay {
     when "derived-from-or-self(../address-allocation-type, "+
-         "'l3vpn-svc:provider-dhcp-relay')" {
+         "'l3vpn-ntw:provider-dhcp-relay')" {
       description
       "Only applies when the provider is required
       to implement DHCP relay function.";
@@ -2072,7 +2343,7 @@ identity urllc {
     }
    container addresses {
     when "derived-from-or-self(../address-allocation-type, "+
-        "'l3vpn-svc:static-address')" {
+        "'l3vpn-ntw:static-address')" {
      description
      "Only applies when protocol allocation type is static.";
      }
@@ -2129,7 +2400,7 @@ identity urllc {
       case profile {
        leaf profile-name {
         type leafref {
-         path "/l3vpn-svc/vpn-profiles/valid-provider-identifiers/"+
+         path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers/"+
                  "bfd-profile-identifier/id";
         }
         description
@@ -2249,8 +2520,8 @@ identity urllc {
  grouping site-devices {
   container devices {
    when "derived-from-or-self(../management/type, "+
-   "'l3vpn-svc:provider-managed') or "+
-   "derived-from-or-self(../management/type, 'l3vpn-svc:co-managed')" {
+   "'l3vpn-ntw:provider-managed') or "+
+   "derived-from-or-self(../management/type, 'l3vpn-ntw:co-managed')" {
    description
    "Applicable only for provider-managed or
    co-managed device.";
@@ -2273,7 +2544,7 @@ identity urllc {
     }
    container management {
     when "derived-from-or-self(../../../management/type,"+
-      "'l3vpn-svc:co-managed')" {
+      "'l3vpn-ntw:co-managed')" {
       description
        "Applicable only for co-managed device.";
      }
@@ -2351,7 +2622,7 @@ identity urllc {
         "Type of VPN Policy filter.";
         }
         leaf-list lan-tag {
-        when "derived-from-or-self(../type, 'l3vpn-svc:lan')" {
+        when "derived-from-or-self(../type, 'l3vpn-ntw:lan')" {
          description
          "Only applies when the VPN Policy filter is a
          LAN Tag filter.";
@@ -2363,7 +2634,7 @@ identity urllc {
          is an Internal tag to be used in VPN policies ";
         }
         leaf-list ipv4-lan-prefix {
-        when "derived-from-or-self(../type, 'l3vpn-svc:ipv4')" {
+        when "derived-from-or-self(../type, 'l3vpn-ntw:ipv4')" {
           description
           "Only applies when VPN Policy filter is IPv4 Prefix filter.";
          }
@@ -2373,7 +2644,7 @@ identity urllc {
          "List of IPv4 prefixes as LAN Prefixes to be matched.";
         }
         leaf-list ipv6-lan-prefix {
-        when "derived-from-or-self(../type, 'l3vpn-svc:ipv6')" {
+        when "derived-from-or-self(../type, 'l3vpn-ntw:ipv6')" {
         description
         "Only applies when VPN Policy filter is IPv6 Prefix filter.";
          }
@@ -2397,7 +2668,7 @@ identity urllc {
       key vpn-id;
       leaf vpn-id {
        type leafref {
-        path "/l3vpn-svc/vpn-services/"+
+        path "/l3vpn-ntw/vpn-services/"+
          "vpn-service/vpn-id";
        }
        mandatory true;
@@ -2475,6 +2746,9 @@ identity urllc {
  grouping site-network-access-service {
   container service {
    uses site-service-basic;
+   /* Extension */
+   /* uses svc-bandwidth-params; */
+   /* EoExt */
    uses site-service-qos-profile;
    uses site-service-mpls;
    uses site-service-multicast;
@@ -2555,7 +2829,7 @@ identity urllc {
     case vpn-id {
      leaf vpn-id {
       type leafref {
-       path "/l3vpn-svc/vpn-services"+
+       path "/l3vpn-ntw/vpn-services"+
         "/vpn-service/vpn-id";
       }
       description
@@ -2634,10 +2908,25 @@ identity urllc {
     description
     "List for BFD Profile identifiers.";
    }
+
+   list routing-profile-identifier {
+    key id;
+    leaf id {
+     type string;
+     description
+     "Identification of the routing Profile to be used
+     by the routing-protocols within sites and site-
+     network-accesses. Local administration meaning.";
+    }
+    description
+    "List for Routing Profile Identifiers.";
+   }
+
      nacm:default-deny-write;
      description
      "Container for Valid Provider Identifies.";
   }
+
    description
    "Grouping for VPN Profile configuration.";
  }
@@ -2666,6 +2955,13 @@ identity urllc {
    description
    "VPN service topology.";
   }
+
+  leaf description {
+    type string;
+    description
+      "Textual description of a VPN service.";
+  }
+
   uses ie-profiles-params;
   uses vpn-nodes-params;
   uses vpn-service-cloud-access;
@@ -2692,6 +2988,13 @@ identity urllc {
   "Grouping for site top-level configuration.";
  }
  grouping site-network-access-top-level-cfg {
+
+  /* Extension */
+
+  uses status-params;
+
+  /* End of Extension */
+
   leaf site-network-access-type {
    type identityref {
     base site-network-access-type;
@@ -2704,7 +3007,7 @@ identity urllc {
   choice location-flavor {
    case location {
     when "derived-from-or-self(../../management/type, "+
-     "'l3vpn-svc:customer-managed')" {
+     "'l3vpn-ntw:customer-managed')" {
      description
      "Applicable only for customer-managed device.";
     }
@@ -2718,9 +3021,9 @@ identity urllc {
    }
    case device {
     when "derived-from-or-self(../../management/type, "+
-     "'l3vpn-svc:provider-managed') or "+
+     "'l3vpn-ntw:provider-managed') or "+
      "derived-from-or-self(../../management/type, "+
-     "'l3vpn-svc:co-managed')" {
+     "'l3vpn-ntw:co-managed')" {
      description
      "Applicable only for provider-managed or co-managed device.";
     }
@@ -2764,7 +3067,7 @@ identity urllc {
           type string;
         }
 
-        leaf node-id {
+        leaf ne-id {
           description "";
           type string;
         }
@@ -2777,17 +3080,137 @@ identity urllc {
     }
    }
 
+   /* UNUSED */
+   grouping svc-bandwidth-params {
+     container svc-bandwidth {
+        if-feature "input-bw";
+        list bandwidth {
+          key "direction type";
+          leaf direction {
+            type identityref {
+              base bw-direction;
+            }
+            description
+              "Indicates the bandwidth direction.  It can be
+               the bandwidth download direction from the SP to
+               the site or the bandwidth upload direction from
+               the site to the SP.";
+          }
+          leaf type {
+            type identityref {
+              base bw-type;
+            }
+            description
+              "Bandwidth type.  By default, the bandwidth type
+               is set to 'bw-per-cos'.";
+          }
+          leaf cos-id {
+            when "derived-from-or-self(../type, "
+               + "'l3vpn-ntw:bw-per-cos')" {
+              description
+                "Relevant when the bandwidth type is set to
+                 'bw-per-cos'.";
+            }
+            type uint8;
+            description
+              "Identifier of the CoS, indicated by DSCP or a
+               CE-VLAN CoS (802.1p) value in the service frame.
+               If the bandwidth type is set to 'bw-per-cos',
+               the CoS ID MUST also be specified.";
+          }
+          leaf vpn-id {
+            when "derived-from-or-self(../type, "
+               + "'l3vpn-ntw:bw-per-svc')" {
+              description
+                "Relevant when the bandwidth type is
+                 set as bandwidth per VPN service.";
+            }
+            type svc-id;
+            description
+              "Identifies the target VPN.  If the bandwidth
+               type is set as bandwidth per VPN service, the
+               vpn-id MUST be specified.";
+          }
+          leaf cir {
+            type uint64;
+            units "bps";
+            mandatory true;
+            description
+              "Committed Information Rate.  The maximum number
+               of bits that a port can receive or send over
+               an interface in one second.";
+          }
+          leaf cbs {
+            type uint64;
+            units "bps";
+            mandatory true;
+            description
+              "Committed Burst Size (CBS).  Controls the bursty
+               nature of the traffic.  Traffic that does not
+               use the configured Committed Information Rate
+               (CIR) accumulates credits until the credits
+               reach the configured CBS.";
+          }
+          leaf eir {
+            type uint64;
+            units "bps";
+            description
+              "Excess Information Rate (EIR), i.e., excess frame
+               delivery allowed that is not subject to an SLA.
+               The traffic rate can be limited by the EIR.";
+          }
+          leaf ebs {
+            type uint64;
+            units "bps";
+            description
+              "Excess Burst Size (EBS).  The bandwidth available
+               for burst traffic from the EBS is subject to the
+               amount of bandwidth that is accumulated during
+               periods when traffic allocated by the EIR
+               policy is not used.";
+          }
+          leaf pir {
+            type uint64;
+            units "bps";
+            description
+              "Peak Information Rate, i.e., maximum frame
+               delivery allowed.  It is equal to or less
+               than the sum of the CIR and the EIR.";
+          }
+          leaf pbs {
+            type uint64;
+            units "bps";
+            description
+              "Peak Burst Size.  It is measured in bytes per
+               second.";
+          }
+          description
+            "List of bandwidth values (e.g., per CoS,
+             per vpn-id).";
+        }
+        description
+          "From the customer site's perspective, the service
+           input/output bandwidth of the connection or
+           download/upload bandwidth from the SP/site
+           to the site/SP.";
+     } 
+   }
 
-  grouping admin-status-params {
 
-    container admin-status {
+  grouping status-params {
+    container status {
       description "";
-      leaf enabled {
+      leaf admin-enabled {
         type boolean;
       }
+      leaf oper-status {
+        config false;
+        description "Operations status";
+        type operational-type;
+      }
     }
-
   }
+
 
   /* Parameters related to vpn-nodes (VRF config.) */
    grouping vpn-nodes-params {
@@ -2797,16 +3220,27 @@ identity urllc {
       description "";
 
       list vpn-node {
-        key "vpn-node-id";
+        key "vpn-node-id ne-id";
 
         leaf vpn-node-id {
           description "";
           type string;
         }
 
-        leaf router-id {
+        leaf description {
+          type string;
+          description
+            "Textual description of a VPN node.";
+        }
+
+        leaf ne-id {
           description "";
           type string;
+        }
+
+        leaf router-id {
+          description "";
+          type inet:ipv4-address;
         }
 
         leaf node-role {
@@ -2818,12 +3252,15 @@ identity urllc {
           "Role of the vpn-node in the IP VPN.";
         }
 
-        uses admin-status-params;
+        uses status-params;
+
+        /* Here we use the name given to the existing structure in sites */
+        uses site-maximum-routes;
 
         leaf node-ie-profile {
           description "";
           type leafref {
-            path "/l3vpn-svc/vpn-services/"+
+            path "/l3vpn-ntw/vpn-services/"+
                  "vpn-service/ie-profiles/ie-profile/ie-profile-id";
           }
         }
@@ -2836,13 +3273,13 @@ identity urllc {
             leaf site-id {
               description "";
               type leafref{
-                path "/l3vpn-svc/sites/site/site-id";
+                path "/l3vpn-ntw/sites/site/site-id";
               }
             }
             leaf-list site-network-access-id {
               type leafref {
                 description "";
-                path "/l3vpn-svc/sites/site/site-network-accesses/"+
+                path "/l3vpn-ntw/sites/site/site-network-accesses/"+
                      "site-network-access/site-network-access-id"; 
               }
             }
@@ -2883,10 +3320,218 @@ identity urllc {
     }
   }
 
+  grouping pseudowire-params {
+
+    container pseudowire {
+
+      /*leaf far-end {*/
+      /*  description "IP of the remote peer of the pseudowire.";*/
+      /*  type inet:ip-address;*/
+      /*}*/
+
+      leaf vcid {
+        description "PW or VC identifier.";
+        type uint32;
+      }
+    }
+  }
+
+  grouping security-params {
+
+    container security {
+      description
+        "Container for aggregating any security parameter for routing
+        sessions between a PE and a CE.";
+
+      leaf auth-key {
+        type string;
+        description
+          "MD5 authentication password for the connection towards the
+          customer edge.";
+      }
+
+    }
+  }
+
+grouping ethernet-params {
+  container connection {
+    leaf encapsulation-type {
+      type identityref {
+        base encapsulation-type;
+      }
+      default "ethernet";
+      description
+        "Encapsulation type.  By default, the
+         encapsulation type is set to 'ethernet'.";
+    }
+    leaf eth-inf-type {
+      type identityref {
+        base eth-inf-type;
+      }
+      default "untagged";
+      description
+        "Ethernet interface type.  By default, the
+         Ethernet interface type is set to 'untagged'.";
+    }
+    container tagged-interface {
+      leaf type {
+        type identityref {
+          base tagged-inf-type;
+        }
+        default "priority-tagged";
+        description
+          "Tagged interface type.  By default,
+           the type of the tagged interface is
+           'priority-tagged'.";
+      }
+      container dot1q-vlan-tagged {
+        when "derived-from-or-self(../type, "
+           + "'l3vpn-ntw:dot1q')" {
+          description
+            "Only applies when the type of the tagged
+             interface is 'dot1q'.";
+        }
+        if-feature "dot1q";
+        leaf tg-type {
+          type identityref {
+            base tag-type;
+          }
+          default "c-vlan";
+          description
+            "Tag type.  By default, the tag type is
+             'c-vlan'.";
+        }
+        leaf cvlan-id {
+          type uint16;
+          mandatory true;
+          description
+            "VLAN identifier.";
+        }
+        description
+          "Tagged interface.";
+      }
+      container priority-tagged {
+        when "derived-from-or-self(../type, "
+           + "'l3vpn-ntw:priority-tagged')" {
+          description
+            "Only applies when the type of the tagged
+             interface is 'priority-tagged'.";
+        }
+        leaf tag-type {
+          type identityref {
+            base tag-type;
+          }
+          default "c-vlan";
+          description
+            "Tag type.  By default, the tag type is
+             'c-vlan'.";
+        }
+        description
+          "Priority tagged.";
+      }
+      container qinq {
+        when "derived-from-or-self(../type, "
+           + "'l3vpn-ntw:qinq')" {
+          description
+            "Only applies when the type of the tagged
+             interface is 'qinq'.";
+        }
+        if-feature "qinq";
+        leaf tag-type {
+          type identityref {
+            base tag-type;
+          }
+          default "c-s-vlan";
+          description
+            "Tag type.  By default, the tag type is
+             'c-s-vlan'.";
+        }
+        leaf svlan-id {
+          type uint16;
+          mandatory true;
+          description
+            "SVLAN identifier.";
+        }
+        leaf cvlan-id {
+          type uint16;
+          mandatory true;
+          description
+            "CVLAN identifier.";
+        }
+        description
+          "QinQ.";
+      }
+      container qinany {
+        when "derived-from-or-self(../type, "
+           + "'l3vpn-ntw:qinany')" {
+          description
+            "Only applies when the type of the tagged
+             interface is 'qinany'.";
+        }
+        if-feature "qinany";
+        leaf tag-type {
+          type identityref {
+            base tag-type;
+          }
+          default "s-vlan";
+          description
+            "Tag type.  By default, the tag type is
+             's-vlan'.";
+        }
+        leaf svlan-id {
+          type uint16;
+          mandatory true;
+          description
+            "SVLAN ID.";
+        }
+        description
+          "Container for QinAny.";
+      }
+      container vxlan {
+        when "derived-from-or-self(../type, "
+           + "'l3vpn-ntw:vxlan')" {
+          description
+            "Only applies when the type of the tagged
+             interface is 'vxlan'.";
+        }
+        if-feature "vxlan";
+        leaf vni-id {
+          type uint32;
+          mandatory true;
+          description
+            "VXLAN Network Identifier (VNI).";
+        }
+        leaf peer-mode {
+          type identityref {
+            base vxlan-peer-mode;
+          }
+          default "static-mode";
+          description
+            "Specifies the VXLAN access mode.  By default,
+             the peer mode is set to 'static-mode'.";
+        }
+        list peer-list {
+          key "peer-ip";
+          leaf peer-ip {
+            type inet:ip-address;
+            description
+              "Peer IP.";
+          }
+          description
+            "List of peer IP addresses.";
+        }
+        description
+          "QinQ.";
+      }
+      description
+        "Container for tagged interfaces.";
+    }
+  }
+}
 
 
  /* Main blocks */
- container l3vpn-svc {
+ container l3vpn-ntw {
   container vpn-profiles {
    uses vpn-profile-cfg;
     description
@@ -2910,6 +3555,11 @@ identity urllc {
      description
      "Identifier of the site.";
     }
+    leaf description {
+      type string;
+      description
+        "Textual description of a site.";
+    }
     uses site-top-level-cfg;
     uses operational-requirements-ops;
     uses site-bearer-params;
@@ -2920,6 +3570,11 @@ identity urllc {
        type svc-id;
        description
        "Identifier for the access.";
+      }
+      leaf description {
+        type string;
+        description
+          "Textual description of a VPN service.";
       }
       uses site-network-access-top-level-cfg;
       description
