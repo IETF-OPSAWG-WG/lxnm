@@ -214,6 +214,11 @@ module ietf-l3vpn-ntw {
   description
   "Identity for pseudowire connection.";
  }
+ identity loopback {
+  base site-network-access-type;
+  description
+  "Identity for an internal loobpack interface.";
+ }
  /* End of Extension */
  identity multipoint {
   base site-network-access-type;
@@ -1751,7 +1756,8 @@ identity urllc {
      /* TODO: Verify the path ../site-network-access-type */
      uses pseudowire-params {
       when "../site-network-access-type='pseudowire'" {
-        description "";
+        description "Parameters associated to a pseudowire
+          site-network-access";
       }
      }
 
@@ -3057,23 +3063,31 @@ identity urllc {
   /* Bearers in a site */
    grouping site-bearer-params {
 
-    description "";
+    description "Container that encloses all the bearers
+      connected to a site. A bearer is mapped one to one
+      to a port on the PE router.";
+
     container site-bearers {
       list bearer {
         key "bearer-id";
 
         leaf bearer-id {
-          description "";
+          description "Unique identifier for a bearer. This
+          identifies shall be mapped to the bearer-reference
+          on a site-network-access.";
           type string;
         }
 
         leaf ne-id {
-          description "";
+          description "Unique identifier for a network
+          element. This identifier may be a string, a UUID,
+          an IP address, etc.";
           type string;
         }
 
         leaf port-id {
-          description "";
+          description "Port of the PE router for the given
+          bearer.";
           type string;
         }
       }
@@ -3199,13 +3213,17 @@ identity urllc {
 
   grouping status-params {
     container status {
-      description "";
+      description "Operational and administrative status for
+        different elements in the model.";
       leaf admin-enabled {
+        description "True is the entity is administratively
+          enabled.";
         type boolean;
       }
       leaf oper-status {
         config false;
-        description "Operations status";
+        description "Operational status of the given entity
+          (UP, DOWN, UNKNOWN).";
         type operational-type;
       }
     }
@@ -3217,13 +3235,15 @@ identity urllc {
     description "Grouping to define VRF-specific configuration.";
 
     container vpn-nodes {
-      description "";
+      description "Container that defines VRF-specific configuration.";
 
       list vpn-node {
         key "vpn-node-id ne-id";
 
         leaf vpn-node-id {
-          description "";
+          description "Identifier of the VPN node. It can be
+            identified or mapped as the VRF name. As it may not
+            be globally unique, the ne-id is also needed.";
           type string;
         }
 
@@ -3234,13 +3254,24 @@ identity urllc {
         }
 
         leaf ne-id {
-          description "";
+          description "Unique identifier for a network element where 
+            to instantiate the VRF. This identifier may be a string,
+            a UUID, an IP address, etc.";
           type string;
         }
 
         leaf router-id {
-          description "";
+          description "In case of being necessary, it defines the IP
+            address to identify the VRF. If not specified, the IP of
+            the loopback interface within the base routing instance
+            will be used.";
           type inet:ipv4-address;
+        }
+
+        leaf autonomous-system {
+          type uint32;
+          description
+            "AS number of the VRF.";
         }
 
         leaf node-role {
@@ -3258,7 +3289,8 @@ identity urllc {
         uses site-maximum-routes;
 
         leaf node-ie-profile {
-          description "";
+          description "Reference to an import export profile
+            defined within a VPN service.";
           type leafref {
             path "/l3vpn-ntw/vpn-services/"+
                  "vpn-service/ie-profiles/ie-profile/ie-profile-id";
@@ -3269,16 +3301,20 @@ identity urllc {
           list site-attachment {
             key "site-id";      
 
-            description "";
+            description "List of attachments (site-network-accesses)
+              that are connected to the VPN-node (VRF instance).";
+
             leaf site-id {
-              description "";
+              description "Identifier of the site where the site-network-
+                access is located.";
               type leafref{
                 path "/l3vpn-ntw/sites/site/site-id";
               }
             }
             leaf-list site-network-access-id {
               type leafref {
-                description "";
+                description "Identifier of the site-network-access to be
+                  attached to the VPN node.";
                 path "/l3vpn-ntw/sites/site/site-network-accesses/"+
                      "site-network-access/site-network-access-id"; 
               }
@@ -3301,13 +3337,16 @@ identity urllc {
 
         leaf ie-profile-id {
           type string;
+          description
+            "Unique identifier for an import/export profile defined
+            within a VPN node.";
         }
 
         leaf rd {
           
           type rt-types:route-distinguisher;
           description
-           "";
+           "Route distinguisher.";
         }
 
         container vpn-targets {
@@ -3330,7 +3369,7 @@ identity urllc {
       /*}*/
 
       leaf vcid {
-        description "PW or VC identifier.";
+        description "PW or virtual circuit identifier.";
         type uint32;
       }
     }
