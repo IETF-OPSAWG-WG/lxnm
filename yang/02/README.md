@@ -5,6 +5,10 @@ This document has been updated in two rounds, being the first version of the dra
 
 The two rounds of definitions are as described in the below figures, and in the version of the draft (_to be uploaded_).
 
+__Version 10th July 2019__
+
+Minor changes to solve Bugs.
+
 __Version 27th May 2019__
 
 ![alt text](extensions270519.png "Logo Title Text 1")
