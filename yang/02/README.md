@@ -1,5 +1,5 @@
 # L3NM
-## Version 01
+## Version 02
 
 This document has been updated in two rounds, being the first version of the draft following the _prune and extend_ approach, instead of the one based on _augments_.
 
