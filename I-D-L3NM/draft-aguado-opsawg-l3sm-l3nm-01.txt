@@ -1,5 +1,1127 @@
+
+
+
+
+Internet Engineering Task Force                                A. Aguado
+Internet-Draft                                  O. Gonzalez de Dios, Ed.
+Intended status: Standards Track                                V. Lopez
+Expires: January 9, 2020                                      Telefonica
+                                                                D. Voyer
+                                                             Bell Canada
+                                                                L. Munoz
+                                                                Vodafone
+                                                            July 8, 2019
+
+
+                       Layer 3 VPN Network Model
+                    draft-aguado-opsawg-l3sm-l3nm-01
+
+Abstract
+
+   RFC 8299 [RFC8299] defines a L3VPN Service Model (L3SM) YANG data
+   model that can be used for communication between customers and
+   network operators.  It assumes that there is a monolithic management
+   system with full control of transport resources.  This approach (that
+   is valid for the customer to network operator conversation) limits
+   the usage of the model to the role of a Customer Service Model,
+   according to the terminology defined in RFC 8309 [RFC8309].
+
+   There is a need for a YANG model for use between the entity that
+   interacts directly with the customer (service orchestrator) and the
+   entity in charge of network orchestration and control which,
+   according to RFC 8309 [RFC8309], can be referred as Service Delivery
+   Model.  In some cases, the control of the network is further expanded
+   into per- domain control.
+
+   This document uses the L3SM model defined in RFC 8299 [RFC8299], and
+   extends it to facilitate communication between the service
+   orchestrator and transport orchestrator (MSDC), and an MDSC and
+   domain controllers.  The resulting model is called the L3VPN Network
+   Model (L3NM).
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 1]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on January 9, 2020.
+
+Copyright Notice
+
+   Copyright (c) 2019 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+     1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
+     1.2.  Requirements Language . . . . . . . . . . . . . . . . . .   3
+   2.  Reference architecture  . . . . . . . . . . . . . . . . . . .   4
+   3.  Yang model explanation  . . . . . . . . . . . . . . . . . . .   7
+     3.1.  Structure of the model  . . . . . . . . . . . . . . . . .   8
+     3.2.  sites and bearers . . . . . . . . . . . . . . . . . . . .   8
+     3.3.  Bearer ethernet Encapsulation . . . . . . . . . . . . . .   8
+     3.4.  Multi-Domain Resource Management  . . . . . . . . . . . .   8
+     3.5.  Remote Far-End Configuration  . . . . . . . . . . . . . .   9
+     3.6.  Provide Edge Identification Point . . . . . . . . . . . .   9
+   4.  Design of the data model  . . . . . . . . . . . . . . . . . .  10
+   5.  Yang module . . . . . . . . . . . . . . . . . . . . . . . . .  20
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  96
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  96
+   8.  Implementation Status . . . . . . . . . . . . . . . . . . . .  96
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  97
+   10. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  97
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  97
+     11.1.  Normative References . . . . . . . . . . . . . . . . . .  97
+     11.2.  Informative References . . . . . . . . . . . . . . . . .  97
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  98
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 2]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+1.  Introduction
+
+   RFC 8299 [RFC8299] defines a L3VPN Service Model (L3SM) YANG data
+   model that can be used for communication between customers and
+   network operators.  Although the intention to provide an abstracted
+   view of the customer's requested services is clear, the assumption is
+   that the model is applied at the top of a monolithic management
+   system with full control of transport resources.  That assumption
+   substantially limits the usage of the L3SM to the role of a Customer
+   Service Model, according to the terminology defined in RFC 8309
+   [RFC8309].
+
+   The yang data model defined in this document is called the L3VPN
+   Network Model (L3NM).  It enables further capabilities, such as
+   resource management or to serve as a multi-domain orchestration
+   interface, where transport resources must be synchronized.  The
+   proposed yang module has been built with a Prune and extend approach,
+   taking as a starting points the YANG model described in RFC 8299
+   [RFC8299].
+
+   This document does not obsolete, but complements, the definitions in
+   RFC 8299 [RFC8299].  It aims to provide a different scope for the
+   L3SM, but does not attempt to address all deployment cases especially
+   those where the L3VPN connectivity is supported through the
+   coordination of different VPNs in different underlying networks.
+   More complex deployment scenarios involving the coordination of
+   different VPN instances and different technologies to provide end-to-
+   end VPN connectivity is out of scope of this document, but is
+   discussed in [I-D.evenwu-opsawg-yang-composed-vpn].
+
+1.1.  Terminology
+
+   This document assumes that the reader is familiar with the contents
+   of RFC 6241 [RFC6241], RFC 7950 [RFC7950], RFC 8299 [RFC8299],
+   RFC 8309 [RFC8309], and [RFC8453] and uses terminology from those
+   documents.  Tree diagrams used in this document follow the notation
+   defined in [RFC8340].
+
+1.2.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+
+
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 3]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+2.  Reference architecture
+
+   Figure 1 shows where the L3NM is used in a management stack.  The
+   figure is an expansion of the architecture presented in Section 5 of
+   RFC 8299 [RFC8299] and decomposes the box marked "orchestration" in
+   that figure into three separate functional components called "Service
+   Orchestration", "Network Orchestration", and "Domain Orchestration".
+
+   At the same time, terminology from RFC 8309 [RFC8309] is introduced
+   to show the distinction between the "Customer Service Model", the
+   "Service Delivery Model", the "Network Configuration Model", and the
+   "Device Configuration Model".  In that context, the "Domain
+   Orchestration" and "Config Manager" roles may be performed by
+   "Controllers".
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 4]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                                     +---------------+
+                                   |   Customer    |
+                                   +---------------+
+                   Customer Service Model  |
+                          l3vpn-svc        |
+                                   +---------------+
+                                   |    Service    |
+                                   | Orchestration |
+                                   +---------------+
+                 Service Delivery Model    |
+                         l3nm-svc          |
+                  (l3vpn-svc + extensions) |
+                                   +---------------+
+                                   |   Network     |
+                                   | Orchestration |
+                                   +---------------+
+             Network Configuration Model  |
+                                __________|____________
+                               |                       |
+                      +---------------+       +---------------+
+                      |    Domain     |       |     Domain    |
+                      | Orchestration |       | Orchestration |
+                      +---------------+       +---------------+
+           Device         |        |                   |
+           Configuration  |        |                   |
+           Model          |        |                   |
+                     +---------+   |                   |
+                     | Config  |   |                   |
+                     | Manager |   |                   |
+                     +---------+   |                   |
+                          |        |                   |
+                          | NETCONF/CLI..................
+                          |        |                   |
+                   +------------------------------------------------+
+                                       Network
+
+                                  +++++++
+                                  + AAA +
+                                  +++++++
+
+          ++++++++   Bearer    ++++++++           ++++++++      ++++++++
+          + CE A + ----------- + PE A +           + PE B + ---- + CE B +
+          ++++++++  Connection ++++++++           ++++++++      ++++++++
+
+                     Site A                               Site B
+
+                          Figure 1: L3SM and L3NM
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 5]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+   The L3SM and L3NM may also be set in the context of the ACTN
+   architecture [RFC8453].  Figure 2 shows the Customer Network
+   Controller (CNC), the Multi-Domain Service Coordinator (MDSC), and
+   the Provisioning Network Controller (PNC).  It also shows the
+   interfaces between these functional units: the CNC-MDSC Interface
+   (CMI), the MDSC-PNC Interface (MPI), and the Southbound Interface
+   (SBI).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 6]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                  ----------------------------------
+                  | Customer                         |
+                  |  -----------------------------   |
+                  | |             CNC             |  |
+                  |  -----------------------------   |
+                   ----:-----------------------:-----
+                       :                       :
+                       : L3SM                  : L3SM
+                       :                       :
+              ---------:---------     -------------------
+             | MDSC    :         |   |       MDSC        |
+             |  ---------------  |   |     (parent)      |
+             | |    Service    | |    -------------------
+             | | Orchestration | |             :
+             |  ---------------  |             : L3NM
+             |         :         |             :
+             |         : L3NM    |    -------------------
+             |         :         |   |       MDSC        |
+             |  ---------------  |   |      (child)      |
+             | |    Network    | |    -------------------
+             | | Orchestration | |             :
+             |  ---------------  |             :
+              ---------:---------              :
+                       :                       :
+                       : Network Configuration :
+                       :                       :
+           ------------:-------       ---------:------------
+          | Domain     :       |     |         : Domain     |
+          | Controller :       |     |         : Controller |
+          |        ---------   |     |     ---------        |
+          |       |   PNC   |  |     |    |   PNC   |       |
+          |        ---------   |     |     ---------        |
+           ------------:-------       ---------:------------
+                       :                       :
+                       : Device Configuration  :
+                       :                       :
+                   --------                --------
+                  | Device |              | Device |
+                   --------                --------
+
+              Figure 2: L3SM and L3NM in the Context of ACTN
+
+3.  Yang model explanation
+
+   The scenarios covered include: the integration of ethernet and
+   encapsulation parameters, the extension for transport resources (e.g.
+   RTs and RDs) to be orchestrated from the management system, far-end
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 7]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+   configuration of PEs not managed by the management system and the
+   definition for PE identification.
+
+3.1.  Structure of the model
+
+   The YANG module is divided into three main containers: "vpn-
+   services","sites" and "vpn-profiles".
+
+3.2.  sites and bearers
+
+   A site, as per RFC 8299 [RFC8299], represents a connection of a
+   customer office to one or more VPN services.  As this Yang module is
+   the network view, each site is associated with a list of bearers.  A
+   bearer is the layer two connection with the site.  In the module it
+   is asumened that the bearer has been allocated by the Service
+   Provider (e.g. by the service orchestrator).  The bearer is
+   associated to a network element and a port.  Hence, a bearer is not
+   just a bearer-reference, but also a true reference to given port in
+   the service provider network.
+
+3.3.  Bearer ethernet Encapsulation
+
+   The definition of a L3 VPN is commonly defined not only at the IP
+   layer, but also requires to identify parameters at the Ethernet
+   layer, such as encapsulation (e.g.  VLAN, QinQ, QinAny, VxLAN, etc).
+   This specification is not supported in [RFC8299], whilst it suggests
+   that any extension on this direction shall be implemented via
+   augmentation of the bearer container.  The extension defined to cope
+   with these parameters uses the connection container inside the site-
+   network-access defined by the the [RFC8466].  This container defines
+   protocol parameters to enable connectivity at Layer 2.  In the
+   context of L3SM, the augmentation includes only mandatory parameters
+   for the service configuration, which are mainly related to the
+   interface encapsulation.  Other definitions from L2SM connection
+   container are left aside.  For example, LAG information is not
+   required and it shall be configured prior to the service
+   configuration, being the aggregated interface identified in the model
+   as the bearer-reference, as discussed later in Section 4.4.
+
+3.4.  Multi-Domain Resource Management
+
+   The implementation of L3 VPN services which spans across
+   administratively separated domains (i.e. that under the
+   administration of different management systems or controllers)
+   requires some network resources to be synchronised between systems.
+   Particularly, there are two resources that must be orchestrated and
+   synchronised to avoid asymmetric (non-functional) configuration, or
+   the usage of unavailable resources.  For example, RTs shall be
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 8]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+   synchronised between PEs.  When every PE is controlled by the same
+   management system, RT allocation can be performed by the system.  In
+   cases where the service spans across multiple management systems,
+   this task shall be synchronised and, therefore, the service model
+   must allow this specification.  In addition, RDs must be also
+   synchronised to avoid collisions in RD allocation between separated
+   systems.  A incorrect allocation might lead into same RD and IP
+   prefixes being exported by different PE routers.
+
+3.5.  Remote Far-End Configuration
+
+   Depending on the control plane implementation, different network
+   scenarios might require additional information for the L3 VPN service
+   to be configured and active.  For example, an L3 VPN Option C
+   service, if no reflection of IPv4 VPN routes is configured via ASBR
+   or route reflector, may require additional configuration (e.g. a new
+   BGP neighbour) to be coordinated between both management systems.
+   This definition requires for every management system participant on
+   the VPN to receive not just their own sites and site-network-
+   accesses, but also to receive information about external ones,
+   identified as an external site-network-access-type.  In addition,
+   this particular site-network-access is augmented to include the
+   loopback address of the far-end (remote/external) PE router.
+
+3.6.  Provide Edge Identification Point
+
+   RFC8299 states that The "bearer-reference" parameter is used in cases
+   where the customer has already ordered a network connection to the SP
+   apart from the IP VPN site and wants to reuse this connection.  The
+   string used is an internal reference from the SP and describe the
+   already-available connection.  Oftenly, a client interface (either a
+   customer one or an interface used by the SP) is already in place and
+   connected, although it has not being used previously.  In some other
+   cases (e.g. for stitching purposes), the termination of a VPN service
+   is done over logical terminations within a PE router.
+
+   The bearer-reference must serve as a strict unequivocal parameters to
+   identify the connection between a PE and a client (CE).  This means
+   that, despite the type is maintained as a string and there is no
+   restriction in the way this data is formed, the bearer-reference must
+   serve as the unique way to identify the PE router and the client
+   interface.  This, together with the encapsulation augments proposed
+   in 4.1, serves as the way to identify the client interface and
+   configure L2 specific parameters.
+
+
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020                [Page 9]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+4.  Design of the data model
+
+   The augments defined in this document are organised per scenario, as
+   per defined in Section 4.  The case described 4.4 does not need any
+   further extension of the data model and only requires a more
+   restricted definition on how the data model is used for PE router and
+   client port identification, so no augment is implemented for this
+   scenario.
+
+   The augments implemented are distributed as follows.  The first
+   augment implements the extensions for RT and RD definition for the L3
+   VPN, following the YANG definitions from BESS-L3VPN.  The second
+   augment copes with the information from a remote PE not directly
+   under the management system supervision.  This augment does not
+   follow any previously defined model and includes the loopback IP
+   address of the external router.  The last augment includes
+   information below layer 3 that is required for the service.  In
+   particular, we include information related to clients interface
+   encapsulation and aggregation.
+
+   The high-level model structure proposed by this document is as shown
+   below:
+
+            |-------------------- EXAMPLE --------------------|
+
+
+
+module: ietf-l3vpn-ntw
+  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  +--rw valid-provider-identifiers
+     |     +--rw cloud-identifier* [id] {cloud-access}?
+     |     |  +--rw id    string
+     |     +--rw encryption-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw qos-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw bfd-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw routing-profile-identifier* [id]
+     |        +--rw id    string
+     +--rw vpn-services
+     |  +--rw vpn-service* [vpn-id]
+     |     +--rw vpn-id                  svc-id
+     |     +--rw customer-name?          string
+     |     +--rw vpn-service-topology?   identityref
+     |     +--rw description?            string
+     |     +--rw ie-profiles
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 10]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+     |     |  +--rw ie-profile* [ie-profile-id]
+     |     |     +--rw ie-profile-id    string
+     |     |     +--rw rd?              rt-types:route-distinguisher
+     |     |     +--rw vpn-targets
+     |     |        +--rw vpn-target* [route-target]
+     |     |           +--rw route-target         rt-types:route-target
+     |     |           +--rw route-target-type    rt-types:route-target-type
+     |     +--rw vpn-nodes
+     |     |  +--rw vpn-node* [vpn-node-id ne-id]
+     |     |     +--rw vpn-node-id          string
+     |     |     +--rw description?         string
+     |     |     +--rw ne-id                string
+     |     |     +--rw router-id?           inet:ipv4-address
+     |     |     +--rw autonomous-system?   uint32
+     |     |     +--rw node-role?           identityref
+     |     |     +--rw status
+     |     |     |  +--rw admin-enabled?   boolean
+     |     |     |  +--ro oper-status?     operational-type
+     |     |     +--rw maximum-routes
+     |     |     |  +--rw address-family* [af]
+     |     |     |     +--rw af                address-family
+     |     |     |     +--rw maximum-routes?   uint32
+     |     |     +--rw node-ie-profile?     -> /l3vpn-ntw/vpn-services/vpn-service/ie-profiles/ie-profile/ie-profile-id
+     |     |     +--rw site-attachments
+     |     |        +--rw site-attachment* [site-id]
+     |     |           +--rw site-id                   -> /l3vpn-ntw/sites/site/site-id
+     |     |           +--rw site-network-access-id*   -> /l3vpn-ntw/sites/site/site-network-accesses/site-network-access/site-network-access-id
+     |     +--rw cloud-accesses {cloud-access}?
+     |     |  +--rw cloud-access* [cloud-identifier]
+     |     |     +--rw cloud-identifier       -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/cloud-identifier/id
+     |     |     +--rw (list-flavor)?
+     |     |     |  +--:(permit-any)
+     |     |     |  |  +--rw permit-any?      empty
+     |     |     |  +--:(deny-any-except)
+     |     |     |  |  +--rw permit-site*     -> /l3vpn-ntw/sites/site/site-id
+     |     |     |  +--:(permit-any-except)
+     |     |     |     +--rw deny-site*       -> /l3vpn-ntw/sites/site/site-id
+     |     |     +--rw address-translation
+     |     |        +--rw nat44
+     |     |           +--rw enabled?                  boolean
+     |     |           +--rw nat44-customer-address?   inet:ipv4-address
+     |     +--rw multicast {multicast}?
+     |     |  +--rw enabled?                 boolean
+     |     |  +--rw customer-tree-flavors
+     |     |  |  +--rw tree-flavor*   identityref
+     |     |  +--rw rp
+     |     |     +--rw rp-group-mappings
+     |     |     |  +--rw rp-group-mapping* [id]
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 11]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+     |     |     |     +--rw id                  uint16
+     |     |     |     +--rw provider-managed
+     |     |     |     |  +--rw enabled?                    boolean
+     |     |     |     |  +--rw rp-redundancy?              boolean
+     |     |     |     |  +--rw optimal-traffic-delivery?   boolean
+     |     |     |     +--rw rp-address          inet:ip-address
+     |     |     |     +--rw groups
+     |     |     |        +--rw group* [id]
+     |     |     |           +--rw id                     uint16
+     |     |     |           +--rw (group-format)
+     |     |     |              +--:(singleaddress)
+     |     |     |              |  +--rw group-address?   inet:ip-address
+     |     |     |              +--:(startend)
+     |     |     |                 +--rw group-start?     inet:ip-address
+     |     |     |                 +--rw group-end?       inet:ip-address
+     |     |     +--rw rp-discovery
+     |     |        +--rw rp-discovery-type?   identityref
+     |     |        +--rw bsr-candidates
+     |     |           +--rw bsr-candidate-address*   inet:ip-address
+     |     +--rw carrierscarrier?        boolean {carrierscarrier}?
+     |     +--rw extranet-vpns {extranet-vpn}?
+     |        +--rw extranet-vpn* [vpn-id]
+     |           +--rw vpn-id              svc-id
+     |           +--rw local-sites-role?   identityref
+     +--rw sites
+        +--rw site* [site-id]
+           +--rw site-id                  svc-id
+           +--rw description?             string
+           +--rw requested-site-start?    yang:date-and-time
+           +--rw requested-site-stop?     yang:date-and-time
+           +--rw locations
+           |  +--rw location* [location-id]
+           |     +--rw location-id     svc-id
+           |     +--rw address?        string
+           |     +--rw postal-code?    string
+           |     +--rw state?          string
+           |     +--rw city?           string
+           |     +--rw country-code?   string
+           +--rw devices
+           |  +--rw device* [device-id]
+           |     +--rw device-id     svc-id
+           |     +--rw location      -> ../../../locations/location/location-id
+           |     +--rw management
+           |        +--rw address-family?   address-family
+           |        +--rw address           inet:ip-address
+           +--rw site-diversity {site-diversity}?
+           |  +--rw groups
+           |     +--rw group* [group-id]
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 12]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+           |        +--rw group-id    string
+           +--rw management
+           |  +--rw type    identityref
+           +--rw vpn-policies
+           |  +--rw vpn-policy* [vpn-policy-id]
+           |     +--rw vpn-policy-id    svc-id
+           |     +--rw entries* [id]
+           |        +--rw id         svc-id
+           |        +--rw filters
+           |        |  +--rw filter* [type]
+           |        |     +--rw type               identityref
+           |        |     +--rw lan-tag*           string {lan-tag}?
+           |        |     +--rw ipv4-lan-prefix*   inet:ipv4-prefix {ipv4}?
+           |        |     +--rw ipv6-lan-prefix*   inet:ipv6-prefix {ipv6}?
+           |        +--rw vpn* [vpn-id]
+           |           +--rw vpn-id       -> /l3vpn-ntw/vpn-services/vpn-service/vpn-id
+           |           +--rw site-role?   identityref
+           +--rw site-vpn-flavor?         identityref
+           +--rw maximum-routes
+           |  +--rw address-family* [af]
+           |     +--rw af                address-family
+           |     +--rw maximum-routes?   uint32
+           +--rw security
+           |  +--rw authentication
+           |  +--rw encryption {encryption}?
+           |     +--rw enabled?              boolean
+           |     +--rw layer?                enumeration
+           |     +--rw encryption-profile
+           |        +--rw (profile)?
+           |           +--:(provider-profile)
+           |           |  +--rw profile-name?          -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/encryption-profile-identifier/id
+           |           +--:(customer-profile)
+           |              +--rw algorithm?             string
+           |              +--rw (key-type)?
+           |                 +--:(psk)
+           |                    +--rw preshared-key?   string
+           +--rw service
+           |  +--rw qos {qos}?
+           |  |  +--rw qos-classification-policy
+           |  |  |  +--rw rule* [id]
+           |  |  |     +--rw id                         string
+           |  |  |     +--rw (match-type)?
+           |  |  |     |  +--:(match-flow)
+           |  |  |     |  |  +--rw match-flow
+           |  |  |     |  |     +--rw dscp?                inet:dscp
+           |  |  |     |  |     +--rw dot1p?               uint8
+           |  |  |     |  |     +--rw ipv4-src-prefix?     inet:ipv4-prefix
+           |  |  |     |  |     +--rw ipv6-src-prefix?     inet:ipv6-prefix
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 13]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+           |  |  |     |  |     +--rw ipv4-dst-prefix?     inet:ipv4-prefix
+           |  |  |     |  |     +--rw ipv6-dst-prefix?     inet:ipv6-prefix
+           |  |  |     |  |     +--rw l4-src-port?         inet:port-number
+           |  |  |     |  |     +--rw target-sites*        svc-id {target-sites}?
+           |  |  |     |  |     +--rw l4-src-port-range
+           |  |  |     |  |     |  +--rw lower-port?   inet:port-number
+           |  |  |     |  |     |  +--rw upper-port?   inet:port-number
+           |  |  |     |  |     +--rw l4-dst-port?         inet:port-number
+           |  |  |     |  |     +--rw l4-dst-port-range
+           |  |  |     |  |     |  +--rw lower-port?   inet:port-number
+           |  |  |     |  |     |  +--rw upper-port?   inet:port-number
+           |  |  |     |  |     +--rw protocol-field?      union
+           |  |  |     |  +--:(match-application)
+           |  |  |     |     +--rw match-application?   identityref
+           |  |  |     +--rw target-class-id?           string
+           |  |  +--rw qos-profile
+           |  |     +--rw (qos-profile)?
+           |  |        +--:(standard)
+           |  |        |  +--rw profile?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/qos-profile-identifier/id
+           |  |        +--:(custom)
+           |  |           +--rw classes {qos-custom}?
+           |  |              +--rw class* [class-id]
+           |  |                 +--rw class-id      string
+           |  |                 +--rw direction?    identityref
+           |  |                 +--rw rate-limit?   decimal64
+           |  |                 +--rw latency
+           |  |                 |  +--rw (flavor)?
+           |  |                 |     +--:(lowest)
+           |  |                 |     |  +--rw use-lowest-latency?   empty
+           |  |                 |     +--:(boundary)
+           |  |                 |        +--rw latency-boundary?     uint16
+           |  |                 +--rw jitter
+           |  |                 |  +--rw (flavor)?
+           |  |                 |     +--:(lowest)
+           |  |                 |     |  +--rw use-lowest-jitter?   empty
+           |  |                 |     +--:(boundary)
+           |  |                 |        +--rw latency-boundary?    uint32
+           |  |                 +--rw bandwidth
+           |  |                    +--rw guaranteed-bw-percent    decimal64
+           |  |                    +--rw end-to-end?              empty
+           |  +--rw carrierscarrier {carrierscarrier}?
+           |  |  +--rw signalling-type?   enumeration
+           |  +--rw multicast {multicast}?
+           |     +--rw multicast-site-type?        enumeration
+           |     +--rw multicast-address-family
+           |     |  +--rw ipv4?   boolean {ipv4}?
+           |     |  +--rw ipv6?   boolean {ipv6}?
+           |     +--rw protocol-type?              enumeration
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 14]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+           +--rw traffic-protection {fast-reroute}?
+           |  +--rw enabled?   boolean
+           +--rw routing-protocols
+           |  +--rw routing-protocol* [type]
+           |     +--rw type                identityref
+           |     +--rw routing-profiles* [id]
+           |     |  +--rw id      -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/routing-profile-identifier/id
+           |     |  +--rw type?   ie-type
+           |     +--rw ospf {rtg-ospf}?
+           |     |  +--rw address-family*   address-family
+           |     |  +--rw area-address      yang:dotted-quad
+           |     |  +--rw metric?           uint16
+           |     |  +--rw mtu?              uint16
+           |     |  +--rw security
+           |     |  |  +--rw auth-key?   string
+           |     |  +--rw sham-links {rtg-ospf-sham-link}?
+           |     |     +--rw sham-link* [target-site]
+           |     |        +--rw target-site    svc-id
+           |     |        +--rw metric?        uint16
+           |     +--rw bgp {rtg-bgp}?
+           |     |  +--rw autonomous-system    uint32
+           |     |  +--rw address-family*      address-family
+           |     |  +--rw neighbor?            inet:ip-address
+           |     |  +--rw multihop?            uint8
+           |     |  +--rw security
+           |     |     +--rw auth-key?   string
+           |     +--rw static
+           |     |  +--rw cascaded-lan-prefixes
+           |     |     +--rw ipv4-lan-prefixes* [lan next-hop] {ipv4}?
+           |     |     |  +--rw lan         inet:ipv4-prefix
+           |     |     |  +--rw lan-tag?    string
+           |     |     |  +--rw next-hop    inet:ipv4-address
+           |     |     +--rw ipv6-lan-prefixes* [lan next-hop] {ipv6}?
+           |     |        +--rw lan         inet:ipv6-prefix
+           |     |        +--rw lan-tag?    string
+           |     |        +--rw next-hop    inet:ipv6-address
+           |     +--rw rip {rtg-rip}?
+           |     |  +--rw address-family*   address-family
+           |     +--rw vrrp {rtg-vrrp}?
+           |        +--rw address-family*   address-family
+           +--ro actual-site-start?       yang:date-and-time
+           +--ro actual-site-stop?        yang:date-and-time
+           +--rw site-bearers
+           |  +--rw bearer* [bearer-id]
+           |     +--rw bearer-id    string
+           |     +--rw ne-id?       string
+           |     +--rw port-id?     string
+           +--rw site-network-accesses
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 15]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+              +--rw site-network-access* [site-network-access-id]
+                 +--rw site-network-access-id      svc-id
+                 +--rw description?                string
+                 +--rw status
+                 |  +--rw admin-enabled?   boolean
+                 |  +--ro oper-status?     operational-type
+                 +--rw site-network-access-type?   identityref
+                 +--rw (location-flavor)
+                 |  +--:(location)
+                 |  |  +--rw location-reference?   -> ../../../locations/location/location-id
+                 |  +--:(device)
+                 |     +--rw device-reference?     -> ../../../devices/device/device-id
+                 +--rw access-diversity {site-diversity}?
+                 |  +--rw groups
+                 |  |  +--rw group* [group-id]
+                 |  |     +--rw group-id    string
+                 |  +--rw constraints
+                 |     +--rw constraint* [constraint-type]
+                 |        +--rw constraint-type    identityref
+                 |        +--rw target
+                 |           +--rw (target-flavor)?
+                 |              +--:(id)
+                 |              |  +--rw group* [group-id]
+                 |              |     +--rw group-id    string
+                 |              +--:(all-accesses)
+                 |              |  +--rw all-other-accesses?   empty
+                 |              +--:(all-groups)
+                 |                 +--rw all-other-groups?     empty
+                 +--rw bearer
+                 |  +--rw requested-type {requested-type}?
+                 |  |  +--rw requested-type?   string
+                 |  |  +--rw strict?           boolean
+                 |  +--rw always-on?          boolean {always-on}?
+                 |  +--rw bearer-reference?   string {bearer-reference}?
+                 |  +--rw connection
+                 |  |  +--rw encapsulation-type?   identityref
+                 |  |  +--rw eth-inf-type?         identityref
+                 |  |  +--rw tagged-interface
+                 |  |     +--rw type?                identityref
+                 |  |     +--rw dot1q-vlan-tagged {dot1q}?
+                 |  |     |  +--rw tg-type?    identityref
+                 |  |     |  +--rw cvlan-id    uint16
+                 |  |     +--rw priority-tagged
+                 |  |     |  +--rw tag-type?   identityref
+                 |  |     +--rw qinq {qinq}?
+                 |  |     |  +--rw tag-type?   identityref
+                 |  |     |  +--rw svlan-id    uint16
+                 |  |     |  +--rw cvlan-id    uint16
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 16]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                 |  |     +--rw qinany {qinany}?
+                 |  |     |  +--rw tag-type?   identityref
+                 |  |     |  +--rw svlan-id    uint16
+                 |  |     +--rw vxlan {vxlan}?
+                 |  |        +--rw vni-id       uint32
+                 |  |        +--rw peer-mode?   identityref
+                 |  |        +--rw peer-list* [peer-ip]
+                 |  |           +--rw peer-ip    inet:ip-address
+                 |  +--rw pseudowire
+                 |     +--rw vcid?   uint32
+                 +--rw ip-connection
+                 |  +--rw ipv4 {ipv4}?
+                 |  |  +--rw address-allocation-type?   identityref
+                 |  |  +--rw provider-dhcp
+                 |  |  |  +--rw provider-address?                  inet:ipv4-address
+                 |  |  |  +--rw prefix-length?                     uint8
+                 |  |  |  +--rw (address-assign)?
+                 |  |  |     +--:(number)
+                 |  |  |     |  +--rw number-of-dynamic-address?   uint16
+                 |  |  |     +--:(explicit)
+                 |  |  |        +--rw customer-addresses
+                 |  |  |           +--rw address-group* [group-id]
+                 |  |  |              +--rw group-id         string
+                 |  |  |              +--rw start-address?   inet:ipv4-address
+                 |  |  |              +--rw end-address?     inet:ipv4-address
+                 |  |  +--rw dhcp-relay
+                 |  |  |  +--rw provider-address?        inet:ipv4-address
+                 |  |  |  +--rw prefix-length?           uint8
+                 |  |  |  +--rw customer-dhcp-servers
+                 |  |  |     +--rw server-ip-address*   inet:ipv4-address
+                 |  |  +--rw addresses
+                 |  |     +--rw provider-address?   inet:ipv4-address
+                 |  |     +--rw customer-address?   inet:ipv4-address
+                 |  |     +--rw prefix-length?      uint8
+                 |  +--rw ipv6 {ipv6}?
+                 |  |  +--rw address-allocation-type?   identityref
+                 |  |  +--rw provider-dhcp
+                 |  |  |  +--rw provider-address?                  inet:ipv6-address
+                 |  |  |  +--rw prefix-length?                     uint8
+                 |  |  |  +--rw (address-assign)?
+                 |  |  |     +--:(number)
+                 |  |  |     |  +--rw number-of-dynamic-address?   uint16
+                 |  |  |     +--:(explicit)
+                 |  |  |        +--rw customer-addresses
+                 |  |  |           +--rw address-group* [group-id]
+                 |  |  |              +--rw group-id         string
+                 |  |  |              +--rw start-address?   inet:ipv6-address
+                 |  |  |              +--rw end-address?     inet:ipv6-address
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 17]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                 |  |  +--rw dhcp-relay
+                 |  |  |  +--rw provider-address?        inet:ipv6-address
+                 |  |  |  +--rw prefix-length?           uint8
+                 |  |  |  +--rw customer-dhcp-servers
+                 |  |  |     +--rw server-ip-address*   inet:ipv6-address
+                 |  |  +--rw addresses
+                 |  |     +--rw provider-address?   inet:ipv6-address
+                 |  |     +--rw customer-address?   inet:ipv6-address
+                 |  |     +--rw prefix-length?      uint8
+                 |  +--rw oam
+                 |     +--rw bfd {bfd}?
+                 |        +--rw enabled?              boolean
+                 |        +--rw (holdtime)?
+                 |           +--:(fixed)
+                 |           |  +--rw fixed-value?    uint32
+                 |           +--:(profile)
+                 |              +--rw profile-name?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/bfd-profile-identifier/id
+                 +--rw security
+                 |  +--rw authentication
+                 |  +--rw encryption {encryption}?
+                 |     +--rw enabled?              boolean
+                 |     +--rw layer?                enumeration
+                 |     +--rw encryption-profile
+                 |        +--rw (profile)?
+                 |           +--:(provider-profile)
+                 |           |  +--rw profile-name?          -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/encryption-profile-identifier/id
+                 |           +--:(customer-profile)
+                 |              +--rw algorithm?             string
+                 |              +--rw (key-type)?
+                 |                 +--:(psk)
+                 |                    +--rw preshared-key?   string
+                 +--rw service
+                 |  +--rw svc-input-bandwidth     uint64
+                 |  +--rw svc-output-bandwidth    uint64
+                 |  +--rw svc-mtu                 uint16
+                 |  +--rw qos {qos}?
+                 |  |  +--rw qos-classification-policy
+                 |  |  |  +--rw rule* [id]
+                 |  |  |     +--rw id                         string
+                 |  |  |     +--rw (match-type)?
+                 |  |  |     |  +--:(match-flow)
+                 |  |  |     |  |  +--rw match-flow
+                 |  |  |     |  |     +--rw dscp?                inet:dscp
+                 |  |  |     |  |     +--rw dot1p?               uint8
+                 |  |  |     |  |     +--rw ipv4-src-prefix?     inet:ipv4-prefix
+                 |  |  |     |  |     +--rw ipv6-src-prefix?     inet:ipv6-prefix
+                 |  |  |     |  |     +--rw ipv4-dst-prefix?     inet:ipv4-prefix
+                 |  |  |     |  |     +--rw ipv6-dst-prefix?     inet:ipv6-prefix
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 18]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                 |  |  |     |  |     +--rw l4-src-port?         inet:port-number
+                 |  |  |     |  |     +--rw target-sites*        svc-id {target-sites}?
+                 |  |  |     |  |     +--rw l4-src-port-range
+                 |  |  |     |  |     |  +--rw lower-port?   inet:port-number
+                 |  |  |     |  |     |  +--rw upper-port?   inet:port-number
+                 |  |  |     |  |     +--rw l4-dst-port?         inet:port-number
+                 |  |  |     |  |     +--rw l4-dst-port-range
+                 |  |  |     |  |     |  +--rw lower-port?   inet:port-number
+                 |  |  |     |  |     |  +--rw upper-port?   inet:port-number
+                 |  |  |     |  |     +--rw protocol-field?      union
+                 |  |  |     |  +--:(match-application)
+                 |  |  |     |     +--rw match-application?   identityref
+                 |  |  |     +--rw target-class-id?           string
+                 |  |  +--rw qos-profile
+                 |  |     +--rw (qos-profile)?
+                 |  |        +--:(standard)
+                 |  |        |  +--rw profile?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/qos-profile-identifier/id
+                 |  |        +--:(custom)
+                 |  |           +--rw classes {qos-custom}?
+                 |  |              +--rw class* [class-id]
+                 |  |                 +--rw class-id      string
+                 |  |                 +--rw direction?    identityref
+                 |  |                 +--rw rate-limit?   decimal64
+                 |  |                 +--rw latency
+                 |  |                 |  +--rw (flavor)?
+                 |  |                 |     +--:(lowest)
+                 |  |                 |     |  +--rw use-lowest-latency?   empty
+                 |  |                 |     +--:(boundary)
+                 |  |                 |        +--rw latency-boundary?     uint16
+                 |  |                 +--rw jitter
+                 |  |                 |  +--rw (flavor)?
+                 |  |                 |     +--:(lowest)
+                 |  |                 |     |  +--rw use-lowest-jitter?   empty
+                 |  |                 |     +--:(boundary)
+                 |  |                 |        +--rw latency-boundary?    uint32
+                 |  |                 +--rw bandwidth
+                 |  |                    +--rw guaranteed-bw-percent    decimal64
+                 |  |                    +--rw end-to-end?              empty
+                 |  +--rw carrierscarrier {carrierscarrier}?
+                 |  |  +--rw signalling-type?   enumeration
+                 |  +--rw multicast {multicast}?
+                 |     +--rw multicast-site-type?        enumeration
+                 |     +--rw multicast-address-family
+                 |     |  +--rw ipv4?   boolean {ipv4}?
+                 |     |  +--rw ipv6?   boolean {ipv6}?
+                 |     +--rw protocol-type?              enumeration
+                 +--rw routing-protocols
+                 |  +--rw routing-protocol* [type]
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 19]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+                 |     +--rw type                identityref
+                 |     +--rw routing-profiles* [id]
+                 |     |  +--rw id      -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/routing-profile-identifier/id
+                 |     |  +--rw type?   ie-type
+                 |     +--rw ospf {rtg-ospf}?
+                 |     |  +--rw address-family*   address-family
+                 |     |  +--rw area-address      yang:dotted-quad
+                 |     |  +--rw metric?           uint16
+                 |     |  +--rw mtu?              uint16
+                 |     |  +--rw security
+                 |     |  |  +--rw auth-key?   string
+                 |     |  +--rw sham-links {rtg-ospf-sham-link}?
+                 |     |     +--rw sham-link* [target-site]
+                 |     |        +--rw target-site    svc-id
+                 |     |        +--rw metric?        uint16
+                 |     +--rw bgp {rtg-bgp}?
+                 |     |  +--rw autonomous-system    uint32
+                 |     |  +--rw address-family*      address-family
+                 |     |  +--rw neighbor?            inet:ip-address
+                 |     |  +--rw multihop?            uint8
+                 |     |  +--rw security
+                 |     |     +--rw auth-key?   string
+                 |     +--rw static
+                 |     |  +--rw cascaded-lan-prefixes
+                 |     |     +--rw ipv4-lan-prefixes* [lan next-hop] {ipv4}?
+                 |     |     |  +--rw lan         inet:ipv4-prefix
+                 |     |     |  +--rw lan-tag?    string
+                 |     |     |  +--rw next-hop    inet:ipv4-address
+                 |     |     +--rw ipv6-lan-prefixes* [lan next-hop] {ipv6}?
+                 |     |        +--rw lan         inet:ipv6-prefix
+                 |     |        +--rw lan-tag?    string
+                 |     |        +--rw next-hop    inet:ipv6-address
+                 |     +--rw rip {rtg-rip}?
+                 |     |  +--rw address-family*   address-family
+                 |     +--rw vrrp {rtg-vrrp}?
+                 |        +--rw address-family*   address-family
+                 +--rw availability
+                    +--rw access-priority?   uint32
+
+                                 Figure 3
+
+5.  Yang module
+
+            |-------------------- EXAMPLE --------------------|
+
+<CODE BEGINS>file "ietf-l3vpn-ntw@2019-07-04.yang"
 module ietf-l3vpn-ntw {
  yang-version 1.1;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 20]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
  prefix l3vpn-ntw;
  import ietf-inet-types {
@@ -15,13 +1137,13 @@ module ietf-l3vpn-ntw {
     prefix rt-types;
  }
  organization
-  "IETF L3NM Working Group";
+  "DRAFT Proposal";
  contact
-  "WG List: <mailto:l3nm@ietf.org>
+  "WG List: draft proposal
    Editor:
-    L3NM WG
+    draft proposal
    Chairs:
-    
+
   ";
  description
  "This YANG module defines a generic network-oriented model
@@ -41,13 +1163,21 @@ module ietf-l3vpn-ntw {
  This version of this YANG module is based on RFC 8299; see
  the RFC itself for full legal notices.";
 
- revision 2019-05-30 {
+ revision 2019-07-04 {
   description
   "Initial document. The document as a whole is based on L3SM
   module, defined in RFC 8299, modified to fit the requirements
   of the platforms at the network layer.";
   reference
     "RFC 8049.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 21]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   }
  /* Features */
  feature cloud-access {
@@ -96,6 +1226,14 @@ module ietf-l3vpn-ntw {
  }
  feature rtg-bgp {
   description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 22]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   "Enables support of the BGP routing protocol.";
  }
  feature rtg-rip {
@@ -144,6 +1282,14 @@ module ietf-l3vpn-ntw {
   description
   "Defines a type of service component identifier.";
  }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 23]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  typedef template-id {
   type string;
   description
@@ -192,6 +1338,14 @@ module ietf-l3vpn-ntw {
       description "Operational status DOWN";
      }
      enum "unknown" {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 24]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       value 2;
       description "Operational status UNKNOWN";
      }
@@ -240,6 +1394,14 @@ module ietf-l3vpn-ntw {
   base placement-diversity;
   description
   "Identity for PE diversity.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 25]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  }
  identity pop-diverse {
   base placement-diversity;
@@ -288,6 +1450,14 @@ module ietf-l3vpn-ntw {
  identity social {
   base customer-application;
   description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 26]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   "Identity for social-network application.";
  }
  identity games {
@@ -336,6 +1506,14 @@ identity urllc {
  }
  identity mmtc {
    base customer-application;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 27]
+
+Internet-Draft                    l3nm                         July 2019
+
+
    description
    "Identity for a massive Machine Type
    Communications (mMTC) application.  Note that an
@@ -384,6 +1562,14 @@ identity urllc {
   "Base identity for co-managed site.";
  }
  identity customer-managed {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 28]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   base management;
   description
   "Base identity for customer-managed site.";
@@ -432,6 +1618,14 @@ identity urllc {
   description
   "Site in an any-to-any IP VPN.";
  }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 29]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  identity spoke-role {
   base site-role;
   description
@@ -480,6 +1674,14 @@ identity urllc {
   base multicast-tree-type;
   description
   "Identity for bidirectional tree type.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 30]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  }
  identity multicast-rp-discovery-type {
   description
@@ -528,6 +1730,14 @@ identity urllc {
   base routing-protocol-type;
   description
   "Identity for VRRP protocol type.
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 31]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   This is to be used when LANs are directly connected
   to PE routers.";
  }
@@ -576,6 +1786,14 @@ identity urllc {
   description
   "Hop-by-Hop IPv6 header type.";
  }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 32]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  identity routing {
   base protocol-type;
   description
@@ -624,6 +1842,14 @@ identity urllc {
  identity wan-to-site {
    base qos-profile-direction;
    description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 33]
+
+Internet-Draft                    l3nm                         July 2019
+
+
    "Identity for WAN-to-Site direction.";
  }
  identity both {
@@ -672,6 +1898,14 @@ identity urllc {
   identity lag {
     base eth-inf-type;
     description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 34]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       "Identity of the LAG interface type.";
   }
 
@@ -721,6 +1955,13 @@ identity urllc {
       "A CVLAN tag, normally using the 0x8100 Ethertype.";
   }
 
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 35]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   identity s-vlan {
     base tag-type;
     description
@@ -769,6 +2010,14 @@ identity urllc {
 
   identity bw-type {
     description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 36]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       "Identity of the bandwidth type.";
   }
 
@@ -817,6 +2066,14 @@ identity urllc {
       leaf permit-any {
        type empty;
        description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 37]
+
+Internet-Draft                    l3nm                         July 2019
+
+
        "Allows all sites.";
       }
      }
@@ -865,6 +2122,14 @@ identity urllc {
       }
       description
       "IPv4-to-IPv4 translation.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 38]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      }
      description
      "Container for NAT.";
@@ -913,6 +2178,14 @@ identity urllc {
   container multicast {
    if-feature multicast;
    leaf enabled {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 39]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     type boolean;
     default false;
     description
@@ -961,6 +2234,14 @@ identity urllc {
         "If true, the SP must ensure that
         traffic uses an optimal path.  An SP may use
         Anycast RP or RP-tree-to-SPT switchover
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 40]
+
+Internet-Draft                    l3nm                         July 2019
+
+
         architectures.";
        }
        description
@@ -1009,6 +2290,14 @@ identity urllc {
      }
      container bsr-candidates {
        when "derived-from-or-self(../rp-discovery-type, "+
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 41]
+
+Internet-Draft                    l3nm                         July 2019
+
+
            "'l3vpn-ntw:bsr-rp')" {
        description
        "Only applicable if discovery type
@@ -1057,6 +2346,14 @@ identity urllc {
     }
     leaf address {
      type string;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 42]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      description
      "Address (number and street) of the site.";
     }
@@ -1105,6 +2402,14 @@ identity urllc {
     }
     description
     "List of group-ids.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 43]
+
+Internet-Draft                    l3nm                         July 2019
+
+
    }
    description
    "Groups the site or site-network-access belongs to.";
@@ -1153,6 +2458,14 @@ identity urllc {
           this particular group-id for this site
           network access level.";
          }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 44]
+
+Internet-Draft                    l3nm                         July 2019
+
+
          description
          "List of group-ids associated with one specific
          constraint for this site network access level.";
@@ -1201,6 +2514,14 @@ identity urllc {
     type yang:date-and-time;
      description
      "Optional leaf indicating requested date and
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 45]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      time when the service at a particular site is
      expected to start.";
   }
@@ -1249,6 +2570,14 @@ identity urllc {
      range "0..7";
     }
     description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 46]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     "802.1p matching.";
    }
    leaf ipv4-src-prefix {
@@ -1297,6 +2626,14 @@ identity urllc {
     }
     leaf upper-port {
      type inet:port-number;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 47]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      must ". >= ../lower-port" {
       description
       "Upper boundary for port.  If it
@@ -1345,6 +2682,14 @@ identity urllc {
      boundary.";
     }
     description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 48]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     "Match on Layer 4 dst port range.  When only
     lower-port is present, it represents a single
     port.  When both lower-port and upper-port are
@@ -1393,6 +2738,14 @@ identity urllc {
     description
     "MTU at service level.  If the service is IP,
     it refers to the IP MTU.  If CsC is enabled,
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 49]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     the requested 'svc-mtu' leaf will refer to the
     MPLS MTU and not to the IP MTU.";
   }
@@ -1441,6 +2794,14 @@ identity urllc {
      "This container is used when the customer provides
      MPLS-based services.  This is only used in the case
      of CsC (i.e., a customer builds an MPLS service using
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 50]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      an IP VPN to carry its traffic).";
   }
      description
@@ -1489,6 +2850,14 @@ identity urllc {
     "Configuration of the traffic classification policy.";
    }
    container qos-profile {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 51]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     choice qos-profile {
      description
      "Choice for QoS profile.
@@ -1537,6 +2906,14 @@ identity urllc {
                    description
                    "To be used if the class must be rate-limited.
                    Expressed as percentage of the service
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 52]
+
+Internet-Draft                    l3nm                         July 2019
+
+
                    bandwidth.";
         }
 
@@ -1585,6 +2962,14 @@ identity urllc {
              "The traffic class should use a path with a
              defined maximum jitter.";
            }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 53]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           }
           description
           "Jitter constraint on the traffic class.";
@@ -1633,6 +3018,14 @@ identity urllc {
  grouping site-security-authentication {
   container authentication {
      description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 54]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      "Authentication parameters.";
   }
   description
@@ -1681,6 +3074,14 @@ identity urllc {
      }
      case customer-profile {
       leaf algorithm {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 55]
+
+Internet-Draft                    l3nm                         July 2019
+
+
        type string;
          description
          "Encryption algorithm to be used.";
@@ -1729,6 +3130,14 @@ identity urllc {
      or a strict requirement.";
     }
      description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 56]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      "Container for requested-type.";
    }
    leaf always-on {
@@ -1777,9 +3186,17 @@ identity urllc {
      "Type of routing protocol.";
     }
 
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 57]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     list routing-profiles {
       key "id";
-      
+
       leaf id {
        type leafref {
         path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers"+
@@ -1825,9 +3242,17 @@ identity urllc {
          description
          "Metric of the PE-CE link.  It is used
          in the routing state calculation and
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 58]
+
+Internet-Draft                    l3nm                         July 2019
+
+
          path selection.";
      }
-     
+
      /* Extension */
 
 
@@ -1873,6 +3298,14 @@ identity urllc {
      when "derived-from-or-self(../type, 'l3vpn-ntw:bgp')" {
       description
       "Only applies when protocol is BGP.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 59]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      }
      if-feature rtg-bgp;
      leaf autonomous-system {
@@ -1921,6 +3354,14 @@ identity urllc {
        allocation type for the IP connection
        MUST be used.";
      }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 60]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      container cascaded-lan-prefixes {
       list ipv4-lan-prefixes {
        if-feature ipv4;
@@ -1969,6 +3410,14 @@ identity urllc {
      }
      description
      "Configuration specific to static routing.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 61]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     }
     container rip {
      when "derived-from-or-self(../type, 'l3vpn-ntw:rip')" {
@@ -2017,7 +3466,14 @@ identity urllc {
   "Grouping for routing protocols.";
  }
  grouping site-attachment-ip-connection {
-            
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 62]
+
+Internet-Draft                    l3nm                         July 2019
+
+
    container ip-connection {
      container ipv4 {
      if-feature ipv4;
@@ -2066,6 +3522,14 @@ identity urllc {
      "Subnet prefix length expressed in bits.
      If not specified, or specified as zero,
      this means the customer leaves the actual
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 63]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      prefix length value to the provider.";
      }
      choice address-assign {
@@ -2114,6 +3578,14 @@ identity urllc {
      }
          description
          "Choice for the way to assign addresses.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 64]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      }
          description
          "DHCP allocated addresses related parameters.";
@@ -2162,6 +3634,14 @@ identity urllc {
  "Container for list of customer DHCP servers.";
  }
  description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 65]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  "DHCP relay provided by operator.";
 }
  container addresses {
@@ -2209,6 +3689,14 @@ identity urllc {
      allocation type, then IPv6 is
      not enabled.";
     }
+
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 66]
+
+Internet-Draft                    l3nm                         July 2019
+
 
    container provider-dhcp {
       when "derived-from-or-self(../address-allocation-type, "+
@@ -2258,6 +3746,14 @@ identity urllc {
           }
          }
          case explicit {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 67]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           container customer-addresses {
            list address-group {
                  key "group-id";
@@ -2306,6 +3802,14 @@ identity urllc {
         leaf provider-address {
          type inet:ipv6-address;
           description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 68]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           "Address of the provider side.  If provider-address is
           not specified, then prefix length should not be
           specified either.  It also implies provider-dhcp
@@ -2354,6 +3858,14 @@ identity urllc {
      "Only applies when protocol allocation type is static.";
      }
     leaf provider-address {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 69]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      type inet:ipv6-address;
       description
       "IPv6 Address of the provider side.  When the protocol
@@ -2402,6 +3914,14 @@ identity urllc {
          If the provider doesn't allow the customer to use this
          function, the fixed-value will not be set.";
        }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 70]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       }
       case profile {
        leaf profile-name {
@@ -2450,6 +3970,14 @@ identity urllc {
       "The site only has sources.";
      }
      enum source-receiver {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 71]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       description
       "The site has both sources and receivers.";
      }
@@ -2498,6 +4026,14 @@ identity urllc {
      }
     }
     default "both";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 72]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     description
     "Multicast protocol type to be used with the customer site.";
    }
@@ -2546,6 +4082,14 @@ identity urllc {
     }
     mandatory true;
     description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 73]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      "Location of the device.";
     }
    container management {
@@ -2594,6 +4138,14 @@ identity urllc {
    "Defines the way the VPN multiplexing is done, e.g., whether
    the site belongs to a single VPN site or a multiVPN; or, in the case
    of a multiVPN, whether the logical accesses of the sites belong
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 74]
+
+Internet-Draft                    l3nm                         July 2019
+
+
    to the same set of VPNs or each logical access maps to
    different VPNs.";
   }
@@ -2642,6 +4194,14 @@ identity urllc {
         leaf-list ipv4-lan-prefix {
         when "derived-from-or-self(../type, 'l3vpn-ntw:ipv4')" {
           description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 75]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           "Only applies when VPN Policy filter is IPv4 Prefix filter.";
          }
          if-feature ipv4;
@@ -2690,6 +4250,14 @@ identity urllc {
        "Role of the site in the IP VPN.";
       }
       description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 76]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       "List of VPNs the LAN is associated with.";
      }
      description
@@ -2738,6 +4306,14 @@ identity urllc {
   description
   "Grouping for security parameters.";
  }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 77]
+
+Internet-Draft                    l3nm                         July 2019
+
+
  grouping site-service {
   container service {
    uses site-service-qos-profile;
@@ -2786,6 +4362,14 @@ identity urllc {
      will be 'any-to-any-role'.  In the Hub-and-Spoke VPN service
      topology or the Hub-and-Spoke disjoint VPN service topology,
      the local sites must have a Hub role or a Spoke role.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 78]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     }
     description
     "List of extranet VPNs or target VPNs the local VPN is
@@ -2834,6 +4418,14 @@ identity urllc {
     }
     case vpn-id {
      leaf vpn-id {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 79]
+
+Internet-Draft                    l3nm                         July 2019
+
+
       type leafref {
        path "/l3vpn-ntw/vpn-services"+
         "/vpn-service/vpn-id";
@@ -2882,6 +4474,14 @@ identity urllc {
     "List for Cloud Identifiers.";
    }
    list encryption-profile-identifier {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 80]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     key id;
     leaf id {
      type string;
@@ -2930,6 +4530,14 @@ identity urllc {
 
      nacm:default-deny-write;
      description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 81]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      "Container for Valid Provider Identifies.";
   }
 
@@ -2978,6 +4586,14 @@ identity urllc {
   "Grouping for VPN service configuration.";
  }
  grouping site-top-level-cfg {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 82]
+
+Internet-Draft                    l3nm                         July 2019
+
+
   uses operational-requirements;
   uses customer-location-info;
   uses site-devices;
@@ -3026,6 +4642,14 @@ identity urllc {
     }
    }
    case device {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 83]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     when "derived-from-or-self(../../management/type, "+
      "'l3vpn-ntw:provider-managed') or "+
      "derived-from-or-self(../../management/type, "+
@@ -3074,6 +4698,14 @@ identity urllc {
         leaf bearer-id {
           description "Unique identifier for a bearer. This
           identifies shall be mapped to the bearer-reference
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 84]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           on a site-network-access.";
           type string;
         }
@@ -3122,6 +4754,14 @@ identity urllc {
             when "derived-from-or-self(../type, "
                + "'l3vpn-ntw:bw-per-cos')" {
               description
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 85]
+
+Internet-Draft                    l3nm                         July 2019
+
+
                 "Relevant when the bandwidth type is set to
                  'bw-per-cos'.";
             }
@@ -3170,6 +4810,14 @@ identity urllc {
             units "bps";
             description
               "Excess Information Rate (EIR), i.e., excess frame
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 86]
+
+Internet-Draft                    l3nm                         July 2019
+
+
                delivery allowed that is not subject to an SLA.
                The traffic rate can be limited by the EIR.";
           }
@@ -3207,7 +4855,7 @@ identity urllc {
            input/output bandwidth of the connection or
            download/upload bandwidth from the SP/site
            to the site/SP.";
-     } 
+     }
    }
 
 
@@ -3218,6 +4866,14 @@ identity urllc {
       leaf admin-enabled {
         description "True is the entity is administratively
           enabled.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 87]
+
+Internet-Draft                    l3nm                         July 2019
+
+
         type boolean;
       }
       leaf oper-status {
@@ -3254,7 +4910,7 @@ identity urllc {
         }
 
         leaf ne-id {
-          description "Unique identifier for a network element where 
+          description "Unique identifier for a network element where
             to instantiate the VRF. This identifier may be a string,
             a UUID, an IP address, etc.";
           type string;
@@ -3266,6 +4922,14 @@ identity urllc {
             the loopback interface within the base routing instance
             will be used.";
           type inet:ipv4-address;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 88]
+
+Internet-Draft                    l3nm                         July 2019
+
+
         }
 
         leaf autonomous-system {
@@ -3299,7 +4963,7 @@ identity urllc {
 
         container site-attachments {
           list site-attachment {
-            key "site-id";      
+            key "site-id";
 
             description "List of attachments (site-network-accesses)
               that are connected to the VPN-node (VRF instance).";
@@ -3314,9 +4978,17 @@ identity urllc {
             leaf-list site-network-access-id {
               type leafref {
                 description "Identifier of the site-network-access to be
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 89]
+
+Internet-Draft                    l3nm                         July 2019
+
+
                   attached to the VPN node.";
                 path "/l3vpn-ntw/sites/site/site-network-accesses/"+
-                     "site-network-access/site-network-access-id"; 
+                     "site-network-access/site-network-access-id";
               }
             }
           }
@@ -3328,7 +5000,7 @@ identity urllc {
   /* Parameters related to import and export profiles (RTs RDs.) */
    grouping ie-profiles-params {
     description "Grouping to specify rules for route import and export";
-    
+
     container ie-profiles {
 
       list ie-profile {
@@ -3343,7 +5015,7 @@ identity urllc {
         }
 
         leaf rd {
-          
+
           type rt-types:route-distinguisher;
           description
            "Route distinguisher.";
@@ -3362,6 +5034,13 @@ identity urllc {
   grouping pseudowire-params {
 
     container pseudowire {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 90]
+
+Internet-Draft                    l3nm                         July 2019
+
 
       /*leaf far-end {*/
       /*  description "IP of the remote peer of the pseudowire.";*/
@@ -3411,6 +5090,14 @@ grouping ethernet-params {
       description
         "Ethernet interface type.  By default, the
          Ethernet interface type is set to 'untagged'.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 91]
+
+Internet-Draft                    l3nm                         July 2019
+
+
     }
     container tagged-interface {
       leaf type {
@@ -3459,6 +5146,14 @@ grouping ethernet-params {
         leaf tag-type {
           type identityref {
             base tag-type;
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 92]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           }
           default "c-vlan";
           description
@@ -3507,6 +5202,14 @@ grouping ethernet-params {
             "Only applies when the type of the tagged
              interface is 'qinany'.";
         }
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 93]
+
+Internet-Draft                    l3nm                         July 2019
+
+
         if-feature "qinany";
         leaf tag-type {
           type identityref {
@@ -3555,6 +5258,14 @@ grouping ethernet-params {
             type inet:ip-address;
             description
               "Peer IP.";
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 94]
+
+Internet-Draft                    l3nm                         July 2019
+
+
           }
           description
             "List of peer IP addresses.";
@@ -3603,6 +5314,14 @@ grouping ethernet-params {
     uses operational-requirements-ops;
     uses site-bearer-params;
     container site-network-accesses {
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 95]
+
+Internet-Draft                    l3nm                         July 2019
+
+
      list site-network-access {
       key site-network-access-id;
       leaf site-network-access-id {
@@ -3632,3 +5351,138 @@ grouping ethernet-params {
   "Main container for L3VPN service configuration.";
  }
 }
+
+                                 Figure 4
+
+6.  IANA Considerations
+
+   This memo includes no request to IANA.
+
+7.  Security Considerations
+
+   All the security considerations of RFC 8299 [RFC8299] apply to this
+   document.  Subsequent versions will provide additional security
+   considerations.
+
+8.  Implementation Status
+
+   This section will be used to track the status of the implementations
+   of the model.  It is aimed at being removed if the document becomes
+   RFC.
+
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 96]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+9.  Acknowledgements
+
+   Thanks to Adrian Farrel and Miguel Cros for the suggestions on the
+   document.  Lots of thanks for the discussions on opsawg mailing list.
+   Some of the comments will be addressed in next versions
+
+10.  Contributors
+
+   Daniel King
+   Old Dog Consulting
+   Email: daniel@olddog.co.uk
+
+   Samier Barguil
+   Telefonica
+   Email: samier.barguilgiraldo.ext@telefonica.com
+
+   Luay Jalil
+   Verizon
+   Email: luay.jalil@verizon.com
+
+   Qin Wu
+   Huawei
+   Email: bill.wu@huawei.com>
+
+11.  References
+
+11.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+11.2.  Informative References
+
+   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
+              and A. Bierman, Ed., "Network Configuration Protocol
+              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
+              <https://www.rfc-editor.org/info/rfc6241>.
+
+   [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
+              RFC 7950, DOI 10.17487/RFC7950, August 2016,
+              <https://www.rfc-editor.org/info/rfc7950>.
+
+   [RFC8299]  Wu, Q., Ed., Litkowski, S., Tomotaki, L., and K. Ogaki,
+              "YANG Data Model for L3VPN Service Delivery", RFC 8299,
+              DOI 10.17487/RFC8299, January 2018,
+              <https://www.rfc-editor.org/info/rfc8299>.
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 97]
+
+Internet-Draft                    l3nm                         July 2019
+
+
+   [RFC8309]  Wu, Q., Liu, W., and A. Farrel, "Service Models
+              Explained", RFC 8309, DOI 10.17487/RFC8309, January 2018,
+              <https://www.rfc-editor.org/info/rfc8309>.
+
+Authors' Addresses
+
+   Alejandro Aguado
+   Telefonica
+   Madrid
+   ES
+
+   Email: alejandro.aguadomartin.ext@telefonica.com
+
+
+   Oscar Gonzalez de Dios (editor)
+   Telefonica
+   Madrid
+   ES
+
+   Email: oscar.gonzalezdedios@telefonica.com
+
+
+   Victor Lopez
+   Telefonica
+   Madrid
+   ES
+
+   Email: victor.lopezalvarez@telefonica.com
+
+
+   Daniel Voyer
+   Bell Canada
+   CA
+
+   Email: daniel.voyer@bell.ca
+
+
+   Luis Angel Munoz
+   Vodafone
+   ES
+
+   Email: luis-angel.munoz@vodafone.com
+
+
+
+
+
+
+
+
+
+Aguado, et al.           Expires January 9, 2020               [Page 98]
