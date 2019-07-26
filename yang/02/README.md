@@ -16,3 +16,9 @@ __Version 27th May 2019__
 __Version 26th June 2019__
 
 ![alt text](extensions260619.png "Logo Title Text 1")
+
+__Version 26th July 2019__
+
+Minor changes to solve issues. The tracking of the actions are in the following link (https://github.com/oscargdd/l3nm/issues).
+
+![alt text](extensions260719.png "Logo Title Text 1")
