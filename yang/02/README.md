@@ -9,13 +9,14 @@ __Version 27th May 2019__
 
 ![alt text](extensions270519.png "Logo Title Text 1")
 
-__Version 10th July 2019__
-
-Minor changes to solve Bugs.
 
 __Version 26th June 2019__
 
 ![alt text](extensions260619.png "Logo Title Text 1")
+
+__Version 10th July 2019__
+
+Minor changes to solve Bugs.
 
 __Version 26th July 2019__
 
