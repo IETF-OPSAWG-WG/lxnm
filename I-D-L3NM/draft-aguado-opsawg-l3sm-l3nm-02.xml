@@ -218,24 +218,23 @@
 
     <abstract>
 
-	  <t><xref target="RFC8299"></xref> defines a L3VPN Service Model (L3SM) YANG data model that
+	  <t> RFC8299 defines a L3VPN Service Model (L3SM) YANG data model that
    can be used for communication between customers and network
    operators.  It assumes that there is a monolithic management system
    with full control of transport resources.  This approach (that is
    valid for the customer to network operator conversation) limits the
    usage of the model to the role of a Customer Service Model, according
-   to the terminology defined in <xref target="RFC8309"></xref>.</t>
+   to the terminology defined in RFC8309.</t>
 
    <t>There is a need for a YANG model for use between the entity that
    interacts directly with the customer (service orchestrator) and the
    entity in charge of network orchestration and control which,
-   according to <xref target="RFC8309"></xref>, can be referred as Service Delivery Model.  In
-   some cases, the control of the network is further expanded into per-
-   domain control.</t>
+   according to RFC8309, can be referred as Service Delivery Model.  In
+   some cases, the control of the network is further expanded into perdomain control.</t>
 
-   <t>This document uses the L3SM model defined in  <xref target="RFC8299"></xref>, and extends it
-   to facilitate communication between the service orchestrator and
-   transport orchestrator (MSDC), and an MDSC and domain controllers.
+   <t>This document uses the L3SM defined in RFC8299, and extends it
+   to facilitate communication between the service orchestrator  transport orchestrator
+   and domain controllers.
    The resulting model is called the L3VPN Network Model (L3NM).</t>
 
     </abstract>
@@ -253,11 +252,11 @@
    Service Model, according to the terminology defined in <xref target="RFC8309"></xref>.</t>
 
 
-   <t>The yang data model defined in this document is called the L3VPN Network
+   <t>The YANG data model defined in this document is called the L3VPN Network
    Model (L3NM).  It enables further capabilities, such as resource
    management or to serve as a multi-domain orchestration interface,
-   where transport resources must be synchronized. The proposed yang module has been built with
-   a Prune and extend approach, taking as a starting points the YANG model described
+   where transport resources must be synchronized. The YANG module has been built with
+   a prune and extend approach, taking as a starting points the YANG model described
    in <xref target="RFC8299"></xref>.</t>
 
 
@@ -266,10 +265,10 @@
    scope for the L3SM, but does not attempt to address all deployment
    cases especially those where the L3VPN connectivity is supported
    through the coordination of different VPNs in different underlying
-   networks.  More complex deployment scenarios involving the
-   coordination of different VPN instances and different technologies
-   to provide end-to-end VPN connectivity is out of scope of this
-   document, but is discussed in [I-D.evenwu-opsawg-yang-composed-vpn].</t>
+   networks.  More complex deployment scenarios involving the coordination of different VPN
+   instances and different technologies to provide end-to-end VPN
+   connectivity are addressed by a complementary YANG model defined in
+   [I-D.evenwu-opsawg-yang-composed-vpn].</t>
 
     <section anchor="terminology" title="Terminology">
       <t>This document assumes that the reader is familiar with the contents
@@ -280,18 +279,26 @@
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-        "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-        document are to be interpreted as described in <xref target="RFC2119"></xref>.</t>
+                 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+                 "OPTIONAL" in this document are to be interpreted as described in BCP 14
+                 <xref target="RFC2119" /> <xref target="RFC8174" /> when, and only when,
+                 they appear in all capitals, as shown here.</t>
       </section>
     </section>
 
 
-    <section title="Reference architecture">
+    <section title="REFERENCE ARCHITECTURE">
       <t>Figure 1 shows where the L3NM is used in a management stack.  The
-   figure is an expansion of the architecture presented in <xref target="yang_module"></xref> of
+   figure is an expansion of the architecture presented in <xref target="YANG_module"></xref> of
    <xref target="RFC8299"></xref> and decomposes the box marked "orchestration" in that
    figure into three separate functional components called "Service
    Orchestration", "Network Orchestration", and "Domain Orchestration".</t>
+
+   <t>Note that some implementations may choose to construct a monolithic
+     orchestration component, but this document assumes that there are
+     many benefits for flexiblity of implementation and deployment to
+     separate the functional components, and that separation demands the
+     existence of sepearate YANG models to be used between the components.</t>
 
    <t>At the same time, terminology from <xref target="RFC8309"></xref> is introduced to show
    the distinction between the "Customer Service Model", the "Service
@@ -338,16 +345,6 @@
                          |        |                   |
                   +------------------------------------------------+
                                       Network
-
-                                 +++++++
-                                 + AAA +
-                                 +++++++
-
-         ++++++++   Bearer    ++++++++           ++++++++      ++++++++
-         + CE A + ----------- + PE A +           + PE B + ---- + CE B +
-         ++++++++  Connection ++++++++           ++++++++      ++++++++
-
-                    Site A                               Site B
             ]]></artwork>
       </figure>
 
@@ -405,56 +402,60 @@
       </figure>
 
     </section>
-<section anchor="yang_explanation" title=" Yang model explanation">
+<section anchor="YANG_explanation" title=" YANG MODEL EXPLANATION">
 
-	<t>The scenarios covered include: the integration of ethernet and encapsulation parameters, the extension for transport resources (e.g. RTs and RDs) to be orchestrated from the management system, far-end configuration of PEs not managed by the management system and the definition for PE identification. </t>
+	<t>The scenarios covered in the L3NM model includes: the integration of Ethernet and encapsulation parameters,
+    the extension for transport resources (e.g., Route targets and Route distinguishers) to be orchestrated from the management system,
+    far-end configuration of PEs not managed by the management system and the definition for PE identification. </t>
 
-		<section anchor="structure_model" title="Structure of the model">
+		<section anchor="structure_model" title="STRUCTURE OF THE MODEL">
 		 <t>The YANG module is divided into three main containers: "vpn-services","sites" and "vpn-profiles". </t>
 		 </section>
 
-		<section anchor="sites_beares" title="Sites and Bearers">
-		 <t>A site, as per <xref target="RFC8299"></xref>, represents a connection of a customer office to one or more VPN services. As this Yang module is the network view, each site is associated with a list of bearers. A bearer is the layer two connections with the site. In the module it is assumed that the bearer has been allocated by the Service Provider (e.g. by the service orchestrator). The bearer is associated to a network element and a port. Hence, a bearer is not just a bearer-reference, but also a true reference to given port in the service provider network.</t>
+		<section anchor="sites_beares" title="SITE AND BEARERS">
+		 <t>A site, as per <xref target="RFC8299"></xref>, represents a connection of a customer office to one or more VPN services. As this YANG module, is the network view, each site is associated with a list of bearers. A bearer is the layer two connections with the site. In the module it is assumed that the bearer has been allocated by the Service Provider (e.g., by the service orchestrator).
+     The bearer is associated to a network element and a port. Hence, a bearer is not just a bearer-reference, but also a true reference to a given port in the service provider network.</t>
 		 </section>
 
-		<section anchor="bearerethencap" title="Bearer Ethernet Encapsulation">
-		 <t>The definition of a L3 VPN is commonly defined not only at the IP layer, but also requires to identify parameters at the Ethernet layer, such as encapsulation type (e.g. VLAN, QinQ, QinAny, VxLAN, etc). This specification is not supported in <xref target="RFC8299"></xref>, whilst it suggests that any extension on this direction shall be implemented via augmentation of the bearer container.
-     The extension defined to cope with these parameters uses the connection container inside the site-network-access defined by the the <xref target="RFC8466"></xref>. This container defines protocol parameters to enable connectivity at Layer 2. In the context of L3SM, the augmentation includes only mandatory parameters for the service configuration, which are mainly related to the interface encapsulation.
-     Other definitions from L2SM connection container are left aside. For example, LAG information is not required and it shall be configured prior to the service configuration, being the aggregated interface identified in the model as the bearer-reference, as discussed later in <xref target="mdrmanagement"></xref>, .</t>
+		<section anchor="bearerethencap" title="BEARER AND ETHERNET ENCAPSULATION">
+		 <t>The definition of a L3VPN is commonly specified not only at the IP layer, but also requires to identify parameters at the Ethernet layer, such as encapsulation type (e.g., VLAN, QinQ, QinAny, VxLAN, etc.). This specification is not supported in <xref target="RFC8299"></xref>, whilst it suggests that any extension on this direction shall be implemented via augmentation of the bearer container.
+     The extension defined to cope with these parameters uses the connection container inside the site-network-access defined by the <xref target="RFC8466"></xref>. This container defines protocol parameters to enable connectivity at Layer 2. In the context of L3SM, the augmentation includes only mandatory parameters for the service configuration, which are mainly related to the interface encapsulation.
+     Other definitions from L2SM connection container are left aside. For example, Link Aggregation (LAG) information is not required and it shall be configured prior to the service configuration, being the aggregated interface identified in the model as the bearer-reference, as discussed later in <xref target="mdrmanagement"></xref>.</t>
 		</section>
 
-		<section anchor="mdrmanagement" title="Multi-Domain Resource Management">
-      <t>The implementation of L3 VPN services which spans across administratively separated domains (i.e. that under the administration of different management systems or controllers) requires some network resources to be synchronized between systems.
-        Particularly, there are two resources that must be orchestrated and manage to avoid asymmetric (non-functional) configuration, or the usage of unavailable resources. For example, RTs shall be synchronized between PEs. When every PE is controlled by the same management system, RT allocation can be performed by the system. In cases where the service spans across multiple management systems, this task shall be aligned and, therefore, the service model must allow this specification. In addition, RDs must be also synchronized to avoid collisions in RD allocation between separated systems. A incorrect allocation might lead into same RD and IP prefixes being exported by different PE routers.</t>
+		<section anchor="mdrmanagement" title="MULTI-DOMAIN RESOURCE MANAGEMENT">
+      <t>The implementation of L3VPN services which span across administratively separated domains (i.e., that are under the administration of different management systems or controllers) requires some network resources to be synchronized between systems.
+        Particularly, there are two resources that must be orchestrated and manage to avoid asymmetric (non-functional) configuration, or the usage of unavailable resources. For example, RTs shall be synchronized between PEs. When every PE is controlled by the same management system, RT allocation can be performed by the system.
+        In cases where the service spans across multiple management systems, this task of allocating RTs has to be aligned across the domains, therefore, the service model must provide a way to specify RTs. In addition, RDs must also be synchronized to avoid collisions in RD allocation between separate systems. An incorrect allocation might lead to the same RD and IP prefixes being exported by different PE routers.</t>
     </section>
 
-    <section anchor="rfeconfiguration" title="Remote Far-End Configuration">
-      <t>Depending on the control plane implementation, different network scenarios might require additional information for the L3 VPN service to be configured and active. For example, an L3 VPN Option C service, if no reflection of IPv4 VPN routes is configured via ASBR or route reflector, may require additional configuration (e.g. a new BGP neighbor) to be coordinated between both management systems.
-        This definition requires for every management system participant on the VPN to receive not just their own sites and site-network-accesses, but also to receive information about external ones, identified as an external site-network-access-type. In addition, this particular site-network-access is augmented to include the loopback address of the far-end (remote/external) PE router.
+    <section anchor="rfeconfiguration" title="REMOTE FAR-END CONFIGURATION">
+      <t>Depending on the control plane implementation, different network scenarios might require additional information for the L3VPN service to be configured and active. For example, an L3VPN Option C service, if no reflection of IPv4 VPN routes is configured via ASBR or route reflector, may require additional configuration (e.g. a new BGP neighbor) to be coordinated between both management systems.
+        This definition requires for every management system participant in the VPN to receive not just their own sites and site-network-accesses, but also to receive information about external ones, identified as an external site-network-access-type. In addition, this particular site-network-access is augmented to include the loopback address of the far-end (remote/external) PE router.
       </t>
 		</section>
 
-    <section anchor="Provide_Edge_Identification_Point" title="Provide Edge Identification Point">
-    <t><xref target="RFC8299"></xref> states that The "bearer-reference" parameter is used in cases where the customer has already ordered a network connection to the SP apart from the IP VPN site and wants to reuse this connection. The string used is an internal reference from the SP and describe the already-available connection. Usually, a client interface (either a customer one or an interface used by the SP) is already in place and connected, although it has not being use previously. In some other cases (e.g. for stitching purposes), the termination of a VPN service is done over logical terminations within a PE router.</t>
-	<t>The bearer-reference must serve as a strict unequivocal parameters to identify the connection between a PE and a client (CE). This means that, despite the type is maintained as a string and there is no restriction in the way this data is formed, the bearer-reference must serve as the unique way to identify the PE router and the client interface. This, together with the encapsulation augments proposed in 4.1, serves as the way to identify the client interface and configure L2 specific parameters.</t>
+    <section anchor="Provide_Edge_Identification_Point" title="PROVIDE EDGE IDENTIFICATION POINT">
+    <t><xref target="RFC8299"></xref> states that the "bearer-reference" parameter is used in cases where the customer has already ordered a network connection to the service provider (SP) apart from the IP VPN site and wants to reuse this connection. The string used is an internal reference from the SP and describes the already-available connection. Usually, a client interface (either a customer one or an interface used by the SP) is already in place and connected, although it has not being use previously. In some other cases (e.g., for stitching purposes), the termination of a VPN service is done over logical terminations within a PE router.</t>
+	<t>The bearer-reference must serve as a strict unequivocal parameters to identify the connection between a PE and a client (CE). This means that, despite the type is maintained as a string and there is no restriction in the way this data is formed, the bearer-reference must serve as the unique way to identify the PE router and the client interface. This, together with the encapsulation augments proposed in <xref target="sites_beares"></xref>, serves as the way to identify the client interface and configure L2 specific parameters.</t>
     </section>
 
 </section>
 
- <section anchor="Design_of_the_data_model" title="Design of the data model">
-      <t>The augments defined in this document are organised per scenario, as per defined in <xref target="yang_explanation"></xref>. The case described <xref target="mdrmanagement"></xref> does not need any further extension of the data model and only requires a more restricted definition on how the data model is used for PE router and client port identification, so no augment is implemented for this scenario.</t>
-		  <t>The augments implemented are distributed as follows:
+ <section anchor="Design_of_the_data_model" title="DESING OF THE DATA MODEL">
+      <t>The augmentations defined in this document are organised per scenario, as defined in <xref target="YANG_explanation"></xref>. The case described <xref target="mdrmanagement"></xref> does not need any further extension of the data model and only requires a more restricted definition on how the data model is used for PE router and client port identification, so no augmentation is implemented for this scenario.</t>
+		  <t>The augmentations implemented are distributed as follows:
         <list style="symbols">
-            <t>An extension including RT and RD definition for the L3 VPN, following the YANG definitions from BESS-L3VPN were done. This extension was developed creating a container "ie-profiles" under the VPN Service. All the import-export information can be created and reused for several VPN-Nodes.
+            <t>An extension including RT and RD definition for the L3VPN, following the YANG definitions from BESS-L3VPN. This extension was developed creating a container "ie-profiles" under the VPN Service. All the import-export information can be created and reused for several VPN-Nodes.
               <list style="symbols">
-                <t>If the "ie-profile" is empty the domain controller should automatically assing RD,RTs. This is not valid for a multi-domain scenario </t>
+                <t>If the "ie-profile" is empty the domain controller should automatically assing RD and RTs. This is not valid for a multi-domain scenario </t>
               </list></t>
-            <t>The second augment copes with the information from a remote PE not directly under the management system supervision. This augment does not follow any previously defined model and includes the loopback IP address of the external router.</t>
-            <t>The Tird augment copes with a pseudowire termination under a VPN service. This termination requires the management of the Virtual Circuit Identifier under the VPN service.</t>
-            <t>Access-group-ip has been added within the site network access in order to allow the associations between interfaces that have similar behaviors: For example, identify two interfaces in dual homing distribution.</t>
-            <t>The last augment includes information below layer 3 that is required for the service. In particular, we include information related to clients interface encapsulation and aggregation.</t>
+            <t>The second augmentation copes with the information from a remote PE not directly under management system supervision. This augmentation does not follow any previously defined model and includes the loopback IP address of the external router.</t>
+            <t>The third augmentation copes with a pseudowire termination under a VPN service. This termination requires the management of the Virtual Circuit Identifier under the VPN service.</t>
+            <t>Access-group-id has been added within the site network access in order to allow associations between interfaces that have similar behaviors. For example, identify two interfaces in dual homing distribution.</t>
+            <t>The last augmentation includes information below layer 3 that is required for the service. In particular, we include information related to clients interface encapsulation and aggregation.</t>
         </list></t>
-		  <t>The high-level model structure proposed by this document is as shown below:</t>
+		  <t>The high-level model structure defined by this document is as shown below:</t>
 
 <figure align="center" anchor="module_tree">
         <preamble>  |--------------------  EXAMPLE --------------------|</preamble>
@@ -556,8 +557,8 @@
                   +--rw site* [site-id]
                      +--rw site-id                  svc-id
                      +--rw description?             string
-                     +--rw requested-site-start?    yang:date-and-time
-                     +--rw requested-site-stop?     yang:date-and-time
+                     +--rw requested-site-start?    YANG:date-and-time
+                     +--rw requested-site-stop?     YANG:date-and-time
                      +--rw locations
                      |  +--rw location* [location-id]
                      |     +--rw location-id     svc-id
@@ -668,7 +669,7 @@
                      |     |  +--rw type?   ie-type
                      |     +--rw ospf {rtg-ospf}?
                      |     |  +--rw address-family*   address-family
-                     |     |  +--rw area-address      yang:dotted-quad
+                     |     |  +--rw area-address      YANG:dotted-quad
                      |     |  +--rw metric?           uint16
                      |     |  +--rw mtu?              uint16
                      |     |  +--rw security
@@ -698,8 +699,8 @@
                      |     |  +--rw address-family*   address-family
                      |     +--rw vrrp {rtg-vrrp}?
                      |        +--rw address-family*   address-family
-                     +--ro actual-site-start?       yang:date-and-time
-                     +--ro actual-site-stop?        yang:date-and-time
+                     +--ro actual-site-start?       YANG:date-and-time
+                     +--ro actual-site-stop?        YANG:date-and-time
                      +--rw site-bearers
                      |  +--rw bearer* [bearer-id]
                      |     +--rw bearer-id    string
@@ -903,7 +904,7 @@
                            |     |  +--rw type?   ie-type
                            |     +--rw ospf {rtg-ospf}?
                            |     |  +--rw address-family*   address-family
-                           |     |  +--rw area-address      yang:dotted-quad
+                           |     |  +--rw area-address      YANG:dotted-quad
                            |     |  +--rw metric?           uint16
                            |     |  +--rw mtu?              uint16
                            |     |  +--rw security
@@ -937,24 +938,24 @@
                            |  +--rw access-priority?   uint32
                            +--rw node-id?                    -> /l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/vpn-node/vpn-node-id
                            +--rw service-id?                 -> /l3vpn-ntw/vpn-services/vpn-service/vpn-id
-                           +--rw access-group-id?            yang:uuid
+                           +--rw access-group-id?            YANG:uuid
  ]]></artwork>
       </figure>
  </section>
- <section anchor="yang_module" title="Yang module">
-     <figure align="center" anchor="module_yang">
+ <section anchor="YANG_module" title="YANG MODULE">
+     <figure align="center" anchor="module_YANG">
         <preamble>  |--------------------  EXAMPLE --------------------|</preamble>
         <artwork align="left"><![CDATA[
-<CODE BEGINS>file "ietf-l3vpn-ntw@2019-09-13.yang"
+<CODE BEGINS>file "ietf-l3vpn-ntw@2019-09-13.YANG"
   module ietf-l3vpn-ntw {
-   yang-version 1.1;
-   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
+   YANG-version 1.1;
+   namespace "urn:ietf:params:xml:ns:YANG:ietf-l3vpn-ntw";
    prefix l3vpn-ntw;
    import ietf-inet-types {
     prefix inet;
    }
-   import ietf-yang-types {
-    prefix yang;
+   import ietf-YANG-types {
+    prefix YANG;
    }
    import ietf-netconf-acm {
     prefix nacm;
@@ -976,7 +977,7 @@
    for the configuration of Layer 3 VPNs. This model is common
    across all vendor implementations.
 
-   Copyright (c) 2018 IETF Trust and the persons
+   Copyright (c) 2019 IETF Trust and the persons
    identified as authors of the code.  All rights reserved.
 
    Redistribution and use in source and binary forms, with or
@@ -989,7 +990,7 @@
    This version of this YANG module is based on RFC 8299; see
    the RFC itself for full legal notices.";
 
-   revision 2019-05-30 {
+   revision 2019-09-13 {
     description
     "Initial document. The document as a whole is based on L3SM
     module, defined in RFC 8299, modified to fit the requirements
@@ -1000,7 +1001,7 @@
    /* Features */
    feature cloud-access {
     description
-    "Allows the VPN to connect to a CSP.";
+    "Allows the VPN to connect to a Service Provider.";
    }
    feature multicast {
     description
@@ -1020,7 +1021,7 @@
    }
    feature carrierscarrier {
     description
-    "Enables support of CsC.";
+    "Enables support of carrier supporting carrier.";
    }
    feature extranet-vpn {
     description
@@ -1092,19 +1093,19 @@
    }
   feature dot1q  {
     description
-    "Enables support of the 'dot1q' encapsultarion.";
+    "Enables support of the 'dot1q' encapsulation.";
    }
   feature qinq  {
     description
-    "Enables support of the 'qinq' encapsultarion.";
+    "Enables support of the 'qinq' encapsulation.";
    }
   feature qinany  {
     description
-    "Enables support of the 'qinany' encapsultarion.";
+    "Enables support of the 'qinany' encapsulation.";
    }
    feature vxlan  {
     description
-    "Enables support of the 'vxlan' encapsultarion.";
+    "Enables support of the 'vxlan' encapsulation.";
    }
    /* Typedefs */
    typedef svc-id {
@@ -1148,7 +1149,8 @@
        }
      }
     description
-    "Defines Import-Export routing profiles. Those are able to be reused between vpn-nodes";
+    "Defines Import-Export routing profiles.
+    Those are able to be reused between vpn-nodes";
     }
 
     typedef operational-type {
@@ -1167,7 +1169,8 @@
        }
      }
      description
-    "This is a read attribute used to determine the status of a particular element";
+    "This is a read-only attribute used to determine
+    the status of a particular element";
     }
 
    /* Identities */
@@ -2165,7 +2168,7 @@
    }
    grouping operational-requirements {
      leaf requested-site-start {
-      type yang:date-and-time;
+      type YANG:date-and-time;
        description
        "Optional leaf indicating requested date and
        time when the service at a particular site is
@@ -2173,7 +2176,7 @@
     }
 
     leaf requested-site-stop {
-      type yang:date-and-time;
+      type YANG:date-and-time;
        description
        "Optional leaf indicating requested date and
        time when the service at a particular site is
@@ -2185,7 +2188,7 @@
    }
    grouping operational-requirements-ops {
      leaf actual-site-start {
-      type yang:date-and-time;
+      type YANG:date-and-time;
       config false;
        description
        "Optional leaf indicating actual date and
@@ -2193,7 +2196,7 @@
        actually started.";
     }
     leaf actual-site-stop {
-     type yang:date-and-time;
+     type YANG:date-and-time;
      config false;
        description
        "Optional leaf indicating actual date and
@@ -2782,7 +2785,7 @@
            to be activated.";
        }
        leaf area-address {
-        type yang:dotted-quad;
+        type YANG:dotted-quad;
         mandatory true;
            description
            "Area address.";
@@ -4404,7 +4407,7 @@
           "Reference the VPN node id";
           }
         leaf access-group-id {
-            type yang:uuid;
+            type YANG:uuid;
             description
             "Reference the Access Goup ID.
             It is used to group and identify SNA with common behavior
@@ -4435,22 +4438,23 @@
 
     <!-- Possibly a 'Contributors' section ... -->
 
-    <section anchor="IANA" title="IANA Considerations">
+    <section anchor="IANA" title="IANA CONSIDERATIONS">
       <t>This memo includes no request to IANA.</t>
     </section>
 
-    <section anchor="Security" title="Security Considerations">
+    <section anchor="Security" title="SECURITY CONSIDERATIONS">
       <t>All the security considerations of  <xref target="RFC8299"></xref> apply to this document. Subsequent versions will provide additional security considerations. </t>
     </section>
 
-	 <section anchor="Implementation" title="Implementation Status">
+	 <section anchor="Implementation" title="IMPLEMENTATION STATUS">
       <t>This section will be used to track the status of the implementations of the model. It is aimed at being removed if the document becomes RFC.</t>
     </section>
 
-	 <section anchor="Acknowledgements" title="Acknowledgements">
+	 <section anchor="Acknowledgements" title="ACKNOWLEDGEMENTS">
       <t>Thanks to Adrian Farrel and Miguel Cros for the suggestions on the document. Lots of thanks for the discussions on opsawg mailing list. Some of the comments will be addressed in next versions </t>
+      <t>This work was supported in part by the European Commission funded DK>> H2020-ICT-2016-2 METRO-HAUL project (G.A. 761727).</t>
     </section>
-	<section anchor="Contributors" title="Contributors">
+	<section anchor="Contributors" title="CONTRIBUTORS">
       <t>Daniel King<vspace blankLines="0" />
    Old Dog Consulting<vspace blankLines="0" />
   Email: daniel@olddog.co.uk</t>
@@ -4482,12 +4486,12 @@
      with a value containing a set of directories to search.  These can be either in the local
      filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
-    <references title="Normative References">
+    <references title="NORMATIVE REFERENCES">
       <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
       &RFC2119;
     </references>
 
-    <references title="Informative References">
+    <references title="INFORMATIVE REFERENCES">
       <!-- Here we use entities that we defined at the beginning. -->
 
 	  &RFC6241;
