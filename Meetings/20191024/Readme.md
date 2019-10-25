@@ -1,26 +1,27 @@
 # 1 Attendants
-•	Med Boucadir (Orange)
-•	Luis Muñoz (Vodafone)
-•	Oscar Gonzalez (Telefonica)
-•	Samier Barguil (Telefonica)
+*	Med Boucadir (Orange)
+*	Luis Muñoz (Vodafone)
+*	Oscar Gonzalez (Telefonica)
+*	Samier Barguil (Telefonica)
 
 # 2 Agenda
-•	L3NM
-o	Prunning
-o	Relationship with the topology
+*	L3NM
+  *	Prunning
+  *	Relationship with the topology
 
 # 3 Prune & hierarchy discussion
-o	Continue with the information of the service level at the network level.
-o	Clarify which parameters can or not be used. (see ppt)
-o	The parameters that are not used in L3NM but were useful in L3NM, decide if remove,
+*	Continue with the information of the service level at the network level.
+*	Clarify which parameters can or not be used. (see ppt)
+*	The parameters that are not used in L3NM but were useful in L3NM, decide if remove,
 or leave and write in the draft they are inherited from L3SM (take decission).
-o	New hierachy proposal: remove site and move site_network_acces under vpn_nodes
+*	New hierachy proposal: remove site and move site_network_acces under vpn_nodes
 
 # 4 Topology discussions
-o	Topology relationship with the Service Models.
-o	Possible solutions:
---> Create UNI Topology
-Node Ref
+*	Topology relationship with the Service Models.
+*	Possible solutions:
+  * Create UNI Topology
+
+<em>Node Ref</em>
 <pre><code>
 +--rw vpn-nodes
 |  +--rw vpn-node* [vpn-node-id ne-id]
@@ -28,7 +29,8 @@ Node Ref
 |     +--rw description?        string
 |     +--rw topo-node?          -> /nw:networks/network/node/node-id"
 </code></pre>
-•	Uni Reference
+
+<em>Uni Reference</em>
 <pre><code>
 +--rw bearer
 |     |  +--rw bearer-reference?   string {bearer-reference}?
