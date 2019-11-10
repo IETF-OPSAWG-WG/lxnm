@@ -221,13 +221,27 @@
 
     <section anchor="terminology" title="Terminology">
       <t>This document assumes that the reader is familiar with the contents
-   of <xref target="RFC6241"></xref>,  <xref target="RFC7950"></xref>,  <xref target="RFC8299"></xref>, <xref target="RFC8309"></xref>, and <xref target="RFC8453"></xref> and uses terminology from those documents. Tree diagrams used in this document follow the notation defined in <xref target="RFC8340"></xref>.</t>
-   <t>The document is aimed at modeling BGP PE-based VPNs in a Service Provider Network, so terminology from [RFC4026] and [RFC4076] is used. The terms used in the document are reproduced here:</t>
+   of <xref target="RFC6241"></xref>,  <xref target="RFC7950"></xref>,  <xref target="RFC8299"></xref>,
+   <xref target="RFC8309"></xref>, and <xref target="RFC8453"></xref> and uses terminology from those documents.
+   Tree diagrams used in this document follow the notation defined in <xref target="RFC8340"></xref>.</t>
+   <t>The document is aimed at modeling BGP PE-based VPNs in a Service Provider Network, so terminology
+     from [RFC4026] and [RFC4076] is used. The terms used in the document are reproduced here:</t>
   <t><list style="symbols">
-  <t>Vpn-service: A VPN service is offered by Service Providers to enable customers to interconnect sites to create L3 VPNs</t>
-	<t>L3 VPN: A Layer 3 IP VPN is a collection of sites that are authorized to exchange traffic between each other over a Service Provider Infrastructure. The Layer 3 VPN is composed by the Customer sites, the attachment circuits between CEs and PEs, and the VPN-Service.</t>
-    <t>L3 VPN Customer Service Model (L3SM): Describes the requirements of a L3 VPN that interconnects a set of sites from the point of view of the customer. The customer service model does not provide details on the Service Provider Network. The L3 VPN Customer Service model is defined in RFC8299.</t>
-    <t>L3 VPN Service Network Model (L3NM): A yang model that describes a VPN Service in the Service Provider Network. It containts information of the Service Provider Network and might include allocated resources.  It can be used by Network controllers to manage and control the VPN Service configurations in the Service Provider backbone network.  The Yang model can be consumed by a Service orchestrator to request a VPN Service to a Network controller</t>
+  <t>Vpn-service: A VPN service is offered by Service Providers to enable customers to
+     interconnect sites to create L3 VPNs</t>
+	<t>L3 VPN: A Layer 3 IP VPN is a collection of sites that are authorized to exchange
+     traffic between each other over a Service Provider Infrastructure. The Layer 3 VPN
+      is composed by the Customer sites, the attachment circuits between CEs and PEs, and
+       the VPN-Service.</t>
+    <t>L3 VPN Customer Service Model (L3SM): Describes the requirements of a L3 VPN that
+       interconnects a set of sites from the point of view of the customer. The customer
+        service model does not provide details on the Service Provider Network. The L3 VPN
+         Customer Service model is defined in RFC8299.</t>
+    <t>L3 VPN Service Network Model (L3NM): A yang model that describes a VPN Service in the
+      Service Provider Network. It containts information of the Service Provider Network and
+      might include allocated resources.  It can be used by Network controllers to manage
+      and control the VPN Service configurations in the Service Provider backbone network.
+      The Yang model can be consumed by a Service orchestrator to request a VPN Service to a Network controller</t>
 	<t>Service Orchestrator: An entity that interacts with the customer of a L3 VPN. The Service Orchestrator interacts with the customer using L3SM. The service orchestrator is responsible of the CE-PE attachment circuits, the PE selection, and requesting the vpn-service to the network controller .</t>
 	<t>Network Controller. An entity responsible for the control and management of the service provider network.</t>
 	<t>Vpn-node: An abstraction that represents a set of policies applied to a PE and that belong to a single vpn_service.  A vpn_service is composed of one or more vpn_nodes. As it is an abstraction, the network controller will take on how to implement a vpn_node. For example, tipically, in a BGP based VPN, a vpn_node could be mapped into a VRF.</t>
@@ -467,9 +481,7 @@
             <t>TBC (Alejandro)</t>
 
             <section anchor="sites_beares" title="Bearers">
-              <t>TBC (Samier review and update)</t>
-
-              <t>A site, as per RFC 4176 represents a VPN customer's location
+              <t>A site, as per <xref target="RFC4176"/> represents a VPN customer's location
               that is connected to the Service Provider network via a CE-PE
               link, which can access at least one VPN. The connection from the
               site to the Service Provider network is the bearer. Every site
@@ -477,40 +489,22 @@
               connections with the site. In the module it is assumed that the
               bearer has been allocated by the Service Provider at the service
               orchestration step. The bearer is associated to a network
-              element and a port. Hence, a bearer is not just a
-              bearer-reference, but also a true reference to a given port in
-              the service provider network.</t>
+              element and a port. Hence, a bearer is just a
+              bearer-reference to allow the translation between L3SM and L3NM.</t>
 
-              <section anchor="Provide_Edge_Identification_Point"
-                       title="Provider Edge Identification Point">
-                <t>TBC (Samier review if still makes sense)</t>
+              <t>The bearer-reference must serve as a strict unequivocal
+              parameters to identify the connection between a PE and a
+              client (CE). This means that, despite the type is maintained
+              as a string and there is no restriction in the way this data
+              is formed, the bearer-reference must serve as the unique way
+              to identify the PE router and the client interface. This,
+              together with the encapsulation augments proposed in <xref
+              target="bearerethencap"/> , serves as the way to identify the
+              client interface and configure L2 specific parameters.</t>
 
-                <t><xref target="RFC8299"/> states that the "bearer-reference"
-                parameter is used in cases where the customer has already
-                ordered a network connection to the service provider (SP)
-                apart from the IP VPN site and wants to reuse this connection.
-                The string used is an internal reference from the SP and
-                describes the already-available connection. Usually, a client
-                interface (either a customer one or an interface used by the
-                SP) is already in place and connected, although it has not
-                being use previously. In some other cases (e.g., for stitching
-                purposes), the termination of a VPN service is done over
-                logical terminations within a PE router.</t>
-
-                <t>The bearer-reference must serve as a strict unequivocal
-                parameters to identify the connection between a PE and a
-                client (CE). This means that, despite the type is maintained
-                as a string and there is no restriction in the way this data
-                is formed, the bearer-reference must serve as the unique way
-                to identify the PE router and the client interface. This,
-                together with the encapsulation augments proposed in <xref
-                target="sites_beares"/> , serves as the way to identify the
-                client interface and configure L2 specific parameters.</t>
-              </section>
 
               <section anchor="bearerethencap"
                        title="Connection and Encapsulation options">
-                <t>TBC (Samier review and update)</t>
 
                 <t>The definition of a L3VPN is commonly specified not only at
                 the IP layer, but also requires to identify parameters at the
@@ -526,12 +520,35 @@
                 of L3SM, the augmentation includes only mandatory parameters
                 for the service configuration, which are mainly related to the
                 interface encapsulation. Other definitions from L2SM
-                connection container are left aside. For example, Link
-                Aggregation (LAG) information is not required and it shall be
-                configured prior to the service configuration, being the
-                aggregated interface identified in the model as the
-                bearer-reference, as discussed later in <xref
-                target="mdrmanagement"/> .</t>
+                connection container are left aside.
+                <figure align="center" anchor="vpn-node_tree">
+                  <artwork align="left">
+                +--rw bearer
+                  +--rw connection
+                    ...
+                    +--rw encapsulation-type?   identityref
+                      +--rw tagged-interface
+                         +--rw type?                identityref
+                         +--rw dot1q-vlan-tagged {dot1q}?
+                         |  +--rw tag-type?   identityref
+                         |  +--rw cvlan-id?   uint16
+                         +--rw priority-tagged
+                         |  +--rw tag-type?   identityref
+                         +--rw qinq {qinq}?
+                         |  +--rw tag-type?   identityref
+                         |  +--rw svlan-id    uint16
+                         |  +--rw cvlan-id    uint16
+                         +--rw qinany {qinany}?
+                         |  +--rw tag-type?   identityref
+                         |  +--rw svlan-id    uint16
+                         +--rw vxlan {vxlan}?
+                            +--rw vni-id       uint32
+                            +--rw peer-mode?   identityref
+                            +--rw peer-list* [peer-ip]
+                               +--rw peer-ip    inet:ip-address
+           </artwork>
+                </figure>
+              </t>
               </section>
 
               <section anchor="rfeconfiguration"
@@ -551,10 +568,53 @@
                 loopback address of the far-end (remote/external) PE
                 router.</t>
               </section>
+              <figure align="center" anchor="vpn-node_tree">
+                <artwork align="left">
+                  <artwork align="left">
+                    +--rw bearer
+                      +--rw connection
+                        ...
+                        +--rw pseudowire
+                         +--rw vcid?   uint32
+         </artwork>
+              </figure>
+            </t>
+            </section>
             </section>
 
             <section anchor="ip_conn" title="IP Connection">
               <t>TBC (Samier)</t>
+
+              <figure align="center" anchor="vpn-node_tree">
+                <artwork align="left">
+                  <artwork align="left">
+              +--rw ip-connection
+                +--rw ipv4 {ipv4}?
+                  +--rw address-allocation-type?   identityref
+                    +--rw provider-dhcp
+                      ...
+                    +--rw dhcp-relay
+                      ...
+                    +--rw static-addresses
+                      +--rw primary-address?   -> /l3vpn-ntw/vpn-services/vpn-service/
+                          vpn-nodes/vpn-node/vpn-network-accesses/vpn-network-access/
+                          ip-connection/ipv4/static-addresses/address/address-id
+                    +--rw address* [address-id]
+                      ...
+                +--rw ipv6 {ipv6}?
+                  +--rw address-allocation-type?   identityref
+                    +--rw provider-dhcp
+                      ...
+                    +--rw dhcp-relay
+                      ...
+                    +--rw static-addresses
+                      +--rw primary-address?   -> /l3vpn-ntw/vpn-services/vpn-service/
+                           vpn-nodes/vpn-node/vpn-network-accesses/vpn-network-access/
+                           ip-connection/ipv6/static-addresses/address/address-id
+                      +--rw address* [address-id]
+                          ...
+                        </artwork>
+                    </figure>
             </section>
 
             <section anchor="ro_pro" title="Routing Protocols">
