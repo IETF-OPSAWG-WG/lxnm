@@ -1148,8 +1148,9 @@ module: ietf-l3vpn-ntw
       several traffic discrimination policies can be applied in the network to
       transport and guarantee the right SLAs to the mobile customers. </t>
 
-      <t>It is common that the eNODEB (CE) is directly connected to the access routers of
-      the mobile backhaul (PEs) and their logical interfaces (one or many according to the
+      <t>As it is shown in the <xref target="vpn-service-mbh"/>, commonly the
+      eNODEB (CE) is directly connected to the access routers (DCSG) of
+      the mobile backhaul and their logical interfaces (one or many according to the
       Service type) are configured in a VPN that transport the packets to the mobile
       core platforms. </t>
 
@@ -1162,8 +1163,87 @@ module: ietf-l3vpn-ntw
                                                      +--------------+
         </artwork>
       </figure>
-    </section>
 
+      <t>To configure a L3VPN service using the L3NM model the procedure and
+        the JSON with the data structure is the following:</t>
+      <t>Create VPN Service</t>
+<figure align="center" anchor="service-mbh2" title="Create VPN Service">
+  <artwork align="left">
+<![CDATA[
+<vpn-services>
+    <vpn-service>
+      <vpn-id>1</vpn-id>
+      <customer-name>4G</customer-name>
+      <vpn-service-topology>hub-spoke</vpn-service-topology>
+      <description>4G</description>
+    </vpn-service>
+  </vpn-services>
+</l3vpn-ntw>
+]]>
+</artwork>
+</figure>
+
+      <t>Create VPN Node: For this type of service the VPN Node is equivalent
+      with the VRF configured in the physical device. </t>
+
+<figure align="center" anchor="service-mbh3" title="Create VPN Node">
+    <artwork align="left">
+      <![CDATA[
+<vpn-nodes>
+  <vpn-node>
+    <vpn-node-id>1</vpn-node-id>
+    <ne-id>10.0.0.1</ne-id>
+    <autonomous-system>65000</autonomous-system>
+    <description>4G</description>
+    <router-id>10.0.0.1</router-id>
+    <address-family>ipv4</address-family>
+    <node-role>any-to-any-role</node-role>
+    <rd>1:1</rd>
+  </vpn-node>
+</vpn-nodes>
+      ]]>
+    </artwork>
+  </figure>
+
+          <t>Create VPN Network Access</t>
+
+<figure align="center" anchor="service-mbh4" title="Create VPN Network Access">
+    <artwork align="left">
+  <![CDATA[
+<vpn-network-accesses>
+  <vpn-network-access>
+    <vpn-network-access-id>1/1/1</vpn-network-access-id>
+    <description>4G</description>
+    <status>
+      <admin-enabled>true</admin-enabled>
+    </status>
+    <vpn-network-access-type>point-to-point</vpn-network-access-type>
+    <ip-connection>
+      <ipv4>
+        <address-allocation-type>static-address</address-allocation-type>
+        <static-addresses>
+          <primary-address>1</primary-address>
+          <address>
+            <address-id>1</address-id>
+            <provider-address>192.168.0.1</provider-address>
+            <customer-address>192.168.0.2</customer-address>
+            <prefix-length>30</prefix-length>
+          </address>
+        </static-addresses>
+      </ipv4>
+    </ip-connection>
+    <routing-protocols>
+      <routing-protocol>
+        <id>1</id>
+        <type>direct</type>
+      </routing-protocol>
+    </routing-protocols>
+  </vpn-network-access>
+</vpn-network-accesses>
+      ]]>
+      </artwork>
+      </figure>
+    </section>
     </section>
 
     <section anchor="YANG_module" title="Yang Module">
@@ -4315,7 +4395,8 @@ identity urllc {
         uses status-params;
         uses net-acc;
 
-        /* Here we use the name given to the existing structure in sites */
+        /* Here we use the name given */
+        /*to the existing structure in sites */
         uses site-maximum-routes;
 
         leaf node-ie-profile {
