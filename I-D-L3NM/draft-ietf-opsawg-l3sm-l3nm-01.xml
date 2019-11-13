@@ -6,19 +6,23 @@
      There has to be one entity for each item to be referenced.
      An alternate method (rfc include) is described in the references. -->
 <!ENTITY RFC2119 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC3688 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3688.xml">
 <!ENTITY RFC4026 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4026.xml">
 <!ENTITY RFC4076 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4076.xml">
 <!ENTITY RFC4176 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4176.xml">
+<!ENTITY RFC6020 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6020.xml">
 <!ENTITY RFC6241 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6241.xml">
+<!ENTITY RFC6242 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6242.xml">
 <!ENTITY RFC7950 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7950.xml">
+<!ENTITY RFC8040 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8040.xml">
 <!ENTITY RFC8174 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8299 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8299.xml">
 <!ENTITY RFC8309 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8309.xml">
 <!ENTITY RFC8340 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8340.xml">
+<!ENTITY RFC8341 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8341.xml">
 <!ENTITY RFC8466 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8466.xml">
 <!ENTITY RFC8453 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8453.xml">
 ]>
-
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
 <!-- For a complete list and description of processing instructions (PIs),
@@ -271,8 +275,8 @@
 
         <t>The document is aimed at modeling BGP PE-based VPNs in a Service
         Provider Network, so terminology from <xref target="RFC4026"/> and
-        <xref target="RFC4076"/> is used.
-        The terms used in the document are reproduced here:</t>
+        <xref target="RFC4076"/> is used. The terms used in the document are
+        reproduced here:</t>
 
         <t><list style="symbols">
             <t>Vpn-service: A VPN service is offered by Service Providers to
@@ -559,8 +563,23 @@
      </artwork>
           </figure>
 
-          <section anchor="sna" title="Concept of vpn-network-access">
-            <t>TBC (Alejandro)</t>
+          <section anchor="sna" title="VPN Network Access">
+            <t>A vpn-network-access represents an entry point to a VPN
+            service. In other words, this container encloses the parameters
+            that describe the access information for the traffic that belongs
+            to a particular L3 VPN. As such, every vpn-network-access belongs
+            to one and only one vpn-node. As an example, a vpn-network-access
+            includes information such as the bearer on which the access is
+            defined (see the section below), the encapsulation of the traffic,
+            policies that are applied on the access, etc.</t>
+
+            <t>A provisioning network controller (PNC) <xref
+            target="RFC8453"/> will accept VPN requests containing this
+            construct, using the enclosed data to: configure the router's
+            interface to include the parameters described at the
+            vpn-network-access, include the given interface into a VRF,
+            configuring policies or schedulers for the incoming traffic,
+            etc.</t>
 
             <section anchor="sites_beares" title="Bearers">
               <t>A site, as per <xref target="RFC4176"/> represents a VPN
@@ -662,16 +681,18 @@
             </section>
 
             <section anchor="ip_conn" title="IP Connection">
-              <t>IP Connection container has the parameters of the vpn-network-access
-              addressing information. The address allocated in this container would represent
-              the PE interface address configuration. The IP Connection container is designed
-              to support dual stack (IPv4/IPv6) and three options to set the ip address:
-              Provider DHCP, DHCP relay or static addressing. </t>
+              <t>IP Connection container has the parameters of the
+              vpn-network-access addressing information. The address allocated
+              in this container would represent the PE interface address
+              configuration. The IP Connection container is designed to
+              support dual stack (IPv4/IPv6) and three options to set the ip
+              address: Provider DHCP, DHCP relay or static addressing.</t>
 
-              <t>In the case of the static addressing the model supports the assignation of
-              several IP addresses in the same vpn-network-access. To identify which of the
-              addresses is the primary address of the connection the "primary-address" reference
-              must be set with the corresponding address-id.</t>
+              <t>In the case of the static addressing the model supports the
+              assignation of several IP addresses in the same
+              vpn-network-access. To identify which of the addresses is the
+              primary address of the connection the "primary-address"
+              reference must be set with the corresponding address-id.</t>
 
               <figure align="center" anchor="ip_conn_tree">
                 <artwork align="left">
@@ -701,18 +722,106 @@
             </section>
 
             <section anchor="ro_pro" title="Routing Protocols">
-              <t>TBC (Stephane)</t>
+              <t>The model allows the Network Operator to configure one or
+              more routing protocols associated with a particular
+              vpn-network-access. This protocol will run between the PE and
+              the CE. A routing protocol instance MUST have a type (e.g. bgp,
+              ospf, etc.) and an identifier. The identifier is necessary when
+              multiple instances of the same protocol need to be
+              configured.</t>
+
+              <t>The model uses an abstracted view of routing protocols. When
+              configuring multiple instances of the same protocol, this does
+              not automatically imply that, from a device configuration
+              perspective, there will be parallel instances (multiple
+              processes) running. It will be up to the implementation to use
+              the most appropriate deployment model. As an example, when
+              multiple BGP peers need to be implemented, multiple instances of
+              BGP must be configured as part of this model. However from a
+              device configuration point of view, this could be implemented
+              as: <list style="symbols">
+                  <t>Multiple BGP processes with a single neighbor running in
+                  each process.</t>
+
+                  <t>A single BGP process with multiple neighbors running.</t>
+
+                  <t>A combination of both.</t>
+                </list></t>
+
+              <t>To be aligned with <xref target="RFC8299"/>, this model
+              supports the following protocols: <list style="symbols">
+                  <t>vrrp: takes only a list of address-family as parameter.
+                  VRRP instance is expected to run on the vpn-network-access
+                  interface.</t>
+
+                  <t>rip: takes only a list of address-family as parameter.
+                  RIP instance is expected to run on the vpn-network-access
+                  interface.</t>
+
+                  <t>static: allows user to configure one or more IPv4 and
+                  IPv6 static routes.</t>
+
+                  <t>bgp: allows the user to configure a BGP neighbor
+                  including parameters like authentication using a key. The
+                  authentication type will be driven by the implementation but
+                  the model supports any authentication that uses a key as a
+                  parameter. A BGP neighbor can support ipv4, ipv6, or both
+                  address-families. Again, it is up to the implementation to
+                  drive the device configuration (e.g. separate BGP sessions
+                  for Dual Stack, single session for Dual Stack, etc.).</t>
+
+                  <t>ospf: allows the user to configure OSPF to run on the
+                  vpn-network-access interface. An OSPF instance can run ipv4,
+                  ipv6 or both. When only ipv4 address-family is requested, it
+                  will be up to the implementation to drive if OSPFv2 or v3 is
+                  used.</t>
+                </list></t>
+
+              <t>Routing protocol configuration do not have any routing policy
+              configuration. Routing policies are low level device
+              configurations that must not be part of an abstracted model.
+              Service Provider internal policies (such as security filters)
+              will be implemented as part of the device configuration but does
+              not require any input from this model. Some policies like
+              primary/backup, load-balancing can be inferred from
+              access-priority.</t>
+
+              <!--  (NOTE FOR EDITORS: it seems that the access-priority has been removed. We need to have one may be slightly different from L3SM) -->
             </section>
           </section>
         </section>
 
         <section anchor="ie_profiles"
                  title="Concept of Import/Export Profiles">
-          <t>TBC (Alejandro)</t>
+          <t>The import and export profiles construct contains a list with
+          information related with route target and distinguishers (RTs and
+          RDs), grouped and identified by ie-profile-id. The identifier is
+          then referenced in one or multiple vpn-nodes, so the PNC can
+          identify RTs and RDs to be configured in the VRF.</t>
         </section>
 
         <section anchor="mc" title="Multicast">
-          <t>TBC (Stephane)</t>
+          <t>Multicast can be optionally enabled for a particular
+          vpn-network-access.</t>
+
+          <t>The model supports a single type of tree (ASM, SSM or
+          bidirectional).</t>
+
+          <t>When ASM is used, the model supports configuration of rendez-vous
+          points. RP discovery could be static, bsr-rp or auto-rp. When static
+          is used RP to multicast grouping mapping must be configured as part
+          of the rp-group-mappings container. The RP may be a provider node or
+          a customer node. When the RP is a customer node, the RP address must
+          be configured using the rp-address leaf otherwise no RP address is
+          needed. The model supports RP redundancy through the rp-redundancy
+          leaf. How the redundancy is achieved is out of scope and is up to
+          the implementation. When a particular VPN using ASM requires a more
+          optimal traffic delivery, the leaf optimal-traffic-delivery can be
+          used. When set to true, the implementation must use any mechanism to
+          provide a more optimal traffic delivery for the customer. As an
+          example, the implementation can use RP tree to Shortest Path tree
+          switchover or simply deploy additional RPs working in an anycast
+          mode.</t>
         </section>
 
         <section anchor="ex_vpns" title="Extranet vpns">
@@ -1116,7 +1225,6 @@ module: ietf-l3vpn-ntw
       </section>
     </section>
 
-
     <section anchor="Use_of_the_data_model" title="Use of the Data Model">
       <t>TBC Luis to propose Single domain use case</t>
 
@@ -1140,116 +1248,121 @@ module: ietf-l3vpn-ntw
     </section>
 
     <section anchor="examples" title="L3VPN  Examples">
+      <section anchor="mbh-vpn" title="4G VPN Provissioning Example">
+        <t>The L3VPN service defined in this draft provides a multipoint,
+        routed service to the customer over an IP/MPLS core. The L3VPNs are
+        widely used to deploy 3G/4G, fixed and enterprise services principally
+        due to the fact that several traffic discrimination policies can be
+        applied in the network to transport and guarantee the right SLAs to
+        the mobile customers.</t>
 
-       <section anchor="mbh-vpn" title="4G VPN Provissioning Example">
-      <t>The L3VPN service defined in this draft provides a multipoint,
-      routed service to the customer over an IP/MPLS core. The L3VPNs are widely used
-      to deploy 3G/4G, fixed and enterprise services principally due to the fact that
-      several traffic discrimination policies can be applied in the network to
-      transport and guarantee the right SLAs to the mobile customers. </t>
+        <t>As it is shown in the <xref target="vpn-service-mbh"/>, commonly
+        the eNODEB (CE) is directly connected to the access routers (DCSG) of
+        the mobile backhaul and their logical interfaces (one or many
+        according to the Service type) are configured in a VPN that transport
+        the packets to the mobile core platforms.</t>
 
-      <t>As it is shown in the <xref target="vpn-service-mbh"/>, commonly the
-      eNODEB (CE) is directly connected to the access routers (DCSG) of
-      the mobile backhaul and their logical interfaces (one or many according to the
-      Service type) are configured in a VPN that transport the packets to the mobile
-      core platforms. </t>
-
-      <figure align="center" anchor="vpn-service-mbh" title="Mobile Backhaul Example">
-        <artwork align="left">
+        <figure align="center" anchor="vpn-service-mbh"
+                title="Mobile Backhaul Example">
+          <artwork align="left">
                                                      +--------------+
         +------+    +-----+    +-----+    +-----+    |  Platforms   |
         |eNODEB|--/-|  PE |----|  P  |----|  PE |----|  (SGW/MME)   |
         +------+    +-----+    +-----+    +-----+    |     ...      |
                                                      +--------------+
         </artwork>
-      </figure>
+        </figure>
 
-      <t>To configure a L3VPN service using the L3NM model the procedure and
+        <t>To configure a L3VPN service using the L3NM model the procedure and
         the JSON with the data structure is the following:</t>
-      <t>Create VPN Service</t>
-<figure align="center" anchor="service-mbh2" title="Create VPN Service">
-  <artwork align="left">
-<![CDATA[
-<vpn-services>
-    <vpn-service>
-      <vpn-id>1</vpn-id>
-      <customer-name>4G</customer-name>
-      <vpn-service-topology>hub-spoke</vpn-service-topology>
-      <description>4G</description>
-    </vpn-service>
-  </vpn-services>
-</l3vpn-ntw>
-]]>
+
+        <t>Create VPN Service</t>
+
+        <figure align="center" anchor="service-mbh2"
+                title="Create VPN Service">
+          <artwork align="left">
+
+&lt;vpn-services&gt;
+    &lt;vpn-service&gt;
+      &lt;vpn-id&gt;1&lt;/vpn-id&gt;
+      &lt;customer-name&gt;4G&lt;/customer-name&gt;
+      &lt;vpn-service-topology&gt;hub-spoke&lt;/vpn-service-topology&gt;
+      &lt;description&gt;4G&lt;/description&gt;
+    &lt;/vpn-service&gt;
+  &lt;/vpn-services&gt;
+&lt;/l3vpn-ntw&gt;
+
 </artwork>
-</figure>
+        </figure>
 
-      <t>Create VPN Node: For this type of service the VPN Node is equivalent
-      with the VRF configured in the physical device. </t>
+        <t>Create VPN Node: For this type of service the VPN Node is
+        equivalent with the VRF configured in the physical device.</t>
 
-<figure align="center" anchor="service-mbh3" title="Create VPN Node">
-    <artwork align="left">
-      <![CDATA[
-<vpn-nodes>
-  <vpn-node>
-    <vpn-node-id>1</vpn-node-id>
-    <ne-id>10.0.0.1</ne-id>
-    <autonomous-system>65000</autonomous-system>
-    <description>4G</description>
-    <router-id>10.0.0.1</router-id>
-    <address-family>ipv4</address-family>
-    <node-role>any-to-any-role</node-role>
-    <rd>1:1</rd>
-  </vpn-node>
-</vpn-nodes>
-      ]]>
+        <figure align="center" anchor="service-mbh3" title="Create VPN Node">
+          <artwork align="left">
+      
+&lt;vpn-nodes&gt;
+  &lt;vpn-node&gt;
+    &lt;vpn-node-id&gt;1&lt;/vpn-node-id&gt;
+    &lt;ne-id&gt;10.0.0.1&lt;/ne-id&gt;
+    &lt;autonomous-system&gt;65000&lt;/autonomous-system&gt;
+    &lt;description&gt;4G&lt;/description&gt;
+    &lt;router-id&gt;10.0.0.1&lt;/router-id&gt;
+    &lt;address-family&gt;ipv4&lt;/address-family&gt;
+    &lt;node-role&gt;any-to-any-role&lt;/node-role&gt;
+    &lt;rd&gt;1:1&lt;/rd&gt;
+  &lt;/vpn-node&gt;
+&lt;/vpn-nodes&gt;
+      
     </artwork>
-  </figure>
+        </figure>
 
-          <t>Create VPN Network Access</t>
+        <t>Create VPN Network Access</t>
 
-<figure align="center" anchor="service-mbh4" title="Create VPN Network Access">
-    <artwork align="left">
-  <![CDATA[
-<vpn-network-accesses>
-  <vpn-network-access>
-    <vpn-network-access-id>1/1/1</vpn-network-access-id>
-    <description>4G</description>
-    <status>
-      <admin-enabled>true</admin-enabled>
-    </status>
-    <vpn-network-access-type>point-to-point</vpn-network-access-type>
-    <ip-connection>
-      <ipv4>
-        <address-allocation-type>static-address</address-allocation-type>
-        <static-addresses>
-          <primary-address>1</primary-address>
-          <address>
-            <address-id>1</address-id>
-            <provider-address>192.168.0.1</provider-address>
-            <customer-address>192.168.0.2</customer-address>
-            <prefix-length>30</prefix-length>
-          </address>
-        </static-addresses>
-      </ipv4>
-    </ip-connection>
-    <routing-protocols>
-      <routing-protocol>
-        <id>1</id>
-        <type>direct</type>
-      </routing-protocol>
-    </routing-protocols>
-  </vpn-network-access>
-</vpn-network-accesses>
-      ]]>
+        <figure align="center" anchor="service-mbh4"
+                title="Create VPN Network Access">
+          <artwork align="left">
+  
+&lt;vpn-network-accesses&gt;
+  &lt;vpn-network-access&gt;
+    &lt;vpn-network-access-id&gt;1/1/1&lt;/vpn-network-access-id&gt;
+    &lt;description&gt;4G&lt;/description&gt;
+    &lt;status&gt;
+      &lt;admin-enabled&gt;true&lt;/admin-enabled&gt;
+    &lt;/status&gt;
+    &lt;vpn-network-access-type&gt;point-to-point&lt;/vpn-network-access-type&gt;
+    &lt;ip-connection&gt;
+      &lt;ipv4&gt;
+        &lt;address-allocation-type&gt;static-address&lt;/address-allocation-type&gt;
+        &lt;static-addresses&gt;
+          &lt;primary-address&gt;1&lt;/primary-address&gt;
+          &lt;address&gt;
+            &lt;address-id&gt;1&lt;/address-id&gt;
+            &lt;provider-address&gt;192.168.0.1&lt;/provider-address&gt;
+            &lt;customer-address&gt;192.168.0.2&lt;/customer-address&gt;
+            &lt;prefix-length&gt;30&lt;/prefix-length&gt;
+          &lt;/address&gt;
+        &lt;/static-addresses&gt;
+      &lt;/ipv4&gt;
+    &lt;/ip-connection&gt;
+    &lt;routing-protocols&gt;
+      &lt;routing-protocol&gt;
+        &lt;id&gt;1&lt;/id&gt;
+        &lt;type&gt;direct&lt;/type&gt;
+      &lt;/routing-protocol&gt;
+    &lt;/routing-protocols&gt;
+  &lt;/vpn-network-access&gt;
+&lt;/vpn-network-accesses&gt;
+      
       </artwork>
-      </figure>
-    </section>
+        </figure>
+      </section>
     </section>
 
     <section anchor="YANG_module" title="Yang Module">
       <figure align="center" anchor="module_YANG">
-        <artwork align="left"><![CDATA[
-&lt;CODE BEGINS&gt;file "ietf-l3vpn-ntw@2019-09-13.YANG"
+        <artwork align="left">
+&amp;lt;CODE BEGINS&amp;gt;file "ietf-l3vpn-ntw@2019-09-13.YANG"
 module ietf-l3vpn-ntw {
  yang-version 1.1;
  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -1269,16 +1382,16 @@ module ietf-l3vpn-ntw {
  organization
    "IETF OPSA (Operations and Management Area) Working Group ";
  contact
-   "WG Web:   <http://tools.ietf.org/wg/opsawg/>
-       WG List:  <mailto:opsawg@ietf.org>
+   "WG Web:   &lt;http://tools.ietf.org/wg/opsawg/&gt;
+       WG List:  &lt;mailto:opsawg@ietf.org&gt;
        Editor:    Oscar Gonzalez de Dios
-                 <mailto:oscar.gonzalezdedios@telefonica.com>
+                 &lt;mailto:oscar.gonzalezdedios@telefonica.com&gt;
        Editor:    Alejandro Aguado
-                 <mailto:alejandro.aguado_martin@nokia.com>
+                 &lt;mailto:alejandro.aguado_martin@nokia.com&gt;
        Editor:    Victor Lopez
-                 <mailto:victor.lopezalvarez@telefonica.com>
+                 &lt;mailto:victor.lopezalvarez@telefonica.com&gt;
        Editor:    Daniel Voyer
-                 <mailto:daniel.voyer@bell.ca>
+                 &lt;mailto:daniel.voyer@bell.ca&gt;
    ";
 
    description
@@ -2586,8 +2699,8 @@ identity urllc {
    }
    leaf l4-src-port {
     type inet:port-number;
-        must "current() < ../l4-src-port-range/lower-port or "+
-        "current() > ../l4-src-port-range/upper-port" {
+        must "current() &lt; ../l4-src-port-range/lower-port or "+
+        "current() &gt; ../l4-src-port-range/upper-port" {
      description
      "If l4-src-port and l4-src-port-range/lower-port and
      upper-port are set at the same time, l4-src-port
@@ -2610,7 +2723,7 @@ identity urllc {
     }
     leaf upper-port {
      type inet:port-number;
-     must ". >= ../lower-port" {
+     must ". &gt;= ../lower-port" {
       description
       "Upper boundary for port.  If it
       exists, the upper boundary must be
@@ -2628,8 +2741,8 @@ identity urllc {
    }
    leaf l4-dst-port {
     type inet:port-number;
-         must "current() < ../l4-dst-port-range/lower-port or "+
-         "current() > ../l4-dst-port-range/upper-port" {
+         must "current() &lt; ../l4-dst-port-range/lower-port or "+
+         "current() &gt; ../l4-dst-port-range/upper-port" {
      description
      "If l4-dst-port and l4-dst-port-range/lower-port
      and upper-port are set at the same time,
@@ -2647,7 +2760,7 @@ identity urllc {
     }
     leaf upper-port {
      type inet:port-number;
-     must ". >= ../lower-port" {
+     must ". &gt;= ../lower-port" {
      description
      "Upper boundary must be
      higher than lower boundary.";
@@ -4701,22 +4814,92 @@ container vpn-network-accesses {
  }
 }
 
-]]>
+
 &lt;CODE ENDS&gt;
 </artwork>
       </figure>
     </section>
 
-    <!-- Possibly a 'Contributors' section ... -->
-
     <section anchor="IANA" title="IANA Considerations">
-      <t>This memo includes no request to IANA.</t>
+      <t>This document requests IANA to register the following URI in the "ns"
+      subregistry within the "IETF XML Registry" <xref target="RFC3688"/>:</t>
+
+      <t><list style="none">
+          <t>URI: urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw</t>
+
+          <t>Registrant Contact: The IESG.</t>
+
+          <t>XML: N/A; the requested URI is an XML namespace.</t>
+        </list></t>
+
+      <t>This document requests IANA to register the following YANG module in
+      the "YANG Module Names" subregistry <xref target="RFC6020"/> within the
+      "YANG Parameters" registry.</t>
+
+      <t><list style="none">
+          <t>name: ietf-l3vpn-ntw</t>
+
+          <t>namespace: urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw</t>
+
+          <t>prefix: l3nm</t>
+
+          <t>reference: RFC XXXX</t>
+        </list></t>
+
+      <t>These modules are not maintained by IANA.</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>All the security considerations of <xref target="RFC8299"/> apply to
-      this document. Subsequent versions will provide additional security
-      considerations.</t>
+      <t>The YANG module specified in this document defines a schema for data
+      that is designed to be accessed via network management protocols such as
+      NETCONF <xref target="RFC6241"/> or RESTCONF <xref target="RFC8040"/> .
+      The lowest NETCONF layer is the secure transport layer, and the
+      mandatory-to-implement secure transport is Secure Shell (SSH) <xref
+      target="RFC6242"/>. The lowest RESTCONF layer is HTTPS, and the
+      mandatory-to-implement secure transport is TLS <xref
+      target="RFC8466"/>.</t>
+
+      <t>The Network Configuration Access Control Model (NACM) <xref
+      target="RFC8341"/> provides the means to restrict access for particular
+      NETCONF or RESTCONF users to a preconfigured subset of all available
+      NETCONF or RESTCONF protocol operations and content.</t>
+
+      <t>The l3vpn-ntw is used for managing L3 VPNs in a service provider
+      backbone network. Hence, the module l3vpn-ntw can be used to request,
+      modify and retrieve L3VPN Services. For example, the creation of a
+      vpn-service leaf instance triggers the creation of a L3 VPN Service in a
+      Service Provider Network.</t>
+
+      <t>Due to the foreseen use of the YANG module, there are a number of
+      data nodes defined in this YANG module that are
+      writable/creatable/deletable (i.e., config true, which is the default).
+      These data nodes MAY be considered sensitive or vulnerable in some
+      network environments. Write operations (e.g., edit-config) and delete
+      operations to these data nodes without proper protection or
+      authentication can have a negative effect on network operations. These
+      are the subtrees and data nodes and their sensitivity/vulnerability in
+      the ietf-l3vpn-ntw module: <list style="symbols">
+          <t>vpn-service: A malicious client could attempt to delete a running
+          L3 VPN Service, interrupting all the traffic of a client. In
+          addition, a malicius client could attempt to modify the attributes
+          of a running service (e.g. QoS, bandwidth, routing protocols),
+          leading to malfunctioning of the service or SLA violations. In
+          addition, a non-authorized client could attempt to create a L3 VPN
+          Service without the knowledge of the Operator. A malicious client
+          could attemp to gain knowledge of customer name and description</t>
+
+          <t>COMPLETE rest of critical data nodes and subtrees</t>
+        </list></t>
+
+      <t>Summing up, the foreseen risks of using the l3vpn-ntw module can be
+      clasified into: <list style="symbols">
+          <t>Malicious clients attempting to delete or modify services</t>
+
+          <t>Unauthorized clients attempting to create/modify/delete a
+          service</t>
+
+          <t>Unauthorized clients attempting to read service information</t>
+        </list></t>
     </section>
 
     <section anchor="Implementation" title="Implementation Status">
@@ -4977,7 +5160,8 @@ container vpn-network-accesses {
       <t>Qin Wu<vspace blankLines="0"/> Huawei<vspace blankLines="0"/> Email:
       bill.wu@huawei.com&gt;</t>
     </section>
-</middle>
+  </middle>
+
   <!--  *****BACK MATTER ***** -->
 
   <back>
@@ -4995,20 +5179,27 @@ container vpn-network-accesses {
      filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <references title="Normative References">
-      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
       &RFC2119;
+
+      &RFC3688;
+
+      &RFC6020;
+
+      &RFC7950;
+
+      &RFC8341;
     </references>
 
     <references title="Informative References">
-      <!-- Here we use entities that we defined at the beginning. -->
-
       &RFC4026;
 
       &RFC4076;
 
       &RFC6241;
 
-      &RFC7950;
+      &RFC6242;
+
+      &RFC8040;
 
       &RFC8299;
 
@@ -5023,8 +5214,6 @@ container vpn-network-accesses {
       &RFC8174;
 
       &RFC4176;
-
-      <!-- A reference written by by an organization not a person. -->
     </references>
 
     <!-- Change Log
@@ -5038,5 +5227,5 @@ v02b 2019-09-19 Daniel King: Review.
 v02c 2019-09-24 Oscar and Samier: Review+Yang fix.
 
  -->
-   </back>
+  </back>
 </rfc>
