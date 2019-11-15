@@ -232,32 +232,51 @@
       of the L3VPN services. The Yang model proposed is limited to BGP
       PE-based VPNs as described in RFCs 4026, 4110, and 4364.</t>
     </abstract>
+       
+          <note title="Editorial Note (To be removed by RFC Editor)">
+      <t>Please update these statements within the document with the RFC
+      number to be assigned to this document:<list style="symbols">
+          <t>"This version of this YANG module is part of RFC XXXX;"</t>
+          <t>"RFC XXXX: Layer 3 VPN Network Model";</t>
+          <t>reference: RFC XXXX</t>
+        </list></t>
+      <t>Also, please update the "revision" date of the YANG module.</t>
+    </note>
+       
   </front>
 
   <middle>
     <section title="Introduction">
-      <t><xref target="RFC8299"/> defines a L3VPN Service YANG data Model
+      <t><xref target="RFC8299"/> defines an L3VPN Service YANG data Model
       (L3SM) that can be used for communication between customers and network
       operators. Such model is focused on describing the customer view of the
-      services, and provides an abstracted view of the customer's requested
-      services. That aproach limits the usage of the L3SM to the role of a
+      VPN services, and provides an abstracted view of the customer's requested
+      services. That aproach limits the usage of the L3SM module to the role of a
       Customer Service Model, according to the terminology defined in <xref
       target="RFC8309"/>.</t>
 
-      <t>The YANG data model proposed in this document is called the L3VPN
-      Network Model (L3NM). The L3NM model is aimed at providing a
+      <t>The YANG data model defined in this document is called: L3VPN
+      Network Model (L3NM). The L3NM module is aimed at providing a
       network-centric view of L3 VPN Services. The data model can be used to
-      facilitate communication between the service orchestrator, and the
-      network controller / orchestrator. It enables further capabilities, such
+      facilitate communication between the service orchestrator and the
+      network controller/orchestrator by allowing for more network-centric information to be included. It enables further capabilities, such
       as resource management or to serve as a multi-domain orchestration
-      interface, where transport resources must be synchronized. The YANG
-      module has been built with a prune and extend approach, taking as a
+      interface, where transport resources must be synchronized.</t>
+         
+         <t>This document does not obsolete, but uses, the
+      definitions in <xref target="RFC8299"/>. These two modules are used for similar objectives but with differents scopes and views.</t> 
+      
+         <t>The L3NM YANG
+      module is initially built with a prune and extend approach, taking as a
       starting points the YANG module described in <xref
-      target="RFC8299"/>.</t>
-
-      <t>Hence, this document does not obsolete, but complements, the
-      definitions in <xref target="RFC8299"/>. It aims to provide a different
-      L3VPN view compared to the L3SM, but does not attempt to address all
+      target="RFC8299"/>. Nevertheless, this module is not defined as an augment to L3SM because
+         a specific structure is required to meet network-oriented L3 needs.</t>
+         
+         <t>Some of the information captured in the L3SM can be passed by the Orchestrator
+              in the L3NM (e.g., customer) or be used to fed some of the L3NM attribute (e.g., actual forwarding policies). Some of the information captured in L3SM may be maintained
+         locally within the Orchestrator; which is supposed to maintain a "glue" between a Customer view and its network instantiation.</t>
+                                      
+              <t>The L3NM module does not attempt to address all
       deployment cases especially those where the L3VPN connectivity is
       supported through the coordination of different VPNs in different
       underlying networks. More complex deployment scenarios involving the
@@ -269,72 +288,65 @@
         <t>This document assumes that the reader is familiar with the contents
         of <xref target="RFC6241"/>, <xref target="RFC7950"/>, <xref
         target="RFC8299"/>, <xref target="RFC8309"/>, and <xref
-        target="RFC8453"/> and uses terminology from those documents. Tree
-        diagrams used in this document follow the notation defined in <xref
+        target="RFC8453"/> and uses the terminology defined in those documents.</t>
+           
+           </>The meaning of the symbols in tree diagrams is defined in in <xref
         target="RFC8340"/>.</t>
 
         <t>The document is aimed at modeling BGP PE-based VPNs in a Service
-        Provider Network, so terminology from <xref target="RFC4026"/> and
-        <xref target="RFC4076"/> is used. The terms used in the document are
-        reproduced here:</t>
+        Provider Network, so the terms defined in <xref target="RFC4026"/> and
+        <xref target="RFC4076"/> are used.</t>
+         
+         </>This document makes use of the following terms:</t>
 
         <t><list style="symbols">
-            <t>Vpn-service: A VPN service is offered by Service Providers to
-            enable customers to interconnect sites to create L3 VPNs</t>
-
-            <t>L3 VPN: A Layer 3 IP VPN is a collection of sites that are
-            authorized to exchange traffic between each other over a Service
-            Provider Infrastructure. The Layer 3 VPN is composed by the
-            Customer sites, the attachment circuits between CEs and PEs, and
-            the VPN-Service.</t>
-
             <t>L3 VPN Customer Service Model (L3SM): Describes the
             requirements of a L3 VPN that interconnects a set of sites from
             the point of view of the customer. The customer service model does
             not provide details on the Service Provider Network. The L3 VPN
-            Customer Service model is defined in RFC8299.</t>
+            Customer Service model is defined in <xref target="RFC8299"/>.</t>
 
-            <t>L3 VPN Service Network Model (L3NM): A yang model that
+            <t>L3 VPN Service Network Model (L3NM): A YANG module that
             describes a VPN Service in the Service Provider Network. It
-            containts information of the Service Provider Network and might
-            include allocated resources. It can be used by Network controllers
-            to manage and control the VPN Service configurations in the
-            Service Provider backbone network. The Yang model can be consumed
-            by a Service orchestrator to request a VPN Service to a Network
-            controller</t>
+            containts information of the Service Provider network and might
+            include allocated resources. It can be used by network controllers
+            to manage and control the VPN Service configuration in the
+            Service Provider network. The YANG module can be consumed
+            by a Service Orchestrator to request a VPN Service to a Network
+            controller.</t>
 
-            <t>Service Orchestrator: An entity that interacts with the
+            <t>Service Orchestrator: A functional entity that interacts with the
             customer of a L3 VPN. The Service Orchestrator interacts with the
-            customer using L3SM. The service orchestrator is responsible of
+            customer using L3SM. The Service Orchestrator is responsible of
             the CE-PE attachment circuits, the PE selection, and requesting
-            the vpn-service to the network controller .</t>
+            the VPN service to the network controller.</t>
 
-            <t>Network Controller. An entity responsible for the control and
+            <t>Network Controller: A functional entity responsible for the control and
             management of the service provider network.</t>
 
-            <t>Vpn-node: An abstraction that represents a set of policies
-            applied to a PE and that belong to a single vpn_service. A
-            vpn_service is composed of one or more vpn_nodes. As it is an
+            <t>VPN node (vpn-node): An abstraction that represents a set of policies
+            applied to a PE and that belong to a single VPN service (vpn-service). A
+            vpn-service involves one or more vpn-nodes. As it is an
             abstraction, the network controller will take on how to implement
-            a vpn_node. For example, tipically, in a BGP based VPN, a vpn_node
+            a vpn-node. For example, typically, in a BGP-based VPN, a vpn-node
             could be mapped into a VRF.</t>
 
-            <t>Vpn-network-access. An abstraction that represents the network
+            <t>VPN network access (vpn-network-access): An abstraction that represents the network
             interfaces that are associated to a given vpn-node. Traffic coming
-            from the vpn-network-access belongs to the vpn. The attachment
+            from the vpn-network-access belongs to the VPN. The attachment
             circuits (bearers) between CEs and PEs are terminated in the
             vpn-network-access. A reference to the bearer is maintained to
-            allow keeping the link between l3sm and l3nm.</t>
+            allow keeping the link between L3SM and L3NM.</t>
 
-            <t>VPN Site: A VPN customer's location that is connected to the
+            <t>VPN Site (vpn-site): A VPN customer's location that is connected to the
             Service Provider network via a CE-PE link, which can access at
-            least one VPN.[RFC4176].</t>
+            least one VPN [RFC4176].</t>
 
             <t>VPN Service Provider (SP): A Service Provider offers
-            VPN-related services.[RFC4176]</t>
+            VPN-related services [RFC4176].</t>
 
             <t>Service Provider (SP) Network: A network able to provide
-            VPN-related services</t>
+            VPN-related services.</t>
           </list></t>
       </section>
 
@@ -4837,11 +4849,9 @@ container vpn-network-accesses {
 
       <t><list style="none">
           <t>name: ietf-l3vpn-ntw</t>
-
           <t>namespace: urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw</t>
-
+          <t>maintained by IANA: N</t>
           <t>prefix: l3nm</t>
-
           <t>reference: RFC XXXX</t>
         </list></t>
     </section>
@@ -4861,10 +4871,10 @@ container vpn-network-accesses {
       NETCONF or RESTCONF users to a preconfigured subset of all available
       NETCONF or RESTCONF protocol operations and content.</t>
 
-      <t>The l3vpn-ntw is used for managing L3 VPNs in a service provider
-      backbone network. Hence, the module l3vpn-ntw can be used to request,
-      modify and retrieve L3VPN Services. For example, the creation of a
-      vpn-service leaf instance triggers the creation of a L3 VPN Service in a
+      <t>The ietf-l3vpn-ntw module is used to manage L3 VPNs in a service provider
+      backbone network. Hence, the module can be used to request,
+      modify, or retrieve L3VPN services. For example, the creation of a
+      vpn-service leaf instance triggers the creation of an L3 VPN Service in a
       Service Provider Network.</t>
 
       <t>Due to the foreseen use of the YANG module, there are a number of
@@ -4876,18 +4886,28 @@ container vpn-network-accesses {
       authentication can have a negative effect on network operations. These
       are the subtrees and data nodes and their sensitivity/vulnerability in
       the ietf-l3vpn-ntw module: <list style="symbols">
-          <t>vpn-service: A malicious client could attempt to delete a running
+          <t>vpn-service: An attacker who is able to access network nodes can
+   undertake various attacks, such as deleting a running
           L3 VPN Service, interrupting all the traffic of a client. In
-          addition, a malicius client could attempt to modify the attributes
-          of a running service (e.g. QoS, bandwidth, routing protocols),
-          leading to malfunctioning of the service or SLA violations. In
-          addition, a non-authorized client could attempt to create a L3 VPN
-          Service without the knowledge of the Operator. A malicious client
-          could attemp to gain knowledge of customer name and description</t>
+          addition, an attacker may modify the attributes
+          of a running service (e.g., QoS, bandwidth, routing protocols),
+          leading to malfunctioning of the service and therefore to SLA violations. In
+          addition, an attacker could attempt to create a L3 VPN
+          Service. Such activity can be detected by monitoring and tracking network configuration changes.</t>
 
           <t>COMPLETE rest of critical data nodes and subtrees</t>
         </list></t>
 
+         <t>Some of the readable data nodes in this YANG module may be considered
+ sensitive or vulnerable in some network environments. It is thus important to 
+control read access (e.g., via get, get-config, or notification) to these data nodes.
+ These are the subtrees and data nodes and their sensitivity/vulnerability: </t>
+         <list style="symbols">
+          <t>customer-name and ip-connection: An attacker can retrieve privacy-related information 
+          which can be used to track a customer. Disclosing such information may be considered as a violation of the 
+customer-provider trust relationship.</t>
+         </list></t>
+       
       <t>Summing up, the foreseen risks of using the l3vpn-ntw module can be
       clasified into: <list style="symbols">
           <t>Malicious clients attempting to delete or modify services</t>
@@ -5177,39 +5197,24 @@ module: ietf-l3vpn-ntw
 
     <references title="Normative References">
       &RFC2119;
-
       &RFC3688;
-
       &RFC6020;
-
-      &RFC7950;
-
+      &RFC7950;       
+      &RFC8174;     
       &RFC8341;
+      &RFC8040;
+      &RFC6241;
+      &RFC8466;
+      &RFC6242;
     </references>
 
     <references title="Informative References">
       &RFC4026;
-
       &RFC4076;
-
-      &RFC6241;
-
-      &RFC6242;
-
-      &RFC8040;
-
       &RFC8299;
-
       &RFC8309;
-
-      &RFC8466;
-
       &RFC8453;
-
       &RFC8340;
-
-      &RFC8174;
-
       &RFC4176;
     </references>
 
