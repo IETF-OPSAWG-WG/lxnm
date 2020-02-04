@@ -23,6 +23,11 @@ module ietf-l3vpn-ntw {
     reference
       "RFC 8294: Common YANG Data Types for the Routing Area";
   }
+  import ietf-l3vpn-svc {
+    prefix l3vpn-svc;
+    reference
+      "RFC 8299: YANG Data Model for L3VPN Service Delivery";
+  }
 
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
@@ -31,12 +36,15 @@ module ietf-l3vpn-ntw {
         WG List:  <mailto:opsawg@ietf.org>
         Editor:    Oscar Gonzalez de Dios
                   <mailto:oscar.gonzalezdedios@telefonica.com>
-        Editor:    Alejandro Aguado
+        Author:    Alejandro Aguado
                   <mailto:alejandro.aguado_martin@nokia.com>
-        Editor:    Victor Lopez
+        Author:    Victor Lopez
                   <mailto:victor.lopezalvarez@telefonica.com>
-        Editor:    Daniel Voyer
+        Author:    Daniel Voyer
                   <mailto:daniel.voyer@bell.ca>
+        Author:   Mohamed Boucadair
+                  <mailto:mohamed.boucadair@orange.com>         
+                  
     ";
   description
     "This YANG module defines a generic network-oriented model
@@ -70,114 +78,9 @@ module ietf-l3vpn-ntw {
 
   /* Features */
 
-  feature cloud-access {
-    description
-      "This feature indicates that the VPN
-       can connect to a Cloud Service Provider (CSP).";
-  }
-
-  feature multicast {
-    description
-      "This feature indicates that multicast capabilities
-       are supported by the VPN.";
-  }
-
-  feature ipv4 {
-    description
-      "This feature indicates IPv4 support in a VPN.";
-  }
-
-  feature ipv6 {
-    description
-      "This feature indicates IPv6 support in a VPN.";
-  }
-
-  feature lan-tag {
-    description
-      "This feature indicates LAN Tag support in a VPN
-       Policy filter.";
-  }
-
-  feature carrierscarrier {
-    description
-      "This feature indicates support of Carriers' Carriers.";
-    reference
-      "RFC 4364: BGP/MPLS IP Virtual Private Networks (VPNs)";
-  }
-
-  feature extranet-vpn {
-    description
-      "If the various sites in a VPN are owned
-       by different enterprises, the VPN may be thought of
-       as an 'extranet'.
-
-       This features indicates the support of extranet VPNs.";
-  }
-
-  feature encryption {
-    description
-      "This feature indicates the support of encryption.";
-  }
-
-  feature qos {
-    description
-      "This features indicates the support of classes of services.";
-  }
-
-  feature qos-custom {
-    description
-      "This features indicates the support of a custom QoS profile.";
-  }
-
-  feature rtg-bgp {
-    description
-      "This features indicates the support of the BGP
-       routing protocol.";
-  }
-
-  feature rtg-rip {
-    description
-      "This features indicates the support of the RIP
-       routing protocol.";
-  }
-
-  feature rtg-ospf {
-    description
-      "This features indicates the support of the OSPF
-       routing protocol.";
-  }
-
   feature rtg-ospf-sham-link {
     description
       "This feature indicates the support of OSPF sham links.";
-  }
-
-  feature rtg-vrrp {
-    description
-      "This feature indicates the support of Virtual Router
-       Redundancy Protocol (VRRP)";
-  }
-
-  feature fast-reroute {
-    description
-      "This feature indicates the support of Fast Reroute.";
-  }
-
-  feature bfd {
-    description
-      "This feature indciates the support of BFD.";
-  }
-
-  feature bearer-reference {
-    description
-      "This feature indicates the support of the 'bearer-reference'
-       access constraint.";
-  }
-
-  feature target-sites {
-    description
-      "This features indicates the support of
-       the 'target-sites' match flow parameter.";
   }
 
   feature input-bw {
@@ -210,38 +113,7 @@ module ietf-l3vpn-ntw {
        the 'vxlan' encapsulation.";
   }
 
-  /* Typedefs */
-
-  typedef svc-id {
-    type string;
-    description
-      "Defines a type of service component identifier.";
-  }
-
-  typedef template-id {
-    type string;
-    description
-      "Defines a type of service template identifier.";
-  }
-
-  typedef address-family {
-    type enumeration {
-      enum ipv4 {
-        description
-          "IPv4 address family.";
-      }
-      enum ipv6 {
-        description
-          "IPv6 address family.";
-      }
-      enum ipv4/ipv6 {
-        description
-          "IPv4/IPv6 address family.";
-      }
-    }
-    description
-      "Defines a type for the address family.";
-  }
+ /* Typedefs */
 
   typedef ie-type {
     type enumeration {
@@ -289,432 +161,19 @@ module ietf-l3vpn-ntw {
        status of a particular element.";
   }
 
-  /* Identities */
-
-  identity site-network-access-type {
-    description
-      "Base identity for site-network-access type.";
-  }
-
-  identity point-to-point {
-    base site-network-access-type;
-    description
-      "Identity for point-to-point connections.";
-  }
-
-  /* Extension */
+   /* Identities */
 
   identity pseudowire {
-    base site-network-access-type;
+    base l3vpn-svc:site-network-access-type;
     description
       "Identity for pseudowire connections.";
   }
 
   identity loopback {
-    base site-network-access-type;
+    base l3vpn-svc:site-network-access-type;
     description
       "Identity for loopback connections.";
   }
-
-  /* End of Extension */
-
-  identity multipoint {
-    base site-network-access-type;
-    description
-      "Identity for multipoint connections.
-       Example: Ethernet broadcast segment.";
-  }
-
-  identity customer-application {
-    description
-      "Base identity for customer applications.";
-  }
-
-  identity web {
-    base customer-application;
-    description
-      "Identity for Web applications (e.g., HTTP, HTTPS).";
-  }
-
-  identity mail {
-    base customer-application;
-    description
-      "Identity for mail applications.";
-  }
-
-  identity file-transfer {
-    base customer-application;
-    description
-      "Identity for file transfer applications (e.g., FTP, SFTP).";
-  }
-
-  identity database {
-    base customer-application;
-    description
-      "Identity for database applications.";
-  }
-
-  identity social {
-    base customer-application;
-    description
-      "Identity for social-network applications.";
-  }
-
-  identity games {
-    base customer-application;
-    description
-      "Identity for gaming applications.";
-  }
-
-  identity p2p {
-    base customer-application;
-    description
-      "Identity for peer-to-peer applications.";
-  }
-
-  identity network-management {
-    base customer-application;
-    description
-      "Identity for management applications
-       (e.g., Telnet, syslog, SNMP).";
-  }
-
-  identity voice {
-    base customer-application;
-    description
-      "Identity for voice applications.";
-  }
-
-  identity video {
-    base customer-application;
-    description
-      "Identity for video conference applications.";
-  }
-
-  identity embb {
-    base customer-application;
-    description
-      "Identity for an enhanced Mobile Broadband (eMBB)
-       application.  Note that an eMBB application demands
-       network performance with a wide variety of
-       characteristics, such as data rate, latency,
-       loss rate, reliability, and many other parameters.";
-  }
-
-  identity urllc {
-    base customer-application;
-    description
-      "Identity for an Ultra-Reliable and Low Latency
-       Communications (URLLC) application.  Note that a
-       URLLC application demands network performance
-       with a wide variety of characteristics, such as latency,
-       reliability, and many other parameters.";
-  }
-
-  identity mmtc {
-    base customer-application;
-    description
-      "Identity for a massive Machine Type
-       Communications (mMTC) application.  Note that an
-       mMTC application demands network performance
-       with a wide variety of characteristics, such as data
-       rate, latency, loss rate, reliability, and many
-       other parameters.";
-  }
-
-  identity address-allocation-type {
-    description
-      "Base identity for address-allocation-type for PE-CE link.";
-  }
-
-  identity provider-dhcp {
-    base address-allocation-type;
-    description
-      "Provider network provides DHCP service to customer.";
-  }
-
-  identity provider-dhcp-relay {
-    base address-allocation-type;
-    description
-      "Provider network provides DHCP relay service to customer.";
-  }
-
-  identity provider-dhcp-slaac {
-    base address-allocation-type;
-    description
-      "Provider network provides DHCP service to customer,
-       as well as SLAAC.";
-  }
-
-  identity static-address {
-    base address-allocation-type;
-    description
-      "Provider-to-customer addressing is static.";
-  }
-
-  identity slaac {
-    base address-allocation-type;
-    description
-      "Use IPv6 SLAAC.";
-  }
-
-  identity site-role {
-    description
-      "Base identity for site type.";
-  }
-
-  identity any-to-any-role {
-    base site-role;
-    description
-      "Site in an any-to-any IP VPN.";
-  }
-
-  identity spoke-role {
-    base site-role;
-    description
-      "Spoke site in a Hub-and-Spoke IP VPN.";
-  }
-
-  identity hub-role {
-    base site-role;
-    description
-      "Hub site in a Hub-and-Spoke IP VPN.";
-  }
-
-  identity vpn-topology {
-    description
-      "Base identity for VPN topology.";
-  }
-
-  identity any-to-any {
-    base vpn-topology;
-    description
-      "Identity for any-to-any VPN topology.";
-  }
-
-  identity hub-spoke {
-    base vpn-topology;
-    description
-      "Identity for Hub-and-Spoke VPN topology.";
-  }
-
-  identity hub-spoke-disjoint {
-    base vpn-topology;
-    description
-      "Identity for Hub-and-Spoke VPN topology
-       where Hubs cannot communicate with each other.";
-  }
-
-  identity custom {
-    base vpn-topology;
-    description
-      "Identity for CUSTOM VPN topology
-       where Hubs can act as Spoke for certain part of
-       the network or Spokes as Hubs.";
-  }
-
-  identity multicast-tree-type {
-    description
-      "Base identity for multicast tree type.";
-  }
-
-  identity ssm-tree-type {
-    base multicast-tree-type;
-    description
-      "Identity for Source-Specific Multicast (SSM) tree type.";
-  }
-
-  identity asm-tree-type {
-    base multicast-tree-type;
-    description
-      "Identity for Any-Source Multicast (ASM) tree type.";
-  }
-
-  identity bidir-tree-type {
-    base multicast-tree-type;
-    description
-      "Identity for bidirectional tree type.";
-  }
-
-  identity multicast-rp-discovery-type {
-    description
-      "Base identity for Rendezvous Point (RP) discovery type.";
-  }
-
-  identity auto-rp {
-    base multicast-rp-discovery-type;
-    description
-      "Base identity for Auto-RP discovery type.";
-  }
-
-  identity static-rp {
-    base multicast-rp-discovery-type;
-    description
-      "Base identity for static type.";
-  }
-
-  identity bsr-rp {
-    base multicast-rp-discovery-type;
-    description
-      "Base identity for Bootstrap Router (BSR) discovery type.";
-  }
-
-  identity routing-protocol-type {
-    description
-      "Base identity for routing protocol type.";
-  }
-
-  identity ospf {
-    base routing-protocol-type;
-    description
-      "Identity for OSPF protocol type.";
-  }
-
-  identity bgp {
-    base routing-protocol-type;
-    description
-      "Identity for BGP protocol type.";
-  }
-
-  identity static {
-    base routing-protocol-type;
-    description
-      "Identity for static routing protocol type.";
-  }
-
-  identity rip {
-    base routing-protocol-type;
-    description
-      "Identity for RIP protocol type.";
-  }
-
-  identity vrrp {
-    base routing-protocol-type;
-    description
-      "Identity for VRRP protocol type.
-       This is to be used when LANs are directly connected
-       to PE routers.";
-  }
-
-  identity direct {
-    base routing-protocol-type;
-    description
-      "Identity for direct protocol type.";
-  }
-
-  identity protocol-type {
-    description
-      "Base identity for protocol field type.";
-  }
-
-  identity tcp {
-    base protocol-type;
-    description
-      "TCP protocol type.";
-  }
-
-  identity udp {
-    base protocol-type;
-    description
-      "UDP protocol type.";
-  }
-
-  identity icmp {
-    base protocol-type;
-    description
-      "ICMP protocol type.";
-  }
-
-  identity icmp6 {
-    base protocol-type;
-    description
-      "ICMPv6 protocol type.";
-  }
-
-  identity gre {
-    base protocol-type;
-    description
-      "GRE protocol type.";
-  }
-
-  identity ipip {
-    base protocol-type;
-    description
-      "IP-in-IP protocol type.";
-  }
-
-  identity hop-by-hop {
-    base protocol-type;
-    description
-      "Hop-by-Hop IPv6 header type.";
-  }
-
-  identity routing {
-    base protocol-type;
-    description
-      "Routing IPv6 header type.";
-  }
-
-  identity esp {
-    base protocol-type;
-    description
-      "ESP (Encapsulating Security Payload) header type.";
-  }
-
-  identity ah {
-    base protocol-type;
-    description
-      "AH (Authentication Header) header type.";
-  }
-
-  identity vpn-policy-filter-type {
-    description
-      "Base identity for VPN policy filter type.";
-  }
-
-  identity ipv4 {
-    base vpn-policy-filter-type;
-    description
-      "Identity for IPv4 prefix filter type.";
-  }
-
-  identity ipv6 {
-    base vpn-policy-filter-type;
-    description
-      "Identity for IPv6 prefix filter type.";
-  }
-
-  identity lan {
-    base vpn-policy-filter-type;
-    description
-      "Identity for LAN Tag filter type.";
-  }
-
-  identity qos-profile-direction {
-    description
-      "Base identity for QoS profile direction.";
-  }
-
-  identity site-to-wan {
-    base qos-profile-direction;
-    description
-      "Identity for Site-to-WAN direction.";
-  }
-
-  identity wan-to-site {
-    base qos-profile-direction;
-    description
-      "Identity for WAN-to-Site direction.";
-  }
-
-  identity both {
-    base qos-profile-direction;
-    description
-      "Identity for both WAN-to-Site direction
-       and Site-to-WAN direction.";
-  }
-
-  /* Extended Identities */
 
   identity encapsulation-type {
     description
@@ -931,7 +390,7 @@ module ietf-l3vpn-ntw {
 
   grouping vpn-service-multicast {
     container multicast {
-      if-feature "multicast";
+      if-feature "l3vpn-svc:multicast";
       leaf enabled {
         type boolean;
         default "false";
@@ -941,7 +400,7 @@ module ietf-l3vpn-ntw {
       container customer-tree-flavors {
         leaf-list tree-flavor {
           type identityref {
-            base multicast-tree-type;
+            base l3vpn-svc:multicast-tree-type;
           }
           description
             "Type of tree to be used.";
@@ -1021,9 +480,9 @@ module ietf-l3vpn-ntw {
         container rp-discovery {
           leaf rp-discovery-type {
             type identityref {
-              base multicast-rp-discovery-type;
+              base l3vpn-svc:multicast-rp-discovery-type;
             }
-            default "static-rp";
+            default "l3vpn-svc:static-rp";
             description
               "Type of RP discovery used.";
           }
@@ -1058,7 +517,7 @@ module ietf-l3vpn-ntw {
 
   grouping vpn-service-mpls {
     leaf carrierscarrier {
-      if-feature "carrierscarrier";
+      if-feature "l3vpn-svc:carrierscarrier";
       type boolean;
       default "false";
       description
@@ -1157,8 +616,8 @@ module ietf-l3vpn-ntw {
           "Match on Layer 4 src port.";
       }
       leaf-list target-sites {
-        if-feature "target-sites";
-        type svc-id;
+        if-feature "l3vpn-svc:target-sites";
+        type l3vpn-svc:svc-id;
         description
           "Identify a site as traffic destination.";
       }
@@ -1228,7 +687,7 @@ module ietf-l3vpn-ntw {
         type union {
           type uint8;
           type identityref {
-            base protocol-type;
+            base l3vpn-svc:protocol-type;
           }
         }
         description
@@ -1276,7 +735,7 @@ module ietf-l3vpn-ntw {
 
   grouping site-protection {
     container traffic-protection {
-      if-feature "fast-reroute";
+      if-feature "l3vpn-svc:fast-reroute";
       leaf enabled {
         type boolean;
         default "false";
@@ -1292,7 +751,7 @@ module ietf-l3vpn-ntw {
 
   grouping site-service-mpls {
     container carrierscarrier {
-      if-feature "carrierscarrier";
+      if-feature "l3vpn-svc:carrierscarrier";
       leaf signalling-type {
         type enumeration {
           enum ldp {
@@ -1327,7 +786,7 @@ module ietf-l3vpn-ntw {
 
   grouping site-service-qos-profile {
     container qos {
-      if-feature "qos";
+      if-feature "l3vpn-svc:qos";
       container qos-classification-policy {
         list rule {
           key "id";
@@ -1346,7 +805,7 @@ module ietf-l3vpn-ntw {
             case match-application {
               leaf match-application {
                 type identityref {
-                  base customer-application;
+                  base l3vpn-svc:customer-application;
                 }
                 description
                   "Defines the application to match.";
@@ -1385,9 +844,9 @@ module ietf-l3vpn-ntw {
             }
             leaf direction {
               type identityref {
-                base qos-profile-direction;
+                base l3vpn-svc:qos-profile-direction;
               }
-              default "both";
+              default "l3vpn-svc:both";
               description
                 "The direction to which the QoS profile
                  is applied.";
@@ -1397,7 +856,7 @@ module ietf-l3vpn-ntw {
             description
               "Customized QoS profile.";
             container classes {
-              if-feature "qos-custom";
+              if-feature "l3vpn-svc:qos-custom";
               list class {
                 key "class-id";
                 leaf class-id {
@@ -1409,9 +868,9 @@ module ietf-l3vpn-ntw {
                 }
                 leaf direction {
                   type identityref {
-                    base qos-profile-direction;
+                    base l3vpn-svc:qos-profile-direction;
                   }
-                  default "both";
+                  default "l3vpn-svc:both";
                   description
                     "The direction to which the QoS profile
                      is applied.";
@@ -1529,7 +988,7 @@ module ietf-l3vpn-ntw {
 
   grouping site-security-encryption {
     container encryption {
-      if-feature "encryption";
+      if-feature "l3vpn-svc:encryption";
       leaf enabled {
         type boolean;
         default "false";
@@ -1613,7 +1072,7 @@ module ietf-l3vpn-ntw {
         }
         leaf type {
           type identityref {
-            base routing-protocol-type;
+            base l3vpn-svc:routing-protocol-type;
           }
           description
             "Type of routing protocol.";
@@ -1641,9 +1100,9 @@ module ietf-l3vpn-ntw {
             description
               "Only applies when protocol is OSPF.";
           }
-          if-feature "rtg-ospf";
+          if-feature "l3vpn-svc:rtg-ospf";
           leaf-list address-family {
-            type address-family;
+            type l3vpn-svc:address-family;
             min-elements 1;
             description
               "If OSPF is used on this site, this node
@@ -1684,7 +1143,7 @@ module ietf-l3vpn-ntw {
             list sham-link {
               key "target-site";
               leaf target-site {
-                type svc-id;
+                type l3vpn-svc:svc-id;
                 description
                   "Target site for the sham link connection.
                    The site is referred to by its ID.";
@@ -1712,7 +1171,7 @@ module ietf-l3vpn-ntw {
             description
               "Only applies when protocol is BGP.";
           }
-          if-feature "rtg-bgp";
+          if-feature "l3vpn-svc:rtg-bgp";
           leaf peer-autonomous-system {
             type inet:as-number;
             mandatory true;
@@ -1726,7 +1185,7 @@ module ietf-l3vpn-ntw {
               "Local-AS overwrite.";
           }
           leaf-list address-family {
-            type address-family;
+            type l3vpn-svc:address-family;
             min-elements 1;
             description
               "If BGP is used on this site, this node
@@ -1769,7 +1228,7 @@ module ietf-l3vpn-ntw {
           }
           container cascaded-lan-prefixes {
             list ipv4-lan-prefixes {
-              if-feature "ipv4";
+              if-feature "l3vpn-svc:ipv4";
               key "lan next-hop";
               leaf lan {
                 type inet:ipv4-prefix;
@@ -1790,7 +1249,7 @@ module ietf-l3vpn-ntw {
                 "List of LAN prefixes for the site.";
             }
             list ipv6-lan-prefixes {
-              if-feature "ipv6";
+              if-feature "l3vpn-svc:ipv6";
               key "lan next-hop";
               leaf lan {
                 type inet:ipv6-prefix;
@@ -1822,9 +1281,9 @@ module ietf-l3vpn-ntw {
               "Only applies when the protocol is RIP.  For IPv4,
                the model assumes that RIP version 2 is used.";
           }
-          if-feature "rtg-rip";
+          if-feature "l3vpn-svc:rtg-rip";
           leaf-list address-family {
-            type address-family;
+            type l3vpn-svc:address-family;
             min-elements 1;
             description
               "If RIP is used on this site, this node
@@ -1840,9 +1299,9 @@ module ietf-l3vpn-ntw {
             description
               "Only applies when protocol is VRRP.";
           }
-          if-feature "rtg-vrrp";
+          if-feature "l3vpn-svc:rtg-vrrp";
           leaf-list address-family {
-            type address-family;
+            type l3vpn-svc:address-family;
             min-elements 1;
             description
               "If VRRP is used on this site, this node
@@ -1866,10 +1325,10 @@ module ietf-l3vpn-ntw {
   grouping site-attachment-ip-connection {
     container ip-connection {
       container ipv4 {
-        if-feature "ipv4";
+        if-feature "l3vpn-svc:ipv4";
         leaf address-allocation-type {
           type identityref {
-            base address-allocation-type;
+            base l3vpn-svc:address-allocation-type;
           }
           must "not(derived-from-or-self(current(), 'l3vpn-ntw:slaac') or "
              + "derived-from-or-self(current(), "
@@ -2063,10 +1522,10 @@ module ietf-l3vpn-ntw {
           "IPv4-specific parameters.";
       }
       container ipv6 {
-        if-feature "ipv6";
+        if-feature "l3vpn-svc:ipv6";
         leaf address-allocation-type {
           type identityref {
-            base address-allocation-type;
+            base l3vpn-svc:address-allocation-type;
           }
           description
             "Defines how addresses are allocated.
@@ -2265,7 +1724,7 @@ module ietf-l3vpn-ntw {
       }
       container oam {
         container bfd {
-          if-feature "bfd";
+          if-feature "l3vpn-svc:bfd";
           leaf enabled {
             type boolean;
             default "false";
@@ -2322,7 +1781,7 @@ module ietf-l3vpn-ntw {
 
   grouping site-service-multicast {
     container multicast {
-      if-feature "multicast";
+      if-feature "l3vpn-svc:multicast";
       leaf multicast-site-type {
         type enumeration {
           enum receiver-only {
@@ -2344,14 +1803,14 @@ module ietf-l3vpn-ntw {
       }
       container multicast-address-family {
         leaf ipv4 {
-          if-feature "ipv4";
+          if-feature "l3vpn-svc:ipv4";
           type boolean;
           default "false";
           description
             "Enables IPv4 multicast.";
         }
         leaf ipv6 {
-          if-feature "ipv6";
+          if-feature "l3vpn-svc:ipv6";
           type boolean;
           default "false";
           description
@@ -2397,7 +1856,7 @@ module ietf-l3vpn-ntw {
       list address-family {
         key "af";
         leaf af {
-          type address-family;
+          type l3vpn-svc:address-family;
           description
             "Address family.";
         }
@@ -2446,19 +1905,19 @@ module ietf-l3vpn-ntw {
 
   grouping vpn-extranet {
     container extranet-vpns {
-      if-feature "extranet-vpn";
+      if-feature "l3vpn-svc:extranet-vpn";
       list extranet-vpn {
         key "vpn-id";
         leaf vpn-id {
-          type svc-id;
+          type l3vpn-svc:svc-id;
           description
             "Identifies the target VPN the local VPN want to access.";
         }
         leaf local-sites-role {
           type identityref {
-            base site-role;
+            base l3vpn-svc:site-role;
           }
-          default "any-to-any-role";
+          default "l3vpn-svc:any-to-any-role";
           description
             "This describes the role of the
              local sites in the target VPN topology.  In the any-to-any VPN
@@ -2483,7 +1942,7 @@ module ietf-l3vpn-ntw {
   grouping vpn-profile-cfg {
     container valid-provider-identifiers {
       list cloud-identifier {
-        if-feature "cloud-access";
+        if-feature "l3vpn-svc:cloud-access";
         key "id";
         leaf id {
           type string;
@@ -2549,7 +2008,7 @@ module ietf-l3vpn-ntw {
 
   grouping vpn-svc-cfg {
     leaf vpn-id {
-      type svc-id;
+      type l3vpn-svc:svc-id;
       description
         "VPN identifier.  Local administration meaning.";
     }
@@ -2566,9 +2025,9 @@ module ietf-l3vpn-ntw {
     }
     leaf vpn-service-topology {
       type identityref {
-        base vpn-topology;
+        base l3vpn-svc:vpn-topology;
       }
-      default "any-to-any";
+      default "l3vpn-svc:any-to-any";
       description
         "VPN service topology.";
     }
@@ -2590,9 +2049,9 @@ module ietf-l3vpn-ntw {
     uses status-params;
     leaf vpn-network-access-type {
       type identityref {
-        base site-network-access-type;
+        base l3vpn-svc:site-network-access-type;
       }
-      default "point-to-point";
+      default "l3vpn-svc:point-to-point";
       description
         "Describes the type of connection, e.g.,
          point-to-point or multipoint.";
@@ -2696,7 +2155,7 @@ module ietf-l3vpn-ntw {
               "Relevant when the bandwidth type is
                set as bandwidth per VPN service.";
           }
-          type svc-id;
+          type l3vpn-svc:svc-id;
           description
             "Identifies the target VPN.  If the bandwidth
              type is set as bandwidth per VPN service, the
@@ -2825,15 +2284,15 @@ module ietf-l3vpn-ntw {
             "router-id information can be ipv4/6 addresses";
         }
         leaf address-family {
-          type address-family;
+          type l3vpn-svc:address-family;
           description
             "Address family used for router-id information.";
         }
         leaf node-role {
           type identityref {
-            base site-role;
+            base l3vpn-svc:site-role;
           }
-          default "any-to-any-role";
+          default "l3vpn-svc:any-to-any-role";
           description
             "Role of the vpn-node in the IP VPN.";
         }
@@ -3078,7 +2537,7 @@ module ietf-l3vpn-ntw {
       }
       container bearer {
         leaf bearer-reference {
-          if-feature "bearer-reference";
+          if-feature "l3vpn-svc:bearer-reference";
           type string;
           description
             "This is an internal reference for the SP.";
@@ -3122,12 +2581,12 @@ module ietf-l3vpn-ntw {
       list vpn-network-access {
         key "vpn-network-access-id";
         leaf vpn-network-access-id {
-          type svc-id;
+          type l3vpn-svc:svc-id;
           description
             "Identifier for the access.";
         }
         leaf port-id {
-          type svc-id;
+          type l3vpn-svc:svc-id;
           description
             "Identifier for the network access.";
         }
