@@ -161,7 +161,7 @@ module ietf-l3vpn-ntw {
        status of a particular element.";
   }
 
-   /* Identities */
+  /* Identities */
 
   identity pseudowire {
     base l3vpn-svc:site-network-access-type;
@@ -569,137 +569,6 @@ module ietf-l3vpn-ntw {
        parameters.";
   }
 
-  grouping flow-definition {
-    container match-flow {
-      leaf dscp {
-        type inet:dscp;
-        description
-          "DSCP value.";
-      }
-      leaf dot1p {
-        type uint8 {
-          range "0..7";
-        }
-        description
-          "802.1p matching.";
-      }
-      leaf ipv4-src-prefix {
-        type inet:ipv4-prefix;
-        description
-          "Match on IPv4 src address.";
-      }
-      leaf ipv6-src-prefix {
-        type inet:ipv6-prefix;
-        description
-          "Match on IPv6 source address.";
-      }
-      leaf ipv4-dst-prefix {
-        type inet:ipv4-prefix;
-        description
-          "Match on IPv4 destination address.";
-      }
-      leaf ipv6-dst-prefix {
-        type inet:ipv6-prefix;
-        description
-          "Match on IPv6 destination address.";
-      }
-      leaf l4-src-port {
-        type inet:port-number;
-        must 'current() < ../l4-src-port-range/lower-port or '
-           + 'current() > ../l4-src-port-range/upper-port' {
-          description
-            "If l4-src-port and l4-src-port-range/lower-port and
-             upper-port are set at the same time, l4-src-port
-             should not overlap with l4-src-port-range.";
-        }
-        description
-          "Match on Layer 4 src port.";
-      }
-      leaf-list target-sites {
-        if-feature "l3vpn-svc:target-sites";
-        type l3vpn-svc:svc-id;
-        description
-          "Identify a site as traffic destination.";
-      }
-      container l4-src-port-range {
-        leaf lower-port {
-          type inet:port-number;
-          description
-            "Lower boundary for port.";
-        }
-        leaf upper-port {
-          type inet:port-number;
-          must '. >= ../lower-port' {
-            description
-              "Upper boundary for port.  If it
-               exists, the upper boundary must be
-               higher than the lower boundary.";
-          }
-          description
-            "Upper boundary for port.";
-        }
-        description
-          "Match on Layer 4 src port range.  When
-           only the lower-port is present, it represents
-           a single port.  When both the lower-port and
-           upper-port are specified, it implies
-           a range inclusive of both values.";
-      }
-      leaf l4-dst-port {
-        type inet:port-number;
-        must 'current() < ../l4-dst-port-range/lower-port or '
-           + 'current() > ../l4-dst-port-range/upper-port' {
-          description
-            "If l4-dst-port and l4-dst-port-range/lower-port
-             and upper-port are set at the same time,
-             l4-dst-port should not overlap with
-             l4-src-port-range.";
-        }
-        description
-          "Match on Layer 4 dst port.";
-      }
-      container l4-dst-port-range {
-        leaf lower-port {
-          type inet:port-number;
-          description
-            "Lower boundary for port.";
-        }
-        leaf upper-port {
-          type inet:port-number;
-          must '. >= ../lower-port' {
-            description
-              "Upper boundary must be
-               higher than lower boundary.";
-          }
-          description
-            "Upper boundary for port.  If it exists,
-             upper boundary must be higher than lower
-             boundary.";
-        }
-        description
-          "Match on Layer 4 dst port range.  When only
-           lower-port is present, it represents a single
-           port.  When both lower-port and upper-port are
-           specified, it implies a range inclusive of both
-           values.";
-      }
-      leaf protocol-field {
-        type union {
-          type uint8;
-          type identityref {
-            base l3vpn-svc:protocol-type;
-          }
-        }
-        description
-          "Match on IPv4 protocol or IPv6 Next Header field.";
-      }
-      description
-        "Describes flow-matching criteria.";
-    }
-    description
-      "Flow definition based on criteria.";
-  }
-
   grouping site-service-basic {
     leaf svc-input-bandwidth {
       type uint64;
@@ -800,7 +669,7 @@ module ietf-l3vpn-ntw {
           choice match-type {
             default "match-flow";
             case match-flow {
-              uses flow-definition;
+              uses l3vpn-svc:flow-definition;
             }
             case match-application {
               leaf match-application {
