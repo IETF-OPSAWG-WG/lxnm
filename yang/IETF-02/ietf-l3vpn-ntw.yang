@@ -78,6 +78,16 @@ module ietf-l3vpn-ntw {
 
   /* Features */
 
+  feature msdp {
+  description
+    "This feature indicates that msdp capabilities
+     are supported by the VPN.";
+  }
+  feature rtg-isis {
+   description
+     "This features indicates the support of the ISIS
+      routing protocol.";
+  }
   feature rtg-ospf-sham-link {
     description
       "This feature indicates the support of OSPF sham links.";
@@ -114,6 +124,33 @@ module ietf-l3vpn-ntw {
   }
 
   /* Typedefs */
+
+  typedef area-address {
+    type string {
+      pattern '[0-9A-Fa-f]{2}(\.[0-9A-Fa-f]{4}){0,6}';
+    }
+    description
+      "This type defines the area address format.";
+  }
+
+  typedef isis-level {
+    type enumeration {
+      enum level1 {
+        value 0;
+        description "ISIS level 1";
+      }
+      enum level2 {
+       value 1;
+       description "ISIS level 2";
+      }
+      enum level1-2 {
+       value 2;
+       description "ISIS level 1 and 2";
+      }
+    }
+  description
+    "Defines the ISIS level for interface and system";
+  }
 
   typedef ie-type {
     type enumeration {
@@ -162,6 +199,12 @@ module ietf-l3vpn-ntw {
   }
 
   /* Identities */
+
+  identity isis {
+   base l3vpn-svc:routing-protocol-type;
+   description
+   "Identity for ISIS protocol type.";
+  }
 
   identity pseudowire {
     base l3vpn-svc:site-network-access-type;
@@ -442,6 +485,39 @@ module ietf-l3vpn-ntw {
                    Anycast RP or RP-tree-to-SPT switchover
                    architectures.";
               }
+              container anycast {
+                when "../rp-redundancy = 'true' and ../optimal-traffic-delivery = 'true'"{
+                  description "Only applicable if RP redundancy is enabled and delivery through optimal path is activated.";
+                }
+                leaf local-address{
+                  type inet:ip-address;
+                  description 
+                  "IP local address for PIM RP. Usually, it corresponds to router ID or primary address";
+                }
+                leaf-list rp-set-address {
+                  type inet:ip-address;
+                  description
+                  "Address other RP routers that share the same RP IP address.";
+                }
+                container msdp {
+                  if-feature msdp;
+                  leaf enabled {
+                    type boolean;
+                    default false;
+                    description
+                    "If true, Multicast Source Discovery Protocol (MSDP) protocol is activated.";
+                  }
+                  leaf peer {
+                    type inet:ip-address;
+                    description
+                    "IP address of the MSDP peer.";
+                  }
+                  description 
+                  "MSDP parameters.";
+                }
+                description 
+                "PIM Anycast-RP parameters.";
+              }  
               description
                 "Parameters for a provider-managed RP.";
             }
