@@ -180,12 +180,12 @@ module ietf-l3vpn-ntw {
       enum up {
         value 0;
         description
-          "Operational status UP.";
+          "Operational status UP/Enabled.";
       }
       enum down {
         value 1;
         description
-          "Operational status DOWN";
+          "Operational status DOWN/Disabled";
       }
       enum unknown {
         value 2;
@@ -628,27 +628,41 @@ module ietf-l3vpn-ntw {
        parameters.";
   }
 
-  grouping operational-requirements-ops {
-    leaf actual-site-start {
-      type yang:date-and-time;
-      config false;
+  grouping status-timestamp {
+    leaf status {
+      type operational-type;
       description
-        "Optional leaf indicating actual date and
-         time when the service at a particular site
-         actually started.";
+        "Operations status";
     }
-    leaf actual-site-stop {
+    leaf timestamp {
       type yang:date-and-time;
-      config false;
       description
-        "Optional leaf indicating actual date and
-         time when the service at a particular site
-         actually stopped.";
+        "Indicates the actual date and time when 
+         the service actually started (UP) or 
+         stopped (DOWN).";
     }
     description
       "This grouping defines some operational
-       parameters.";
+       parameters for the service.";
   }
+
+  grouping service-status {
+    container service-status {
+      container admin {
+        uses status-timestamp; 
+        description
+          "Administrative service status.";
+      }
+      container ops {
+        config false;
+        uses status-timestamp; 
+        description
+          "Operational service status.";
+      }
+      description
+        "Service status.";
+    }
+ }
 
   grouping site-service-basic {
     leaf svc-input-bandwidth {
@@ -2729,6 +2743,7 @@ module ietf-l3vpn-ntw {
     container vpn-services {
       list vpn-service {
         key "vpn-id";
+        uses service-status;
         uses vpn-svc-cfg;
         description
           "List of VPN services.";
