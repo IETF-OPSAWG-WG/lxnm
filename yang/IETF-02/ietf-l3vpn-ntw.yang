@@ -199,6 +199,38 @@ module ietf-l3vpn-ntw {
   }
 
   /* Identities */
+  
+  identity vpn-topology {
+    description
+    "Base identity for VPN topology.";
+  }
+
+  identity any-to-any {
+    base vpn-topology;
+    description
+    "Identity for any-to-any VPN topology.";
+  }
+
+  identity hub-spoke {
+    base vpn-topology;
+    description
+    "Identity for Hub-and-Spoke VPN topology.";
+  }
+
+  identity hub-spoke-disjoint {
+    base vpn-topology;
+    description
+    "Identity for Hub-and-Spoke VPN topology
+    where Hubs cannot communicate with each other.";
+  }
+
+  identity custom {
+    base vpn-topology;
+    description
+    "Identity for CUSTOM VPN topology
+    where Hubs can act as Spoke for certain part of 
+    the network or Spokes as Hubs.";
+  }
 
   identity isis {
    base l3vpn-svc:routing-protocol-type;
@@ -1865,6 +1897,12 @@ module ietf-l3vpn-ntw {
         description
           "Multicast protocol type to be used with the customer site.";
       }
+      leaf remote-source {
+        type boolean;
+        default false;
+        description
+        "When true, there is no PIM adjacency on the interface.";
+      }
       description
         "Multicast parameters for the site.";
     }
@@ -2052,9 +2090,9 @@ module ietf-l3vpn-ntw {
     }
     leaf vpn-service-topology {
       type identityref {
-        base l3vpn-svc:vpn-topology;
+        base vpn-topology;
       }
-      default "l3vpn-svc:any-to-any";
+      default any-to-any;
       description
         "VPN service topology.";
     }
@@ -2065,7 +2103,7 @@ module ietf-l3vpn-ntw {
     }
     uses ie-profiles-params;
     uses vpn-nodes-params;
-    uses vpn-service-multicast;
+    /* uses vpn-service-multicast; */
     /* uses vpn-service-mpls; */
     /* uses vpn-extranet;*/
     description
@@ -2333,6 +2371,7 @@ module ietf-l3vpn-ntw {
         uses status-params;
         uses net-acc;
         uses site-maximum-routes;
+        uses vpn-service-multicast;
         leaf node-ie-profile {
           type leafref {
             path "/l3vpn-ntw/vpn-services/"
