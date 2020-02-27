@@ -28,7 +28,13 @@ module ietf-l3vpn-ntw {
     reference
       "RFC 8299: YANG Data Model for L3VPN Service Delivery";
   }
-
+  import ietf-packet-fields {
+    prefix packet-fields;
+    reference
+      "RFC 8519: YANG Data Model for Network Access
+                 Control Lists (ACLs)";
+  }
+  
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
   contact
@@ -826,6 +832,31 @@ module ietf-l3vpn-ntw {
     description
       "Defines MPLS service parameters for a site.";
   }
+  
+  grouping ports {
+     choice source-port {
+       container source-port-range-or-operator {
+         uses packet-fields:port-range-or-operator;
+         description
+           "Source port definition.";
+       }
+       description
+         "Choice of specifying the source port or referring to
+          a group of source port numbers.";
+     }
+     choice destination-port {
+       container destination-port-range-or-operator {
+         uses packet-fields:port-range-or-operator;
+         description
+           "Destination port definition.";
+       }
+       description
+         "Choice of specifying a destination port or referring
+          to a group of destination port numbers.";
+     }
+     description
+       "Choice of specifying a source or destination port numbers.";
+  }
 
   grouping site-service-qos-profile {
     container qos {
@@ -843,7 +874,39 @@ module ietf-l3vpn-ntw {
           choice match-type {
             default "match-flow";
             case match-flow {
-              uses l3vpn-svc:flow-definition;
+              //uses l3vpn-svc:flow-definition;
+             choice l3 {
+               container ipv4 {
+                 uses packet-fields:acl-ip-header-fields;
+                 uses packet-fields:acl-ipv4-header-fields;
+                 description
+                   "Rule set that matches IPv4 header.";
+               }
+               container ipv6 {
+                 uses packet-fields:acl-ip-header-fields;
+                 uses packet-fields:acl-ipv6-header-fields;
+                 description
+                   "Rule set that matches IPv6 header.";
+               }
+               description
+                 "Either IPv4 or IPv6.";
+             }
+             choice l4 {
+               container tcp {
+                 uses packet-fields:acl-tcp-header-fields;
+                 uses ports;
+                 description
+                   "Rule set that matches TCP header.";
+               }
+               container udp {
+                 uses packet-fields:acl-udp-header-fields;
+                 uses ports;
+                 description
+                   "Rule set that matches UDP header.";
+               }
+               description
+                 "Can be TCP or UDP";
+             }
             }
             case match-application {
               leaf match-application {
