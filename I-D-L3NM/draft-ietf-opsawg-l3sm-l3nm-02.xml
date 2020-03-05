@@ -584,8 +584,20 @@
         uniquely identified by an identifier: 'vpn-id'. Such 'vpn-id' is only
         meaningful locally within the Network controller. In order to
         facilitate the recognition of the service, 'customer-name' and
-        'description' attributes may be provided. The topology of a VPN
-        Service is expressed in the 'vpn-service-topology' leaf.</t>
+        'description' attributes may be provided. 
+        The topology of a VPN</t>
+        <t>The 'vpn-service' parameters are:<list style="symbols">
+        <t>Service Status: Allows the control of the operative and 
+        administrative status of the service as a whole.</t>
+        <t>L3SM-VPN-ID: Refers to the L3SNM Id of this service. </t>
+        <t>Service Topology: Typical network topologies are supported. 
+          Hub-Spoke, Any-to-Any, and Custom. Real deployment on the network 
+          is defined by the correct usage of the <xref target="ie_profiles"/></t>
+        <t>IE-Profiles: Define reusable import/export policies for the same 
+        VPN-Service. Described in detail in <xref target="ie_profiles"/></t>
+        <t>Underlay-Transport: Describes the service stitching options for the 
+          traffic generated in the VPN-Service.</t>
+        </list><vspace blankLines="1"/>.</t>
 
         <t>A VPN Service is built by adding instances of 'vpn-node' to the
         'vpn-nodes' container. The 'vpn-node' is an abstraction that
@@ -599,16 +611,17 @@
 
         <figure align="center" anchor="vpn-service_tree">
           <artwork align="left">
-     +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  svc-id
-           +--rw customer-name?          string
-           +--rw vpn-service-topology?   identityref
-           +--rw description?            string
-           +--rw ie-profiles
-           |  ...
-           +--rw vpn-nodes
-           |   ...
-           +--rw multicast
++--rw vpn-service* [vpn-id]
+   +--rw service-status
+   |  ...
+   +--rw vpn-id                  l3vpn-svc:svc-id
+   +--rw l3sm-vpn-id?            l3vpn-svc:svc-id
+   +--rw customer-name?          string
+   +--rw vpn-service-topology?   identityref
+   +--rw description?            string
+   +--rw ie-profiles
+   |  ...
+   +--rw underlay-transport
      </artwork>
         </figure>
 
@@ -622,10 +635,17 @@
           'vpn-node' will likely be mapped into a VRF in the node. However,
           the model also allows to point to an abstract node. In this case,
           the network controller will decide how to split the 'vpn-node' into
-          VRFs. For the cases the logical resources are managed outside the
-          network controller, the model allows to explicitely indicate the
-          logical resources such as Route targets (RTs) and Route
-          Distinguishers (RDs) (RT,RD).</t>
+          VRFs. Additionally the 'vpn-node' parameters are:<list style="symbols">
+          <t>Instance Status: Allows the control of the operative and administrative 
+            status of the 'vpn-node'.</t>
+          <t>Local-AS: Autonomous system of locally configured in the instance.
+          It can be overwritten for specif purposes in the CE-PE BGP session.</t>
+          <t>Maximun Routes: Max number of prefixes allowed in the instance</t>
+          <t>RD and Targets: For the cases the logical resources are managed outside the
+          network controller, the model allows to explicitely indicate the logical resources 
+          such as Route targets (RTs) and Route Distinguishers (RDs) (RT,RD).</t>
+          <t>Multicast: EEnable multicast traffic inside the vpn <xref target="multicast"/></t>
+          </list><vspace blankLines="1"/>.</t>
 
           <t>Under the VPN Node ('vpn-node') container, VPN Network Acesses
           ('vpn-network-access') can be created. The VPN Network Acess
@@ -639,19 +659,25 @@
 
           <figure align="center" anchor="vpn-node_tree">
             <artwork align="left">
-    +--rw vpn-node* [vpn-node-id ne-id]
-     +--rw vpn-node-id             string
-     +--rw description?            string
-     +--rw ne-id                   string
-     +--rw router-id?              inet:ip-address
-     +--rw address-family?         address-family
-     +--rw node-role?              identityref
-     +--rw rd?                     rt-types:route-distinguisher
-     +--rw vpn-targets
-         ....
-     +--rw vpn-network-accesses
-         ....
-
++--rw vpn-nodes
++--rw vpn-node* [ne-id]
+   +--rw vpn-node-id?               union
+   +--rw local-autonomous-system?   inet:as-number
+   +--rw description?               string
+   +--rw ne-id                      string
+   +--rw router-id?                 inet:ip-address
+   +--rw node-role?                 identityref
+   +--rw rd?
+   +--rw vpn-targets
+   |  ...
+   +--rw status
+   |  ...
+   +--rw maximum-routes
+   +--rw address-family* [af]
+   +--rw multicast {l3vpn-svc:multicast}?
+   +--rw node-ie-profile?           leafref
+   +--rw vpn-network-accesses
+   |  ....
      </artwork>
           </figure>
 
