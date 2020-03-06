@@ -1530,136 +1530,133 @@ module: ietf-l3vpn-ntw
       </section>
     </section>
 
-    <section anchor="Use_of_the_data_model" title="Use of the Data Model">
-      <section anchor="mdrmanagement" title="Multi-Domain Resource Management">
-        <t>The implementation of L3VPN services which span across
-        administratively separated domains (i.e., that are under the
-        administration of different management systems or controllers)
-        requires some network resources to be synchronized between systems.
-        Particularly, there are two resources that must be orchestrated and
-        manage to avoid asymmetric (non-functional) configuration, or the
-        usage of unavailable resources. For example, RTs shall be synchronized
-        between PEs. When every PE is controlled by the same management
-        system, RT allocation can be performed by the system. In cases where
-        the service spans across multiple management systems, this task of
-        allocating RTs has to be aligned across the domains, therefore, the
-        service model must provide a way to specify RTs. In addition, RDs must
-        also be synchronized to avoid collisions in RD allocation between
-        separate systems. An incorrect allocation might lead to the same RD
-        and IP prefixes being exported by different PE routers.</t>
-      </section>
-    </section>
-
     <section anchor="examples" title="L3VPN  Examples">
-      <section anchor="mbh-vpn" title="4G VPN Provissioning Example">
-        <t>The L3VPN service defined in this draft provides a multipoint,
-        routed service to the customer over an IP/MPLS core. The L3VPNs are
-        widely used to deploy 3G/4G, fixed and enterprise services principally
-        due to the fact that several traffic discrimination policies can be
-        applied in the network to transport and guarantee the right SLAs to
-        the mobile customers.</t>
+    <section anchor="mbh-vpn" title="4G VPN Provissioning Example">
+      <t>The L3VPN service defined in this draft provides a multipoint,
+      routed service to the customer over an IP/MPLS core. The L3VPNs are
+      widely used to deploy 3G/4G, fixed and enterprise services principally
+      due to the fact that several traffic discrimination policies can be
+      applied in the network to transport and guarantee the right SLAs to
+      the mobile customers.</t>
 
-        <t>As it is shown in the <xref target="vpn-service-mbh"/>, commonly
-        the eNODEB (CE) is directly connected to the access routers (DCSG) of
-        the mobile backhaul and their logical interfaces (one or many
-        according to the Service type) are configured in a VPN that transport
-        the packets to the mobile core platforms.</t>
+      <t>As it is shown in the <xref target="vpn-service-mbh"/>, commonly
+      the eNODEB (CE) is directly connected to the access routers (DCSG) of
+      the mobile backhaul and their logical interfaces (one or many
+      according to the Service type) are configured in a VPN that transport
+      the packets to the mobile core platforms.</t>
 
-        <figure align="center" anchor="vpn-service-mbh"
-                title="Mobile Backhaul Example">
-          <artwork align="left">
-                                                     +--------------+
-        +------+    +-----+    +-----+    +-----+    |  Platforms   |
-        |eNODEB|--/-|  PE |----|  P  |----|  PE |----|  (SGW/MME)   |
-        +------+    +-----+    +-----+    +-----+    |     ...      |
-                                                     +--------------+
-        </artwork>
-        </figure>
+      <figure align="center" anchor="vpn-service-mbh"
+              title="Mobile Backhaul Example">
+        <artwork align="left"><![CDATA[ 
+                             
+      +-------------+                  +------------------+    
+      |             |                  |                  |
+      |             | 192.168.0.2      |                  |
+      |   eNODE-B   |>---------------->| PE               | 
+      |             |                  |  10.0.0.1        |
+      |             | Direct           |  +-------------+ |
+      +-------------+ Routing          |  | vpn-node-id | |
+                                       |  | 44          | | .... Platforms
+                                       |  |             | |
+                                       |  |             | |
+                                       |  +-------------+ |        
+                                       |                  | 
+                                       +------------------+ 
+                      
+      ]]></artwork>
+      </figure>
 
-        <t>To configure a L3VPN service using the L3NM model the procedure and
-        the JSON with the data structure is the following:</t>
+      <t>To configure a L3VPN service using the L3NM model the procedure and
+      the JSON with the data structure is the following:</t>
 
-        <t>Create VPN Service</t>
+      <t>Create VPN Service</t>
 
-        <figure align="center" anchor="service-mbh2"
-                title="Create VPN Service">
-          <artwork align="left">
+      <figure align="center" anchor="service-mbh2"
+              title="Create VPN Service">
+        <artwork align="left"><![CDATA[
 
-&lt;vpn-services&gt;
-    &lt;vpn-service&gt;
-      &lt;vpn-id&gt;1&lt;/vpn-id&gt;
-      &lt;customer-name&gt;4G&lt;/customer-name&gt;
-      &lt;vpn-service-topology&gt;hub-spoke&lt;/vpn-service-topology&gt;
-      &lt;description&gt;4G&lt;/description&gt;
-    &lt;/vpn-service&gt;
-  &lt;/vpn-services&gt;
-&lt;/l3vpn-ntw&gt;
-
+{
+  "vpn-services": {
+    "vpn-service": {
+      "vpn-id": "4G",
+      "customer-name": "1",
+      "vpn-service-topology": "custom",
+      "description": "VPN to deploy 4G services "
+    }
+  }
+}
+]]>
 </artwork>
-        </figure>
+      </figure>
 
-        <t>Create VPN Node: For this type of service the VPN Node is
-        equivalent with the VRF configured in the physical device.</t>
+      <t>Create VPN Node: For this type of service the VPN Node is
+      equivalent with the VRF configured in the physical device.</t>
 
-        <figure align="center" anchor="service-mbh3" title="Create VPN Node">
-          <artwork align="left">
+      <figure align="center" anchor="service-mbh3" title="Create VPN Node">
+        <artwork align="left"><![CDATA[
 
-&lt;vpn-nodes&gt;
-  &lt;vpn-node&gt;
-    &lt;vpn-node-id&gt;1&lt;/vpn-node-id&gt;
-    &lt;ne-id&gt;10.0.0.1&lt;/ne-id&gt;
-    &lt;autonomous-system&gt;65000&lt;/autonomous-system&gt;
-    &lt;description&gt;4G&lt;/description&gt;
-    &lt;router-id&gt;10.0.0.1&lt;/router-id&gt;
-    &lt;address-family&gt;ipv4&lt;/address-family&gt;
-    &lt;node-role&gt;any-to-any-role&lt;/node-role&gt;
-    &lt;rd&gt;1:1&lt;/rd&gt;
-  &lt;/vpn-node&gt;
-&lt;/vpn-nodes&gt;
+{
+  "vpn-nodes": {
+    "vpn-node": {
+      "vpn-node-id": "44",
+      "ne-id": "10.0.0.1",
+      "local-autonomous-system": "65550",
+      "rd": "0:65550:1",
+      "vpn-targets": {
+        "vpn-target": {
+          "id": "1",
+          "route-targets": { "route-target": "0:65550:1" },
+          "route-target-type": "both"
+        }
+      }
+    }
+  }
+}
+]]>
+  </artwork>
+      </figure>
 
+      <t>Create VPN Network Access</t>
+
+      <figure align="center" anchor="service-mbh4"
+              title="Create VPN Network Access">
+        <artwork align="left"><![CDATA[
+{
+  "vpn-network-accesses": {
+    "vpn-network-access": {
+      "vpn-network-access-id": "1/1/1",
+      "port-id": "1/1/1",
+      "description": "Interface to eNODE-B",
+      "status": { "admin-enabled": "true" },
+      "vpn-network-access-type": "l3vpn-svc:point-to-point",
+      "ip-connection": {
+        "ipv4": {
+          "address-allocation-type": "l3vpn-svc:static-address",
+          "static-addresses": {
+            "primary-address": "1",
+            "address": {
+              "address-id": "1",
+              "provider-address": "192.168.0.1",
+              "customer-address": "192.168.0.1",
+              "prefix-length": "32"
+            }
+          }
+        }
+      },
+      "routing-protocols": {
+        "routing-protocol": {
+          "id": "1",
+          "type": "l3vpn-svc:direct"
+        }
+      }
+    }
+  }
+}
+]]>
     </artwork>
-        </figure>
-
-        <t>Create VPN Network Access</t>
-
-        <figure align="center" anchor="service-mbh4"
-                title="Create VPN Network Access">
-          <artwork align="left">
-&lt;vpn-network-accesses&gt;
-&lt;vpn-network-access&gt;
-  &lt;vpn-network-access-id&gt;1/1/1&lt;/vpn-network-access-id&gt;
-  &lt;description&gt;4G&lt;/description&gt;
-  &lt;status&gt;
-    &lt;admin-enabled&gt;true&lt;/admin-enabled&gt;
-  &lt;/status&gt;
-  &lt;vpn-network-access-type&gt;point-to-point&lt;/vpn-network-access-type&gt;
-  &lt;ip-connection&gt;
-    &lt;ipv4&gt;
-      &lt;address-allocation-type&gt;static-address&lt;/address-allocation-type&gt;
-      &lt;static-addresses&gt;
-        &lt;primary-address&gt;1&lt;/primary-address&gt;
-        &lt;address&gt;
-          &lt;address-id&gt;1&lt;/address-id&gt;
-          &lt;provider-address&gt;192.168.0.1&lt;/provider-address&gt;
-          &lt;customer-address&gt;192.168.0.2&lt;/customer-address&gt;
-          &lt;prefix-length&gt;30&lt;/prefix-length&gt;
-        &lt;/address&gt;
-      &lt;/static-addresses&gt;
-    &lt;/ipv4&gt;
-  &lt;/ip-connection&gt;
-  &lt;routing-protocols&gt;
-    &lt;routing-protocol&gt;
-      &lt;id&gt;1&lt;/id&gt;
-      &lt;type&gt;direct&lt;/type&gt;
-    &lt;/routing-protocol&gt;
-  &lt;/routing-protocols&gt;
-&lt;/vpn-network-access&gt;
-&lt;/vpn-network-accesses&gt;
-
-      </artwork>
-        </figure>
-      </section>
+      </figure>
     </section>
+  </section>
 
     <section anchor="YANG_module" title="Yang Module">
       <figure align="center" anchor="module_YANG">
