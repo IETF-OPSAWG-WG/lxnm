@@ -1543,7 +1543,8 @@ module: ietf-l3vpn-ntw
       the eNODEB (CE) is directly connected to the access routers (DCSG) of
       the mobile backhaul and their logical interfaces (one or many
       according to the Service type) are configured in a VPN that transport
-      the packets to the mobile core platforms.</t>
+      the packets to the mobile core platforms. In this example, a 'vpn-node'
+      is created with two 'vpn-network-accesses'.</t>
 
       <figure align="center" anchor="vpn-service-mbh"
               title="Mobile Backhaul Example">
@@ -1552,13 +1553,13 @@ module: ietf-l3vpn-ntw
       +-------------+                  +------------------+    
       |             |                  | PE               |
       |             | 192.168.0.2      |  10.0.0.1        |
-      |   eNODE-B   |>--------/------->|                  | 
-      |             |            1/1/1 |                  |
+      |   eNODE-B   |>--------/------->|...........       | 
+      |             |          1/1/1.1 |          |       |
+      |             |>--------/------->|......    |       |
+      |             |          1/1/1.2 |     |    |       |
       |             | Direct           |  +-------------+ |
       +-------------+ Routing          |  | vpn-node-id | |
                                        |  | 44          | | 
-                                       |  |             | |
-                                       |  |             | |
                                        |  +-------------+ |        
                                        |                  | 
                                        +------------------+ 
@@ -1623,7 +1624,8 @@ content-type: application/yang-data+json
   </artwork>
       </figure>
 
-      <t>Create VPN Network Access</t>
+      <t>Create the two VPN Network Accesses are created. 
+        One for each VLAN (1,2) and type of traffic; Sync and data. </t>
 
       <figure align="center" anchor="service-mbh4"
               title="Create VPN Network Access">
@@ -1635,33 +1637,60 @@ content-type: application/yang-data+json
 
 {
   "vpn-network-accesses": {
-    "vpn-network-access": {
-      "vpn-network-access-id": "1/1/1",
-      "port-id": "1/1/1",
-      "description": "Interface to eNODE-B",
-      "status": { "admin-enabled": "true" },
-      "vpn-network-access-type": "l3vpn-svc:point-to-point",
-      "ip-connection": {
-        "ipv4": {
-          "address-allocation-type": "l3vpn-svc:static-address",
-          "static-addresses": {
-            "primary-address": "1",
-            "address": {
-              "address-id": "1",
-              "provider-address": "192.168.0.1",
-              "customer-address": "192.168.0.1",
-              "prefix-length": "32"
+    "vpn-network-access": [
+      {
+        "vpn-network-access-id": "1/1/1.1",
+        "port-id": "1/1/1",
+        "description": "Interface SYNCto eNODE-B",
+        "status": { "admin-enabled": "true" },
+        "vpn-network-access-type": "l3vpn-svc:point-to-point",
+        "ip-connection": {
+          "ipv4": {
+            "address-allocation-type": "l3vpn-svc:static-address",
+            "static-addresses": {
+              "primary-address": "1",
+              "address": {
+                "address-id": "1",
+                "provider-address": "192.168.0.1",
+                "customer-address": "192.168.0.1",
+                "prefix-length": "32"
+              }
             }
+          }
+        },
+        "routing-protocols": {
+          "routing-protocol": {
+            "id": "1",
+            "type": "l3vpn-svc:direct"
           }
         }
       },
-      "routing-protocols": {
-        "routing-protocol": {
-          "id": "1",
-          "type": "l3vpn-svc:direct"
+      {
+        "vpn-network-access-id": "1/1/1.2",
+        "port-id": "1/1/1",
+        "description": "Interface DATA to eNODE-B",
+        "status": { "admin-enabled": "true" },
+        "ip-connection": {
+          "ipv4": {
+            "static-addresses": {
+              "primary-address": "1",
+              "address": {
+                "address-id": "1",
+                "provider-address": "192.168.1.1",
+                "customer-address": "192.168.1.2",
+                "prefix-length": "32"
+              }
+            }
+          }
+        },
+        "routing-protocols": {
+          "routing-protocol": {
+            "id": "1",
+            "type": "l3vpn-svc:direct"
+          }
         }
       }
-    }
+    ]
   }
 }
 ]]>
