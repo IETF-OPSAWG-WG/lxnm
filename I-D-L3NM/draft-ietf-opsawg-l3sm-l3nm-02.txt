@@ -19,25 +19,20 @@ Expires: September 10, 2020                                 M. Boucadair
 
 Abstract
 
-   RFC8299 defines a L3VPN Service YANG data Model (L3SM) that can be
-   used for communication between customers and VPN service providers.
-   That data model plays the role of a Customer Service Model, according
-   to the terminology defined in RFC8309, and is as such adequate for
-   service negotiation and order handling matters.
+   This document defines a L3 VPN Network YANG Data model, called L3NM
+   that can be used to manage the provisioning of Layer 3 VPN services
+   within a Service Provider Network.  The module is meant to be used by
+   a Network Controller to derive the configuration information that
+   will be sent to relevant network devices.
 
-   There is a need for a more network-centric YANG data model to be used
-   in the communication between the entity that interacts directly with
-   the customer, the service orchestrator, (either fully automated or a
-   human operator) and the entity in charge of network orchestration and
-   control (a.k.a., network controller/orchestrator).  Such model is
-   meant to capture a (internal) network-oriented VPN Service that will
-   be used for the actual provisioning and delivery of the service.
+   The L3VPN Network YANG Model (L3NM) can also facilitates the
+   communication between a service orchestrator and a network
+   controller/orchestrator.  The model provides a network-centric view
+   of the L3VPN services.
 
-   This document specifies a L3VPN Network YANG Model (L3NM) to
-   facilitate communication between a service orchestrator and a network
-   controller/orchestrator.  Such data model provides a network-centric
-   view of the L3VPN services.  This L3NM module is limited to BGP PE-
-   based VPNs as described in RFCs 4026, 4110, and 4364.
+   The L3NM Yang module is aimed at managing BGP PE-based Layer 3 VPNs
+   as described in RFCs 4026, 4110 and 4364 and Multicast VPNs as
+   described in RFCs 6037, 6513 and 7988.
 
 Editorial Note (To be removed by RFC Editor)
 
@@ -50,6 +45,11 @@ Editorial Note (To be removed by RFC Editor)
 
    o  reference: RFC XXXX
 
+   Also, please update the "revision" date of the YANG module.
+
+
+
+
 
 
 
@@ -57,8 +57,6 @@ Barguil, et al.        Expires September 10, 2020               [Page 1]
 
 Internet-Draft                    l3nm                        March 2020
 
-
-   Also, please update the "revision" date of the YANG module.
 
 Status of This Memo
 
@@ -102,10 +100,12 @@ Table of Contents
    6.  Description of the L3NM YANG Module . . . . . . . . . . . . .  10
      6.1.  Overall Structure of the Module . . . . . . . . . . . . .  10
      6.2.  VPN Profiles  . . . . . . . . . . . . . . . . . . . . . .  10
-     6.3.  Modeling a L3 VPN Service . . . . . . . . . . . . . . . .  11
+     6.3.  Modeling a Layer 3 VPN Service  . . . . . . . . . . . . .  11
        6.3.1.  Service Status  . . . . . . . . . . . . . . . . . . .  12
-       6.3.2.  VPN node  . . . . . . . . . . . . . . . . . . . . . .  13
-         6.3.2.1.  Node Status . . . . . . . . . . . . . . . . . . .  14
+       6.3.2.  VPN Node  . . . . . . . . . . . . . . . . . . . . . .  13
+         6.3.2.1.  Node Status . . . . . . . . . . . . . . . . . . .  15
+         6.3.2.2.  VPN Network Access  . . . . . . . . . . . . . . .  15
+           6.3.2.2.1.  Connection  . . . . . . . . . . . . . . . . .  17
 
 
 
@@ -114,34 +114,32 @@ Barguil, et al.        Expires September 10, 2020               [Page 2]
 Internet-Draft                    l3nm                        March 2020
 
 
-         6.3.2.2.  VPN Network Access  . . . . . . . . . . . . . . .  15
-           6.3.2.2.1.  Connection  . . . . . . . . . . . . . . . . .  15
-           6.3.2.2.2.  IP Connection . . . . . . . . . . . . . . . .  17
-           6.3.2.2.3.  Routing Protocols . . . . . . . . . . . . . .  18
-         6.3.2.3.  Multicast . . . . . . . . . . . . . . . . . . . .  19
-       6.3.3.  Concept of Import/Export Profiles . . . . . . . . . .  20
-       6.3.4.  Underlay Transport  . . . . . . . . . . . . . . . . .  20
-     6.4.  Model tree  . . . . . . . . . . . . . . . . . . . . . . .  21
-   7.  Use of the L3NM Data Model  . . . . . . . . . . . . . . . . .  31
-     7.1.  Enterprise L3 VPN Services  . . . . . . . . . . . . . . .  31
-     7.2.  Multi-Domain Resource Management  . . . . . . . . . . . .  31
-     7.3.  Management of Multicast services  . . . . . . . . . . . .  32
-   8.  L3VPN  Examples . . . . . . . . . . . . . . . . . . . . . . .  32
-     8.1.  4G VPN Provissioning Example  . . . . . . . . . . . . . .  32
-     8.2.  Multicast VPN provisioning example  . . . . . . . . . . .  36
-   9.  Yang Module . . . . . . . . . . . . . . . . . . . . . . . . .  39
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . . 100
-   11. Security Considerations . . . . . . . . . . . . . . . . . . . 101
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . 102
-   13. Contributors  . . . . . . . . . . . . . . . . . . . . . . . . 102
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . . 103
-     14.1.  Normative References . . . . . . . . . . . . . . . . . . 103
-     14.2.  Informative References . . . . . . . . . . . . . . . . . 104
-   Appendix A.  Implementation Status  . . . . . . . . . . . . . . . 106
-     A.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 106
-     A.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 107
-     A.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 110
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 110
+           6.3.2.2.2.  IP Connections  . . . . . . . . . . . . . . .  20
+           6.3.2.2.3.  CE PE Routing Protocols . . . . . . . . . . .  22
+         6.3.2.3.  Multicast . . . . . . . . . . . . . . . . . . . .  26
+       6.3.3.  Concept of Import/Export Profiles . . . . . . . . . .  28
+       6.3.4.  Underlay Transport  . . . . . . . . . . . . . . . . .  28
+   7.  L3NM Module Tree Structure  . . . . . . . . . . . . . . . . .  28
+   8.  Sample Uses of the L3NM Data Model  . . . . . . . . . . . . .  39
+     8.1.  Enterprise L3 VPN Services  . . . . . . . . . . . . . . .  39
+     8.2.  Multi-Domain Resource Management  . . . . . . . . . . . .  39
+     8.3.  Management of Multicast services  . . . . . . . . . . . .  39
+   9.  L3VPN Examples  . . . . . . . . . . . . . . . . . . . . . . .  40
+     9.1.  4G VPN Provissioning Example  . . . . . . . . . . . . . .  40
+     9.2.  Multicast VPN Provisioning Example  . . . . . . . . . . .  44
+   10. L3NM YANG Module  . . . . . . . . . . . . . . . . . . . . . .  46
+   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . . 108
+   12. Security Considerations . . . . . . . . . . . . . . . . . . . 109
+   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . 110
+   14. Contributors  . . . . . . . . . . . . . . . . . . . . . . . . 110
+   15. References  . . . . . . . . . . . . . . . . . . . . . . . . . 111
+     15.1.  Normative References . . . . . . . . . . . . . . . . . . 111
+     15.2.  Informative References . . . . . . . . . . . . . . . . . 112
+   Appendix A.  Implementation Status  . . . . . . . . . . . . . . . 114
+     A.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 114
+     A.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 115
+     A.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 118
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 118
 
 1.  Introduction
 
@@ -162,6 +160,8 @@ Internet-Draft                    l3nm                        March 2020
    further capabilities, such as resource management or to serve as a
    multi-domain orchestration interface, where logical resources (such
    as route targets or route distinguishers) must be synchronized.
+
+
 
 
 
@@ -235,7 +235,7 @@ Internet-Draft                    l3nm                        March 2020
       Service model is defined in [RFC8299].
 
    o  L3 VPN Service Network Model (L3NM): A YANG module that describes
-      a VPN Service in the Service Provider Network.  It contain s
+      a VPN Service in the Service Provider Network.  It contains
       information of the Service Provider network and might include
       allocated resources.  It can be used by network controllers to
       manage and control the VPN Service configuration in the Service
@@ -495,9 +495,9 @@ Internet-Draft                    l3nm                        March 2020
 
       *  NAT management ([RFC8512])
 
+      *  QoS management ([I-D.ietf-rtgwg-qos-model])
+
       *  ACL ([RFC8519])
-
-
 
 
 
@@ -515,6 +515,8 @@ Internet-Draft                    l3nm                        March 2020
    service provider network.  In particular, the 'ietf-l3vpn-ntw' module
    can be used to create, modify, and retrieve L3VPN Services of a
    network.
+
+   The detailed tree structure is provided in Figure 15.
 
 6.1.  Overall Structure of the Module
 
@@ -555,8 +557,6 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-
-
 Barguil, et al.        Expires September 10, 2020              [Page 10]
 
 Internet-Draft                    l3nm                        March 2020
@@ -581,33 +581,33 @@ Internet-Draft                    l3nm                        March 2020
 
                    Figure 4: VPN Profiles Tree Structure
 
-6.3.  Modeling a L3 VPN Service
+6.3.  Modeling a Layer 3 VPN Service
 
    The 'vpn-service' is the data structure that abstracts a VPN Service
-   in the Service Provider Network.  Every 'vpn-service' is uniquely
+   in the Service Provider Network.  Each 'vpn-service' is uniquely
    identified by an identifier: 'vpn-id'.  Such 'vpn-id' is only
-   meaningful locally within the Network controller.  In order to
-   facilitate the recognition of the service, 'customer-name' and
-   'description' attributes may be provided.  The topology of a VPN
+   meaningful locally within the Network controller.
+
+   In order to facilitate the identification of the service, 'customer-
+   name' and 'description' attributes may be provided.
 
    The 'vpn-service' parameters are:
 
    o  service-status: Allows the control of the operative and
       administrative status of the service as a whole.
 
-   o  l3sm-vpn-id: Refers to the L3SNM Id of this service.
+   o  vpn-id: Unique identifier of the L3VPN Service within L3NM scope.
+
+   o  l3sm-vpn-id: Refers to the L3SNM Id of this service.  This
+      identifier allows to easily correlate the service as built in the
+      network with a service request.
 
    o  vpn-service-topology: Typical network topologies are supported.
       Hub-Spoke, Any-to-Any, and Custom.  Real deployment on the network
-      is defined by the correct usage of the Section 6.3.3
+      is defined by the correct usage of import and export profiles
 
    o  ie-profiles: Define reusable import/export policies for the same
       VPN-Service.  Described in detail in Section 6.3.3
-
-   o  Underlay-Transport: Describes the service stitching options for
-      the traffic generated in the VPN-Service.
-
-   .
 
 
 
@@ -618,15 +618,20 @@ Barguil, et al.        Expires September 10, 2020              [Page 11]
 Internet-Draft                    l3nm                        March 2020
 
 
-   A VPN Service is built by adding instances of 'vpn-node' to the 'vpn-
-   nodes' container.  The 'vpn-node' is an abstraction that represents a
-   set of policies applied to a network node and that belong to a single
-   'vpn-service'.  A 'vpn-node' contains 'vpn-network-accesses', which
-   are the interfaces involved in the creation of the VPN.  The customer
-   sites are connected to the 'vpn-network-accesses'.  Note that, as
-   this is a network data model, the information about customers sites
-   is not needed.  Such information, is rather relevant in the L3SM
-   model.
+   o  Underlay-Transport: Describes the preference for the transport
+      technology to carry the traffic of the VPN-Service.
+
+   A VPN service is typically built by adding instances of 'vpn-node' to
+   the 'vpn-nodes' container.  The 'vpn-node' is an abstraction that
+   represents a set of policies applied to a network node and that
+   belong to a single 'vpn-service'.
+
+   A 'vpn-node' contains 'vpn-network-accesses', which are the
+   interfaces attached to the VPN by which the customer traffic is
+   received.  Therefore, the customer sites are connected to the 'vpn-
+   network-accesses'.  Note that, as this is a network data model, the
+   information about customers sites is not required in the model.  Such
+   information, is rather relevant in the L3SM model.
 
    +--rw vpn-service* [vpn-id]
       +--rw service-status
@@ -664,11 +669,6 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-
-
-
-
-
 Barguil, et al.        Expires September 10, 2020              [Page 12]
 
 Internet-Draft                    l3nm                        March 2020
@@ -690,7 +690,7 @@ Internet-Draft                    l3nm                        March 2020
 
                 Figure 6: VPN Service Status Tree Structure
 
-6.3.2.  VPN node
+6.3.2.  VPN Node
 
    The 'vpn-node' is an abstraction that represents a set of common
    policies applied on a given network node (tipcally, a PE) and belong
@@ -740,27 +740,63 @@ Internet-Draft                    l3nm                        March 2020
    have a set of routing policies than can be applied during the service
    creation.
 
-   +--rw vpn-nodes
-   +--rw vpn-node* [ne-id]
-      +--rw vpn-node-id?               union
-      +--rw local-autonomous-system?   inet:as-number
-      +--rw description?               string
-      +--rw ne-id                      string
-      +--rw router-id?                 inet:ip-address
-      +--rw node-role?                 identityref
-      +--rw rd?
-      +--rw vpn-targets
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
       |  ...
-      +--rw status
-      |  ...
-      +--rw maximum-routes
-      +--rw address-family* [af]
-      +--rw multicast {l3vpn-svc:multicast}?
-      +--rw node-ie-profile?           leafref
-      +--rw vpn-network-accesses
-      |  ....
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          + ...
+          +--rw vpn-nodes
+           +--rw vpn-node* [ne-id]
+              +--rw vpn-node-id?               union
+              +--rw local-autonomous-system?   inet:as-number
+              +--rw description?               string
+              +--rw ne-id                      string
+              +--rw router-id?                 inet:ip-address
+              +--rw address-family?
+              |       l3vpn-svc:address-family
+              +--rw node-role?                 identityref
+              +--rw rd?
+              |       rt-types:route-distinguisher
+              +--rw vpn-targets
+              |  +--rw vpn-target* [id]
+              |  |  +--rw id                   int8
+              |  |  +--rw route-targets* [route-target]
+              |  |  |  +--rw route-target
+              |  |  |          rt-types:route-target
+              |  |  +--rw route-target-type
+              |  |          rt-types:route-target-type
+              |  +--rw vpn-policies
+              |     +--rw import-policy?   leafref
+              |     +--rw export-policy?   leafref
+              +--rw status
+              |  +--rw admin-enabled?   boolean
+              |  +--ro oper-status?     operational-type
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
 
-                     Figure 7: vpn-node tree structure
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 14]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     ...
+              +--rw maximum-routes
+              |  +--rw address-family* [af]
+              |     +--rw af
+              |     |       l3vpn-svc:address-family
+              |     +--rw maximum-routes?   uint32
+              +--rw multicast {l3vpn-svc:multicast}?
+              |  ...
+              +--rw node-ie-profile?           leafref
+
+                     Figure 7: VPN Node Tree Structure
 
 6.3.2.1.  Node Status
 
@@ -769,22 +805,6 @@ Internet-Draft                    l3nm                        March 2020
    administrative status are maintained.  Mismatch between an
    administrative status vs. the operational status can be used as
    trigger to detect anomalies.
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 14]
-
-Internet-Draft                    l3nm                        March 2020
-
 
      +--rw l3vpn-ntw
         +--rw vpn-profiles
@@ -805,14 +825,25 @@ Internet-Draft                    l3nm                        March 2020
 
 6.3.2.2.  VPN Network Access
 
-   A 'vpn-network-access' represents an entry point to a VPN service.
-   In other words, this container encloses the parameters that describe
-   the access information for the traffic that belongs to a particular
-   L3 VPN.  As such, every 'vpn-network-access' belongs to one and only
-   one 'vpn-node'.  As an example, a 'vpn-network-access' includes
-   information such as the connection on which the access is defined
-   (see the section below), the encapsulation of the traffic, policies
-   that are applied on the access, etc.
+   A 'vpn-network-access' represents an entry point to a VPN service
+   (Figure 9).  In other words, this container encloses the parameters
+   that describe the access information for the traffic that belongs to
+   a particular L3VPN.  As such, every 'vpn-network-access' MUST belong
+   to one and only one 'vpn-node'.
+
+   A 'vpn-network-access' includes information such as the connection on
+   which the access is defined (see Section 6.3.2.2.1), the
+
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 15]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+   encapsulation of the traffic, policies that are applied on the
+   access, etc.
 
    A provisioning Network Controller (PNC) [RFC8453] will accept VPN
    requests containing this construct, using the enclosed data to:
@@ -820,6 +851,52 @@ Internet-Draft                    l3nm                        March 2020
    at the 'vpn-network-access', include the given interface into a VRF,
    configuring policies or schedulers for processing the incoming
    traffic, etc.
+
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          +  ...
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              + ...
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
+              |     +--rw port-id?
+              |     |       l3vpn-svc:svc-id
+              |     +--rw description?               string
+              |     +--rw status
+              |     |  +--rw admin-enabled?   boolean
+              |     |  +--ro oper-status?     operational-type
+              |     +--rw vpn-network-access-type?   identityref
+              |     +--rw connection
+              |     |  ...
+              |     |  +--rw bearer
+              |     |     ...
+              |     +--rw ip-connection
+              |     |  ...
+              |     +--rw security
+              |     |  ...
+              |     +--rw routing-protocols
+              |     |  ...
+              |     +--rw service
+              |        ...
+              |  ...
+
+                Figure 9: VPN Network Access Tree Structure
+
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 16]
+
+Internet-Draft                    l3nm                        March 2020
+
 
 6.3.2.2.1.  Connection
 
@@ -830,19 +907,8 @@ Internet-Draft                    l3nm                        March 2020
    L2 connectivity from where the traffic of the L3VPN in a particular
    VPN Network access is coming.
 
-   Additionally, the bearer-reference (Section 6.3.2.2.1.3) and the
-   pseudowire termination (Section 6.3.2.2.1.2) is supported.
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 15]
-
-Internet-Draft                    l3nm                        March 2020
-
-
-6.3.2.2.1.1.  Encapsulation options
+   Additionally, the bearer-reference and the pseudowire termination are
+   supported.
 
    Ethernet encapsulation description is not supported in [RFC8299].
    However, this parameters are mandatory to configure the PE
@@ -850,31 +916,66 @@ Internet-Draft                    l3nm                        March 2020
    container inside the vpn-network-access.  This container defines
    protocols and parameters to enable connectivity at Layer 2.
 
-                     +--rw connection
-                       +--rw encapsulation-type?   identityref
-                         +--rw tagged-interface
-                            +--rw type?                identityref
-                            +--rw dot1q-vlan-tagged {dot1q}?
-                            |  +--rw tag-type?   identityref
-                            |  +--rw cvlan-id?   uint16
-                            +--rw priority-tagged
-                            |  +--rw tag-type?   identityref
-                            +--rw qinq {qinq}?
-                            |  +--rw tag-type?   identityref
-                            |  +--rw svlan-id    uint16
-                            |  +--rw cvlan-id    uint16
-                            +--rw qinany {qinany}?
-                            |  +--rw tag-type?   identityref
-                            |  +--rw svlan-id    uint16
-                            +--rw vxlan {vxlan}?
-                               +--rw vni-id       uint32
-                               +--rw peer-mode?   identityref
-                               +--rw peer-list* [peer-ip]
-                                  +--rw peer-ip    inet:ip-address
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          +  ...
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              + ...
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
+              |     + ...
+              |     +--rw connection
+              |     |  +--rw encapsulation-type?   identityref
+              |     |  +--rw logical-interface
+              |     |  |  +--rw peer-reference?   uint32
+              |     |  +--rw tagged-interface
+              |     |  |  +--rw type?                identityref
+              |     |  |  +--rw dot1q-vlan-tagged {dot1q}?
+              |     |  |  |  +--rw tag-type?   identityref
+              |     |  |  |  +--rw cvlan-id?   uint16
+              |     |  |  +--rw priority-tagged
+              |     |  |  |  +--rw tag-type?   identityref
+              |     |  |  +--rw qinq {qinq}?
+              |     |  |  |  +--rw tag-type?   identityref
+              |     |  |  |  +--rw svlan-id    uint16
 
-                      Figure 9: Encapsulation options
 
-6.3.2.2.1.2.  Remote Far End Configuration
+
+Barguil, et al.        Expires September 10, 2020              [Page 17]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     |  |  |  +--rw cvlan-id    uint16
+              |     |  |  +--rw qinany {qinany}?
+              |     |  |  |  +--rw tag-type?   identityref
+              |     |  |  |  +--rw svlan-id    uint16
+              |     |  |  +--rw vxlan {vxlan}?
+              |     |  |     +--rw vni-id       uint32
+              |     |  |     +--rw peer-mode?   identityref
+              |     |  |     +--rw peer-list* [peer-ip]
+              |     |  |        +--rw peer-ip    inet:ip-address
+              |     |  +--rw bearer
+              |     |     ...
+              |     +--rw ip-connection
+              |     |  ...
+              |     +--rw security
+              |     |  ...
+              |     +--rw routing-protocols
+              |     |  ...
+              |     +--rw service
+              |        ...
+              |  ...
+
+                  Figure 10: Encapsulation Tree Structure
 
    Depending on the control plane implementation, different network
    scenarios might require additional information for the L3VPN service
@@ -893,20 +994,60 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 16]
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 18]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-                       +--rw bearer
-                         +--rw connection
-                           ...
-                           +--rw pseudowire
-                            +--rw vcid?   uint32
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          +  ...
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              + ...
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
+              |     +  ...
+              |     +--rw connection
+              |     |  ...
+              |     |  +--rw bearer
+              |     |     +--rw bearer-reference?   string
+              |     |     |       {l3vpn-svc:bearer-reference}?
+              |     |     +--rw pseudowire
+              |     |     |  +--rw vcid?      uint32
+              |     |     |  +--rw far-end?   union
+              |     |     +--rw vpls
+              |     |        +--rw vcid?      union
+              |     |        +--rw far-end?   union
+              |     +--rw ip-connection
+              |     |  ...
+              |     +--rw security
+              |     |  ...
+              |     +--rw routing-protocols
+              |     |  ...
+              |     +--rw service
+              |        ...
+              |  ...
 
-                                 Figure 10
-
-6.3.2.2.1.3.  Bearers
+                     Figure 11: Bearer Tree Structure
 
    A site, as per [RFC4176] represents a VPN customer's location that is
    connected to the Service Provider network via a CE-PE link, which can
@@ -918,113 +1059,204 @@ Internet-Draft                    l3nm                        March 2020
    associated to a network element and a port.  Hence, a bearer is just
    a bearer-reference to allow the translation between L3SM and L3NM.
 
-6.3.2.2.2.  IP Connection
-
-   IP Connection container has the parameters of the vpn-network-access
-   addressing information.  The address allocated in this container
-   would represent the PE interface address configuration.  The IP
-   Connection container is designed to support dual stack (IPv4/IPv6)
-   and three options to set the ip address: Provider DHCP, DHCP relay or
-   static addressing.
-
-   In the case of the static addressing the model supports the
-   assignation of several IP addresses in the same vpn-network-access.
-   To identify which of the addresses is the primary address of the
-   connection the "primary-address" reference must be set with the
-   corresponding address-id.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 17]
+Barguil, et al.        Expires September 10, 2020              [Page 19]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-                 +--rw ip-connection
-                   +--rw ipv4 {ipv4}?
-                     +--rw address-allocation-type?   identityref
-                       +--rw provider-dhcp
-                         ...
-                       +--rw dhcp-relay
-                         ...
-                       +--rw static-addresses
-                         +--rw primary-address?   leafref
-                       +--rw address* [address-id]
-                         ...
-                   +--rw ipv6 {ipv6}?
-                     +--rw address-allocation-type?   identityref
-                       +--rw provider-dhcp
-                         ...
-                       +--rw dhcp-relay
-                         ...
-                       +--rw static-addresses
-                         +--rw primary-address?  leafref
-                         +--rw address* [address-id]
-                             ...
+6.3.2.2.2.  IP Connections
 
-                                 Figure 11
+   IP connection container (Figure 12) has the parameters of the 'vpn-
+   network-access' addressing information.  The address allocated in
+   this container would represent the PE interface address
+   configuration.  The IP connection container is designed to support
+   both IPv4 and IPv6.  It also supports three options for IP address
+   assignment: Provider DHCP, DHCP relay, and static addressing.
 
-6.3.2.2.3.  Routing Protocols
+   In the case of the static addressing, the model supports the
+   assignment of several IP addresses in the same 'vpn-network-access'.
+   To identify which of the addresses is the primary address of a
+   connection ,the "primary-address" reference MUST be set with the
+   corresponding 'address-id'.
 
-   The model allows the Network Operator to configure one or more
-   routing protocols associated with a particular vpn-network-access.
-   This protocol will run between the PE and the CE.  A routing protocol
-   instance MUST have a type (e.g. bgp, ospf, etc.) and an identifier.
-   The identifier is necessary when multiple instances of the same
-   protocol need to be configured.
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          +  ...
+          +--rw vpn-nodes
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              +  ...
+              +--rw status
+              |  +--rw admin-enabled?   boolean
+              |  +--ro oper-status?     operational-type
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
+              |     +  ...
+              |     +--rw connection
+              |     |  ...
+              |     +--rw ip-connection
+              |     |  +--rw ipv4 {l3vpn-svc:ipv4}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw provider-dhcp
+              |     |  |  |  +--rw provider-address?
+              |     |  |  |  |       inet:ipv4-address
+              |     |  |  |  +--rw prefix-length?
+              |     |  |  |  |       uint8
+              |     |  |  |  +--rw (address-assign)?
+              |     |  |  |     +--:(number)
 
-   The model uses an abstracted view of routing protocols.  When
-   configuring multiple instances of the same protocol, this does not
-   automatically imply that, from a device configuration perspective,
-   there will be parallel instances (multiple processes) running.  It
-   will be up to the implementation to use the most appropriate
-   deployment model.  As an example, when multiple BGP peers need to be
-   implemented, multiple instances of BGP must be configured as part of
-   this model.  However from a device configuration point of view, this
-   could be implemented as:
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 20]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     |  |  |     |  +--rw number-of-dynamic-address?
+              |     |  |  |     |          uint16
+              |     |  |  |     +--:(explicit)
+              |     |  |  |        +--rw customer-addresses
+              |     |  |  |           +--rw address-group*
+              |     |  |  |                   [group-id]
+              |     |  |  |              +--rw group-id
+              |     |  |  |              |       string
+              |     |  |  |              +--rw start-address?
+              |     |  |  |              |       inet:ipv4-address
+              |     |  |  |              +--rw end-address?
+              |     |  |  |                      inet:ipv4-address
+              |     |  |  +--rw dhcp-relay
+              |     |  |  |  +--rw provider-address?
+              |     |  |  |  |       inet:ipv4-address
+              |     |  |  |  +--rw prefix-length?           uint8
+              |     |  |  |  +--rw customer-dhcp-servers
+              |     |  |  |     +--rw server-ip-address*
+              |     |  |  |             inet:ipv4-address
+              |     |  |  +--rw static-addresses
+              |     |  |     +--rw primary-address?   leafref
+              |     |  |     +--rw address* [address-id]
+              |     |  |        +--rw address-id          string
+              |     |  |        +--rw provider-address?
+              |     |  |        |       inet:ipv4-address
+              |     |  |        +--rw customer-address?
+              |     |  |        |       inet:ipv4-address
+              |     |  |        +--rw prefix-length?      uint8
+              |     |  +--rw ipv6 {l3vpn-svc:ipv6}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw provider-dhcp
+              |     |  |  |  +--rw provider-address?
+              |     |  |  |  |       inet:ipv6-address
+              |     |  |  |  +--rw prefix-length?
+              |     |  |  |  |       uint8
+              |     |  |  |  +--rw (address-assign)?
+              |     |  |  |     +--:(number)
+              |     |  |  |     |  +--rw number-of-dynamic-address?
+              |     |  |  |     |          uint16
+              |     |  |  |     +--:(explicit)
+              |     |  |  |        +--rw customer-addresses
+              |     |  |  |           +--rw address-group*
+              |     |  |  |                   [group-id]
+              |     |  |  |              +--rw group-id
+              |     |  |  |              |       string
+              |     |  |  |              +--rw start-address?
+              |     |  |  |              |       inet:ipv6-address
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 21]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     |  |  |              +--rw end-address?
+              |     |  |  |                      inet:ipv6-address
+              |     |  |  +--rw dhcp-relay
+              |     |  |  |  +--rw provider-address?
+              |     |  |  |  |       inet:ipv6-address
+              |     |  |  |  +--rw prefix-length?           uint8
+              |     |  |  |  +--rw customer-dhcp-servers
+              |     |  |  |     +--rw server-ip-address*
+              |     |  |  |             inet:ipv6-address
+              |     |  |  +--rw static-addresses
+              |     |  |     +--rw primary-address?   leafref
+              |     |  |     +--rw address* [address-id]
+              |     |  |        +--rw address-id          string
+              |     |  |        +--rw provider-address?
+              |     |  |        |       inet:ipv6-address
+              |     |  |        +--rw customer-address?
+              |     |  |        |       inet:ipv6-address
+              |     |  |        +--rw prefix-length?      uint8
+              |     |  +--rw oam
+              |     |     +--rw bfd {l3vpn-svc:bfd}?
+              |     |        +--rw enabled?              boolean
+              |     |        +--rw (holdtime)?
+              |     |           +--:(fixed)
+              |     |           |  +--rw fixed-value?    uint32
+              |     |           +--:(profile)
+              |     |              +--rw profile-name?   leafref
+              |     +--rw security
+              |     |  ...
+              |     +--rw routing-protocols
+              |     |  ...
+              |     +--rw service
+              |       ...
+
+
+                  Figure 12: IP Connection Tree Structure
+
+6.3.2.2.3.  CE PE Routing Protocols
+
+   The model allows the Provider to configure one or more routing
+   protocols associated with a particular 'vpn-network-access'
+   (Figure 13).  This protocol will run between the PE and the CE.  A
+   routing protocol instance MUST have a type (e.g., bgp, ospf) and an
+   identifier.  The identifier is necessary when multiple instances of
+   the same protocol have to be configured.
+
+   When configuring multiple instances of the same routing protocol,
+   this does not automatically imply that, from a device configuration
+   perspective, there will be parallel instances (multiple processes)
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 22]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+   running.  It will be up to the implementation to use the most
+   appropriate deployment model.  As an example, when multiple BGP peers
+   need to be implemented, multiple instances of BGP must be configured
+   as part of this model.  However, from a device configuration point of
+   view, this could be implemented as:
 
    o  Multiple BGP processes with a single neighbor running in each
       process.
 
    o  A single BGP process with multiple neighbors running.
 
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 18]
-
-Internet-Draft                    l3nm                        March 2020
-
-
    o  A combination of both.
 
    To be aligned with [RFC8299], this model supports the following
    protocols:
 
-   o  vrrp: takes only a list of address-family as parameter.  VRRP
+   o  VRRP: takes only a list of address-family as parameter.  VRRP
       instance is expected to run on the 'vpn-network-access' interface.
 
-   o  rip: takes only a list of address-family as parameter.  RIP
+   o  RIP: takes only a list of address-family as parameter.  RIP
       instance is expected to run on the 'vpn-network-access' interface.
 
-   o  static: allows user to configure one or more IPv4 and/or IPv6
-      static routes.
-
-   o  bgp: allows to configure a BGP neighbor including parameters like
+   o  BGP: allows to configure a BGP neighbor including parameters like
       authentication using a key.  The authentication type will be
       driven by the implementation but the module supports any
       authentication that uses a key as a parameter.  A BGP neighbor can
@@ -1034,7 +1266,7 @@ Internet-Draft                    l3nm                        March 2020
       set to both).  It is then up to the implementation to drive the
       device configuration.
 
-   o  ospf: allows the user to configure OSPF to run on the vpn-network-
+   o  OSPF: allows the user to configure OSPF to run on the vpn-network-
       access interface.  An OSPF instance can run ipv4, ipv6 or both.
       When only ipv4 address-family is requested, it will be up to the
       implementation to drive if OSPFv2 or v3 is used.
@@ -1043,49 +1275,261 @@ Internet-Draft                    l3nm                        March 2020
       network-access interface.  An IS-IS instance can run L1, L2 or
       both levels.
 
-   Routing protocol configuration do not have any routing policy
-   configuration.  Routing policies are low level device configurations
-   that must not be part of an abstracted model.  Service Provider
-   internal policies (such as security filters) will be implemented as
-   part of the device configuration but does not require any input from
-   this model.  Some policies like primary/backup, load-balancing can be
-   inferred from access-priority.
+   The module allows a user to configure one or more IPv4 and/or IPv6
+   static routes.
 
-6.3.2.3.  Multicast
-
-   Multicast can be optionally enabled for a particular vpn-network-
-   node.
-
-   The model supports a single type of tree (ASM, SSM or bidirectional).
+   Routing configuration does not include low-level policies.  These
+   policies are low level device configurations that must not be part of
+   an abstracted model.  A provider's internal policies (such as
+   security filters) will be implemented as part of the device
 
 
 
-
-Barguil, et al.        Expires September 10, 2020              [Page 19]
+Barguil, et al.        Expires September 10, 2020              [Page 23]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-   When ASM is used, the model supports configuration of rendez-vous
-   points.  RP discovery could be static, bsr-rp or auto-rp.  When
-   static is used RP to multicast grouping mapping must be configured as
-   part of the rp-group-mappings container.  The RP may be a provider
-   node or a customer node.  When the RP is a customer node, the RP
-   address must be configured using the rp-address leaf otherwise no RP
-   address is needed.  The model supports RP redundancy through the rp-
-   redundancy leaf.  How the redundancy is achieved is out of scope and
-   is up to the implementation.  When a particular VPN using ASM
-   requires a more optimal traffic delivery, the leaf optimal-traffic-
-   delivery can be used.  When set to true, the implementation must use
-   any mechanism to provide a more optimal traffic delivery for the
-   customer.  Anycast is one of the mechanisms to enhance RPs
-   redundancy, resilience against failures and to recover from failures
-   quickly.  For redundancy purposes, MSDP can be enabled and used to
-   share the state about sources between multiple RPs.  The purpose of
-   MSDP in this context is to enhance the robustness of the multicast
-   service.  MSDP can be configured on Non-RP routers, which may be
-   useful in a domain that does not support multicast sources but does
-   support multicast transit.
+   configuration but does not require any input from this model.  Some
+   policies like primary/backup or load-balancing can be inferred from
+   'access-priority'.
+
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+      +--rw vpn-services
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          +  ...
+          +--rw vpn-nodes
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              +  ...
+              +--rw status
+              |  +--rw admin-enabled?   boolean
+              |  +--ro oper-status?     operational-type
+              +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       l3vpn-svc:svc-id
+              |     +  ...
+              |     +--rw connection
+              |     |  ...
+              |     +--rw ip-connection
+              |     |  ...
+              |     |  +--rw oam
+              |     |     ...
+              |     +--rw security
+              |     |  ...
+              |     +--rw routing-protocols
+              |     |  +--rw routing-protocol* [id]
+              |     |     +--rw id                  string
+              |     |     +--rw type?               identityref
+              |     |     +--rw routing-profiles* [id]
+              |     |     |  +--rw id      leafref
+              |     |     |  +--rw type?   ie-type
+              |     |     +--rw ospf {l3vpn-svc:rtg-ospf}?
+              |     |     |  +--rw address-family*
+              |     |     |  |       l3vpn-svc:address-family
+              |     |     |  +--rw area-address
+              |     |     |  |       yang:dotted-quad
+              |     |     |  +--rw metric?           uint16
+              |     |     |  +--rw mtu?              uint16
+              |     |     |  +--rw process-id?       uint16
+              |     |     |  +--rw security
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 24]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     |     |  |  +--rw auth-key?   string
+              |     |     |  +--rw sham-links
+              |     |     |          {rtg-ospf-sham-link}?
+              |     |     |     +--rw sham-link* [target-site]
+              |     |     |        +--rw target-site
+              |     |     |        |       l3vpn-svc:svc-id
+              |     |     |        +--rw metric?        uint16
+              |     |     +--rw bgp {l3vpn-svc:rtg-bgp}?
+              |     |     |  +--rw peer-autonomous-system
+              |     |     |  |       inet:as-number
+              |     |     |  +--rw local-autonomous-system?
+              |     |     |  |       inet:as-number
+              |     |     |  +--rw address-family*
+              |     |     |  |       l3vpn-svc:address-family
+              |     |     |  +--rw neighbor*
+              |     |     |  |       inet:ip-address
+              |     |     |  +--rw multihop?
+              |     |     |  |       uint8
+              |     |     |  +--rw security
+              |     |     |  |  +--rw auth-key?   string
+              |     |     |  +--rw status
+              |     |     |  |  +--rw admin-enabled?   boolean
+              |     |     |  |  +--ro oper-status?
+              |     |     |  |          operational-type
+              |     |     |  +--rw description?
+              |     |     |          string
+              |     |     +--rw isis {rtg-isis}?
+              |     |     |  +--rw address-family*
+              |     |     |  |       l3vpn-svc:address-family
+              |     |     |  +--rw area-address      area-address
+              |     |     |  +--rw level?            isis-level
+              |     |     |  +--rw metric?           uint16
+              |     |     |  +--rw process-id?       uint16
+              |     |     |  +--rw mode?             enumeration
+              |     |     |  +--rw status
+              |     |     |     +--rw admin-enabled?   boolean
+              |     |     |     +--ro oper-status?
+              |     |     |             operational-type
+              |     |     +--rw static
+              |     |     |  +--rw cascaded-lan-prefixes
+              |     |     |     +--rw ipv4-lan-prefixes*
+              |     |     |     |       [lan next-hop]
+              |     |     |     |       {l3vpn-svc:ipv4}?
+              |     |     |     |  +--rw lan
+              |     |     |     |  |       inet:ipv4-prefix
+              |     |     |     |  +--rw lan-tag?    string
+              |     |     |     |  +--rw next-hop
+              |     |     |     |          inet:ipv4-address
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 25]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |     |     |     +--rw ipv6-lan-prefixes*
+              |     |     |             [lan next-hop]
+              |     |     |             {l3vpn-svc:ipv6}?
+              |     |     |        +--rw lan
+              |     |     |        |       inet:ipv6-prefix
+              |     |     |        +--rw lan-tag?    string
+              |     |     |        +--rw next-hop
+              |     |     |                inet:ipv6-address
+              |     |     +--rw rip {l3vpn-svc:rtg-rip}?
+              |     |     |  +--rw address-family*
+              |     |     |          l3vpn-svc:address-family
+              |     |     +--rw vrrp {l3vpn-svc:rtg-vrrp}?
+              |     |        +--rw address-family*
+              |     |                l3vpn-svc:address-family
+              |     +--rw service
+              |       ...
+
+                     Figure 13: Routing Tree Structure
+
+6.3.2.3.  Multicast
+
+   Multicast MAY be enabled for a particular vpn-network-node (see
+   Figure 14).
+
+   The model supports a single type of tree (Any-Source Multicast (ASM),
+   Source-Specific Multicast (SSM), or bidirectional).
+
+   When ASM is used, the model supports the configuration of rendez-vous
+   points (RPs).  RP discovery may be 'static', 'bsr-rp', or 'auto-rp'.
+   When set to 'static', RP to multicast grouping mapping MUST be
+   configured as part of the 'rp-group-mappings' container.  The RP MAY
+   be a provider node or a customer node.  When the RP is a customer
+   node, the RP address must be configured using the 'rp-address' leaf
+   otherwise no RP address is needed.
+
+   The model supports RP redundancy through the 'rp-redundancy' leaf.
+   How the redundancy is achieved is out of scope and is up to the
+   implementation.
+
+   When a particular VPN using ASM requires a more optimal traffic
+   delivery, 'optimal-traffic-delivery' can be set.  When set to 'true',
+   the implementation must use any mechanism to provide a more optimal
+   traffic delivery for the customer.  Anycast is one of the mechanisms
+   to enhance RPs redundancy, resilience against failures, and to
+   recover from failures quickly.
+
+   For redundancy purposes, Multicast Source Discovery Protocol (MSDP)
+   may be enabled and used to share the state about sources between
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 26]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+   multiple RPs.  The purpose of MSDP in this context is to enhance the
+   robustness of the multicast service.  MSDP may be configured on Non-
+   RP routers, which is useful in a domain that does not support
+   multicast sources, but does support multicast transit.
+
+   module: ietf-l3vpn-ntw
+     +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  ...
+       +--rw vpn-service* [vpn-id]
+          +--rw vpn-id                  l3vpn-svc:svc-id
+          + ..
+          +--rw vpn-nodes
+           +--rw vpn-node* [ne-id]
+              +--rw ne-id                      string
+              +  ...
+              +--rw vpn-network-accesses
+              |  ...
+              +--rw multicast {l3vpn-svc:multicast}?
+              |  +--rw enabled?       boolean
+              |  +--rw tree-flavor*   identityref
+              |  +--rw rp
+              |  |  +--rw rp-group-mappings
+              |  |  |  +--rw rp-group-mapping* [id]
+              |  |  |     +--rw id                  uint16
+              |  |  |     +--rw provider-managed
+              |  |  |     |  +--rw enabled?
+              |  |  |     |  |       boolean
+              |  |  |     |  +--rw rp-redundancy?
+              |  |  |     |  |       boolean
+              |  |  |     |  +--rw optimal-traffic-delivery?
+              |  |  |     |  |       boolean
+              |  |  |     |  +--rw anycast
+              |  |  |     |     +--rw local-address?
+              |  |  |     |     |       inet:ip-address
+              |  |  |     |     +--rw rp-set-address*
+              |  |  |     |             inet:ip-address
+              |  |  |     +--rw rp-address
+              |  |  |     |       inet:ip-address
+              |  |  |     +--rw groups
+              |  |  |        +--rw group* [id]
+              |  |  |           +--rw id
+              |  |  |           |       uint16
+              |  |  |           +--rw (group-format)
+              |  |  |              +--:(group-prefix)
+              |  |  |              |  +--rw group-address?
+              |  |  |              |          inet:ip-prefix
+              |  |  |              +--:(startend)
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 27]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+              |  |  |                 +--rw group-start?
+              |  |  |                 |       inet:ip-address
+              |  |  |                 +--rw group-end?
+              |  |  |                         inet:ip-address
+              |  |  +--rw rp-discovery
+              |  |     +--rw rp-discovery-type?   identityref
+              |  |     +--rw bsr-candidates
+              |  |        +--rw bsr-candidate-address*
+              |  |                inet:ip-address
+              |  +--rw msdp {msdp}?
+              |     +--rw enabled?         boolean
+              |     +--rw peer?            inet:ip-address
+              |     +--rw local-address?   inet:ip-address
+              + ...
+
+                    Figure 14: Multicast Tree Structure
 
 6.3.3.  Concept of Import/Export Profiles
 
@@ -1097,41 +1541,35 @@ Internet-Draft                    l3nm                        March 2020
 
 6.3.4.  Underlay Transport
 
-   The model allows the posibility to indicate a preference for the
-   underlay transport technology for the service to manage.  This
-   preference is especially useful in networks with multiple domains and
-   NNI types.  The model has the option to select BGP, LDP, GRE, SR, SR-
-   TE and RSVP-TE as possible underlay transport.
+   The model allows to indicate a preference for the underlay transport
+   technology when activating a L3VPN service.  This preference is
+   especially useful in networks with multiple domains and NNI types.
+   The model supports these option: BGP, LDP, GRE, SR, SR-TE, and RSVP-
+   TE as possible underlay transport.
 
-                    +--rw vpn-services
-                       +--rw vpn-service* [vpn-id]
-                             ...
-                          +--rw underlay-transport
-                          |  +--rw type?   protocols-type
+   Other profiles can be defined in the future.
 
-                  Figure 12: Undelay Transport selection
+   This document does not make any assumption about the exact definition
+   of these profiles.  How such profiles are defined is deployment-
+   specific.
 
+7.  L3NM Module Tree Structure
 
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 20]
-
-Internet-Draft                    l3nm                        March 2020
-
-
-6.4.  Model tree
-
-   The high-level model structure defined by this document is as shown
-   below:
+   The L3NM Module Tree Structure is depicted in Figure 15.
 
 module: ietf-l3vpn-ntw
   +--rw l3vpn-ntw
    +--rw vpn-profiles
    |  +--rw valid-provider-identifiers
    |     +--rw cloud-identifier* [id] {l3vpn-svc:cloud-access}?
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 28]
+
+Internet-Draft                    l3nm                        March 2020
+
+
    |     |  +--rw id    string
    |     +--rw encryption-profile-identifier* [id]
    |     |  +--rw id    string
@@ -1170,14 +1608,6 @@ module: ietf-l3vpn-ntw
        |        +--rw vpn-policies
        |           +--rw import-policy?   leafref
        |           +--rw export-policy?   leafref
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 21]
-
-Internet-Draft                    l3nm                        March 2020
-
-
        +--rw underlay-transport
        |  +--rw type?   protocols-type
        +--rw vpn-nodes
@@ -1188,6 +1618,14 @@ Internet-Draft                    l3nm                        March 2020
            +--rw ne-id                      string
            +--rw router-id?                 inet:ip-address
            +--rw address-family?
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 29]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |       l3vpn-svc:address-family
            +--rw node-role?                 identityref
            +--rw rd?
@@ -1226,14 +1664,6 @@ Internet-Draft                    l3nm                        March 2020
            |     |  |  +--rw dot1q-vlan-tagged {dot1q}?
            |     |  |  |  +--rw tag-type?   identityref
            |     |  |  |  +--rw cvlan-id?   uint16
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 22]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |     |  |  +--rw priority-tagged
            |     |  |  |  +--rw tag-type?   identityref
            |     |  |  +--rw qinq {qinq}?
@@ -1244,6 +1674,14 @@ Internet-Draft                    l3nm                        March 2020
            |     |  |  |  +--rw tag-type?   identityref
            |     |  |  |  +--rw svlan-id    uint16
            |     |  |  +--rw vxlan {vxlan}?
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 30]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |     |  |     +--rw vni-id       uint32
            |     |  |     +--rw peer-mode?   identityref
            |     |  |     +--rw peer-list* [peer-ip]
@@ -1282,14 +1720,6 @@ Internet-Draft                    l3nm                        March 2020
            |     |  |  |                      inet:ipv4-address
            |     |  |  +--rw dhcp-relay
            |     |  |  |  +--rw provider-address?
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 23]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |     |  |  |  |       inet:ipv4-address
            |     |  |  |  +--rw prefix-length?           uint8
            |     |  |  |  +--rw customer-dhcp-servers
@@ -1300,6 +1730,14 @@ Internet-Draft                    l3nm                        March 2020
            |     |  |     +--rw address* [address-id]
            |     |  |        +--rw address-id          string
            |     |  |        +--rw provider-address?
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 31]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |     |  |        |       inet:ipv4-address
            |     |  |        +--rw customer-address?
            |     |  |        |       inet:ipv4-address
@@ -1338,14 +1776,6 @@ Internet-Draft                    l3nm                        March 2020
            |     |  |     +--rw address* [address-id]
            |     |  |        +--rw address-id          string
            |     |  |        +--rw provider-address?
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 24]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |     |  |        |       inet:ipv6-address
            |     |  |        +--rw customer-address?
            |     |  |        |       inet:ipv6-address
@@ -1356,6 +1786,14 @@ Internet-Draft                    l3nm                        March 2020
            |     |        +--rw (holdtime)?
            |     |           +--:(fixed)
            |     |           |  +--rw fixed-value?    uint32
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 32]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |     |           +--:(profile)
            |     |              +--rw profile-name?   leafref
            |     +--rw security
@@ -1394,14 +1832,6 @@ Internet-Draft                    l3nm                        March 2020
            |     |     |     +--rw sham-link* [target-site]
            |     |     |        +--rw target-site
            |     |     |        |       l3vpn-svc:svc-id
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 25]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |     |     |        +--rw metric?        uint16
            |     |     +--rw bgp {l3vpn-svc:rtg-bgp}?
            |     |     |  +--rw peer-autonomous-system
@@ -1412,6 +1842,14 @@ Internet-Draft                    l3nm                        March 2020
            |     |     |  |       l3vpn-svc:address-family
            |     |     |  +--rw neighbor*
            |     |     |  |       inet:ip-address
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 33]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |     |     |  +--rw multihop?
            |     |     |  |       uint8
            |     |     |  +--rw security
@@ -1450,14 +1888,6 @@ Internet-Draft                    l3nm                        March 2020
            |     |     |        +--rw lan
            |     |     |        |       inet:ipv6-prefix
            |     |     |        +--rw lan-tag?    string
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 26]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |     |     |        +--rw next-hop
            |     |     |                inet:ipv6-address
            |     |     +--rw rip {l3vpn-svc:rtg-rip}?
@@ -1468,6 +1898,14 @@ Internet-Draft                    l3nm                        March 2020
            |     |                l3vpn-svc:address-family
            |     +--rw service
            |        +--rw svc-input-bandwidth     uint64
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 34]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |        +--rw svc-output-bandwidth    uint64
            |        +--rw svc-mtu                 uint16
            |        +--rw qos {l3vpn-svc:qos}?
@@ -1506,14 +1944,6 @@ Internet-Draft                    l3nm                        March 2020
            |        |  |     |  |  |  |      +--:(src-ipv4-network)
            |        |  |     |  |  |  |        +--rw src-ipv4-network?
            |        |  |     |  |  |  |          inet:ipv4-prefix
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 27]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |        |  |     |  |  |  +--:(ipv6)
            |        |  |     |  |  |     +--rw ipv6
            |        |  |     |  |  |        +--rw dscp?
@@ -1524,6 +1954,14 @@ Internet-Draft                    l3nm                        March 2020
            |        |  |     |  |  |        |       uint16
            |        |  |     |  |  |        +--rw ttl?
            |        |  |     |  |  |        |       uint8
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 35]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |        |  |     |  |  |        +--rw protocol?
            |        |  |     |  |  |        |       uint8
            |        |  |     |  |  |        +--rw (destination-network)?
@@ -1562,14 +2000,6 @@ Internet-Draft                    l3nm                        March 2020
            |        |  |     |  |     +--:(udp)
            |        |  |     |  |        +--rw udp
            |        |  |     |  |           +--rw length?
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 28]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |        |  |     |  |           |       uint16
            |        |  |     |  |           +--rw (source-port)?
            |        |  |     |  |           |  ...
@@ -1580,6 +2010,14 @@ Internet-Draft                    l3nm                        March 2020
            |        |  |     |             identityref
            |        |  |     +--rw target-class-id?
            |        |  |             string
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 36]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            |        |  +--rw qos-profile
            |        |     +--rw (qos-profile)?
            |        |        +--:(standard)
@@ -1618,14 +2056,6 @@ Internet-Draft                    l3nm                        March 2020
            |        |                            empty
            |        +--rw carrierscarrier
            |        |       {l3vpn-svc:carrierscarrier}?
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 29]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |        |  +--rw signalling-type?   enumeration
            |        +--rw multicast {l3vpn-svc:multicast}?
            |           +--rw site-type?        enumeration
@@ -1636,6 +2066,14 @@ Internet-Draft                    l3nm                        March 2020
            |           |          {l3vpn-svc:ipv6}?
            |           +--rw protocol-type?    enumeration
            |           +--rw remote-source?    boolean
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 37]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            +--rw maximum-routes
            |  +--rw address-family* [af]
            |     +--rw af
@@ -1674,14 +2112,6 @@ Internet-Draft                    l3nm                        March 2020
            |  |  |                 +--rw group-start?
            |  |  |                 |       inet:ip-address
            |  |  |                 +--rw group-end?
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 30]
-
-Internet-Draft                    l3nm                        March 2020
-
-
            |  |  |                         inet:ip-address
            |  |  +--rw rp-discovery
            |  |     +--rw rp-discovery-type?   identityref
@@ -1692,25 +2122,35 @@ Internet-Draft                    l3nm                        March 2020
            |     +--rw enabled?         boolean
            |     +--rw peer?            inet:ip-address
            |     +--rw local-address?   inet:ip-address
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 38]
+
+Internet-Draft                    l3nm                        March 2020
+
+
            +--rw node-ie-profile?           leafref
 
-                                 Figure 13
+                                 Figure 15
 
-7.  Use of the L3NM Data Model
+8.  Sample Uses of the L3NM Data Model
 
-7.1.  Enterprise L3 VPN Services
+8.1.  Enterprise L3 VPN Services
 
-   Enterprise L3VPN is one of the most demanded services for carriers
+   Enterprise L3VPNs are one of the most demanded services for carriers,
    and therefore, L3NM can be useful to automate the tasks of
-   provisioning and maintenance of these VPN.  Templates and batch
-   procceses can be built, and as a result many parameters needed for
-   creation from scratch of a VPN can be abstracted to the upper SDN
-   layer and little manual intervention will be still required.  Also
-   common addition/removal of sites of an existing customer VPN can
+   provisioning and maintenance of these VPNs.  Templates and batch
+   processes can be built, and as a result many parameters are needed
+   for the creation from scratch of a VPN that can be abstracted to the
+   upper SDN layer and little manual intervention will be still
+   required.
+
+   Also common addition/removal of sites of an existing customer VPN can
    benefit of using L3NM, by creation of workflows that either prune or
    add nodes as required from the network data model object.
 
-7.2.  Multi-Domain Resource Management
+8.2.  Multi-Domain Resource Management
 
    The implementation of L3VPN services which span across
    administratively separated domains (i.e., that are under the
@@ -1718,27 +2158,19 @@ Internet-Draft                    l3nm                        March 2020
    requires some network resources to be synchronized between systems.
    Particularly, there are two resources that must be orchestrated and
    manage to avoid asymmetric (non-functional) configuration, or the
-   usage of unavailable resources.  For example, RTs shall be
-   synchronized between PEs.  When every PE is controlled by the same
-   management system, RT allocation can be performed by the system.  In
-   cases where the service spans across multiple management systems,
-   this task of allocating RTs has to be aligned across the domains,
-   therefore, the service model must provide a way to specify RTs.  In
-   addition, RDs must also be synchronized to avoid collisions in RD
-   allocation between separate systems.  An incorrect allocation might
-   lead to the same RD and IP prefixes being exported by different PE
-   routers.
+   usage of unavailable resources.
 
+   For example, RTs shall be synchronized between PEs.  When every PE is
+   controlled by the same management system, RT allocation can be
+   performed by the system.  In cases where the service spans across
+   multiple management systems, this task of allocating RTs has to be
+   aligned across the domains, therefore, the service model must provide
+   a way to specify RTs.  In addition, RDs must also be synchronized to
+   avoid collisions in RD allocation between separate systems.  An
+   incorrect allocation might lead to the same RD and IP prefixes being
+   exported by different PE routers.
 
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 31]
-
-Internet-Draft                    l3nm                        March 2020
-
-
-7.3.  Management of Multicast services
+8.3.  Management of Multicast services
 
    Multicast services over L3VPN can be implemented either using dual
    PIM MVPNs (also known as Draft Rosen model) [RFC 4364] or
@@ -1746,58 +2178,51 @@ Internet-Draft                    l3nm                        March 2020
    VPN (ng-MVPN) [RFC 6513/6514].  Both methods are supported and
    equally effective, but the main difference is that MBGP-based MVPN
    does not require multicast configuration on the service provider
-   backbone.  Multiprotocol BGP multicast VPNs employ the intra-
-   autonomous system (AS) next-generation BGP control plane and PIM
-   sparse mode as the data plane.  The PIM state information is
-   maintained between the PE routers using the same architecture that is
-   used for unicast VPNs.  On the other hand, Draft Rosen has
-   limitations such as reduced options for transport, control plane
-   scalability, availability, operational inconsistency and the need of
-   maintaining state in the backbone.  Because of this, ng-MNPN is the
-   architectural model that has been taken as the base for implementing
-   multicast service on L3VPN.  In this scenario, BGP auto discovery is
-   used to discover MVPN PE members and the customer PIM signaling is
-   sent across provider core through MP-BGP.  The multicast traffic is
-   transported on MPLS P2MP LSPs.  All of the previous information is
-   carried in the MCAST-VPN BGP NRLI.
-
-8.  L3VPN Examples
-
-8.1.  4G VPN Provissioning Example
-
-   The L3VPN service defined in this draft provides a multipoint, routed
-   service to the customer over an IP/MPLS core.  The L3VPNs are widely
-   used to deploy 3G/4G, fixed and enterprise services principally due
-   to the fact that several traffic discrimination policies can be
-   applied in the network to transport and guarantee the right SLAs to
-   the mobile customers.
-
-   As it is shown in the Figure 14, commonly the eNODEB (CE) is directly
-   connected to the access routers (DCSG) of the mobile backhaul and
-   their logical interfaces (one or many according to the Service type)
-   are configured in a VPN that transport the packets to the mobile core
-   platforms.  In this example, a 'vpn-node' is created with two 'vpn-
-   network-accesses'.
 
 
 
-
-
-
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 32]
+Barguil, et al.        Expires September 10, 2020              [Page 39]
 
 Internet-Draft                    l3nm                        March 2020
 
 
+   backbone.  Multiprotocol BGP multicast VPNs employ the intra-
+   autonomous system (AS) next-generation BGP control plane and PIM
+   sparse mode as the data plane.  The PIM state information is
+   maintained between the PE routers using the same architecture that is
+   used for unicast VPNs.
+
+   On the other hand, Draft Rosen has limitations such as reduced
+   options for transport, control plane scalability, availability,
+   operational inconsistency and the need of maintaining state in the
+   backbone.  Because of this, ng-MNPN is the architectural model that
+   has been taken as the base for implementing multicast service on
+   L3VPN.  In this scenario, BGP auto discovery is used to discover MVPN
+   PE members and the customer PIM signaling is sent across provider
+   core through MP-BGP.  The multicast traffic is transported on MPLS
+   P2MP LSPs.  All of the previous information is carried in the MCAST-
+   VPN BGP NRLI.
+
+9.  L3VPN Examples
+
+9.1.  4G VPN Provissioning Example
+
+   L3VPNs are widely used to deploy 3G/4G, fixed, and enterprise
+   services mainly because several traffic discrimination policies can
+   be applied within the network to deliver to the mobile customers a
+   service that meets the SLA requiremets.
+
+   As it is shown in the Figure 16, typically, an eNodeB (CE) is
+   directly connected to the access routers of the mobile backhaul and
+   their logical interfaces (one or many according to the Service type)
+   are configured in a VPN that transports the packets to the mobile
+   core platforms.  In this example, a 'vpn-node' is created with two
+   'vpn-network-accesses'.
+
          +-------------+                  +------------------+
          |             |                  | PE               |
          |             | 192.168.0.2      |  10.0.0.1        |
-         |   eNODE-B   |>--------/------->|...........       |
+         |   eNodeB    |>--------/------->|...........       |
          |             |          Vlan 1  |          |       |
          |             |>--------/------->|......    |       |
          |             |          Vlan 2  |     |    |       |
@@ -1808,100 +2233,123 @@ Internet-Draft                    l3nm                        March 2020
                                           |                  |
                                           +------------------+
 
-
-                    Figure 14: Mobile Backhaul Example
-
-   To create a L3VPN service using the L3NM model the procedure and the
-   JSON with the data structure is the following:
-
-   Firts: Create 4G VPN Service
-
-
-         POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
-         Host: example.com
-         Content-Type: application/yang-data+json
-
-   {
-       "vpn-service": {
-         "vpn-id": "4G",
-         "customer-name": "1",
-         "vpn-service-topology": "custom",
-         "description": "VPN to deploy 4G services "
-       }
-   }
-
-
-                       Figure 15: Create VPN Service
-
-   Second: Create VPN Node, in this type of service the VPN Node is
-   equivalent with the VRF configured in the physical device ('ne-
-   id'=10.0.0.1).
+                    Figure 16: Mobile Backhaul Example
 
 
 
-
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 33]
+Barguil, et al.        Expires September 10, 2020              [Page 40]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-         POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
-         vpn-services/vpn-service="4G"
-         Host: example.com
-         Content-Type: application/yang-data+json
+   To create a L3VPN service using the L3NM model, the followng sample
+   steps can be followed:
+
+   First: Create the 4G VPN Service (Figure 17).
+
+   POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
+   Host: example.com
+   Content-Type: application/yang-data+json
 
    {
-     "vpn-nodes": {
-       "vpn-node": {
+       "ietf-l3vpn-ntw:vpn-services": {
+       "vpn-service": [
+         "vpn-id": "4G",
+         "customer-name": "mycustomer",
+         "vpn-service-topology": "custom",
+         "description": "VPN to deploy 4G services"
+       ]
+     }
+   }
+
+                       Figure 17: Create VPN Service
+
+   Second: Create a VPN Node as depicted in Figure 18.  In this type of
+   service, the VPN Node is equivalent to the VRF configured in the
+   physical device ('ne-id'=10.0.0.1).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 41]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+   POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+         vpn-services/vpn-service=4G
+   Host: example.com
+   Content-Type: application/yang-data+json
+
+   {
+     "ietf-l3vpn-ntw:vpn-nodes": {
+       "vpn-node": [
          "vpn-node-id": "44",
          "ne-id": "10.0.0.1",
          "local-autonomous-system": "65550",
          "rd": "0:65550:1",
          "vpn-targets": {
-           "vpn-target": {
+           "vpn-target": [
              "id": "1",
-             "route-targets": { "route-target": "0:65550:1" },
+             "route-targets": ["route-target": "0:65550:1"],
              "route-target-type": "both"
            }
          }
-       }
+       ]
      }
    }
 
-
-                        Figure 16: Create VPN Node
+                        Figure 18: Create VPN Node
 
    Finally, two VPN Network Accesses are created using the same physical
    port ('port-id'=1/1/1).  Each 'vpn-network-access' has a particular
-   VLAN (1,2) to differentiante the traffic between: Sync and data.
+   VLAN (1,2) to differentiante the traffic between: Sync and data
+   (Figure 19).
 
-   POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/
-         vpn-services/vpn-service="4G"/vpn-nodes/vpn-node="44"
+   POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+         vpn-services/vpn-service=4G/vpn-nodes/vpn-node=44
    content-type: application/yang-data+json
    {
-     "vpn-network-accesses": {
+     "ietf-l3vpn-ntw:vpn-network-accesses": {
        "vpn-network-access": [
          {
            "vpn-network-access-id": "1/1/1.1",
            "port-id": "1/1/1",
-           "description": "Interface SYNCto eNODE-B",
-           "status": { "admin-enabled": "true" },
+           "description": "Interface SYNC to eNODE-B",
+           "status": {"admin-enabled": "true"},
            "vpn-network-access-type": "l3vpn-svc:point-to-point",
            "ip-connection": {
              "ipv4": {
                "address-allocation-type": "l3vpn-svc:static-address",
                "static-addresses": {
                  "primary-address": "1",
-                 "address": {
+                 "address": [
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 34]
+Barguil, et al.        Expires September 10, 2020              [Page 42]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -1910,66 +2358,66 @@ Internet-Draft                    l3nm                        March 2020
                    "provider-address": "192.168.0.1",
                    "customer-address": "192.168.0.1",
                    "prefix-length": "32"
-                 }
+                 ]
                }
              }
            },
            "routing-protocols": {
-             "routing-protocol": {
+             "routing-protocol": [
                "id": "1",
                "type": "l3vpn-svc:direct"
-             }
+             ]
            }
          },
          {
            "vpn-network-access-id": "1/1/1.2",
            "port-id": "1/1/1",
            "description": "Interface DATA to eNODE-B",
-           "status": { "admin-enabled": "true" },
+           "status": {"admin-enabled": "true"},
            "ip-connection": {
              "ipv4": {
                "static-addresses": {
                  "primary-address": "1",
-                 "address": {
+                 "address": [
                    "address-id": "1",
                    "provider-address": "192.168.1.1",
                    "customer-address": "192.168.1.2",
                    "prefix-length": "32"
-                 }
+                 ]
                }
              }
            },
            "routing-protocols": {
-             "routing-protocol": {
+             "routing-protocol": [
                "id": "1",
                "type": "l3vpn-svc:direct"
-             }
+             ]
            }
          }
        ]
      }
    }
 
-
-                   Figure 17: Create VPN Network Access
-
+                   Figure 19: Create VPN Network Access
 
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 35]
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 43]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-8.2.  Multicast VPN provisioning example
+9.2.  Multicast VPN Provisioning Example
 
    IPTV is mainly distributed through multicast over the LANs.  In the
-   following example, PIM-SM is enabled and functional between PE and
-   CE.  The PE receives multicast traffic from a CE that is directly
-   connected to the multicast source.  The signaling between PE and CE
-   is done thought BGP.  Also, RP is statically configured for a
-   multicast group.
+   following example, PIM-SM is enabled and functional between the PE
+   and the CE.  The PE receives multicast traffic from a CE that is
+   directly connected to the multicast source.  The signaling between PE
+   and CE is achieved using BGP.  Also, RP is statically configured for
+   a multicast group.
 
                   +-----------+   +------+     +------+    +-----------+
                   | Multicast |---|  CE  |--/--|  PE  |----|  Backbone |
@@ -1977,14 +2425,15 @@ Internet-Draft                    l3nm                        March 2020
                   +-----------+                            +-----------+
 
 
-                Figure 18: Multicast L3VPN service Example
+                Figure 20: Multicast L3VPN Service Example
 
    To configure a Multicast L3VPN service using the L3NM model the
    procedure and the JSON with the data structure is the following:
 
-   First, the multicast service is created:
+   First, the multicast service is created (see the excerpt of the
+   request message body shown in Figure 21)
 
-             "vpn-services": {
+                "vpn-services": {
                        "vpn-service": {
                          "vpn-id": "Multicast_IPTV",
                          "customer-name": "310",
@@ -1993,10 +2442,11 @@ Internet-Draft                    l3nm                        March 2020
                        }
                    }
 
+      Figure 21: Create Multicast VPN Service (Excerpt of the Message
+                               Request Body)
 
-                  Figure 19: Create Multicast VPN Service
-
-   Next, the VPN nodes are created.  In this example, the VPN Node will
+   Then, the VPN nodes are created (see the excerpt of the request
+   message body shown in Figure 22).  In this example, the VPN Node will
    represent VRF configured in the physical device.
 
 
@@ -2011,14 +2461,12 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 36]
+Barguil, et al.        Expires September 10, 2020              [Page 44]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-               "vpn-node": {
+               "vpn-node": [
                  "vpn-node-id": "500003105",
                  "ne-id": "10.250.2.202",
                  "autonomous-system": "3816",
@@ -2051,28 +2499,13 @@ Internet-Draft                    l3nm                        March 2020
                      }
                    }
                  }
-               }
+               ]
 
+   Figure 22: Create Multicast VPN Node (Excerpt of the Message Request
+                                   Body)
 
-                   Figure 20: Create Multicast VPN Node
-
-   Finally, create the VPN Network Access with Multicast
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 37]
-
-Internet-Draft                    l3nm                        March 2020
-
+   Finally, create the VPN Network Access with Multicast enabled (see
+   the excerpt of the request message body shown in Figure 23)
 
              "vpn-network-access": {
                "vpn-network-access-id": "1/1/1",
@@ -2081,6 +2514,14 @@ Internet-Draft                    l3nm                        March 2020
                "vpn-network-access-type": {
                  "l3vpn-svc:point-to-point"
                },
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 45]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                "ip-connection": {
                  "ipv4": {
                    "address-allocation-type": {
@@ -2121,20 +2562,22 @@ Internet-Draft                    l3nm                        March 2020
              }
 
 
-                   Figure 21: Create VPN Network Access
+   Figure 23: Create VPN Network Access (Excerpt of the Message Request
+                                   Body)
 
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 38]
-
-Internet-Draft                    l3nm                        March 2020
-
-
-9.  Yang Module
+10.  L3NM YANG Module
 
 <CODE BEGINS>  file "ietf-l3vpn-ntw@2020-03.09.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 46]
+
+Internet-Draft                    l3nm                        March 2020
+
+
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
   prefix l3vpn-ntw;
 
@@ -2178,25 +2621,25 @@ module ietf-l3vpn-ntw {
         Author:    Samier Barguil
                   <mailto:samier.barguilgiraldo.ext@telefonica.com>
         Editor:    Oscar Gonzalez de Dios
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 39]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                   <mailto:oscar.gonzalezdedios@telefonica.com>
         Author:   Mohamed Boucadair
                   <mailto:mohamed.boucadair@orange.com>
         Author:    Luis Angel Munoz
                   <mailto:luis-angel.munoz@vodafone.com>
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 47]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         Author:    Alejandro Aguado
                   <mailto:alejandro.aguado_martin@nokia.com>
     ";
   description
     "This YANG module defines a generic network-oriented model
-     for the configuration of Layer 3 VPNs.
+     for the configuration of Layer 3 Virtual Private Networks.
      Copyright (c) 2020 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
 
@@ -2209,21 +2652,13 @@ Internet-Draft                    l3nm                        March 2020
 
      This version of this YANG module is part of RFC XXXX
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
-     for full legal notices.
-
-     The key words 'MUST', 'MUST NOT', 'REQUIRED', 'SHALL', 'SHALL
-     NOT', 'SHOULD', 'SHOULD NOT', 'RECOMMENDED', 'NOT RECOMMENDED',
-     'MAY', and 'OPTIONAL' in this document are to be interpreted as
-     described in BCP 14 (RFC 2119) (RFC 8174) when, and only when,
-     they appear in all capitals, as shown here.";
+     for full legal notices.";
 
   revision 2020-03-09 {
     description
       "Initial revision.";
     reference
       "RFC XXXX: A Layer 3 VPN Network YANG Model";
-      // RFC Ed.: replace XXXX with actual RFC number and remove
-     // this note
   }
 
   /* Features */
@@ -2233,14 +2668,6 @@ Internet-Draft                    l3nm                        March 2020
       "This feature indicates that msdp capabilities
        are supported by the VPN.";
   }
-
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 40]
-
-Internet-Draft                    l3nm                        March 2020
-
 
   feature rtg-isis {
     description
@@ -2255,6 +2682,14 @@ Internet-Draft                    l3nm                        March 2020
 
   feature input-bw {
     description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 48]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       "This feature indicates the support of
        the 'input-bw' limit.";
   }
@@ -2290,14 +2725,6 @@ Internet-Draft                    l3nm                        March 2020
       enum GRE {
         value 0;
         description
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 41]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           "Transport based on GRE.";
       }
       enum LDP {
@@ -2311,6 +2738,14 @@ Internet-Draft                    l3nm                        March 2020
           "Transport based on BGP.";
       }
       enum SR {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 49]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         value 3;
         description
           "Transport based on Segment Routing (SR)";
@@ -2346,14 +2781,6 @@ Internet-Draft                    l3nm                        March 2020
 
   typedef isis-level {
     type enumeration {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 42]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       enum level1 {
         value 0;
         description
@@ -2367,6 +2794,14 @@ Internet-Draft                    l3nm                        March 2020
       enum level1-2 {
         value 2;
         description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 50]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           "ISIS level 1 and 2";
       }
     }
@@ -2402,14 +2837,6 @@ Internet-Draft                    l3nm                        March 2020
       enum up {
         value 0;
         description
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 43]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           "Operational status UP/Enabled.";
       }
       enum down {
@@ -2423,6 +2850,14 @@ Internet-Draft                    l3nm                        March 2020
           "Operational status UNKNOWN.";
       }
     }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 51]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     description
       "This attribute is used to determine the
        status of a particular element.";
@@ -2458,14 +2893,6 @@ Internet-Draft                    l3nm                        March 2020
     base vpn-topology;
     description
       "Identity for CUSTOM VPN topology
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 44]
-
-Internet-Draft                    l3nm                        March 2020
-
-
        where Hubs can act as Spoke for certain part of
        the network or Spokes as Hubs.";
   }
@@ -2479,6 +2906,14 @@ Internet-Draft                    l3nm                        March 2020
   identity pseudowire {
     base l3vpn-svc:site-network-access-type;
     description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 52]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       "Identity for pseudowire connections.";
   }
 
@@ -2514,14 +2949,6 @@ Internet-Draft                    l3nm                        March 2020
     base eth-inf-type;
     description
       "Identity of the tagged interface type.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 45]
-
-Internet-Draft                    l3nm                        March 2020
-
-
   }
 
   identity untagged {
@@ -2535,6 +2962,13 @@ Internet-Draft                    l3nm                        March 2020
     description
       "Identity of the LAG interface type.";
   }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 53]
+
+Internet-Draft                    l3nm                        March 2020
+
 
   identity bearer-inf-type {
     description
@@ -2570,14 +3004,6 @@ Internet-Draft                    l3nm                        March 2020
       "Identity for the QinQ tagged interface.";
   }
 
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 46]
-
-Internet-Draft                    l3nm                        March 2020
-
-
   identity dot1q {
     base tagged-inf-type;
     description
@@ -2592,6 +3018,14 @@ Internet-Draft                    l3nm                        March 2020
 
   identity vxlan {
     base tagged-inf-type;
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 54]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     description
       "Identity for the VXLAN tagged interface.";
   }
@@ -2626,14 +3060,6 @@ Internet-Draft                    l3nm                        March 2020
 
   identity static-mode {
     base vxlan-peer-mode;
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 47]
-
-Internet-Draft                    l3nm                        March 2020
-
-
     description
       "Identity for VXLAN access in the static mode.";
   }
@@ -2648,6 +3074,13 @@ Internet-Draft                    l3nm                        March 2020
     description
       "Identity for the bandwidth direction.";
   }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 55]
+
+Internet-Draft                    l3nm                        March 2020
+
 
   identity input-bw {
     base bw-direction;
@@ -2669,7 +3102,7 @@ Internet-Draft                    l3nm                        March 2020
   identity bw-per-cos {
     base bw-type;
     description
-      "Bandwidth is per CoS.";
+      "Bandwidth is per Class of Service (CoS).";
   }
 
   identity bw-per-port {
@@ -2682,14 +3115,6 @@ Internet-Draft                    l3nm                        March 2020
     base bw-type;
     description
       "Bandwidth is per site.  It is applicable to
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 48]
-
-Internet-Draft                    l3nm                        March 2020
-
-
        all the site network accesses within a site.";
   }
 
@@ -2705,6 +3130,14 @@ Internet-Draft                    l3nm                        March 2020
     container underlay-transport {
       leaf type {
         type protocols-type;
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 56]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         description
           "Protocols used to deliver an L3VPN service.";
       }
@@ -2738,14 +3171,6 @@ Internet-Draft                    l3nm                        March 2020
             "The last multicast group address in
              the multicast group address range.";
         }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 49]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       }
       description
         "Choice for multicast group format.";
@@ -2761,6 +3186,14 @@ Internet-Draft                    l3nm                        March 2020
       leaf enabled {
         type boolean;
         default "false";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 57]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         description
           "Enables multicast.";
       }
@@ -2794,14 +3227,6 @@ Internet-Draft                    l3nm                        March 2020
                 default "false";
                 description
                   "If true, a redundancy mechanism for the RP
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 50]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                    is required.";
               }
               leaf optimal-traffic-delivery {
@@ -2817,6 +3242,14 @@ Internet-Draft                    l3nm                        March 2020
                 when "../rp-redundancy = 'true' and
                       ../optimal-traffic-delivery = 'true'" {
                     description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 58]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                       "Only applicable if
                        RP redundancy is
                        enabled and delivery through
@@ -2850,14 +3283,6 @@ Internet-Draft                    l3nm                        March 2020
               mandatory true;
               description
                 "Defines the address of the RP.
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 51]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                  Used if the RP is customer-managed.";
             }
             container groups {
@@ -2873,6 +3298,14 @@ Internet-Draft                    l3nm                        March 2020
                   "List of multicast groups.";
               }
               description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 59]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                 "Multicast groups associated with the RP.";
             }
             description
@@ -2900,20 +3333,12 @@ Internet-Draft                    l3nm                        March 2020
             leaf-list bsr-candidate-address {
               type inet:ip-address;
               description
-                "Address of BSR candidate.";
+                "Address of candidate Bootstrap Router (BSR).";
             }
             description
               "Container for List of Customer
                BSR candidate's addresses.";
           }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 52]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           description
             "RP discovery parameters.";
         }
@@ -2926,8 +3351,17 @@ Internet-Draft                    l3nm                        March 2020
           type boolean;
           default "false";
           description
-            "If true, Multicast Source Discovery Protocol (MSDP) protocol is activated.";
+            "If true, Multicast Source Discovery Protocol (MSDP)
+             protocol is activated.";
         }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 60]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         leaf peer {
           type inet:ip-address;
           description
@@ -2936,7 +3370,8 @@ Internet-Draft                    l3nm                        March 2020
         leaf local-address {
           type inet:ip-address;
           description
-            "IP address of the local end. This local address must be configured on the node.";
+            "IP address of the local end. This local address
+             must be configured on the node.";
         }
         description
           "MSDP parameters.";
@@ -2962,14 +3397,6 @@ Internet-Draft                    l3nm                        March 2020
 
   grouping operational-requirements {
     leaf requested-site-start {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 53]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       type yang:date-and-time;
       description
         "Optional leaf indicating requested date and
@@ -2983,6 +3410,14 @@ Internet-Draft                    l3nm                        March 2020
          time when the service at a particular site is
          expected to stop.";
     }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 61]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     description
       "This grouping defines some operational
        parameters.";
@@ -3018,14 +3453,6 @@ Internet-Draft                    l3nm                        March 2020
         uses status-timestamp;
         description
           "Operational service status.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 54]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       }
       description
         "Service status.";
@@ -3039,6 +3466,14 @@ Internet-Draft                    l3nm                        March 2020
     leaf svc-input-bandwidth {
       type uint64;
       units "bps";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 62]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       mandatory true;
       description
         "From the customer site's perspective, the service
@@ -3074,14 +3509,6 @@ Internet-Draft                    l3nm                        March 2020
       leaf enabled {
         type boolean;
         default "false";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 55]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         description
           "Enables traffic protection of access link.";
       }
@@ -3095,6 +3522,14 @@ Internet-Draft                    l3nm                        March 2020
   grouping site-service-mpls {
     container carrierscarrier {
       if-feature "l3vpn-svc:carrierscarrier";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 63]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       leaf signalling-type {
         type enumeration {
           enum ldp {
@@ -3130,14 +3565,6 @@ Internet-Draft                    l3nm                        March 2020
 
   grouping ports {
     choice source-port {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 56]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       container source-port-range-or-operator {
         uses packet-fields:port-range-or-operator;
         description
@@ -3151,6 +3578,14 @@ Internet-Draft                    l3nm                        March 2020
       container destination-port-range-or-operator {
         uses packet-fields:port-range-or-operator;
         description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 64]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           "Destination port definition.";
       }
       description
@@ -3186,14 +3621,6 @@ Internet-Draft                    l3nm                        March 2020
                     "Rule set that matches IPv4 header.";
                 }
                 container ipv6 {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 57]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                   uses packet-fields:acl-ip-header-fields;
                   uses packet-fields:acl-ipv6-header-fields;
                   description
@@ -3207,6 +3634,14 @@ Internet-Draft                    l3nm                        March 2020
                   uses packet-fields:acl-tcp-header-fields;
                   uses ports;
                   description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 65]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                     "Rule set that matches TCP header.";
                 }
                 container udp {
@@ -3242,14 +3677,6 @@ Internet-Draft                    l3nm                        March 2020
         }
         description
           "Configuration of the traffic classification policy.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 58]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       }
       container qos-profile {
         choice qos-profile {
@@ -3263,6 +3690,14 @@ Internet-Draft                    l3nm                        March 2020
               type leafref {
                 path "/l3vpn-ntw/vpn-profiles/"
                    + "valid-provider-identifiers"
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 66]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                    + "/qos-profile-identifier/id";
               }
               description
@@ -3298,14 +3733,6 @@ Internet-Draft                    l3nm                        March 2020
                   }
                   default "l3vpn-svc:both";
                   description
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 59]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                     "The direction to which the QoS profile
                      is applied.";
                 }
@@ -3319,6 +3746,14 @@ Internet-Draft                    l3nm                        March 2020
                     "To be used if the class must be rate-limited.
                      Expressed as percentage of the service
                      bandwidth.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 67]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                 }
                 container latency {
                   choice flavor {
@@ -3354,14 +3789,6 @@ Internet-Draft                    l3nm                        March 2020
                   choice flavor {
                     case lowest {
                       leaf use-lowest-jitter {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 60]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                         type empty;
                         description
                           "The traffic class
@@ -3375,6 +3802,14 @@ Internet-Draft                    l3nm                        March 2020
                         units "usec";
                         default "40000";
                         description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 68]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                           "The traffic class
                            should use a path with a
                            defined maximum jitter.";
@@ -3410,14 +3845,6 @@ Internet-Draft                    l3nm                        March 2020
                 }
                 description
                   "List of classes of services.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 61]
-
-Internet-Draft                    l3nm                        March 2020
-
-
               }
               description
                 "Container for list of classes of services.";
@@ -3431,6 +3858,14 @@ Internet-Draft                    l3nm                        March 2020
         "QoS configuration.";
     }
     description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 69]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       "This grouping defines QoS parameters for a site.";
   }
 
@@ -3466,14 +3901,6 @@ Internet-Draft                    l3nm                        March 2020
               "Encryption will occur at Layer 2.";
           }
           enum layer3 {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 62]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             description
               "Encryption will occur at Layer 3.
                For example, IPsec may be used when
@@ -3487,6 +3914,14 @@ Internet-Draft                    l3nm                        March 2020
         "";
     }
     container encryption-profile {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 70]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       choice profile {
         case provider-profile {
           leaf profile-name {
@@ -3522,14 +3957,6 @@ Internet-Draft                    l3nm                        March 2020
           "Choice of encryption profile.
            The encryption profile can be the provider profile
            or customer profile.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 63]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       }
       description
         "This grouping defines encryption parameters for
@@ -3543,6 +3970,14 @@ Internet-Draft                    l3nm                        March 2020
     container routing-protocols {
       list routing-protocol {
         key "id";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 71]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         leaf id {
           type string;
           description
@@ -3578,14 +4013,6 @@ Internet-Draft                    l3nm                        March 2020
           when "derived-from-or-self(../type, 'l3vpn-ntw:ospf')" {
             description
               "Only applies when protocol is OSPF.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 64]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           }
           if-feature "l3vpn-svc:rtg-ospf";
           leaf-list address-family {
@@ -3599,6 +4026,14 @@ Internet-Draft                    l3nm                        March 2020
           }
           leaf area-address {
             type yang:dotted-quad;
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 72]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             mandatory true;
             description
               "Area address.";
@@ -3634,14 +4069,6 @@ Internet-Draft                    l3nm                        March 2020
                 description
                   "Target site for the sham link connection.
                    The site is referred to by its ID.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 65]
-
-Internet-Draft                    l3nm                        March 2020
-
-
               }
               leaf metric {
                 type uint16;
@@ -3655,6 +4082,14 @@ Internet-Draft                    l3nm                        March 2020
               description
                 "Creates a sham link with another site.";
             }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 73]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             description
               "List of sham links.";
           }
@@ -3690,14 +4125,6 @@ Internet-Draft                    l3nm                        March 2020
           }
           /*  Extension  */
           leaf-list neighbor {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 66]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             type inet:ip-address;
             description
               "IP address(es) of the BGP neighbor. An IPv4
@@ -3711,6 +4138,14 @@ Internet-Draft                    l3nm                        March 2020
                a given BGP neighbor and the PE router.";
           }
           uses security-params;
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 74]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           uses status-params;
           leaf description {
             type string;
@@ -3746,14 +4181,6 @@ Internet-Draft                    l3nm                        March 2020
               "Area address.";
           }
           leaf level {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 67]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             type isis-level;
             description
               "level1, level2 or level1-2";
@@ -3767,6 +4194,14 @@ Internet-Draft                    l3nm                        March 2020
                path selection.";
           }
           leaf process-id {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 75]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             type uint16;
             description
               "Process id of the ISIS CE-PE connection.";
@@ -3802,14 +4237,6 @@ Internet-Draft                    l3nm                        March 2020
                allocation type for the IP connection
                MUST be used.";
           }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 68]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           container cascaded-lan-prefixes {
             list ipv4-lan-prefixes {
               if-feature "l3vpn-svc:ipv4";
@@ -3823,6 +4250,14 @@ Internet-Draft                    l3nm                        March 2020
                 type string;
                 description
                   "Internal tag to be used in VPN policies.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 76]
+
+Internet-Draft                    l3nm                        March 2020
+
+
               }
               leaf next-hop {
                 type inet:ipv4-address;
@@ -3858,14 +4293,6 @@ Internet-Draft                    l3nm                        March 2020
           }
           description
             "Configuration specific to static routing.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 69]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         }
         container rip {
           when "derived-from-or-self(../type, 'l3vpn-ntw:rip')" {
@@ -3879,6 +4306,14 @@ Internet-Draft                    l3nm                        March 2020
             min-elements 1;
             description
               "If RIP is used on this site, this node
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 77]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                contains a configured value.  This node
                contains at least one address family
                to be activated.";
@@ -3914,14 +4349,6 @@ Internet-Draft                    l3nm                        March 2020
       "Grouping for routing protocols.";
   }
 
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 70]
-
-Internet-Draft                    l3nm                        March 2020
-
-
   grouping site-attachment-ip-connection {
     container ip-connection {
       container ipv4 {
@@ -3935,6 +4362,14 @@ Internet-Draft                    l3nm                        March 2020
              + "'l3vpn-ntw:provider-dhcp-slaac'))" {
             error-message "SLAAC is only applicable to IPv6";
           }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 78]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           description
             "Defines how addresses are allocated.
              If there is no value for the address
@@ -3970,14 +4405,6 @@ Internet-Draft                    l3nm                        March 2020
             description
               "Subnet prefix length expressed in bits.
                If not specified, or specified as zero,
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 71]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                this means the customer leaves the actual
                prefix length value to the provider.";
           }
@@ -3991,6 +4418,14 @@ Internet-Draft                    l3nm                        March 2020
                   "Describes the number of IP addresses
                    the customer requires.";
               }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 79]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             }
             case explicit {
               container customer-addresses {
@@ -4026,14 +4461,6 @@ Internet-Draft                    l3nm                        March 2020
                    DHCP.";
               }
             }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 72]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             description
               "Choice for the way to assign addresses.";
           }
@@ -4047,6 +4474,14 @@ Internet-Draft                    l3nm                        March 2020
               "Only applies when provider is required to implement
                DHCP relay function.";
           }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 80]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           leaf provider-address {
             type inet:ipv4-address;
             description
@@ -4082,14 +4517,6 @@ Internet-Draft                    l3nm                        March 2020
             }
             description
               "Container for list of customer DHCP servers.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 73]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           }
           description
             "DHCP relay provided by operator.";
@@ -4103,6 +4530,14 @@ Internet-Draft                    l3nm                        March 2020
           leaf primary-address {
             type leafref {
               path "/l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/"
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 81]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                  + "vpn-node/vpn-network-accesses/vpn-network-access/"
                  + "ip-connection/ipv4/static-addresses/address/"
                  + "address-id";
@@ -4138,14 +4573,6 @@ Internet-Draft                    l3nm                        March 2020
                  It is applied to both provider-address
                  and customer-address.";
             }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 74]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             description
               "Describes IPv4 addresses used.";
           }
@@ -4159,6 +4586,14 @@ Internet-Draft                    l3nm                        March 2020
         if-feature "l3vpn-svc:ipv6";
         leaf address-allocation-type {
           type identityref {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 82]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             base l3vpn-svc:address-allocation-type;
           }
           description
@@ -4194,14 +4629,6 @@ Internet-Draft                    l3nm                        March 2020
                 "If prefix length is specified, provider-address
                  must also be specified.";
               description
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 75]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                 "If prefix length is specified, provider-address
                  must also be specified.";
             }
@@ -4215,6 +4642,14 @@ Internet-Draft                    l3nm                        March 2020
             default "number";
             case number {
               leaf number-of-dynamic-address {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 83]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                 type uint16;
                 default "1";
                 description
@@ -4250,14 +4685,6 @@ Internet-Draft                    l3nm                        March 2020
                      specified, it implies a range
                      inclusive of both addresses.
                      If no address is specified, it implies
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 76]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                      customer addresses group is
                      not supported.";
                 }
@@ -4271,6 +4698,14 @@ Internet-Draft                    l3nm                        March 2020
           }
           description
             "DHCP allocated addresses related parameters.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 84]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         }
         container dhcp-relay {
           when "derived-from-or-self(../address-allocation-type, "
@@ -4306,14 +4741,6 @@ Internet-Draft                    l3nm                        March 2020
                specified, or specified as zero, this means the
                customer leaves the actual prefix length value
                to the provider.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 77]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           }
           container customer-dhcp-servers {
             leaf-list server-ip-address {
@@ -4327,6 +4754,14 @@ Internet-Draft                    l3nm                        March 2020
             }
             description
               "Container for list of customer DHCP servers.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 85]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           }
           description
             "DHCP relay provided by operator.";
@@ -4362,14 +4797,6 @@ Internet-Draft                    l3nm                        March 2020
                  must be configured.";
             }
             leaf customer-address {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 78]
-
-Internet-Draft                    l3nm                        March 2020
-
-
               type inet:ipv6-address;
               description
                 "The IPv6 Address of the customer side.";
@@ -4383,6 +4810,14 @@ Internet-Draft                    l3nm                        March 2020
                  It is applied to both provider-address and
                  customer-address.";
             }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 86]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             description
               "Describes IPv6 addresses used.";
           }
@@ -4418,14 +4853,6 @@ Internet-Draft                    l3nm                        March 2020
             case profile {
               leaf profile-name {
                 type leafref {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 79]
-
-Internet-Draft                    l3nm                        March 2020
-
-
                   path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers/"
                      + "bfd-profile-identifier/id";
                 }
@@ -4439,6 +4866,14 @@ Internet-Draft                    l3nm                        March 2020
                 "Well-known SP profile.";
             }
             description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 87]
+
+Internet-Draft                    l3nm                        March 2020
+
+
               "Choice for holdtime flavor.";
           }
           description
@@ -4474,14 +4909,6 @@ Internet-Draft                    l3nm                        March 2020
             description
               "The site has both sources and receivers.";
           }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 80]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         }
         default "source-receiver";
         description
@@ -4495,6 +4922,14 @@ Internet-Draft                    l3nm                        March 2020
           description
             "Enables IPv4 multicast.";
         }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 88]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         leaf ipv6 {
           if-feature "l3vpn-svc:ipv6";
           type boolean;
@@ -4530,14 +4965,6 @@ Internet-Draft                    l3nm                        March 2020
         description
           "Multicast protocol type to be used with the customer site.";
       }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 81]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       leaf remote-source {
         type boolean;
         default "false";
@@ -4550,6 +4977,14 @@ Internet-Draft                    l3nm                        March 2020
     description
       "Multicast parameters for the site.";
   }
+
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 89]
+
+Internet-Draft                    l3nm                        March 2020
+
 
   grouping site-maximum-routes {
     container maximum-routes {
@@ -4587,13 +5022,6 @@ Internet-Draft                    l3nm                        March 2020
       "Grouping for security parameters.";
   }
 
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 82]
-
-Internet-Draft                    l3nm                        March 2020
-
-
   grouping network-access-service {
     container service {
       uses site-service-basic;
@@ -4606,6 +5034,14 @@ Internet-Draft                    l3nm                        March 2020
       description
         "Service parameters on the attachment.";
     }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 90]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     description
       "Grouping for service parameters.";
   }
@@ -4642,14 +5078,6 @@ Internet-Draft                    l3nm                        March 2020
     }
     description
       "Grouping for extranet VPN configuration.
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 83]
-
-Internet-Draft                    l3nm                        March 2020
-
-
        This provides an easy way to interconnect
        all sites from two VPNs.";
   }
@@ -4662,6 +5090,14 @@ Internet-Draft                    l3nm                        March 2020
         leaf id {
           type string;
           description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 91]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             "Identification of cloud service.
              Local administration meaning.";
         }
@@ -4698,14 +5134,6 @@ Internet-Draft                    l3nm                        March 2020
             "Identification of the SP BFD Profile to be used.
              Local administration meaning.";
         }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 84]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         description
           "List for BFD Profile identifiers.";
       }
@@ -4716,8 +5144,17 @@ Internet-Draft                    l3nm                        March 2020
           description
             "Identification of the routing Profile to be used
              by the routing-protocols within sites, vpn-
-             network-accesses or vpn-nodes for refering vrf-import/export policies.
-             Local administration meaning.";
+             network-accesses or vpn-nodes for refering
+             vrf-import/export policies.
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 92]
+
+Internet-Draft                    l3nm                        March 2020
+
+
+             This identifier has a local meaning.";
         }
         description
           "List for Routing Profile Identifiers.";
@@ -4734,7 +5171,8 @@ Internet-Draft                    l3nm                        March 2020
     leaf vpn-id {
       type l3vpn-svc:svc-id;
       description
-        "VPN identifier. Local administration meaning.";
+        "VPN identifier.
+         This identifier has a local meaning.";
     }
     leaf l3sm-vpn-id {
       type l3vpn-svc:svc-id;
@@ -4754,14 +5192,6 @@ Internet-Draft                    l3nm                        March 2020
     }
     leaf vpn-service-topology {
       type identityref {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 85]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         base vpn-topology;
       }
       default "any-to-any";
@@ -4772,6 +5202,14 @@ Internet-Draft                    l3nm                        March 2020
       type string;
       description
         "Textual description of a VPN service.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 93]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     }
     uses ie-profiles-params;
     uses svc-transport-encapsulation;
@@ -4810,14 +5248,6 @@ Internet-Draft                    l3nm                        March 2020
       list bearer {
         key "bearer-id";
         leaf bearer-id {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 86]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           type string;
           description
             "";
@@ -4828,6 +5258,14 @@ Internet-Draft                    l3nm                        March 2020
           }
           description
             "Request for an Bearer access type.
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 94]
+
+Internet-Draft                    l3nm                        March 2020
+
+
              Choose between port or lag connection type.";
         }
         leaf ne-id {
@@ -4866,14 +5304,6 @@ Internet-Draft                    l3nm                        March 2020
       list bandwidth {
         key "direction type";
         leaf direction {
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 87]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           type identityref {
             base bw-direction;
           }
@@ -4884,6 +5314,14 @@ Internet-Draft                    l3nm                        March 2020
              the site to the SP.";
         }
         leaf type {
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 95]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           type identityref {
             base bw-type;
           }
@@ -4922,14 +5360,6 @@ Internet-Draft                    l3nm                        March 2020
           type uint64;
           units "bps";
           mandatory true;
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 88]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           description
             "Committed Information Rate.  The maximum number
              of bits that a port can receive or send over
@@ -4940,6 +5370,14 @@ Internet-Draft                    l3nm                        March 2020
           units "bps";
           mandatory true;
           description
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 96]
+
+Internet-Draft                    l3nm                        March 2020
+
+
             "Committed Burst Size (CBS).  Controls the bursty
              nature of the traffic.  Traffic that does not
              use the configured Committed Information Rate
@@ -4978,14 +5416,6 @@ Internet-Draft                    l3nm                        March 2020
           description
             "Peak Burst Size.  It is measured in bytes per
              second.";
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 89]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         }
         description
           "List of bandwidth values (e.g., per CoS,
@@ -4996,6 +5426,14 @@ Internet-Draft                    l3nm                        March 2020
          input/output bandwidth of the connection or
          download/upload bandwidth from the SP/site
          to the site/SP.";
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 97]
+
+Internet-Draft                    l3nm                        March 2020
+
+
     }
     description
       " ";
@@ -5034,14 +5472,6 @@ Internet-Draft                    l3nm                        March 2020
           type union {
             type l3vpn-svc:svc-id;
             type uint32;
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 90]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           }
           description
             "Type STRING or NUMBER Serivice-Id";
@@ -5052,6 +5482,14 @@ Internet-Draft                    l3nm                        March 2020
             "Provider AS number in case the customer
              requests BGP routing.";
         }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 98]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         leaf description {
           type string;
           description
@@ -5090,14 +5528,6 @@ Internet-Draft                    l3nm                        March 2020
             path "/l3vpn-ntw/vpn-services/"
                + "vpn-service/ie-profiles/ie-profile/ie-profile-id";
           }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 91]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           description
             "";
         }
@@ -5108,6 +5538,13 @@ Internet-Draft                    l3nm                        March 2020
     description
       "Grouping to define VRF-specific configuration.";
   }
+
+
+
+Barguil, et al.        Expires September 10, 2020              [Page 99]
+
+Internet-Draft                    l3nm                        March 2020
+
 
   /* Parameters related to import and export profiles (RTs RDs.) */
 
@@ -5146,14 +5583,6 @@ Internet-Draft                    l3nm                        March 2020
         type union {
           type uint32;
           type inet:ipv4-address;
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 92]
-
-Internet-Draft                    l3nm                        March 2020
-
-
         }
         description
           "SDP/Far End/LDP Neighbour reference.";
@@ -5165,6 +5594,14 @@ Internet-Draft                    l3nm                        March 2020
       leaf vcid {
         type union {
           type uint32;
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 100]
+
+Internet-Draft                    l3nm                        March 2020
+
+
           type string;
         }
         description
@@ -5203,13 +5640,6 @@ Internet-Draft                    l3nm                        March 2020
       "Grouping to define security parameters";
   }
 
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 93]
-
-Internet-Draft                    l3nm                        March 2020
-
-
   grouping ethernet-params {
     container connection {
       leaf encapsulation-type {
@@ -5220,6 +5650,14 @@ Internet-Draft                    l3nm                        March 2020
         description
           "Encapsulation type.  By default, the
            encapsulation type is set to 'untagged'.";
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 101]
+
+Internet-Draft                    l3nm                        March 2020
+
+
       }
       container logical-interface {
         leaf peer-reference {
@@ -5258,14 +5696,6 @@ Internet-Draft                    l3nm                        March 2020
               "Tag type.  By default, the tag type is
                'c-vlan'.";
           }
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 94]
-
-Internet-Draft                    l3nm                        March 2020
-
-
           leaf cvlan-id {
             type uint16;
             description
@@ -5276,6 +5706,14 @@ Internet-Draft                    l3nm                        March 2020
         }
         container priority-tagged {
           when "derived-from-or-self(../type, "
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 102]
+
+Internet-Draft                    l3nm                        March 2020
+
+
              + "'l3vpn-ntw:priority-tagged')" {
             description
               "Only applies when the type of the tagged
@@ -5314,14 +5752,6 @@ Internet-Draft                    l3nm                        March 2020
             type uint16;
             mandatory true;
             description
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 95]
-
-Internet-Draft                    l3nm                        March 2020
-
-
               "SVLAN identifier.";
           }
           leaf cvlan-id {
@@ -5332,6 +5762,14 @@ Internet-Draft                    l3nm                        March 2020
           }
           description
             "QinQ.";
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 103]
+
+Internet-Draft                    l3nm                        March 2020
+
+
         }
         container qinany {
           when "derived-from-or-self(../type, "
@@ -5370,14 +5808,6 @@ Internet-Draft                    l3nm                        March 2020
           leaf vni-id {
             type uint32;
             mandatory true;
-
-
-
-Barguil, et al.        Expires September 10, 2020              [Page 96]
-
-Internet-Draft                    l3nm                        March 2020
-
-
             description
               "VXLAN Network Identifier (VNI).";
           }
@@ -5388,6 +5818,14 @@ Internet-Draft                    l3nm                        March 2020
             default "static-mode";
             description
               "Specifies the VXLAN access mode.  By default,
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 104]
+
+Internet-Draft                    l3nm                        March 2020
+
+
                the peer mode is set to 'static-mode'.";
           }
           list peer-list {
@@ -5413,7 +5851,14 @@ Internet-Draft                    l3nm                        March 2020
           description
             "This is an internal reference for the SP.";
         }
-        uses pseudowire-params;
+        uses pseudowire-params {
+          when "/l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/"
+             + "vpn-node/vpn-network-accesses/vpn-network-access/"
+             + "vpn-network-access-type ='pseudowire'" {
+            description
+              "pseudowire specific parameters";
+          }
+        }
         description
           "Defines physical properties of a site attachment.";
       }
@@ -5426,17 +5871,17 @@ Internet-Draft                    l3nm                        March 2020
 
   grouping rt-rd {
     leaf rd {
+      type rt-types:route-distinguisher;
+      description
+        "";
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 97]
+Barguil, et al.        Expires September 10, 2020             [Page 105]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-      type rt-types:route-distinguisher;
-      description
-        "";
     }
     container vpn-targets {
       description
@@ -5482,17 +5927,17 @@ Internet-Draft                    l3nm                        March 2020
     }
     reference
       "RFC4364: BGP/MPLS IP Virtual Private Networks (VPNs)
+       RFC4664: Framework for Layer 2 Virtual Private Networks
+       (L2VPNs)";
+    container vpn-policies {
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 98]
+Barguil, et al.        Expires September 10, 2020             [Page 106]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-       RFC4664: Framework for Layer 2 Virtual Private Networks
-       (L2VPNs)";
-    container vpn-policies {
       description
         "";
       leaf import-policy {
@@ -5538,17 +5983,17 @@ Internet-Draft                    l3nm                        March 2020
           "List of accesses for a site.";
       }
       description
+        "List of accesses for a site.";
+    }
+    description
 
 
 
-Barguil, et al.        Expires September 10, 2020              [Page 99]
+Barguil, et al.        Expires September 10, 2020             [Page 107]
 
 Internet-Draft                    l3nm                        March 2020
 
 
-        "List of accesses for a site.";
-    }
-    description
       "Main block of the Network Access.";
   }
 
@@ -5577,9 +6022,9 @@ Internet-Draft                    l3nm                        March 2020
 }
 <CODE ENDS>
 
-                                 Figure 22
+                                 Figure 24
 
-10.  IANA Considerations
+11.  IANA Considerations
 
    This document requests IANA to register the following URI in the "ns"
    subregistry within the "IETF XML Registry" [RFC3688]:
@@ -5594,17 +6039,16 @@ Internet-Draft                    l3nm                        March 2020
    the "YANG Module Names" subregistry [RFC6020] within the "YANG
    Parameters" registry.
 
-
-
-
-Barguil, et al.        Expires September 10, 2020             [Page 100]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       name: ietf-l3vpn-ntw
 
       namespace: urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 108]
+
+Internet-Draft                    l3nm                        March 2020
+
 
       maintained by IANA: N
 
@@ -5612,15 +6056,15 @@ Internet-Draft                    l3nm                        March 2020
 
       reference: RFC XXXX
 
-11.  Security Considerations
+12.  Security Considerations
 
    The YANG module specified in this document defines a schema for data
    that is designed to be accessed via network management protocols such
-   as NETCONF [RFC6241] or RESTCONF [RFC8040] .  The lowest NETCONF
-   layer is the secure transport layer, and the mandatory-to-implement
-   secure transport is Secure Shell (SSH) [RFC6242].  The lowest
-   RESTCONF layer is HTTPS, and the mandatory-to-implement secure
-   transport is TLS [RFC8466].
+   as NETCONF [RFC6241] or RESTCONF [RFC8040] . The lowest NETCONF layer
+   is the secure transport layer, and the mandatory-to-implement secure
+   transport is Secure Shell (SSH) [RFC6242].  The lowest RESTCONF layer
+   is HTTPS, and the mandatory-to-implement secure transport is TLS
+   [RFC8466].
 
    The Network Configuration Access Control Model (NACM) [RFC8341]
    provides the means to restrict access for particular NETCONF or
@@ -5650,18 +6094,17 @@ Internet-Draft                    l3nm                        March 2020
       QoS, bandwidth, routing protocols), leading to malfunctioning of
       the service and therefore to SLA violations.  In addition, an
       attacker could attempt to create a L3 VPN Service.  Such activity
-
-
-
-Barguil, et al.        Expires September 10, 2020             [Page 101]
-
-Internet-Draft                    l3nm                        March 2020
-
-
       can be detected by monitoring and tracking network configuration
       changes.
 
    o  COMPLETE rest of critical data nodes and subtrees
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 109]
+
+Internet-Draft                    l3nm                        March 2020
+
 
    Some of the readable data nodes in this YANG module may be considered
    sensitive or vulnerable in some network environments.  It is thus
@@ -5683,7 +6126,7 @@ Internet-Draft                    l3nm                        March 2020
 
    o  Unauthorized clients attempting to read service information
 
-12.  Acknowledgements
+13.  Acknowledgements
 
    Thanks to Adrian Farrel and Miguel Cros for the suggestions on the
    document.  Thanks to Philip Eardlay for the review.  Lots of thanks
@@ -5692,7 +6135,7 @@ Internet-Draft                    l3nm                        March 2020
    This work was supported in part by the European Commission funded
    H2020-ICT-2016-2 METRO-HAUL project (G.A. 761727).
 
-13.  Contributors
+14.  Contributors
 
    Victor Lopez
    Telefonica
@@ -5706,19 +6149,19 @@ Internet-Draft                    l3nm                        March 2020
    Bell Canada
    Email: daniel.voyer@bell.ca
 
-
-
-
-Barguil, et al.        Expires September 10, 2020             [Page 102]
-
-Internet-Draft                    l3nm                        March 2020
-
-
    Luay Jalil
    Verizon
    Email: luay.jalil@verizon.com
 
    Qin Wu
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 110]
+
+Internet-Draft                    l3nm                        March 2020
+
+
    Huawei
    Email: bill.wu@huawei.com>
 
@@ -5738,9 +6181,9 @@ Internet-Draft                    l3nm                        March 2020
    ECI Telecom
    Email: erez.segev@ecitele.com>
 
-14.  References
+15.  References
 
-14.1.  Normative References
+15.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -5761,18 +6204,19 @@ Internet-Draft                    l3nm                        March 2020
               (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
               <https://www.rfc-editor.org/info/rfc6241>.
 
-
-
-
-
-Barguil, et al.        Expires September 10, 2020             [Page 103]
-
-Internet-Draft                    l3nm                        March 2020
-
-
    [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
               Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
               <https://www.rfc-editor.org/info/rfc6242>.
+
+
+
+
+
+
+Barguil, et al.        Expires September 10, 2020             [Page 111]
+
+Internet-Draft                    l3nm                        March 2020
+
 
    [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
               RFC 7950, DOI 10.17487/RFC7950, August 2016,
@@ -5796,7 +6240,7 @@ Internet-Draft                    l3nm                        March 2020
               Service Delivery", RFC 8466, DOI 10.17487/RFC8466, October
               2018, <https://www.rfc-editor.org/info/rfc8466>.
 
-14.2.  Informative References
+15.2.  Informative References
 
    [I-D.evenwu-opsawg-yang-composed-vpn]
               Even, R., Bo, W., Wu, Q., and Y. Cheng, "YANG Data Model
@@ -5807,6 +6251,11 @@ Internet-Draft                    l3nm                        March 2020
               Jethanandani, M., Patel, K., Hares, S., and J. Haas, "BGP
               YANG Model for Service Provider Networks", draft-ietf-idr-
               bgp-model-08 (work in progress), February 2020.
+
+   [I-D.ietf-rtgwg-qos-model]
+              Choudhary, A., Jethanandani, M., Strahle, N., Aries, E.,
+              and I. Chen, "YANG Model for QoS", draft-ietf-rtgwg-qos-
+              model-00 (work in progress), October 2019.
 
    [I-D.liu-pim-yang]
               Liu, Y., Guo, F., and M. Sivakumar, "YANG Data Model for
@@ -5820,8 +6269,7 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-
-Barguil, et al.        Expires September 10, 2020             [Page 104]
+Barguil, et al.        Expires September 10, 2020             [Page 112]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -5877,7 +6325,7 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 105]
+Barguil, et al.        Expires September 10, 2020             [Page 113]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -5933,7 +6381,7 @@ A.1.  Nokia Implementation
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 106]
+Barguil, et al.        Expires September 10, 2020             [Page 114]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -5989,7 +6437,7 @@ A.2.  Huawei Implementation
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 107]
+Barguil, et al.        Expires September 10, 2020             [Page 115]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -6045,7 +6493,7 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 108]
+Barguil, et al.        Expires September 10, 2020             [Page 116]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -6071,7 +6519,7 @@ Internet-Draft                    l3nm                        March 2020
                   +--rw service-id?                 leafreaf
                   +--rw access-group-id?            yang:uuid
 
-                                 Figure 23
+                                 Figure 25
 
    Use Cases we have implemented include:
 
@@ -6101,7 +6549,7 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 109]
+Barguil, et al.        Expires September 10, 2020             [Page 117]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -6157,7 +6605,7 @@ Authors' Addresses
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 110]
+Barguil, et al.        Expires September 10, 2020             [Page 118]
 
 Internet-Draft                    l3nm                        March 2020
 
@@ -6213,4 +6661,4 @@ Internet-Draft                    l3nm                        March 2020
 
 
 
-Barguil, et al.        Expires September 10, 2020             [Page 111]
+Barguil, et al.        Expires September 10, 2020             [Page 119]
