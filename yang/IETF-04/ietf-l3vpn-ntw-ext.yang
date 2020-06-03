@@ -1,0 +1,383 @@
+module ietf-l3vpn-ntw-ext {
+ 
+yang-version 1.1;
+
+namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw-ext";
+ 
+prefix l3vpn-ntw-ext;
+ 
+import ietf-l3vpn-ntw {
+    prefix l3vpn-ntw;
+    reference
+      "RFC XXX: YANG Data Model for L3VPN Service Delivery";
+  }
+
+  import ietf-inet-types {
+    prefix inet;
+    reference
+      "Section 4 of RFC 6991";
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+    reference
+      "Section 3 of RFC 6991";
+  }
+
+  import ietf-routing-types {
+    prefix rt-types;
+    reference
+      "RFC 8294: Common YANG Data Types 
+      for the Routing Area";
+  }
+
+ import ietf-access-control-list {
+    prefix acl;
+    reference
+      "RFC 8519: YANG Data Model for Network 
+      Access Control
+                 Lists (ACLs).";
+ }
+ 
+ organization
+    "IETF OPSA (Operations and Management Area) Working Group ";
+  contact
+    "WG Web:   <http://tools.ietf.org/wg/opsawg/>
+        WG List:  <mailto:opsawg@ietf.org>
+        Author:    Samier Barguil
+                  <mailto:samier.barguilgiraldo.ext@telefonica.com>
+        Editor:    Oscar Gonzalez de Dios
+                  <mailto:oscar.gonzalezdedios@telefonica.com>
+    ";
+  description
+    "This YANG module defines a generic network-oriented model
+     for the configuration of Layer 3 Virtual Private Networks.
+     Copyright (c) 2020 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject to
+     the license terms contained in, the Simplified BSD License set
+     forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (https://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX
+     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
+     for full legal notices.";
+
+  revision 2020-04-03 {
+    description
+      "Initial revision.";
+    reference
+      "RFC XXXX: A Layer 3 VPN Network YANG Model";
+      // RFC Ed.: replace XXXX with actual RFC number and remove
+     // this note
+  }
+
+ /* Identities */
+
+identity ace-direction {
+    description
+      "ace-direction in prefix List.";
+}
+
+identity from {
+    base ace-direction;
+    description
+      "From: Source";
+  }
+
+identity to {
+    base ace-direction;
+    description
+      "To: Destination";
+  }
+
+identity match-types {
+  description
+      "Match-Type in prefix List.";
+}
+
+identity exact {
+    base match-types;
+    description
+      "Accept the packet.";
+  }
+
+identity longer {
+    base match-types;
+    description
+      "Accept the packet.";
+  }
+
+identity add {
+    base acl:forwarding-action;
+    description
+      "Accept the packet.";
+  }
+
+identity set {
+    base acl:forwarding-action;
+    description
+      "Accept the packet.";
+  }
+
+identity replace {
+    base acl:forwarding-action;
+    description
+      "Accept the packet.";
+  }
+
+identity protocols-type {
+  description
+      "Base identity for Protocols.";
+}
+
+identity bgp {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity connected {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity direct {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity ospf {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity static {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity rip {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+identity bgp-vpn {
+    base protocols-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+ identity profile-type {
+    description
+      "Base identity for VPN topology.";
+  }
+
+  identity qos-profile {
+    base profile-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+  identity bfd-profile {
+    base profile-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+  identity routing-profile{
+    base profile-type ;
+    description
+      "Identity for any-to-any VPN topology.";
+  }
+
+   /* Gorupings */
+
+
+  grouping grouping-protocol-specific {
+  container protocol-specific {
+          description
+          "Protocols on which ACLs are set.";
+  container protocol-list {
+        description
+          "List of procols to select.";
+        leaf protocol {
+          type identityref {
+            base protocols-type;
+          } 
+          description
+              "Protocol list as a match criterion"; 
+        }
+  }
+  container bfd {
+        description
+          "List of interfaces on which ACLs are set.";
+        leaf multiplier {
+          type union {
+            type rt-types:route-distinguisher;
+            type string;
+          }
+            description
+              "Community list as a match criterion"; 
+          }
+        leaf transmit-interval {
+          type string;
+            description
+              "Reference to the VPN Profile";
+        }
+      }
+    container bgp {
+        description
+          "List of interfaces on which ACLs are set.";
+        leaf community-name {
+          type leafref {
+            path "/acl:acls/acl:acl/l3vpn-ntw-ext:community-list/l3vpn-ntw-ext:community/l3vpn-ntw-ext:name";
+            }
+            description
+              "Community list as a match criterion"; 
+          }
+        leaf as-path {
+          type string;
+            description
+              "Reference to the VPN Profile";
+        }
+      }
+    container ospf {
+        description
+          "List of interfaces on which ACLs are set.";
+        leaf area {
+          type l3vpn-ntw:area-address;
+            description
+              "Area identifier"; 
+          }
+      }
+    container isis {
+        description
+          "List of interfaces on which ACLs are set.";
+        leaf level {
+          type l3vpn-ntw:isis-level;
+            description
+              "ISIS level identifier"; 
+          }
+      }
+    }
+  }
+
+  grouping grouping-protocol-actions {
+    container complementary-actions {
+        description
+          "List of interfaces on which ACLs are set.";
+        leaf preference {
+          type uint8;
+            description
+              "Change preference for incoming packet"; 
+          }
+        leaf metric {
+          type uint8;
+            description
+              "Change metric for incoming packet";
+        }
+        leaf tag {
+          type uint8;
+            description
+              "Change tag for incoming packet";
+        }
+        leaf community {
+          type uint8;
+            description
+              "ADD community for incoming packet";
+        }
+      }
+    }
+
+grouping grouping-prefix-list {
+  container prefix-list { 
+    leaf "name" {
+      type string;
+    description
+      "Name of the Prefix List";
+    }
+        list entries {
+          key "prefix";
+          description
+           "Features related to the Application Layer
+            Gateway (ALG).";
+          leaf prefix {
+            type inet:ip-prefix {
+            }
+            description
+              "IP address to be added in the Prefix List.";
+          }
+          leaf match-type {
+            type identityref {
+              base match-types;
+            }
+            description
+              "Match-Type in prefix List.";
+          }
+        }
+  }
+}
+
+grouping grouping-community-list {
+  container community-list {
+  list community {
+      key "name";
+
+        leaf name {
+            type string; 
+            description
+              "Match-Type in prefix List.";
+          }
+          
+        leaf-list member {
+            type rt-types:route-distinguisher; }
+            description
+              "IP address to be added in the Prefix List.";
+        }
+    }
+  }
+
+/* Augments */
+
+augment "/acl:acls/acl:acl/acl:aces/acl:ace/acl:actions" {
+    description
+      "Augments the possible attachment point";
+      uses grouping-protocol-actions;
+    }
+    
+augment "/acl:acls/acl:acl/acl:aces/acl:ace/acl:matches" {
+    description
+      "Augments the possible attachment point";
+      
+      leaf ace-type {
+      type identityref {
+        base ace-direction;
+        }
+      }
+      
+      leaf prefix-ref {
+       type leafref {
+       path "/acl:acls/acl:acl/l3vpn-ntw-ext:prefix-list/l3vpn-ntw-ext:name";
+       }
+      }
+      uses grouping-protocol-specific;
+    }
+
+augment "/acl:acls/acl:acl" {
+    description
+      "Augments the possible attachment point";
+      uses grouping-prefix-list;
+      uses grouping-community-list;
+    }
+
+
+ }
