@@ -1,15 +1,19 @@
-module ietf-vpn-types {
+module ietf-vpn-common {
   
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-types";
-  prefix vpn-types;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-common";
+  prefix vpn-common;
 
   import ietf-netconf-acm {
     prefix nacm;
     reference
       "RFC 8341: Network Configuration Access Control Model";
   }
-
+  import ietf-routing-types {
+    prefix rt-types;
+    reference
+      "RFC 8294: Common YANG Data Types for the Routing Area";
+  }
   import ietf-yang-types {
     prefix yang;
     reference
@@ -323,6 +327,17 @@ grouping vpn-profile-cfg {
         description
           "List for BFD Profile identifiers.";
       }
+      list forwarding-profile-identifier {
+        key "id";
+        leaf id {
+          type string;
+          description
+            "Identification of the Forwrding Profile Filter to be used.
+             Local administration meaning.";
+        }
+        description
+          "List for Forwrding Profile identifiers.";
+      }
       list routing-profile-identifier {
         key "id";
         leaf id {
@@ -388,5 +403,103 @@ grouping vpn-profile-cfg {
        vpn-node and vpn-network-access.";
   }
 
+
+grouping svc-transport-encapsulation {
+    container underlay-transport {
+      leaf-list type {
+        type identityref {
+          base protocol-type;
+          }
+           ordered-by user;
+        description
+          "Protocols used to deliver an L3VPN service.";
+      }
+      description
+        "Container for the Transport Underlay.";
+    }
+    description
+      "This grouping defines the type of underlay transport
+    for VPN service.";
+  }
+
+  grouping rt-rd {
+    leaf rd {
+      type union {
+      type rt-types:route-distinguisher;
+      type empty;
+    }
+      description
+        "Route distinguisher value. If this leaf has not been configured, the server will auto-assign a route distinguisher value and use that 
+    value operationally. This calculated value is available in the operational state. Use the
+    empty type to indicate rd has no value and
+    is not to be aouto-assigned";
+    }
+    container vpn-targets {
+      description
+        "Set of route-targets to match for import and export routes
+         to/from VRF";
+      //uses rt-types:vpn-route-targets;
+      uses vpn-route-targets;
+    }
+    description
+      "Grouping for RT and RD.";
+  }
+
+  grouping vpn-route-targets {
+    description
+      "A grouping that specifies Route Target import-export rules
+       used in a BGP-enabled VPN.";
+    list vpn-target {
+      key "id";
+      leaf id {
+        type int8;
+        description
+          "Identifies each VPN Target";
+      }
+      list route-targets {
+        key "route-target";
+        leaf route-target {
+          type rt-types:route-target;
+          description
+            "Route Target value";
+        }
+        description
+          "List of Route Targets.";
+      }
+      leaf route-target-type {
+        type rt-types:route-target-type;
+        mandatory true;
+        description
+          "Import/export type of the Route Target.";
+      }
+      description
+        "l3vpn route targets. AND/OR Operations are available
+         based on the RTs assigment";
+    }
+    reference
+      "RFC4364: BGP/MPLS IP Virtual Private Networks (VPNs)
+       RFC4664: Framework for Layer 2 Virtual Private Networks
+       (L2VPNs)";
+    container vpn-policies {
+      description
+        "";
+      leaf import-policy {
+        type leafref {
+          path ".../vpn-profiles/valid-provider-identifiers/"     
+             + "routing-profile-identifier/id";
+        }
+        description
+          "Reference to a VRF import policy.";
+      }
+      leaf export-policy {
+        type leafref {
+          path ".../vpn-profiles/valid-provider-identifiers/" 
+             + "routing-profile-identifier/id";
+        }
+        description
+          "Reference to a VRF export policy.";
+      }
+    }
+  }
 
 }

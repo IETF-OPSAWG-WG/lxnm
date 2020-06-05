@@ -3,8 +3,8 @@ module ietf-l3vpn-ntw {
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
   prefix l3vpn-ntw;
 
-  import ietf-vpn-types {
-    prefix vpn-types;
+  import ietf-vpn-common {
+    prefix vpn-common;
     reference
      "RFC XXX: YANG Data Model for VPNs types.";
   }
@@ -18,11 +18,6 @@ module ietf-l3vpn-ntw {
     prefix yang;
     reference
       "Section 3 of RFC 6991";
-  }
-  import ietf-routing-types {
-    prefix rt-types;
-    reference
-      "RFC 8294: Common YANG Data Types for the Routing Area";
   }
   import ietf-l3vpn-svc {
     prefix l3vpn-svc;
@@ -326,23 +321,7 @@ module ietf-l3vpn-ntw {
 
   /* Groupings */
 
-  grouping svc-transport-encapsulation {
-    container underlay-transport {
-      leaf-list type {
-        type identityref {
-          base vpn-types:protocol-type;}
-	         ordered-by user;
-        description
-          "Protocols used to deliver an L3VPN service.";
-      }
-      description
-        "Container for the Transport Underlay.";
-    }
-    description
-      "This grouping defines the type of underlay transport
-	  for VPN service.";
-  }
-
+  
   grouping multicast-rp-group-cfg {
     choice group-format {
       mandatory true;
@@ -1032,7 +1011,7 @@ module ietf-l3vpn-ntw {
                a given BGP neighbor and the PE router.";
           }
           uses security-params;
-          uses vpn-types:service-status;
+          uses vpn-common:service-status;
           leaf description {
             type string;
             description
@@ -1101,7 +1080,7 @@ module ietf-l3vpn-ntw {
             description
               "ISIS interface mode type.";
           }
-          uses vpn-types:service-status;
+          uses vpn-common:service-status;
           description
             "ISIS-specific configuration.";
         }
@@ -1866,9 +1845,9 @@ module ietf-l3vpn-ntw {
     }
     leaf vpn-service-topology {
       type identityref {
-        base vpn-types:vpn-topology;
+        base vpn-common:vpn-topology;
       }
-      default "vpn-types:any-to-any";
+      default "vpn-common:any-to-any";
       description
         "VPN service topology.";
     }
@@ -1878,7 +1857,7 @@ module ietf-l3vpn-ntw {
         "Textual description of a VPN service.";
     }
     uses ie-profiles-params;
-    uses svc-transport-encapsulation;
+    uses vpn-common:svc-transport-encapsulation;
     uses vpn-nodes-params;
     /* uses vpn-service-multicast; */
     /* uses vpn-service-mpls; */
@@ -1888,7 +1867,7 @@ module ietf-l3vpn-ntw {
   }
 
   grouping site-network-access-top-level-cfg {
-    uses vpn-types:service-status;
+    uses vpn-common:service-status;
     leaf vpn-network-access-type {
       type identityref {
         base l3vpn-svc:site-network-access-type;
@@ -2124,8 +2103,8 @@ module ietf-l3vpn-ntw {
           description
             "Role of the vpn-node in the IP VPN.";
         }
-        uses rt-rd;
-        uses vpn-types:service-status;
+        uses vpn-common:rt-rd;
+        uses vpn-common:service-status;
         uses net-acc;
         uses site-maximum-routes;
         uses vpn-service-multicast;
@@ -2156,7 +2135,7 @@ module ietf-l3vpn-ntw {
           description
             "IE profile id.";
         }
-        uses rt-rd;
+        uses vpn-common:rt-rd;
         description
           "List for Imort/Export profile.";
       }
@@ -2255,9 +2234,9 @@ module ietf-l3vpn-ntw {
       container tagged-interface {
         leaf type {
           type identityref {
-            base vpn-types:encapsulation-type;
+            base vpn-common:encapsulation-type;
           }
-          default "vpn-types:priority-tagged";
+          default "vpn-common:priority-tagged";
           description
             "Tagged interface type.  By default,
              the type of the tagged interface is
@@ -2273,9 +2252,9 @@ module ietf-l3vpn-ntw {
           if-feature "dot1q";
           leaf tag-type {
             type identityref {
-              base vpn-types:tag-type;
+              base vpn-common:tag-type;
             }
-            default "vpn-types:c-vlan";
+            default "vpn-common:c-vlan";
             description
               "Tag type.  By default, the tag type is
                'c-vlan'.";
@@ -2297,9 +2276,9 @@ module ietf-l3vpn-ntw {
           }
           leaf tag-type {
             type identityref {
-              base vpn-types:tag-type;
+              base vpn-common:tag-type;
             }
-            default "vpn-types:c-vlan";
+            default "vpn-common:c-vlan";
             description
               "Tag type.  By default, the tag type is
                'c-vlan'.";
@@ -2317,9 +2296,9 @@ module ietf-l3vpn-ntw {
           if-feature "qinq";
           leaf tag-type {
             type identityref {
-              base vpn-types:tag-type;
+              base vpn-common:tag-type;
             }
-            default "vpn-types:c-s-vlan";
+            default "vpn-common:c-s-vlan";
             description
               "Tag type.  By default, the tag type is
                'c-s-vlan'.";
@@ -2349,9 +2328,9 @@ module ietf-l3vpn-ntw {
           if-feature "qinany";
           leaf tag-type {
             type identityref {
-              base vpn-types:tag-type;
+              base vpn-common:tag-type;
             }
-            default "vpn-types:s-vlan";
+            default "vpn-common:s-vlan";
             description
               "Tag type.  By default, the tag type is
                's-vlan'.";
@@ -2422,85 +2401,6 @@ module ietf-l3vpn-ntw {
       "Grouping to define encapsulation types";
   }
 
-  grouping rt-rd {
-    leaf rd {
-      type union {
-	    type rt-types:route-distinguisher;
-	    type empty;
-	  }
-      description
-        "Route distinguisher value. If this leaf has not been configured, the server will auto-assign a route distinguisher value and use that 
-		value operationally. This calculated value is available in the operational state. Use the
-		empty type to indicate rd has no value and
-		is not to be aouto-assigned";
-    }
-    container vpn-targets {
-      description
-        "Set of route-targets to match for import and export routes
-         to/from VRF";
-      //uses rt-types:vpn-route-targets;
-      uses vpn-route-targets;
-    }
-    description
-      "Grouping for RT and RD.";
-  }
-
-  grouping vpn-route-targets {
-    description
-      "A grouping that specifies Route Target import-export rules
-       used in a BGP-enabled VPN.";
-    list vpn-target {
-      key "id";
-      leaf id {
-        type int8;
-        description
-          "Identifies each VPN Target";
-      }
-      list route-targets {
-        key "route-target";
-        leaf route-target {
-          type rt-types:route-target;
-          description
-            "Route Target value";
-        }
-        description
-          "List of Route Targets.";
-      }
-      leaf route-target-type {
-        type rt-types:route-target-type;
-        mandatory true;
-        description
-          "Import/export type of the Route Target.";
-      }
-      description
-        "l3vpn route targets. AND/OR Operations are available
-         based on the RTs assigment";
-    }
-    reference
-      "RFC4364: BGP/MPLS IP Virtual Private Networks (VPNs)
-       RFC4664: Framework for Layer 2 Virtual Private Networks
-       (L2VPNs)";
-    container vpn-policies {
-      description
-        "";
-      leaf import-policy {
-        type leafref {
-          path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers/"		  
-             + "routing-profile-identifier/id";
-        }
-        description
-          "Reference to a VRF import policy.";
-      }
-      leaf export-policy {
-        type leafref {
-          path "/l3vpn-ntw/vpn-profiles/valid-provider-identifiers/" 
-             + "routing-profile-identifier/id";
-        }
-        description
-          "Reference to a VRF export policy.";
-      }
-    }
-  }
 
   grouping net-acc {
     container vpn-network-accesses {
@@ -2536,7 +2436,7 @@ module ietf-l3vpn-ntw {
 
   container l3vpn-ntw {
     container vpn-profiles {
-      uses vpn-types:vpn-profile-cfg;
+      uses vpn-common:vpn-profile-cfg;
       description
         "Contains the valid VPN Profiles to reference 
         in the VPN service.";
@@ -2544,7 +2444,7 @@ module ietf-l3vpn-ntw {
     container vpn-services {
       list vpn-service {
         key "vpn-id";
-        uses vpn-types:service-status;
+        uses vpn-common:service-status;
         uses vpn-svc-cfg;
         description
           "List of VPN services.";
