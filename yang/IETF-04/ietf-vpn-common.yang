@@ -63,14 +63,162 @@ module ietf-vpn-common {
 
 /* Feature */
 
+ feature qos {
+  description
+  "Enables support of classes of services.";
+ }
+
  feature cloud-access {
   description
   "Allows the VPN to connect to a CSP.";
  }
 
+feature bearer-reference {
+  description
+  "Enables support of the 'bearer-reference' access constraint.";
+ }
+
+feature ipv4 {
+  description
+  "Enables IPv4 support in a VPN.";
+ }
+
+ feature ipv6 {
+  description
+  "Enables IPv6 support in a VPN.";
+ }
+
+ feature bfd {
+  description
+  "Enables support of BFD.";
+ }
+
+ feature encryption {
+  description
+  "Enables support of encryption.";
+ }
+
+feature rtg-bgp {
+  description
+  "Enables support of the BGP routing protocol.";
+ }
+feature rtg-rip {
+  description
+  "Enables support of the RIP routing protocol.";
+ }
+ feature rtg-ospf {
+  description
+  "Enables support of the OSPF routing protocol.";
+ }
+ feature rtg-ospf-sham-link {
+  description
+  "Enables support of OSPF sham links.";
+ }
+ feature rtg-vrrp {
+  description
+  "Enables support of the VRRP routing protocol.";
+ }
+
+ feature rtg-isis {
+  description
+  "This features indicates the support of the ISIS routing protocol.";
+  }
+
+feature multicast {
+  description
+  "Enables multicast capabilities in a VPN.";
+ }
+
+ feature carrierscarrier {
+  description
+  "Enables support of CsC.";
+ }
+
 /* Typedef */
 
+ typedef svc-id {
+  type string;
+  description
+  "Defines a type of service component identifier.";
+ }
+
+  typedef address-family {
+    type enumeration {
+     enum ipv4 {
+      description
+      "IPv4 address family.";
+     }
+     enum ipv6 {
+      description
+      "IPv6 address family.";
+     }
+    }
+    description
+    "Defines a type for the address family.";
+  }
+
 /* Identities */
+
+ identity site-network-access-type {
+  description
+  "Base identity for site-network-access type.";
+ }
+
+ identity point-to-point {
+  base site-network-access-type;
+  description
+  "Identity for point-to-point connection.";
+ }
+
+ identity multipoint {
+  base site-network-access-type;
+  description
+  "Identity for multipoint connection.
+  Example: Ethernet broadcast segment.";
+ }
+
+  identity pseudowire {
+    base l3vpn-svc:site-network-access-type;
+    description
+      "Identity for pseudowire connections.";
+  }
+
+  identity loopback {
+    base l3vpn-svc:site-network-access-type;
+    description
+      "Identity for loopback connections.";
+  }
+
+ identity address-allocation-type {
+  description
+  "Base identity for address-allocation-type for PE-CE link.";
+ }
+ identity provider-dhcp {
+  base address-allocation-type;
+  description
+  "Provider network provides DHCP service to customer.";
+ }
+ identity provider-dhcp-relay {
+  base address-allocation-type;
+  description
+  "Provider network provides DHCP relay service to customer.";
+ }
+ identity provider-dhcp-slaac {
+  base address-allocation-type;
+  description
+  "Provider network provides DHCP service to customer,
+  as well as SLAAC.";
+ }
+ identity static-address {
+  base address-allocation-type;
+  description
+  "Provider-to-customer addressing is static.";
+ }
+ identity slaac {
+  base address-allocation-type;
+  description
+  "Use IPv6 SLAAC.";
+ }
 
   identity operational-status {
         description
@@ -162,6 +310,30 @@ identity administrative-status {
     description
       "This identity indicates the support of
        the 'vxlan' encapsulation.";
+  }
+
+  identity ethernet-type {
+    base encapsulation-type;
+    description
+      "Identity for encapsulation type";
+  }
+
+  identity vlan-type {
+    base encapsulation-type;
+    description
+      "Identity for encapsulation type";
+  }
+
+  identity untagged-int {
+    base encapsulation-type;
+    description
+      "Identity for Ethernet type.";
+  }
+
+  identity tagged-int {
+    base encapsulation-type;
+    description
+      "Identity for the VLAN type.";
   }
 
   identity tag-type {
@@ -282,6 +454,232 @@ identity vpn-topology {
        where Hubs can act as Spoke for certain part of
        the network or Spokes as Hubs.";
   }
+
+  identity vpn-signaling-type {
+    description
+      "Identity of VPN signaling types";
+  }
+
+  identity l2vpn-bgp {
+    base vpn-signaling-type;
+    description
+      "Identity of l2vpn-bgp";
+  }
+
+  identity evpn-bgp {
+    base vpn-signaling-type;
+    description
+      "Identity of evpn-bgp";
+  }
+
+  identity t-ldp {
+    base vpn-signaling-type;
+    description
+      "Identity of t-ldp.";
+  }
+
+  identity h-vpls {
+    base vpn-signaling-type;
+    description
+      "Identity for h-vpls";
+  }
+
+  identity l2tp {
+    base vpn-signaling-type;
+    description
+      "Identity of l2tp.";
+  }
+
+  identity service-type {
+    description
+      "Identity of l2tp.";
+  }
+
+  identity l3vpn {
+    base service-type;
+    description
+      "Identity of l2tp.";
+  }
+
+  identity vpws {
+    base service-type;
+    description
+      "Point-to-point Virtual Private Wire Service (VPWS)
+       service type.";
+  }
+
+  identity pwe3 {
+    base service-type;
+    description
+      "Pseudowire Emulation Edge to Edge (PWE3) service type.";
+  }
+
+  identity ldp-l2tp-vpls {
+    base service-type;
+    description
+      "LDP-based or L2TP-based multipoint Virtual Private LAN
+       Service (VPLS) service type.  This VPLS uses LDP-signaled
+       Pseudowires or L2TP-signaled Pseudowires.";
+  }
+
+  identity bgp-vpls {
+    base service-type;
+    description
+      "BGP-based multipoint VPLS service type.  This VPLS uses a
+       BGP control plane as described in RFCs 4761 and 6624.";
+  }
+
+  identity vpws-evpn {
+    base service-type;
+    description
+      "VPWS service type using Ethernet VPNs (EVPNs)
+       as specified in RFC 7432.";
+  }
+
+  identity pbb-evpn {
+    base service-type;
+    description
+      "Provider Backbone Bridge (PBB) service type using
+       EVPNs as specified in RFC 7432.";
+  }
+
+  identity isis-level {
+        description
+      "Defines the ISIS level for interface and system.";
+      }
+
+identity level1 {
+  base isis-level;
+  description "ISIS level 1";
+  }
+
+identity level2 {
+  base isis-level;
+  description "ISIS level 2";
+  }
+
+identity level1-2 {
+  base isis-level;
+  description "ISIS level 1 and 2";
+  }
+
+identity ie-type {
+    description
+      "Defines Import-Export routing profiles.
+       Those profiles can be reused between VPN nodes.";
+  }
+
+identity import {
+  base ie-type;
+        description
+          "Import a routing profile.";
+      }
+identity export {
+  base ie-type;
+        description
+          "Export a routing profile.";
+      }
+
+identity both {
+  base ie-type;
+        description
+          "Import/Export a routing profile.";
+      }
+
+identity routing-protocol-type {
+  description
+  "Base identity for routing protocol type.";
+ }
+
+ identity ospf {
+  base routing-protocol-type;
+  description
+  "Identity for OSPF protocol type.";
+ }
+
+ identity bgp {
+  base routing-protocol-type;
+  description
+  "Identity for BGP protocol type.";
+ }
+
+ identity static {
+  base routing-protocol-type;
+  description
+  "Identity for static routing protocol type.";
+ }
+
+ identity rip {
+  base routing-protocol-type;
+  description
+  "Identity for RIP protocol type.";
+ }
+
+ identity vrrp {
+  base routing-protocol-type;
+  description
+  "Identity for VRRP protocol type.
+  This is to be used when LANs are directly connected
+  to PE routers.";
+ }
+
+ identity direct {
+  base routing-protocol-type;
+  description
+  "Identity for direct protocol type.";
+ }
+
+  identity isis {
+    base routing-protocol-type;
+    description
+      "Identity for ISIS protocol type.";
+  }
+ 
+ identity multicast-tree-type {
+  description
+  "Base identity for multicast tree type.";
+ }
+
+ identity ssm-tree-type {
+  base multicast-tree-type;
+  description
+  "Identity for SSM tree type.";
+ }
+
+ identity asm-tree-type {
+  base multicast-tree-type;
+  description
+  "Identity for ASM tree type.";
+ }
+
+ identity bidir-tree-type {
+  base multicast-tree-type;
+  description
+  "Identity for bidirectional tree type.";
+ }
+
+identity multicast-rp-discovery-type {
+  description
+  "Base identity for RP discovery type.";
+ }
+
+ identity auto-rp {
+  base multicast-rp-discovery-type;
+  description
+  "Base identity for Auto-RP discovery type.";
+ }
+
+ identity static-rp {
+  base multicast-rp-discovery-type;
+  description
+  "Base identity for static type.";
+ }
+
+ identity bsr-rp {
+  base multicast-rp-discovery-type;
+  description
+  "Base identity for BSR discovery type.";
+ }
 
 /* Grouping */
 
