@@ -1,7 +1,7 @@
 module ietf-l3vpn-ntw_sg {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw_sg";
-  prefix l3vpn-ntw_sg;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw-sg";
+  prefix l3vpn-ntw-sg;
 
   import ietf-vpn-common {
     prefix vpn-common;
@@ -14,16 +14,13 @@ module ietf-l3vpn-ntw_sg {
     reference
       "Section 4 of RFC 6991";
   }
+
   import ietf-yang-types {
     prefix yang;
     reference
       "Section 3 of RFC 6991";
   }
-  import ietf-l3vpn-svc {
-    prefix l3vpn-svc;
-    reference
-      "RFC 8299: YANG Data Model for L3VPN Service Delivery";
-  }
+
   import ietf-packet-fields {
     prefix packet-fields;
     reference
@@ -352,7 +349,7 @@ module ietf-l3vpn-ntw_sg {
                   
                   leaf vpn-node-id {
                     type union {
-                      type l3vpn-svc:svc-id;
+                      type vpn-common:svc-id;
                       type uint32;
                     }
                     description
@@ -887,7 +884,7 @@ module ietf-l3vpn-ntw_sg {
                         }
                         container provider-dhcp {
                           when "derived-from-or-self(../address-allocation-type, "
-                             + "'l3vpn-svc:provider-dhcp') "
+                             + "'vpn-common:provider-dhcp') "
                              + "or derived-from-or-self(../address-allocation-type, "
                              + "'vpn-common:provider-dhcp-slaac')" {
                             description
@@ -1238,6 +1235,11 @@ module ietf-l3vpn-ntw_sg {
                               description
                                 "Routing profile to be used.";
                             }
+                            leaf type {
+                              type vpn-common:ie-type;
+                              description
+                                "Import, export or both.";
+                            }
                           }
                           container ospf {
                             when "derived-from-or-self(../type, 'vpn-common:ospf')" {
@@ -1368,7 +1370,7 @@ module ietf-l3vpn-ntw_sg {
                             }
                             if-feature "vpn-common:rtg-isis";
                             leaf-list address-family {
-                              type l3vpn-svc:address-family;
+                              type vpn-common:address-family;
                               min-elements 1;
                               description
                                 "If ISIS is used on this site, this node
@@ -1384,6 +1386,12 @@ module ietf-l3vpn-ntw_sg {
                                 "Area address.";
                             }
                             
+                            leaf level {
+                                type vpn-common:isis-level;
+                                description
+                                  "level1, level2 or level1-2";
+                              }
+
                             leaf metric {
                               type uint16;
                               default "1";
@@ -1552,7 +1560,7 @@ module ietf-l3vpn-ntw_sg {
                         }
 
                         container qos {
-                              if-feature "l3vpn-svc:qos";
+                              if-feature "vpn-common:qos";
                               container qos-classification-policy {
                                 list rule {
                                   key "id";
