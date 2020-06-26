@@ -2153,338 +2153,6 @@ module: ietf-l3vpn-ntw
       </section>
     </section>
 
-    <section anchor="examples" title="L3VPN Examples">
-      <section anchor="mbh-vpn" title="4G VPN Provisioning Example">
-        <t>L3VPNs are widely used to deploy 3G/4G, fixed, and enterprise
-        services mainly because several traffic discrimination policies can be
-        applied within the network to deliver to the mobile customers a
-        service that meets the SLA requirements. </t>
-
-        <t>As it is shown in the <xref target="vpn-service-mbh"></xref>,
-        typically, an eNodeB (CE) is directly connected to the access routers
-        of the mobile backhaul and their logical interfaces (one or many
-        according to the Service type) are configured in a VPN that transports
-        the packets to the mobile core platforms. In this example, a
-        'vpn-node' is created with two 'vpn-network-accesses'.</t>
-
-        <figure align="center" anchor="vpn-service-mbh"
-                title="Mobile Backhaul Example">
-          <artwork align="left"><![CDATA[                   
-      +-------------+                  +------------------+    
-      |             |                  | PE               |
-      |             | 192.168.0.2      |  10.0.0.1        |
-      |   eNodeB    |>--------/------->|...........       | 
-      |             |          Vlan 1  |          |       |
-      |             |>--------/------->|......    |       |
-      |             |          Vlan 2  |     |    |       |
-      |             | Direct           |  +-------------+ |
-      +-------------+ Routing          |  | vpn-node-id | |
-                                       |  | 44          | | 
-                                       |  +-------------+ |        
-                                       |                  | 
-                                       +------------------+ 
-     ]]></artwork>
-        </figure>
-
-        <t>To create a L3VPN service using the L3NM model, the following
-        sample steps can be followed:</t>
-
-        <t>First: Create the 4G VPN Service (<xref
-        target="service-mbh2"></xref>).</t>
-
-        <figure align="center" anchor="service-mbh2"
-                title="Create VPN Service">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
-Host: example.com
-Content-Type: application/yang-data+json
-
-{
-  "ietf-l3vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "4G",
-        "customer-name": "mycustomer",
-        "vpn-service-topology": "custom",
-        "description": "VPN to deploy 4G services"
-      }
-    ]
-  }
-}
-]]></artwork>
-        </figure>
-
-        <t>Second: Create a VPN Node as depicted in <xref
-        target="service-mbh3"></xref>. In this type of service, the VPN Node
-        is equivalent to the VRF configured in the physical device
-        ('ne-id'=10.0.0.1).</t>
-
-        <figure align="center" anchor="service-mbh3" title="Create VPN Node">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
-      vpn-services/vpn-service=4G    
-Host: example.com
-Content-Type: application/yang-data+json
-
-{
-  "ietf-l3vpn-ntw:vpn-nodes": {
-    "vpn-node": [
-      {
-        "vpn-node-id": "44",
-        "ne-id": "10.0.0.1",
-        "local-autonomous-system": "65550",
-        "rd": "0:65550:1",
-        "vpn-targets": {
-          "vpn-target": [
-            {
-              "id": "1",
-              "route-targets": [
-                "0:65550:1"
-              ],
-              "route-target-type": "both"
-            }
-          ]
-        }
-      }
-    ]
-  }
-}  ]]></artwork>
-        </figure>
-
-        <t>Finally, two VPN Network Accesses are created using the same
-        physical port ('port-id'=1/1/1). Each 'vpn-network-access' has a
-        particular VLAN (1,2) to differentiate the traffic between: Sync and
-        data (<xref target="service-mbh4"></xref>).</t>
-
-        <figure align="center" anchor="service-mbh4"
-                title="Create VPN Network Access">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
-      vpn-services/vpn-service=4G/vpn-nodes/vpn-node=44
-content-type: application/yang-data+json
-
-{
-  "ietf-l3vpn-ntw:vpn-network-accesses": {
-    "vpn-network-access": [
-      {
-        "vpn-network-access-id": "1/1/1.1",
-        "port-id": "1/1/1",
-        "description": "Interface SYNC to eNODE-B",
-        "status": {
-          "admin-enabled": "true"
-        },
-        "vpn-network-access-type": "l3vpn-svc:point-to-point",
-        "ip-connection": {
-          "ipv4": {
-            "address-allocation-type": "l3vpn-svc:static-address",
-            "static-addresses": {
-              "primary-address": "1",
-              "address": [
-                {
-                  "address-id": "1",
-                  "provider-address": "192.168.0.1",
-                  "customer-address": "192.168.0.1",
-                  "prefix-length": "32"
-                }
-              ]
-            }
-          }
-        },
-        "routing-protocols": {
-          "routing-protocol": [
-            {
-              "id": "1",
-              "type": "l3vpn-svc:direct"
-            }
-          ]
-        }
-      },
-      {
-        "vpn-network-access-id": "1/1/1.2",
-        "port-id": "1/1/1",
-        "description": "Interface DATA to eNODE-B",
-        "status": {
-          "admin-enabled": "true"
-        },
-        "ip-connection": {
-          "ipv4": {
-            "static-addresses": {
-              "primary-address": "1",
-              "address": [
-                {
-                  "address-id": "1",
-                  "provider-address": "192.168.1.1",
-                  "customer-address": "192.168.1.2",
-                  "prefix-length": "32"
-                }
-              ]
-            }
-          }
-        },
-        "routing-protocols": {
-          "routing-protocol": [
-            {
-              "id": "1",
-              "type": "l3vpn-svc:direct"
-            }
-          ]
-        }
-      }
-    ]
-  }
-}    ]]></artwork>
-        </figure>
-      </section>
-
-      <section anchor="multicast_vpn_example"
-               title="Multicast VPN Provisioning Example">
-        <t>IPTV is mainly distributed through multicast over the LANs. In the
-        following example, PIM-SM is enabled and functional between the PE and
-        the CE. The PE receives multicast traffic from a CE that is directly
-        connected to the multicast source. The signaling between PE and CE is
-        achieved using BGP. Also, RP is statically configured for a multicast
-        group.</t>
-
-        <figure align="center" anchor="service-mc1"
-                title="Multicast L3VPN Service Example">
-          <artwork align="left"><![CDATA[                                                        
-                  +-----------+   +------+     +------+    +-----------+
-                  | Multicast |---|  CE  |--/--|  PE  |----|  Backbone |
-                  |  source   |   +------+     +------+    |   IP/MPLS |
-                  +-----------+                            +-----------+
-        
-            ]]></artwork>
-        </figure>
-
-        <t>To configure a Multicast L3VPN service using the L3NM model the
-        procedure and the JSON with the data structure is the following:</t>
-
-        <t>First, the multicast service is created (see the excerpt of the
-        request message body shown in <xref target="service-mc2"></xref>)</t>
-
-        <figure align="center" anchor="service-mc2"
-                title=" Create Multicast VPN Service (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[             
-{
-  "ietf-l3vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "Multicast_IPTV",
-        "customer-name": "310",
-        "vpn-service-topology": "hub-spoke",
-        "description": "Multicast IPTV VPN service"
-      }
-    ]
-  }
-}
-]]></artwork>
-        </figure>
-
-        <t>Then, the VPN nodes are created (see the excerpt of the request
-        message body shown in <xref target="service-mc3"></xref>). In this
-        example, the VPN Node will represent VRF configured in the physical
-        device.</t>
-
-        <figure align="center" anchor="service-mc3"
-                title="Create Multicast VPN Node (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[            
-{
-  "ietf-l3vpn-ntw:vpn-node": [
-    {
-      "vpn-node-id": "500003105",
-      "ne-id": "10.250.2.202",
-      "autonomous-system": "3816",
-      "description": "VRF_IPTV_MULTICAST",
-      "router-id": "10.250.2.202",
-      "address-family": "ipv4",
-      "node-role": "l3vpn-svc:hub-role",
-      "rd": "3816:31050202",
-      "multicast": {
-        "enabled": "true",
-        "rp": {
-          "rp-group-mappings": {
-            "rp-group-mapping": [
-              {
-                "id": "1",
-                "rp-address": "172.19.48.17",
-                "groups": {
-                  "group": [
-                    {
-                      "id": "1",
-                      "group-address": "239.130.0.0/15"
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "rp-discovery": {
-            "rp-discovery-type": "l3vpn-svc:static-rp"
-          }
-        }
-      }
-    }
-  ]
-}         ]]></artwork>
-        </figure>
-
-        <t>Finally, create the VPN Network Access with Multicast enabled (see
-        the excerpt of the request message body shown in <xref
-        target="service-mc4"></xref>)</t>
-
-        <figure align="center" anchor="service-mc4"
-                title="Create VPN Network Access (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[   
- {
-  "ietf-l3vpn-ntw:vpn-network-access": {
-    "vpn-network-access-id": "1/1/1",
-    "description": "Connected_to_source",
-    "status": {
-      "admin-enabled": "true"
-    },
-    "vpn-network-access-type": "l3vpn-svc:point-to-point",
-    "ip-connection": {
-      "ipv4": {
-        "address-allocation-type": "l3vpn-svc:static-address",
-        "static-addresses": {
-          "primary-address": "1",
-          "address": [
-            {
-              "address-id": "1",
-              "provider-address": "172.19.48.1",
-              "prefix-length": "30"
-            }
-          ]
-        }
-      }
-    },
-    "routing-protocols": {
-      "routing-protocol": [
-        {
-          "id": "1",
-          "type": "l3vpn-svc:bgp",
-          "bgp": {
-            "peer-autonomous-system": "6500",
-            "local-autonomous-system": "3816",
-            "address-family": "ipv4",
-            "neighbor": "172.19.48.2",
-            "description": "Connected_to_CE"
-          }
-        }
-      ]
-    },
-    "service": {
-      "multicast": {
-        "multicast-site-type": "source-only",
-        "multicast-address-family": {
-          "ipv4": "true"
-        },
-        "protocol-type": "router"
-      }
-    }
-  }
-} ]]></artwork>
-        </figure>
-      </section>
-    </section>
-
     <section anchor="YANG_module" title="L3NM YANG Module">
       <figure align="center" anchor="module_YANG">
         <artwork align="left"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2020-03.09.yang"
@@ -5557,6 +5225,339 @@ v02c 2019-09-24 Oscar and Samier: Review+Yang fix.
 VIETF01 2019-11-17 Oscar, Samier, Med, Stephane, Alejandro.
  -->
 
+<section anchor="examples" title="L3VPN Examples">
+      <section anchor="mbh-vpn" title="4G VPN Provisioning Example">
+        <t>L3VPNs are widely used to deploy 3G/4G, fixed, and enterprise
+        services mainly because several traffic discrimination policies can be
+        applied within the network to deliver to the mobile customers a
+        service that meets the SLA requirements. </t>
+
+        <t>As it is shown in the <xref target="vpn-service-mbh"></xref>,
+        typically, an eNodeB (CE) is directly connected to the access routers
+        of the mobile backhaul and their logical interfaces (one or many
+        according to the Service type) are configured in a VPN that transports
+        the packets to the mobile core platforms. In this example, a
+        'vpn-node' is created with two 'vpn-network-accesses'.</t>
+
+        <figure align="center" anchor="vpn-service-mbh"
+                title="Mobile Backhaul Example">
+          <artwork align="left"><![CDATA[                   
+      +-------------+                  +------------------+    
+      |             |                  | PE               |
+      |             | 192.168.0.2      |  10.0.0.1        |
+      |   eNodeB    |>--------/------->|...........       | 
+      |             |          Vlan 1  |          |       |
+      |             |>--------/------->|......    |       |
+      |             |          Vlan 2  |     |    |       |
+      |             | Direct           |  +-------------+ |
+      +-------------+ Routing          |  | vpn-node-id | |
+                                       |  | 44          | | 
+                                       |  +-------------+ |        
+                                       |                  | 
+                                       +------------------+ 
+     ]]></artwork>
+        </figure>
+
+        <t>To create a L3VPN service using the L3NM model, the following
+        sample steps can be followed:</t>
+
+        <t>First: Create the 4G VPN Service (<xref
+        target="service-mbh2"></xref>).</t>
+
+        <figure align="center" anchor="service-mbh2"
+                title="Create VPN Service">
+          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
+Host: example.com
+Content-Type: application/yang-data+json
+
+{
+  "ietf-l3vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "4G",
+        "customer-name": "mycustomer",
+        "vpn-service-topology": "custom",
+        "description": "VPN to deploy 4G services"
+      }
+    ]
+  }
+}
+]]></artwork>
+        </figure>
+
+        <t>Second: Create a VPN Node as depicted in <xref
+        target="service-mbh3"></xref>. In this type of service, the VPN Node
+        is equivalent to the VRF configured in the physical device
+        ('ne-id'=10.0.0.1).</t>
+
+        <figure align="center" anchor="service-mbh3" title="Create VPN Node">
+          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+      vpn-services/vpn-service=4G    
+Host: example.com
+Content-Type: application/yang-data+json
+
+{
+  "ietf-l3vpn-ntw:vpn-nodes": {
+    "vpn-node": [
+      {
+        "vpn-node-id": "44",
+        "ne-id": "10.0.0.1",
+        "local-autonomous-system": "65550",
+        "rd": "0:65550:1",
+        "vpn-targets": {
+          "vpn-target": [
+            {
+              "id": "1",
+              "route-targets": [
+                "0:65550:1"
+              ],
+              "route-target-type": "both"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}  ]]></artwork>
+        </figure>
+
+        <t>Finally, two VPN Network Accesses are created using the same
+        physical port ('port-id'=1/1/1). Each 'vpn-network-access' has a
+        particular VLAN (1,2) to differentiate the traffic between: Sync and
+        data (<xref target="service-mbh4"></xref>).</t>
+
+        <figure align="center" anchor="service-mbh4"
+                title="Create VPN Network Access">
+          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+      vpn-services/vpn-service=4G/vpn-nodes/vpn-node=44
+content-type: application/yang-data+json
+
+{
+  "ietf-l3vpn-ntw:vpn-network-accesses": {
+    "vpn-network-access": [
+      {
+        "vpn-network-access-id": "1/1/1.1",
+        "port-id": "1/1/1",
+        "description": "Interface SYNC to eNODE-B",
+        "status": {
+          "admin-enabled": "true"
+        },
+        "vpn-network-access-type": "l3vpn-svc:point-to-point",
+        "ip-connection": {
+          "ipv4": {
+            "address-allocation-type": "l3vpn-svc:static-address",
+            "static-addresses": {
+              "primary-address": "1",
+              "address": [
+                {
+                  "address-id": "1",
+                  "provider-address": "192.168.0.1",
+                  "customer-address": "192.168.0.1",
+                  "prefix-length": "32"
+                }
+              ]
+            }
+          }
+        },
+        "routing-protocols": {
+          "routing-protocol": [
+            {
+              "id": "1",
+              "type": "l3vpn-svc:direct"
+            }
+          ]
+        }
+      },
+      {
+        "vpn-network-access-id": "1/1/1.2",
+        "port-id": "1/1/1",
+        "description": "Interface DATA to eNODE-B",
+        "status": {
+          "admin-enabled": "true"
+        },
+        "ip-connection": {
+          "ipv4": {
+            "static-addresses": {
+              "primary-address": "1",
+              "address": [
+                {
+                  "address-id": "1",
+                  "provider-address": "192.168.1.1",
+                  "customer-address": "192.168.1.2",
+                  "prefix-length": "32"
+                }
+              ]
+            }
+          }
+        },
+        "routing-protocols": {
+          "routing-protocol": [
+            {
+              "id": "1",
+              "type": "l3vpn-svc:direct"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}    ]]></artwork>
+        </figure>
+      </section>
+
+      <section anchor="multicast_vpn_example"
+               title="Multicast VPN Provisioning Example">
+        <t>IPTV is mainly distributed through multicast over the LANs. In the
+        following example, PIM-SM is enabled and functional between the PE and
+        the CE. The PE receives multicast traffic from a CE that is directly
+        connected to the multicast source. The signaling between PE and CE is
+        achieved using BGP. Also, RP is statically configured for a multicast
+        group.</t>
+
+        <figure align="center" anchor="service-mc1"
+                title="Multicast L3VPN Service Example">
+          <artwork align="left"><![CDATA[                                                        
+                  +-----------+   +------+     +------+    +-----------+
+                  | Multicast |---|  CE  |--/--|  PE  |----|  Backbone |
+                  |  source   |   +------+     +------+    |   IP/MPLS |
+                  +-----------+                            +-----------+
+        
+            ]]></artwork>
+        </figure>
+
+        <t>To configure a Multicast L3VPN service using the L3NM model the
+        procedure and the JSON with the data structure is the following:</t>
+
+        <t>First, the multicast service is created (see the excerpt of the
+        request message body shown in <xref target="service-mc2"></xref>)</t>
+
+        <figure align="center" anchor="service-mc2"
+                title=" Create Multicast VPN Service (Excerpt of the Message Request Body)">
+          <artwork align="left"><![CDATA[             
+{
+  "ietf-l3vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "Multicast_IPTV",
+        "customer-name": "310",
+        "vpn-service-topology": "hub-spoke",
+        "description": "Multicast IPTV VPN service"
+      }
+    ]
+  }
+}
+]]></artwork>
+        </figure>
+
+        <t>Then, the VPN nodes are created (see the excerpt of the request
+        message body shown in <xref target="service-mc3"></xref>). In this
+        example, the VPN Node will represent VRF configured in the physical
+        device.</t>
+
+        <figure align="center" anchor="service-mc3"
+                title="Create Multicast VPN Node (Excerpt of the Message Request Body)">
+          <artwork align="left"><![CDATA[            
+{
+  "ietf-l3vpn-ntw:vpn-node": [
+    {
+      "vpn-node-id": "500003105",
+      "ne-id": "10.250.2.202",
+      "autonomous-system": "3816",
+      "description": "VRF_IPTV_MULTICAST",
+      "router-id": "10.250.2.202",
+      "address-family": "ipv4",
+      "node-role": "l3vpn-svc:hub-role",
+      "rd": "3816:31050202",
+      "multicast": {
+        "enabled": "true",
+        "rp": {
+          "rp-group-mappings": {
+            "rp-group-mapping": [
+              {
+                "id": "1",
+                "rp-address": "172.19.48.17",
+                "groups": {
+                  "group": [
+                    {
+                      "id": "1",
+                      "group-address": "239.130.0.0/15"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "rp-discovery": {
+            "rp-discovery-type": "l3vpn-svc:static-rp"
+          }
+        }
+      }
+    }
+  ]
+}         ]]></artwork>
+        </figure>
+
+        <t>Finally, create the VPN Network Access with Multicast enabled (see
+        the excerpt of the request message body shown in <xref
+        target="service-mc4"></xref>)</t>
+
+        <figure align="center" anchor="service-mc4"
+                title="Create VPN Network Access (Excerpt of the Message Request Body)">
+          <artwork align="left"><![CDATA[   
+ {
+  "ietf-l3vpn-ntw:vpn-network-access": {
+    "vpn-network-access-id": "1/1/1",
+    "description": "Connected_to_source",
+    "status": {
+      "admin-enabled": "true"
+    },
+    "vpn-network-access-type": "l3vpn-svc:point-to-point",
+    "ip-connection": {
+      "ipv4": {
+        "address-allocation-type": "l3vpn-svc:static-address",
+        "static-addresses": {
+          "primary-address": "1",
+          "address": [
+            {
+              "address-id": "1",
+              "provider-address": "172.19.48.1",
+              "prefix-length": "30"
+            }
+          ]
+        }
+      }
+    },
+    "routing-protocols": {
+      "routing-protocol": [
+        {
+          "id": "1",
+          "type": "l3vpn-svc:bgp",
+          "bgp": {
+            "peer-autonomous-system": "6500",
+            "local-autonomous-system": "3816",
+            "address-family": "ipv4",
+            "neighbor": "172.19.48.2",
+            "description": "Connected_to_CE"
+          }
+        }
+      ]
+    },
+    "service": {
+      "multicast": {
+        "multicast-site-type": "source-only",
+        "multicast-address-family": {
+          "ipv4": "true"
+        },
+        "protocol-type": "router"
+      }
+    }
+  }
+} ]]></artwork>
+        </figure>
+      </section>
+    </section>
+
+       
     <section anchor="Implementation" title="Implementation Status">
       <section title="Nokia Implementation">
         <t>Nokia has a draft implementation of the IETF L3NM model.</t>
