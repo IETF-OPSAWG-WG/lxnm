@@ -39,3 +39,9 @@ technical issues needs to occur on the mailing list.
 You might also like to familiarize yourself with other
 [working group documents](https://datatracker.ietf.org/wg/opsawg/documents/).
 
+  
+# Yang validation and yang extraction from draft:
+
+| **Master**  
+|:---:|
+

@@ -1,0 +1,42 @@
+sudo: required
+
+dist: bionic
+
+language: python
+
+python:
+
+  - "3.8"
+
+before_install:
+
+  - wget -nv https://download.opensuse.org/repositories/home:liberouter/xUbuntu_18.04/Release.key -O Release.key
+
+  - sudo apt-key add - < Release.key
+
+  - sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/liberouter/xUbuntu_18.04/ /' > /etc/apt/sources.list.d/libyang.list"
+
+  - sudo apt-get update
+
+  - sudo apt-get install --allow-unauthenticated libyang
+
+install: 
+
+   - pip install pyang
+   - pip install xym
+   - pip install xml2rfc
+
+script:
+
+  - cd I-D-L3NM
+  - xym draft-ietf-opsawg-l3sm-l3nm-04.txt
+  - export yang_extracted=`ls *.yang`
+  - xml2rfc draft-ietf-opsawg-l3sm-l3nm-04.xml
+  - cd ..
+  - cd yang
+  - cd IETF-04
+  - pyang -f tree --ietf-l3vpn-ntw.yang
+  - yanglint -f yang ietf-l3vpn-ntw.yang
+  - yanglint --verbose ietf-l3vpn-ntw.yang -i
+
+ 
