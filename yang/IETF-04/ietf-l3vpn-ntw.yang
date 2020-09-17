@@ -588,185 +588,186 @@ module ietf-l3vpn-ntw {
                          If there is no value for the address
                          allocation type, then IPv4 is not enabled.";
                     }
-                    container provider-dhcp {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'provider-dhcp')" {
-                        description
-                          "Only applies when addresses are allocated by DHCP.";
-                      }
-                      leaf provider-address {
-                        type inet:ipv4-address;
-                        description
-                          "Address of provider side.  If provider-address is not
-                           specified, then prefix length should not be specified
-                           either.  It also implies provider-dhcp allocation is
-                           not enabled.  If provider-address is specified, then
-                           the prefix length may or may not be specified.";
-                      }
-                      leaf prefix-length {
-                        type uint8 {
-                          range "0..32";
-                        }
-                        must '(../provider-address)' {
-                          error-message
-                            "If the prefix length is specified, provider-address
-                             must also be specified.";
+                    choice allocation-type {
+                      case provider-dhcp {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'provider-dhcp')" {
                           description
-                            "If the prefix length is specified, provider-address
-                             must also be specified.";
-                        }
-                        description
-                          "Subnet prefix length expressed in bits.
-                           If not specified, or specified as zero,
-                           this means the customer leaves the actual
-                           prefix length value to the provider.";
-                      }
-                      choice address-assign {
-                        default "number";
-                        case number {
-                          leaf number-of-dynamic-address {
-                            type uint16;
-                            default "1";
-                            description
-                              "Describes the number of IP addresses
-                               the customer requires.";
-                          }
-                        }
-                        case explicit {
-                          container customer-addresses {
-                            list address-group {
-                              key "group-id";
-                              leaf group-id {
-                                type string;
-                                description
-                                  "Group-id for the address range from
-                                   start-address to end-address.";
-                              }
-                              leaf start-address {
-                                type inet:ipv4-address;
-                                description
-                                  "First address.";
-                              }
-                              leaf end-address {
-                                type inet:ipv4-address;
-                                description
-                                  "Last address.";
-                              }
-                              description
-                                "Describes IP addresses allocated by DHCP.
-                                 When only start-address or only end-address
-                                 is present, it represents a single address.
-                                 When both start-address and end-address are
-                                 specified, it implies a range inclusive of both
-                                 addresses.  If no address is specified, it implies
-                                 customer addresses group is not supported.";
-                            }
-                            description
-                              "Container for customer addresses is allocated by
-                               DHCP.";
-                          }
-                        }
-                        description
-                          "Choice for the way to assign addresses.";
-                      }
-                      description
-                        "DHCP allocated addresses related parameters.";
-                    }
-                    container dhcp-relay {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'provider-dhcp-relay')" {
-                        description
-                          "Only applies when provider is required to implement
-                           DHCP relay function.";
-                      }
-                      leaf provider-address {
-                        type inet:ipv4-address;
-                        description
-                          "Address of provider side.  If provider-address is not
-                           specified, then prefix length should not be specified
-                           either.  It also implies provider-dhcp allocation is
-                           not enabled.  If provider-address is specified, then
-                           prefix length may or may not be specified.";
-                      }
-                      leaf prefix-length {
-                        type uint8 {
-                          range "0..32";
-                        }
-                        must '(../provider-address)' {
-                          error-message
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
-                          description
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
-                        }
-                        description
-                          "Subnet prefix length expressed in bits.  If not
-                           specified, or specified as zero, this means the
-                           customer leaves the actual prefix length value
-                           to the provider.";
-                      }
-                      container customer-dhcp-servers {
-                        leaf-list server-ip-address {
-                          type inet:ipv4-address;
-                          description
-                            "IP address of customer DHCP server.";
-                        }
-                        description
-                          "Container for list of customer DHCP servers.";
-                      }
-                      description
-                        "DHCP relay provided by operator.";
-                    }
-                    container static-addresses {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'static-address')" {
-                        description
-                          "Only applies when protocol allocation type is static.";
-                      }
-                      leaf primary-address {
-                        type leafref {
-                          path "/l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/"
-                             + "vpn-node/vpn-network-accesses/vpn-network-access/"
-                             + "ip-connection/ipv4/static-addresses/address/"
-                             + "address-id";
-                        }
-                        description
-                          "Principal address of the connection.";
-                      }
-                      list address {
-                        key "address-id";
-                        leaf address-id {
-                          type string;
-                          description
-                            "IPv4 Address";
+                            "Only applies when addresses are allocated by DHCP.";
                         }
                         leaf provider-address {
                           type inet:ipv4-address;
                           description
-                            "IPv4 Address List of the provider side.
-                             When the protocol allocation type is static,
-                             the provider address must be configured.";
-                        }
-                        leaf customer-address {
-                          type inet:ipv4-address;
-                          description
-                            "IPv4 Address of customer side.";
+                            "Address of provider side.  If provider-address is not
+                             specified, then prefix length should not be specified
+                             either.  It also implies provider-dhcp allocation is
+                             not enabled.  If provider-address is specified, then
+                             the prefix length may or may not be specified.";
                         }
                         leaf prefix-length {
                           type uint8 {
                             range "0..32";
                           }
+                          must '(../provider-address)' {
+                            error-message
+                              "If the prefix length is specified, provider-address
+                               must also be specified.";
+                            description
+                              "If the prefix length is specified, provider-address
+                               must also be specified.";
+                          }
                           description
                             "Subnet prefix length expressed in bits.
-                             It is applied to both provider-address
-                             and customer-address.";
+                             If not specified, or specified as zero,
+                             this means the customer leaves the actual
+                             prefix length value to the provider.";
+                        }
+                        choice address-assign {
+                          default "number";
+                          case number {
+                            leaf number-of-dynamic-address {
+                              type uint16;
+                              default "1";
+                              description
+                                "Describes the number of IP addresses
+                                 the customer requires.";
+                            }
+                          }
+                          case explicit {
+                            container customer-addresses {
+                              list address-group {
+                                key "group-id";
+                                leaf group-id {
+                                  type string;
+                                  description
+                                    "Group-id for the address range from
+                                     start-address to end-address.";
+                                }
+                                leaf start-address {
+                                  type inet:ipv4-address;
+                                  description
+                                    "First address.";
+                                }
+                                leaf end-address {
+                                  type inet:ipv4-address;
+                                  description
+                                    "Last address.";
+                                }
+                                description
+                                  "Describes IP addresses allocated by DHCP.
+                                   When only start-address or only end-address
+                                   is present, it represents a single address.
+                                   When both start-address and end-address are
+                                   specified, it implies a range inclusive of both
+                                   addresses.  If no address is specified, it implies
+                                   customer addresses group is not supported.";
+                              }
+                              description
+                                "Container for customer addresses is allocated by
+                                 DHCP.";
+                            }
+                          }
+                          description
+                            "Choice for the way to assign addresses.";
+                        }
+                        description
+                          "DHCP allocated addresses related parameters.";
+                      }
+                      case dhcp-relay {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'provider-dhcp-relay')" {
+                          description
+                            "Only applies when provider is required to implement
+                             DHCP relay function.";
+                        }
+                        leaf dr-provider-address {
+                          type inet:ipv4-address;
+                          description
+                            "Address of provider side.  If provider-address is not
+                             specified, then prefix length should not be specified
+                             either.  It also implies provider-dhcp allocation is
+                             not enabled.  If provider-address is specified, then
+                             prefix length may or may not be specified.";
+                        }
+                        leaf dr-prefix-length {
+                          type uint8 {
+                            range "0..32";
+                          }
+                          must '(../dr-provider-address)' {
+                            error-message
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                            description
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                          }
+                          description
+                            "Subnet prefix length expressed in bits.  If not
+                             specified, or specified as zero, this means the
+                             customer leaves the actual prefix length value
+                             to the provider.";
+                        }
+                        container customer-dhcp-servers {
+                          leaf-list server-ip-address {
+                            type inet:ipv4-address;
+                            description
+                              "IP address of customer DHCP server.";
+                          }
+                          description
+                            "Container for list of customer DHCP servers.";
+                        }
+                        description
+                          "DHCP relay provided by operator.";
+                      }
+                      case static-addresses {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'static-address')" {
+                          description
+                            "Only applies when protocol allocation type is static.";
+                        }
+                        leaf primary-address {
+                          type leafref {
+                            path "../address/address-id";
+                          }
+                          description
+                            "Principal address of the connection.";
+                        }
+                        list address {
+                          key "address-id";
+                          leaf address-id {
+                            type string;
+                            description
+                              "IPv4 Address";
+                          }
+                          leaf s-provider-address {
+                            type inet:ipv4-address;
+                            description
+                              "IPv4 Address List of the provider side.
+                               When the protocol allocation type is static,
+                               the provider address must be configured.";
+                          }
+                          leaf s-customer-address {
+                            type inet:ipv4-address;
+                            description
+                              "IPv4 Address of customer side.";
+                          }
+                          leaf s-prefix-length {
+                            type uint8 {
+                              range "0..32";
+                            }
+                            description
+                              "Subnet prefix length expressed in bits.
+                               It is applied to both provider-address
+                               and customer-address.";
+                          }
+                          description
+                            "Describes IPv4 addresses used.";
                         }
                         description
                           "Describes IPv4 addresses used.";
                       }
                       description
-                        "Describes IPv4 addresses used.";
+                        "Choice the address allocation.";
                     }
                     description
                       "IPv4-specific parameters.";
@@ -783,195 +784,196 @@ module ietf-l3vpn-ntw {
                          allocation type, then IPv6 is
                          not enabled.";
                     }
-                    container provider-dhcp {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'provider-dhcp') "
-                         + "or derived-from-or-self(../address-allocation-type, "
-                         + "'provider-dhcp-slaac')" {
-                        description
-                          "Only applies when addresses are allocated by DHCP.";
-                      }
-                      leaf provider-address {
-                        type inet:ipv6-address;
-                        description
-                          "Address of the provider side.  If provider-address
-                           is not specified, then prefix length should not be
-                           specified either.  It also implies provider-dhcp
-                           allocation is not enabled.  If provider-address is
-                           specified, then prefix length may or may
-                           not be specified.";
-                      }
-                      leaf prefix-length {
-                        type uint8 {
-                          range "0..128";
-                        }
-                        must '(../provider-address)' {
-                          error-message
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
+                    choice allocation-type {
+                      choice provider-dhcp {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'provider-dhcp') "
+                           + "or derived-from-or-self(./address-allocation-type, "
+                           + "'provider-dhcp-slaac')" {
                           description
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
-                        }
-                        description
-                          "Subnet prefix length expressed in bits.  If not
-                           specified, or specified as zero, this means the
-                           customer leaves the actual prefix length value
-                           to the provider.";
-                      }
-                      choice address-assign {
-                        default "number";
-                        case number {
-                          leaf number-of-dynamic-address {
-                            type uint16;
-                            default "1";
-                            description
-                              "Describes the number of IP addresses the customer
-                               requires.";
-                          }
-                        }
-                        case explicit {
-                          container customer-addresses {
-                            list address-group {
-                              key "group-id";
-                              leaf group-id {
-                                type string;
-                                description
-                                  "Group-id for the address range from
-                                   start-address to end-address.";
-                              }
-                              leaf start-address {
-                                type inet:ipv6-address;
-                                description
-                                  "First address.";
-                              }
-                              leaf end-address {
-                                type inet:ipv6-address;
-                                description
-                                  "Last address.";
-                              }
-                              description
-                                "Describes IP addresses allocated by DHCP.
-                                 When only start-address or only end-address
-                                 is present, it represents a single address.
-                                 When both start-addressand end-address are
-                                 specified, it implies a range
-                                 inclusive of both addresses.
-                                 If no address is specified, it implies
-                                 customer addresses group is
-                                 not supported.";
-                            }
-                            description
-                              "Container for customer addresses allocated
-                               by DHCP.";
-                          }
-                        }
-                        description
-                          "Choice for the way to assign addresses.";
-                      }
-                      description
-                        "DHCP allocated addresses related parameters.";
-                    }
-                    container dhcp-relay {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'provider-dhcp-relay')" {
-                        description
-                          "Only applies when the provider is required
-                           to implement DHCP relay function.";
-                      }
-                      leaf provider-address {
-                        type inet:ipv6-address;
-                        description
-                          "Address of the provider side.  If provider-address
-                           is not specified, then prefix length should not be
-                           specified either.  It also implies provider-dhcp
-                           allocation is not enabled.  If provider address
-                           is specified, then prefix length may or may
-                           not be specified.";
-                      }
-                      leaf prefix-length {
-                        type uint8 {
-                          range "0..128";
-                        }
-                        must '(../provider-address)' {
-                          error-message
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
-                          description
-                            "If prefix length is specified, provider-address
-                             must also be specified.";
-                        }
-                        description
-                          "Subnet prefix length expressed in bits.  If not
-                           specified, or specified as zero, this means the
-                           customer leaves the actual prefix length value
-                           to the provider.";
-                      }
-                      container customer-dhcp-servers {
-                        leaf-list server-ip-address {
-                          type inet:ipv6-address;
-                          description
-                            "This node contains the IP address of
-                             the customer DHCP server.  If the DHCP relay
-                             function is implemented by the
-                             provider, this node contains the
-                             configured value.";
-                        }
-                        description
-                          "Container for list of customer DHCP servers.";
-                      }
-                      description
-                        "DHCP relay provided by operator.";
-                    }
-                    container static-addresses {
-                      when "derived-from-or-self(../address-allocation-type, "
-                         + "'static-address')" {
-                        description
-                          "Only applies when protocol allocation type is static.";
-                      }
-                      leaf primary-address {
-                        type leafref {
-                          path "/l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/"
-                             + "vpn-node/vpn-network-accesses/vpn-network-access/"
-                             + "ip-connection/ipv6/static-addresses/address/"
-                             + "address-id";
-                        }
-                        description
-                          "Principal address of the connection";
-                      }
-                      list address {
-                        key "address-id";
-                        leaf address-id {
-                          type string;
-                          description
-                            "IPv4 Address";
+                            "Only applies when addresses are allocated by DHCP.";
                         }
                         leaf provider-address {
                           type inet:ipv6-address;
                           description
-                            "IPv6 Address of the provider side.  When the protocol
-                             allocation type is static, the provider address
-                             must be configured.";
-                        }
-                        leaf customer-address {
-                          type inet:ipv6-address;
-                          description
-                            "The IPv6 Address of the customer side.";
+                            "Address of the provider side.  If provider-address
+                             is not specified, then prefix length should not be
+                             specified either.  It also implies provider-dhcp
+                             allocation is not enabled.  If provider-address is
+                             specified, then prefix length may or may
+                             not be specified.";
                         }
                         leaf prefix-length {
                           type uint8 {
                             range "0..128";
                           }
+                          must '(../provider-address)' {
+                            error-message
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                            description
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                          }
                           description
-                            "Subnet prefix length expressed in bits.
-                             It is applied to both provider-address and
-                             customer-address.";
+                            "Subnet prefix length expressed in bits.  If not
+                             specified, or specified as zero, this means the
+                             customer leaves the actual prefix length value
+                             to the provider.";
+                        }
+                        choice address-assign {
+                          default "number";
+                          case number {
+                            leaf number-of-dynamic-address {
+                              type uint16;
+                              default "1";
+                              description
+                                "Describes the number of IP addresses the customer
+                                 requires.";
+                            }
+                          }
+                          case explicit {
+                            container customer-addresses {
+                              list address-group {
+                                key "group-id";
+                                leaf group-id {
+                                  type string;
+                                  description
+                                    "Group-id for the address range from
+                                     start-address to end-address.";
+                                }
+                                leaf start-address {
+                                  type inet:ipv6-address;
+                                  description
+                                    "First address.";
+                                }
+                                leaf end-address {
+                                  type inet:ipv6-address;
+                                  description
+                                    "Last address.";
+                                }
+                                description
+                                  "Describes IP addresses allocated by DHCP.
+                                   When only start-address or only end-address
+                                   is present, it represents a single address.
+                                   When both start-addressand end-address are
+                                   specified, it implies a range
+                                   inclusive of both addresses.
+                                   If no address is specified, it implies
+                                   customer addresses group is
+                                   not supported.";
+                              }
+                              description
+                                "Container for customer addresses allocated
+                                 by DHCP.";
+                            }
+                          }
+                          description
+                            "Choice for the way to assign addresses.";
                         }
                         description
-                          "Describes IPv6 addresses used.";
+                          "DHCP allocated addresses related parameters.";
+                      }
+                      case dhcp-relay {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'provider-dhcp-relay')" {
+                          description
+                            "Only applies when the provider is required
+                             to implement DHCP relay function.";
+                        }
+                        leaf dr-provider-address {
+                          type inet:ipv6-address;
+                          description
+                            "Address of the provider side.  If provider-address
+                             is not specified, then prefix length should not be
+                             specified either.  It also implies provider-dhcp
+                             allocation is not enabled.  If provider address
+                             is specified, then prefix length may or may
+                             not be specified.";
+                        }
+                        leaf dr-prefix-length {
+                          type uint8 {
+                            range "0..128";
+                          }
+                          must '(../dr-provider-address)' {
+                            error-message
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                            description
+                              "If prefix length is specified, provider-address
+                               must also be specified.";
+                          }
+                          description
+                            "Subnet prefix length expressed in bits.  If not
+                             specified, or specified as zero, this means the
+                             customer leaves the actual prefix length value
+                             to the provider.";
+                        }
+                        container customer-dhcp-servers {
+                          leaf-list server-ip-address {
+                            type inet:ipv6-address;
+                            description
+                              "This node contains the IP address of
+                               the customer DHCP server.  If the DHCP relay
+                               function is implemented by the
+                               provider, this node contains the
+                               configured value.";
+                          }
+                          description
+                            "Container for list of customer DHCP servers.";
+                        }
+                        description
+                          "DHCP relay provided by operator.";
+                      }
+                      case static-addresses {
+                        when "derived-from-or-self(./address-allocation-type, "
+                           + "'static-address')" {
+                          description
+                            "Only applies when protocol allocation type is static.";
+                        }
+                        leaf s-primary-address {
+                          type leafref {
+                            path "../s-address/address-id";
+                          }
+                          description
+                            "Principal address of the connection";
+                        }
+                        list s-address {
+                          key "address-id";
+                          leaf address-id {
+                            type string;
+                            description
+                              "IPv4 Address";
+                          }
+                          leaf provider-address {
+                            type inet:ipv6-address;
+                            description
+                              "IPv6 Address of the provider side.  When the protocol
+                               allocation type is static, the provider address
+                               must be configured.";
+                          }
+                          leaf customer-address {
+                            type inet:ipv6-address;
+                            description
+                              "The IPv6 Address of the customer side.";
+                          }
+                          leaf prefix-length {
+                            type uint8 {
+                              range "0..128";
+                            }
+                            description
+                              "Subnet prefix length expressed in bits.
+                               It is applied to both provider-address and
+                               customer-address.";
+                          }
+                          description
+                            "Describes IPv6 addresses used.";
+                        }
+                        description
+                          "IPv6-specific parameters.";
                       }
                       description
-                        "IPv6-specific parameters.";
+                        "IPv6 allocation type.";
                     }
                     description
                       "IPv6-specific parameters.";
