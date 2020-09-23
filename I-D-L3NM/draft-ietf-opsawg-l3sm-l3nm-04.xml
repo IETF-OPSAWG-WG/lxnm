@@ -1146,125 +1146,167 @@
               information. The address allocated in this container would
               represent the PE interface address configuration. The IP
               connection container is designed to support both IPv4 and IPv6.
-              It also supports three options for IP address assignment:
-              Provider DHCP, DHCP relay, and static addressing.</t>
+              It also supports three IP address assignment modes: Provider
+              DHCP, DHCP relay, and static addressing. Only one of them is
+              enabled for a given service. <!--Med: Check if slaac need to be mentionned--></t>
 
-              <t>In the case of the static addressing, the model supports the
+              <t><figure align="center" anchor="ip_conn_tree"
+                  title="IP Connection Subtree Structure">
+                  <artwork align="left"><![CDATA[module: ietf-l3vpn-ntw
+  +--rw l3vpn-ntw
+   +--rw vpn-profiles
+   |  ...
+   +--rw vpn-services
+    +--rw vpn-service* [vpn-id]
+       +--rw vpn-id                  l3vpn-svc:svc-id
+       +  ...
+        +--rw vpn-node* [ne-id]
+           +--rw ne-id                      string
+           + ...
+           +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       vpn-common:vpn-id
+              |     ...
+              |     +--rw vpn-network-access-type?   identityref
+              |     +--rw connection
+              |     |  ...
+              |     +--rw ip-connection
+              |     |  +--rw ipv4 {vpn-common:ipv4}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw (allocation-type)?
+              |     |  |     +--:(provider-dhcp)
+              |     |  |     |  +--rw provider-address?
+              |     |  |     |  |       inet:ipv4-address
+              |     |  |     |  +--rw prefix-length?
+              |     |  |     |  |       uint8
+              |     |  |     |  +--rw (address-assign)?
+              |     |  |     |     +--:(number)
+              |     |  |     |     |  +--rw number-of-dynamic-address?
+              |     |  |     |     |          uint16
+              |     |  |     |     +--:(explicit)
+              |     |  |     |        +--rw customer-addresses
+              |     |  |     |           +--rw address-group*
+              |     |  |     |                   [group-id]
+              |     |  |     |              +--rw group-id
+              |     |  |     |              |       string
+              |     |  |     |              +--rw start-address?
+              |     |  |     |              |       inet:ipv4-address
+              |     |  |     |              +--rw end-address?
+              |     |  |     |                      inet:ipv4-address
+              |     |  |     +--:(dhcp-relay)
+              |     |  |     |  +--rw dr-provider-address?
+              |     |  |     |  |       inet:ipv4-address
+              |     |  |     |  +--rw dr-prefix-length?
+              |     |  |     |  |       uint8
+              |     |  |     |  +--rw customer-dhcp-servers
+              |     |  |     |     +--rw server-ip-address*
+              |     |  |     |             inet:ipv4-address
+              |     |  |     +--:(static-addresses)
+              |     |  |        ...
+              |     |  +--rw ipv6 {vpn-common:ipv6}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw (allocation-type)?
+              |     |  |     +--:(provider-dhcp)
+              |     |  |     |  +--rw (provider-dhcp)?
+              |     |  |     |     +--:(provider-address)
+              |     |  |     |     |  +--rw provider-address?
+              |     |  |     |     |          inet:ipv6-address
+              |     |  |     |     +--:(prefix-length)
+              |     |  |     |     |  +--rw prefix-length?
+              |     |  |     |     |          uint8
+              |     |  |     |     +--:(address-assign)
+              |     |  |     |        +--rw (address-assign)?
+              |     |  |     |           +--:(number)
+              |     |  |     |           |  +--rw number-of-dynamic-address?
+              |     |  |     |           |          uint16
+              |     |  |     |           +--:(explicit)
+              |     |  |     |              +--rw customer-addresses
+              |     |  |     |                 +--rw address-group*
+              |     |  |     |                         [group-id]
+              |     |  |     |                    +--rw group-id
+              |     |  |     |                    |       string
+              |     |  |     |                    +--rw start-address?
+              |     |  |     |                    |       inet:ipv6-address
+              |     |  |     |                    +--rw end-address?
+              |     |  |     |                            inet:ipv6-address
+              |     |  |     +--:(dhcp-relay)
+              |     |  |     |  +--rw dr-provider-address?
+              |     |  |     |  |       inet:ipv6-address
+              |     |  |     |  +--rw dr-prefix-length?
+              |     |  |     |  |       uint8
+              |     |  |     |  +--rw customer-dhcp-servers
+              |     |  |     |     +--rw server-ip-address*
+              |     |  |     |             inet:ipv6-address
+              |     |  |     +--:(static-addresses)
+              |     |  |        ...]]></artwork>
+                </figure></t>
+
+              <t>In the case of the static addressing (<xref
+              target="ip_conn_tree-static"></xref>), the model supports the
               assignment of several IP addresses in the same
               'vpn-network-access'. To identify which of the addresses is the
-              primary address of a connection ,the "primary-address" reference
+              primary address of a connection ,the 'primary-address' reference
               MUST be set with the corresponding 'address-id'.</t>
 
-              <figure align="center" anchor="ip_conn_tree"
-                      title="IP Connection Tree Structure">
-                <artwork align="left"><![CDATA[                 ...
-                 +--rw vpn-network-accesses
-                 |  +--rw vpn-network-access* [id]
-                 |     +--rw id
-                 |     |       vpn-common:vpn-id
-                 |     ...
-                 |     +--rw vpn-network-access-type?   identityref
-                 |     +--rw connection
-                 |     |  ...
-                 |     +--rw ip-connection
-                 |     |  +--rw ipv4 {vpn-common:ipv4}?
-                 |     |  |  +--rw address-allocation-type?
-                 |     |  |  |       identityref
-                 |     |  |  +--rw (allocation-type)?
-                 |     |  |     +--:(provider-dhcp)
-                 |     |  |     |  +--rw provider-address?
-                 |     |  |     |  |       inet:ipv4-address
-                 |     |  |     |  +--rw prefix-length?
-                 |     |  |     |  |       uint8
-                 |     |  |     |  +--rw (address-assign)?
-                 |     |  |     |     +--:(number)
-                 |     |  |     |     |  +--rw number-of-dynamic-address?
-                 |     |  |     |     |          uint16
-                 |     |  |     |     +--:(explicit)
-                 |     |  |     |        +--rw customer-addresses
-                 |     |  |     |           +--rw address-group*
-                 |     |  |     |                   [group-id]
-                 |     |  |     |              +--rw group-id
-                 |     |  |     |              |       string
-                 |     |  |     |              +--rw start-address?
-                 |     |  |     |              |       inet:ipv4-address
-                 |     |  |     |              +--rw end-address?
-                 |     |  |     |                      inet:ipv4-address
-                 |     |  |     +--:(dhcp-relay)
-                 |     |  |     |  +--rw dr-provider-address?
-                 |     |  |     |  |       inet:ipv4-address
-                 |     |  |     |  +--rw dr-prefix-length?
-                 |     |  |     |  |       uint8
-                 |     |  |     |  +--rw customer-dhcp-servers
-                 |     |  |     |     +--rw server-ip-address*
-                 |     |  |     |             inet:ipv4-address
-                 |     |  |     +--:(static-addresses)
-                 |     |  |        +--rw primary-address?
-                 |     |  |        |       -> ../address/address-id
-                 |     |  |        +--rw address* [address-id]
-                 |     |  |           +--rw address-id
-                 |     |  |           |       string
-                 |     |  |           +--rw s-provider-address?
-                 |     |  |           |       inet:ipv4-address
-                 |     |  |           +--rw s-customer-address?
-                 |     |  |           |       inet:ipv4-address
-                 |     |  |           +--rw s-prefix-length?
-                 |     |  |                   uint8
-                 |     |  +--rw ipv6 {vpn-common:ipv6}?
-                 |     |  |  +--rw address-allocation-type?
-                 |     |  |  |       identityref
-                 |     |  |  +--rw (allocation-type)?
-                 |     |  |     +--:(provider-dhcp)
-                 |     |  |     |  +--rw (provider-dhcp)?
-                 |     |  |     |     +--:(provider-address)
-                 |     |  |     |     |  +--rw provider-address?
-                 |     |  |     |     |          inet:ipv6-address
-                 |     |  |     |     +--:(prefix-length)
-                 |     |  |     |     |  +--rw prefix-length?
-                 |     |  |     |     |          uint8
-                 |     |  |     |     +--:(address-assign)
-                 |     |  |     |        +--rw (address-assign)?
-                 |     |  |     |           +--:(number)
-                 |     |  |     |           |  +--rw number-of-dynamic-address?
-                 |     |  |     |           |          uint16
-                 |     |  |     |           +--:(explicit)
-                 |     |  |     |              +--rw customer-addresses
-                 |     |  |     |                 +--rw address-group*
-                 |     |  |     |                         [group-id]
-                 |     |  |     |                    +--rw group-id
-                 |     |  |     |                    |       string
-                 |     |  |     |                    +--rw start-address?
-                 |     |  |     |                    |       inet:ipv6-address
-                 |     |  |     |                    +--rw end-address?
-                 |     |  |     |                            inet:ipv6-address
-                 |     |  |     +--:(dhcp-relay)
-                 |     |  |     |  +--rw dr-provider-address?
-                 |     |  |     |  |       inet:ipv6-address
-                 |     |  |     |  +--rw dr-prefix-length?
-                 |     |  |     |  |       uint8
-                 |     |  |     |  +--rw customer-dhcp-servers
-                 |     |  |     |     +--rw server-ip-address*
-                 |     |  |     |             inet:ipv6-address
-                 |     |  |     +--:(static-addresses)
-                 |     |  |        +--rw s-primary-address?
-                 |     |  |        |       -> ../s-address/address-id
-                 |     |  |        +--rw s-address* [address-id]
-                 |     |  |           +--rw address-id
-                 |     |  |           |       string
-                 |     |  |           +--rw provider-address?
-                 |     |  |           |       inet:ipv6-address
-                 |     |  |           +--rw customer-address?
-                 |     |  |           |       inet:ipv6-address
-                 |     |  |           +--rw prefix-length?      uint8
-                 |     |  +--rw oam
-                 |     |     +--rw bfd {vpn-common:bfd}?
-                 |     |        +--rw enabled?              boolean
-                 |     |        +--rw (holdtime)?
-                 |     |           +--:(fixed)
-                 |     |           |  +--rw fixed-value?    uint32
-                 |     |           +--:(profile)
-                 |     |              +--rw profile-name?   leafref
-                 ...                        ]]></artwork>
+              <figure align="center" anchor="ip_conn_tree-static"
+                      title="IP Connection Subtree Structure: Static Mode">
+                <artwork align="left"><![CDATA[module: ietf-l3vpn-ntw
+  +--rw l3vpn-ntw
+   +--rw vpn-profiles
+   |  ...
+   +--rw vpn-services
+    +--rw vpn-service* [vpn-id]
+       +--rw vpn-id                  l3vpn-svc:svc-id
+       +  ...
+        +--rw vpn-node* [ne-id]
+           +--rw ne-id                      string
+           + ...
+           +--rw vpn-network-accesses
+              |  +--rw vpn-network-access* [id]
+              |     +--rw id
+              |     |       vpn-common:vpn-id
+              |     ...
+              |     +--rw vpn-network-access-type?   identityref
+              |     +--rw connection
+              |     |  ...
+              |     +--rw ip-connection
+              |     |  +--rw ipv4 {vpn-common:ipv4}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw (allocation-type)?
+              |     |  |     ...
+              |     |  |     +--:(static-addresses)
+              |     |  |        +--rw primary-address?
+              |     |  |        |       -> ../address/address-id
+              |     |  |        +--rw address* [address-id]
+              |     |  |           +--rw address-id
+              |     |  |           |       string
+              |     |  |           +--rw s-provider-address?
+              |     |  |           |       inet:ipv4-address
+              |     |  |           +--rw s-customer-address?
+              |     |  |           |       inet:ipv4-address
+              |     |  |           +--rw s-prefix-length?
+              |     |  |                   uint8
+              |     |  +--rw ipv6 {vpn-common:ipv6}?
+              |     |  |  +--rw address-allocation-type?
+              |     |  |  |       identityref
+              |     |  |  +--rw (allocation-type)?
+              |     |  |     ...
+              |     |  |     +--:(static-addresses)
+              |     |  |        +--rw s-primary-address?
+              |     |  |        |       -> ../s-address/address-id
+              |     |  |        +--rw s-address* [address-id]
+              |     |  |           +--rw address-id
+              |     |  |           |       string
+              |     |  |           +--rw provider-address?
+              |     |  |           |       inet:ipv6-address
+              |     |  |           +--rw customer-address?
+              |     |  |           |       inet:ipv6-address
+              |     |  |           +--rw prefix-length?      uint8
+               ...                        ]]></artwork>
               </figure>
             </section>
 
