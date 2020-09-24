@@ -1,7 +1,7 @@
-# L3NM
+# L3NM and VPN-COMMON
 ## L3 VPN Network-Oriented Yang Model
 
-This document specifies a L3VPN Network YANG Model (L3NM) to facilitate communication 
+The L3NM document specifies a L3VPN Network YANG Model (L3NM) to facilitate communication 
 between a service orchestrator and a network
    controller/orchestrator.  Such data model provides a network-centric
    view of the L3VPN services.  The Yang model proposed is limited to
