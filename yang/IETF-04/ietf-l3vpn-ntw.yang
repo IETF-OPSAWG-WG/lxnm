@@ -1269,79 +1269,83 @@ module ietf-l3vpn-ntw {
                       }
                       leaf as-override {
                         type boolean;
-                          default false;
-                          description
-                           "Define whether AS override is enabled, i.e., replace
+                        default "false";
+                        description
+                          "Define whether AS override is enabled, i.e., replace
                            the AS number of the peer specified in the AS Path
                            attribute with the local AS number.";
-                        }
-
+                      }
                       leaf default-route {
                         type boolean;
-                        default false;
+                        default "false";
                         description
-                         "Define whether default route can be advertised
-                         to its peer. If enabled, the default route is advertised 
-                         to its peer.";
-                        }
-
-
+                          "Define whether default route can be advertised
+                           to its peer. If enabled, the default route is advertised
+                           to its peer.";
+                      }
                       container bgp-max-prefix {
                         leaf max-prefix {
                           type uint32;
-                          default 5000;
+                          default "5000";
                           description
-                          "Maximimum number of BGP prefixes allowed in the BGP session. 
-                          Allows to control how many prefixes can be received from a neighbor. 
-                          If the limit is exceeded, the session will be teared down.";
+                            "Maximimum number of BGP prefixes allowed in the BGP session.
+                             Allows to control how many prefixes can be received from a neighbor.
+                             If the limit is exceeded, the session will be teared down.";
                           reference
                             "RFC4271: A Border Gateway Protocol 4 (BGP-4).";
                         }
-
-                      leaf warning-threshold{
-                        type decimal64 {
-                          fraction-digits 5;
-                          range "0..100";
-                        }
-                          units percent;
-                        default 75;
-                        }
-
-                      leaf violate-action {
-                        type enumeration {
-                          enum warning {
-                            description "Only give warning message when limit is exceeded";
+                        leaf warning-threshold {
+                          type decimal64 {
+                            fraction-digits 5;
+                            range "0..100";
                           }
-                          enum discard-extra-paths {
-                            description "Discard extra paths when limit is exceeded";
-                          }
-                          enum restart {
-                            description "Restart time interval";
-                          }
-                        }
+                          units "percent";
+                          default "75";
                           description
-                           "BGP neighbour max-prefix violate action";
-                       }
-
-                      leaf restart-interval {
-                        type uint16;
-                          description "Time interval (min) after which peering session will be reestablished";
-                          }
-                      description
-                      "Container with the max prefix, violate actions and restart intervals.";
-                      }
-
-                      container bgp-timer {
-                          leaf keep-alive {
-                            type uint16;
-                            default 60;
-                            units "seconds";
+                            "TO BE COMPLETED";
                         }
-
-                      leaf hold-time {
+                        leaf violate-action {
+                          type enumeration {
+                            enum warning {
+                              description
+                                "Only give warning message when limit is exceeded";
+                            }
+                            enum discard-extra-paths {
+                              description
+                                "Discard extra paths when limit is exceeded";
+                            }
+                            enum restart {
+                              description
+                                "Restart time interval";
+                            }
+                          }
+                          description
+                            "BGP neighbour max-prefix violate action";
+                        }
+                        leaf restart-interval {
                           type uint16;
-                          default 180;
+                          description
+                            "Time interval (min) after which peering session will be reestablished";
+                        }
+                        description
+                          "Container with the max prefix, violate actions and restart intervals.";
+                      }
+                      container bgp-timer {
+                        description
+                          "TO BE COMPLETED";
+                        leaf keep-alive {
+                          type uint16;
                           units "seconds";
+                          default "60";
+                          description
+                            "TO BE COMPLETED";
+                        }
+                        leaf hold-time {
+                          type uint16;
+                          units "seconds";
+                          default "180";
+                          description
+                            "TO BE COMPLETED";
                         }
                       }
                       description
@@ -1488,40 +1492,44 @@ module ietf-l3vpn-ntw {
                         "Configuration specific to RIP routing.";
                     }
                     container vrrp {
-                         when "derived-from-or-self(../type,'vpn-common:vrrp')" {
-                          description
+                      when "derived-from-or-self(../type,'vpn-common:vrrp')" {
+                        description
                           "Only applies when protocol is VRRP.";
+                      }
+                      if-feature "vpn-common:rtg-vrrp";
+                      leaf-list address-family {
+                        type vpn-common:address-family;
+                        min-elements 1;
+                        description
+                          "If VRRP is used on this site, this node
+                           contains a configured value.  This node contains
+                           at least one address family to be activated.";
+                      }
+                      leaf vrrp-group {
+                        type uint8 {
+                          range "1..255";
                         }
-                         if-feature "vpn-common:rtg-vrrp";
-                         leaf-list address-family {
-                          type vpn-common:address-family;
-                              min-elements "1";
-                             description
-                             "If VRRP is used on this site, this node
-                             contains a configured value.  This node contains
-                             at least one address family to be activated.";
-                         }
-                         leaf vrrp-group {
-                          type uint8 {
-                            range "1..255";
-                          }
-                          description "VRRP group number";
-                         }
-                         leaf backup-peer {
-                          type inet:ip-address;
-                          description "IP address of the peer";
-                         }
-                         leaf priority {
-                          type uint8;
-                          description "Local priority of the VRRP speaker";
-                         }
-                         leaf ping-reply {
-                          type boolean;
-                          description "Whether the VRRP speaker should answer to ping requests";
-                         }
-                         description
-                         "Configuration specific to VRRP routing.";
-                        }
+                        description
+                          "VRRP group number";
+                      }
+                      leaf backup-peer {
+                        type inet:ip-address;
+                        description
+                          "IP address of the peer";
+                      }
+                      leaf priority {
+                        type uint8;
+                        description
+                          "Local priority of the VRRP speaker";
+                      }
+                      leaf ping-reply {
+                        type boolean;
+                        description
+                          "Whether the VRRP speaker should answer to ping requests";
+                      }
+                      description
+                        "Configuration specific to VRRP routing.";
+                    }
                     description
                       "List of routing protocols used on
                        the site.  This list can be augmented.";
