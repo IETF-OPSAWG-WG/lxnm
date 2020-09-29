@@ -2737,7 +2737,7 @@ module ietf-l3vpn-ntw {
                           type string;
                         }
                         description
-                          "VCID identifier,IRB/RVPPLs interface
+                          "VCID identifier, IRB/RVPPLs interface
                            supported using string
                            format.";
                       }
@@ -3410,34 +3410,33 @@ module ietf-l3vpn-ntw {
                         type inet:as-number;
                         mandatory true;
                         description
-                          "Customer AS number in case the customer
-                           requests BGP routing.";
+                          "Indicates the Customer's AS Number (ASN) in 
+                           case the Customer requests BGP routing.";
                       }
                       leaf local-autonomous-system {
                         type inet:as-number;
                         description
-                          "Local-AS overwrite.";
+                          "Is set to the ASN to override a peers' ASN
+                           if such feature is requested by the Customer.";
                       }
                       leaf-list address-family {
                         type vpn-common:address-family;
                         min-elements 1;
                         description
-                          "If BGP is used on this site, this node
-                           contains a configured value.  This node
-                           contains at least one address family
+                          "This node contains at least one address-family
                            to be activated.";
                       }
                       leaf-list neighbor {
                         type inet:ip-address;
                         description
-                          "IP address(es) of the BGP neighbor. An IPv4
+                          "IP address(es) of the BGP neighbor. IPv4
                            and IPv6 neighbors may be indicated if
                            two sessions will be used for IPv4 and IPv6.";
                       }
                       leaf multihop {
                         type uint8;
                         description
-                          "Describes the number of hops allowed between
+                          "Describes the number of IP hops allowed between
                            a given BGP neighbor and the PE router.";
                       }
                       uses security-params;
@@ -3454,28 +3453,33 @@ module ietf-l3vpn-ntw {
                         type boolean;
                         default "false";
                         description
-                          "Define whether AS override is enabled, i.e., replace
-                           the AS number of the peer specified in the AS Path
+                          "Defines whether AS override is enabled, i.e., replace
+                           the ASN of the peer specified in the AS Path
                            attribute with the local AS number.";
                       }
                       leaf default-route {
                         type boolean;
                         default "false";
                         description
-                          "Define whether default route can be advertised
-                           to its peer. If enabled, the default route is advertised
-                           to its peer.";
+                          "Defines whether default route(s) can be advertised
+                           to its peer. If set, the default route(s) is 
+                           advertised to its peer.";
                       }
                       container bgp-max-prefix {
                         leaf max-prefix {
                           type uint32;
                           default "5000";
                           description
-                            "Maximimum number of BGP prefixes allowed in the BGP session.
-                             Allows to control how many prefixes can be received from a neighbor.
-                             If the limit is exceeded, the session will be teared down.";
+                            "Indicates the maximimum number of BGP prefixes 
+                             allowed in the BGP session.
+                             
+                             It allows to control how many prefixes can be 
+                             received from a neighbor.
+                             
+                             If the limit is exceeded, the session can be 
+                             teared down. ";
                           reference
-                            "RFC4271: A Border Gateway Protocol 4 (BGP-4).";
+                            "RFC4271, Section 8.2.2.";
                         }
                         leaf warning-threshold {
                           type decimal64 {
@@ -3485,21 +3489,24 @@ module ietf-l3vpn-ntw {
                           units "percent";
                           default "75";
                           description
-                            "TO BE COMPLETED";
+                            "When this value is reached, a warning notification
+                             will be triggered.";
                         }
                         leaf violate-action {
                           type enumeration {
                             enum warning {
                               description
-                                "Only give warning message when limit is exceeded";
+                                "Only a warning message is sent to the peer 
+                                 when the limit is exceeded.";
                             }
                             enum discard-extra-paths {
                               description
-                                "Discard extra paths when limit is exceeded";
+                                "Discards extra paths when the limit is 
+                                 exceeded.";
                             }
                             enum restart {
                               description
-                                "Restart time interval";
+                                "Restart after a time interval.";
                             }
                           }
                           description
@@ -3507,28 +3514,55 @@ module ietf-l3vpn-ntw {
                         }
                         leaf restart-interval {
                           type uint16;
+                          units "minutes";
                           description
-                            "Time interval (min) after which peering session will be reestablished";
+                            "Time interval (min) after which the BGP session 
+                             will be reestablished.";
                         }
                         description
-                          "Container with the max prefix, violate actions and restart intervals.";
+                          "Controls the behavior when a prefix maximum 
+                           is reached.";
                       }
                       container bgp-timer {
                         description
-                          "TO BE COMPLETED";
+                          "Includes two BGP timers that can be customized 
+                           whenbuilding a VPN service with BGP used as 
+                           CE-PE routing protocol.";
                         leaf keep-alive {
-                          type uint16;
+                          type uint16 {
+                            range "0..21845";
+                          }
                           units "seconds";
-                          default "60";
+                          default "30";
                           description
-                            "TO BE COMPLETED";
+                            "This timer indicates the KEEPALIVE messages' 
+                             frequency between a PE and a BGP peer.
+                             
+                             If set to '0', it indicates KEEPALIVE messages
+                             are disabled.
+                             
+                             It is suggested that the maximum time between 
+                             KEEPALIVEmessages would be one third of the 
+                             Hold Time interval.";
+                          reference
+                            "Section 4.4 of RFC 4271";            
                         }
                         leaf hold-time {
-                          type uint16;
+                          type uint16 {
+                            range "0 | 3..65535";
+                          }
                           units "seconds";
-                          default "180";
+                          default "90";
                           description
-                            "TO BE COMPLETED";
+                            "It indicates the maximum number of seconds 
+                            that may elapse between the receipt of  
+                            successive KEEPALIVE and/or UPDATE messages 
+                            from the peer.
+                            
+                            The Hold Time must be either zero or at 
+                            least three seconds.";
+                          reference
+                            "Section 4.2 of RFC 4271"; 
                         }
                       }
                       description
