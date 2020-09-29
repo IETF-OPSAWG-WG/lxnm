@@ -617,7 +617,7 @@
         exported by different PE routers.</t>
       </section>
 
-      <section anchor="ms_management" title="Management of Multicast services">
+      <section anchor="ms_management" title="Management of Multicast Services">
         <t>Multicast services over L3VPN can be implemented either using dual
         PIM MVPNs (also known as, Draft Rosen model) [RFC4364] or
         multiprotocol BGP (MBGP)-based MVPNs[RFC6513][RFC6514]. Both methods
@@ -1393,6 +1393,62 @@
               The identifier is necessary when multiple instances of the same
               protocol have to be configured.</t>
 
+              <t><figure align="center" anchor="routing"
+                  title="Routing Tree Structure">
+                  <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+                 +--rw ne-id                      string
+                 + ...
+                 +--rw vpn-network-accesses
+                 |  +--rw vpn-network-access* [id]
+                 |     +--rw id
+                 |     |       vpn-common:vpn-id
+                 |     ...
+                 |     +--rw ip-connection
+                 |     |  ...
+                 |     +--rw routing-protocols
+                 |     |  +--rw routing-protocol* [id]
+                 |     |     +--rw id                  string
+                 |     |     +--rw type?               identityref
+                 |     |     +--rw routing-profiles* [id]
+                 |     |     |  +--rw id      leafref
+                 |     |     |  +--rw type?   identityref
+                 |     |     +--rw ospf {vpn-common:rtg-ospf}?
+                 |     |     |  ...
+                 |     |     +--rw bgp {vpn-common:rtg-bgp}?
+                 |     |     |  ...
+                 |     |     +--rw isis {vpn-common:rtg-isis}?
+                 |     |     |  ...
+                 |     |     +--rw static
+                 |     |     |  ...
+                 |     |     +--rw rip {vpn-common:rtg-rip}?
+                 |     |     |  +--rw address-family*
+                 |     |     |          vpn-common:address-family
+                 |     |     +--rw vrrp {vpn-common:rtg-vrrp}?
+                 |     |        +--rw address-family*
+                 |     |                vpn-common:address-family
+                 |     +--rw service
+                 |        ...
+                 +--rw multicast {vpn-common:multicast}?
+                    ...
+]]></artwork>
+                </figure></t>
+
+              <t>Routing configuration does not include low-level policies.
+              These policies are low level device configurations that must not
+              be part of an abstracted model. A provider's internal policies
+              (such as security filters) will be implemented as part of the
+              device configuration but does not require any input from this
+              model. Some policies like primary/backup or load-balancing can
+              be inferred from 'access-priority'.</t>
+
               <t>When configuring multiple instances of the same routing
               protocol, this does not automatically imply that, from a device
               configuration perspective, there will be parallel instances
@@ -1411,51 +1467,17 @@
                 </list></t>
 
               <t>To be aligned with <xref target="RFC8299"></xref>, this model
-              supports the following protocols: <list style="symbols">
-                  <t>VRRP: takes only a list of address-family as parameter.
-                  VRRP instance is expected to run on the 'vpn-network-access'
-                  interface.</t>
-
-                  <t>RIP: takes only a list of address-family as parameter.
-                  RIP instance is expected to run on the 'vpn-network-access'
-                  interface.</t>
-
-                  <t>BGP: allows to configure a BGP neighbor including
-                  parameters like authentication using a key. The
-                  authentication type will be driven by the implementation but
-                  the module supports any authentication that uses a key as a
-                  parameter. A BGP neighbor can support IPv4, IPv6, or both
-                  address families. The module supports supplying two
-                  neighbors (each for a given address family) or one neighbor
-                  (for both IPv4 and IPv6 of "address-family" attribute is set
-                  to both). It is then up to the implementation to drive the
-                  device configuration.</t>
-
-                  <t>OSPF: allows the user to configure OSPF to run on the
-                  vpn-network-access interface. An OSPF instance can run ipv4,
-                  ipv6 or both. When only ipv4 address-family is requested, it
-                  will be up to the implementation to drive if OSPFv2 or v3 is
-                  used.</t>
-
-                  <t>IS-IS: allows the user to configure IS-IS to run on the
-                  vpn-network-access interface. An IS-IS instance can run L1,
-                  L2, or both levels.</t>
-                </list></t>
-
-              <t>The module allows a user to configure one or more IPv4 and/or
-              IPv6 static routes.</t>
-
-              <t>Routing configuration does not include low-level policies.
-              These policies are low level device configurations that must not
-              be part of an abstracted model. A provider's internal policies
-              (such as security filters) will be implemented as part of the
-              device configuration but does not require any input from this
-              model. Some policies like primary/backup or load-balancing can
-              be inferred from 'access-priority'.</t>
-
-              <t><figure align="center" anchor="routing"
-                  title="Routing Tree Structure">
-                  <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
+              supports the following CE-PE routing protocols: <list
+                  style="symbols">
+                  <t>OSPF: The model (<xref target="routing-ospf"></xref>)
+                  allows the user to configure OSPF to run as routing protocol
+                  on the 'vpn-network-access interface'. An OSPF instance can
+                  be bound to IPv4, IPv6 or both. When only IPv4
+                  address-family is requested, it will be up to the
+                  implementation to drive whether OSPFv2 or OSPFv3 is
+                  used.<figure align="center" anchor="routing-ospf"
+                      title="OPSF Routing Subtree Structure">
+                      <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1497,31 +1519,180 @@
                  |     |     |        |       vpn-common:vpn-id
                  |     |     |        +--rw metric?        uint16
                  |     |     +--rw bgp {vpn-common:rtg-bgp}?
-                 |     |     |  +--rw peer-autonomous-system
-                 |     |     |  |       inet:as-number
-                 |     |     |  +--rw local-autonomous-system?
-                 |     |     |  |       inet:as-number
-                 |     |     |  +--rw address-family*
-                 |     |     |  |       vpn-common:address-family
-                 |     |     |  +--rw neighbor*
-                 |     |     |  |       inet:ip-address
-                 |     |     |  +--rw multihop?
-                 |     |     |  |       uint8
+                 |     |     |  ...
+                 |     |     +--rw isis {vpn-common:rtg-isis}?
+                 |     |     |  ...
+                 |     |     +--rw static
+                 |     |     |  ...
+                 |     |     +--rw rip {vpn-common:rtg-rip}?
+                 |     |     |  ...
+                 |     |     +--rw vrrp {vpn-common:rtg-vrrp}?
+                 |     |        ...
+                 |     +--rw service
+                 |        ...
+                 +--rw multicast {vpn-common:multicast}?
+                    ...
+]]></artwork>
+                    </figure></t>
+
+                  <t>BGP: The model (<xref target="routing-bgp"></xref>)
+                  allows to configure a BGP neighbor, including a set for
+                  parameters that are pertinent to be tweaked at the network
+                  level for service customization purposes. This container
+                  does not aim to include every BGP parameter; those belong
+                  more to the BGP device model. The following parameters are
+                  captured in <xref target="routing-bgp"></xref>. It is up to
+                  the implementation to drive the corresponding BGP device
+                  configuration.<list style="symbols">
+                      <t>'peer-autonomous-system': This parameter conveys the
+                      Customer's AS Number (ASN).</t>
+
+                      <t>'local-autonomous-system': This parameter is set of
+                      AS override is activated for this peer.</t>
+
+                      <t>'address-family': This attribute indicates the
+                      address-family of the peer. It can be set to IPv4, IPv6,
+                      or both address-families. </t>
+
+                      <t>'neighbor': The module supports supplying two
+                      neighbors (each for a given address-family) or one
+                      neighbor (if 'address-family' attribute is set to both
+                      IPv4 and IPv6 address-families). A list of IP
+                      address(es) of the BGP neighbor can be then conveyed in
+                      this parameter.</t>
+
+                      <t>'multihop': This attribute indicates the number of
+                      allowed IP hops between a BGP peer and a PE. </t>
+
+                      <t>'security': The authentication type will be driven by
+                      the implementation but the module supports any
+                      authentication that uses a key as a parameter. </t>
+
+                      <t>'as-override': If set, this parameter indicates
+                      whether AS override is enabled, i.e., replace the ASN of
+                      the peer specified in the AS Path attribute with the ASN
+                      identified by the 'local-autonomous-system' attribute.
+                      </t>
+
+                      <t>'default-route': This attribute controls whether
+                      default route(s) can be advertised to the peer.</t>
+
+                      <t>'bgp-max-prefix': This attribute is used to control
+                      how many prefixes can be received from a neighbor. If
+                      reached, the BGP session will be teared down. </t>
+
+                      <t>'bgp-timer': Two timers can be captured in this
+                      container: (1) 'hold-time' which is the time interval
+                      that will be used for the HoldTimer (Section 4.2 of
+                      <xref target="RFC4271"></xref>) when establishing a BGP
+                      session. (2) 'keep-alive' which is the time interval for
+                      the KeepAlive timer between a PE and a BGP peer (Section
+                      4.4 of <xref target="RFC4271"></xref>).</t>
+                    </list><figure align="center" anchor="routing-bgp"
+                      title="BGP Routing Subtree Structure">
+                      <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+                 +--rw ne-id                      string
+                 + ...
+                 +--rw vpn-network-accesses
+                 |  +--rw vpn-network-access* [id]
+                 |     +--rw id
+                 |     |       vpn-common:vpn-id
+                 |     ...
+                 |     +--rw ip-connection
+                 |     |  ...
+                 |     +--rw routing-protocols
+                 |     |  +--rw routing-protocol* [id]
+                 |     |     +--rw id                  string
+                 |     |     +--rw type?               identityref
+                 |     |     +--rw routing-profiles* [id]
+                 |     |     |  +--rw id      leafref
+                 |     |     |  +--rw type?   identityref
+                 |     |     +--rw ospf {vpn-common:rtg-ospf}?
+                 |     |     |  ...
+                 |     |     +--rw bgp {vpn-common:rtg-bgp}?
+                 |     |     |  +--rw peer-autonomous-system     inet:as-number
+                 |     |     |  +--rw local-autonomous-system?   inet:as-number
+                 |     |     |  +--rw address-family*            vpn-common:address-family
+                 |     |     |  +--rw neighbor*                  inet:ip-address
+                 |     |     |  +--rw multihop?                  uint8
                  |     |     |  +--rw security
                  |     |     |  |  +--rw auth-key?   string
                  |     |     |  +--rw status
                  |     |     |  |  +--rw admin-status
-                 |     |     |  |  |  +--rw status?
-                 |     |     |  |  |  |       identityref
-                 |     |     |  |  |  +--rw last-updated?
-                 |     |     |  |  |          yang:date-and-time
+                 |     |     |  |  |  +--rw status?         identityref
+                 |     |     |  |  |  +--rw last-updated?   yang:date-and-time
                  |     |     |  |  +--ro oper-status
-                 |     |     |  |     +--ro status?
-                 |     |     |  |     |       identityref
-                 |     |     |  |     +--ro last-updated?
-                 |     |     |  |             yang:date-and-time
-                 |     |     |  +--rw description?
-                 |     |     |          string
+                 |     |     |  |     +--ro status?         identityref
+                 |     |     |  |     +--ro last-updated?   yang:date-and-time
+                 |     |     |  +--rw description?               string
+                 |     |     |  +--rw as-override?               boolean
+                 |     |     |  +--rw default-route?             boolean
+                 |     |     |  +--rw bgp-max-prefix
+                 |     |     |  |  +--rw max-prefix?          uint32
+                 |     |     |  |  +--rw warning-threshold?   decimal64
+                 |     |     |  |  +--rw violate-action?      enumeration
+                 |     |     |  |  +--rw restart-interval?    uint16
+                 |     |     |  +--rw bgp-timer
+                 |     |     |     +--rw keep-alive?   uint16
+                 |     |     |     +--rw hold-time?    uint16
+                 |     |     +--rw isis {vpn-common:rtg-isis}?
+                 |     |     |  ...
+                 |     |     +--rw static
+                 |     |     |  ...
+                 |     |     +--rw rip {vpn-common:rtg-rip}?
+                 |     |     |  ...
+                 |     |     +--rw vrrp {vpn-common:rtg-vrrp}?
+                 |     |        ...
+                 |     +--rw service
+                 |        ...
+                 +--rw multicast {vpn-common:multicast}?
+                    ...
+]]></artwork>
+                    </figure></t>
+
+                  <t>IS-IS: The model (<xref target="routing-isis"></xref>)
+                  allows the user to configure IS-IS to run on the
+                  'vpn-network-access' interface. An IS-IS instance can run
+                  L1, L2, or both levels.<figure align="center"
+                      anchor="routing-isis"
+                      title="IS-IS Routing Subtree Structure">
+                      <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+                 +--rw ne-id                      string
+                 + ...
+                 +--rw vpn-network-accesses
+                 |  +--rw vpn-network-access* [id]
+                 |     +--rw id
+                 |     |       vpn-common:vpn-id
+                 |     ...
+                 |     +--rw ip-connection
+                 |     |  ...
+                 |     +--rw routing-protocols
+                 |     |  +--rw routing-protocol* [id]
+                 |     |     +--rw id                  string
+                 |     |     +--rw type?               identityref
+                 |     |     +--rw routing-profiles* [id]
+                 |     |     |  +--rw id      leafref
+                 |     |     |  +--rw type?   identityref
+                 |     |     +--rw ospf {vpn-common:rtg-ospf}?
+                 |     |     |  ...
+                 |     |     +--rw bgp {vpn-common:rtg-bgp}?
+                 |     |     |  ...
                  |     |     +--rw isis {vpn-common:rtg-isis}?
                  |     |     |  +--rw address-family*
                  |     |     |  |       vpn-common:address-family
@@ -1543,6 +1714,63 @@
                  |     |     |        +--ro last-updated?
                  |     |     |                yang:date-and-time
                  |     |     +--rw static
+                 |     |     |  ...
+                 |     |     +--rw rip {vpn-common:rtg-rip}?
+                 |     |     |  ...
+                 |     |     +--rw vrrp {vpn-common:rtg-vrrp}?
+                 |     |        ...
+                 |     +--rw service
+                 |        ...
+                 +--rw multicast {vpn-common:multicast}?
+                    ...
+]]></artwork>
+                    </figure></t>
+
+                  <t>RIP: The module covers only a list of address-family as
+                  parameter. </t>
+
+                  <t>VRRP: The module covers only a list of address-family as
+                  parameter. </t>
+                </list></t>
+
+              <t>The module allows a user to configure one or more IPv4 and/or
+              IPv6 static routes as depicted in <xref
+              target="routing-static"></xref>.</t>
+
+              <t><figure align="center" anchor="routing-static"
+                  title="Static Routing Subtree Structure">
+                  <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+                 +--rw ne-id                      string
+                 + ...
+                 +--rw vpn-network-accesses
+                 |  +--rw vpn-network-access* [id]
+                 |     +--rw id
+                 |     |       vpn-common:vpn-id
+                 |     ...
+                 |     +--rw ip-connection
+                 |     |  ...
+                 |     +--rw routing-protocols
+                 |     |  +--rw routing-protocol* [id]
+                 |     |     +--rw id                  string
+                 |     |     +--rw type?               identityref
+                 |     |     +--rw routing-profiles* [id]
+                 |     |     |  +--rw id      leafref
+                 |     |     |  +--rw type?   identityref
+                 |     |     +--rw ospf {vpn-common:rtg-ospf}?
+                 |     |     |  ...
+                 |     |     +--rw bgp {vpn-common:rtg-bgp}?
+                 |     |     |  ...
+                 |     |     +--rw isis {vpn-common:rtg-isis}?
+                 |     |     |  ...
+                 |     |     +--rw static
                  |     |     |  +--rw cascaded-lan-prefixes
                  |     |     |     +--rw ipv4-lan-prefixes*
                  |     |     |     |       [lan next-hop]
@@ -1561,17 +1789,17 @@
                  |     |     |        +--rw next-hop
                  |     |     |                inet:ipv6-address
                  |     |     +--rw rip {vpn-common:rtg-rip}?
-                 |     |     |  +--rw address-family*
-                 |     |     |          vpn-common:address-family
+                 |     |     |  ...
                  |     |     +--rw vrrp {vpn-common:rtg-vrrp}?
-                 |     |        +--rw address-family*
-                 |     |                vpn-common:address-family
+                 |     |        ...
                  |     +--rw service
                  |        ...
                  +--rw multicast {vpn-common:multicast}?
                     ...
 ]]></artwork>
                 </figure></t>
+
+              <t></t>
 
               <!--  (NOTE FOR EDITORS: it seems that the access-priority has been removed. We need to have one may be slightly different from L3SM) -->
             </section>
@@ -4156,6 +4384,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.I-D.ietf-pim-yang'?>
 
       <?rfc include='reference.I-D.ietf-rtgwg-qos-model'?>
+
+      <?rfc include='reference.RFC.4271'?>
 
       <!--
 -->
