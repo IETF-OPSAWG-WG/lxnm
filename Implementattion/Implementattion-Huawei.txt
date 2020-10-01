@@ -1,0 +1,181 @@
+B.2.  Huawei Implementation
+
+   The organization responsible for the implementation, if any.
+
+   Huawei Technologies Co.,Ltd.
+
+   The implementation's name and/or a link to a web page where the
+   implementation or a description of it can be found.
+
+   NCE V1R19C00
+
+   A brief general description.
+
+   This section provides an implementation report summary for Layer 3
+   VPN Network Model.  Layer 3 VPN Network Model is available at:
+   https://tools.ietf.org/html/draft-ietf-opsawg-l3sm-l3nm-00
+
+   The implementation's level of maturity: research, prototype, alpha,
+   beta, production, widely used, etc.
+
+   Right now, the data model is still subject to change, therefore it is
+   still a Prototype, not put into production yet.
+
+   Coverage: which parts of the protocol specification are implemented.
+
+   We have implemented pruned L3NM model with the following parameters
+
+   module: ietf-l3vpn-ntw
+   +--rw l3vpn-ntw
+      +--rw vpn-profiles
+      |  +--rw valid-provider-identifiers
+      |     +--rw qos-profile-identifier* [id]
+      |     |  +--rw id    string
+      +--rw vpn-services
+      |  +--rw vpn-service* [vpn-id]
+      |     +--rw vpn-id                  svc-id
+      |     +--rw vpn-service-topology?   identityref
+      |     +--rw description?            string
+      |     +--rw vpn-nodes
+      |     |  +--rw vpn-node* [vpn-node-id ne-id]
+      |     |     +--rw vpn-node-id        string
+      |     |     +--rw description?       string
+      |     |     +--rw ne-id              string
+      |     |     +--rw node-role?         identityref
+      |     |     +--rw rd?                rt-types:route-distinguisher
+
+
+
+Barguil, et al.           Expires April 4, 2021               [Page 105]
+
+Internet-Draft                    L3NM                      October 2020
+
+
+      |     |     +--rw vpn-targets
+      |     |     +--rw maximum-routes
+      |     |     |  +--rw address-family* [af]
+      |     |     |     +--rw af                address-family
+      |     |     |     +--rw maximum-routes?   uint32
+      +--rw sites
+         +--rw site* [site-id]
+            +--rw site-id                  svc-id
+            +--rw locations
+            |  +--rw location* [location-id]
+            |     +--rw location-id     svc-id
+            +--rw site-bearers
+            |  +--rw bearer* [bearer-id]
+            |     +--rw bearer-id    string
+            |     +--rw ne-id?       string
+            |     +--rw port-id?     string
+            +--rw site-network-accesses
+               +--rw site-network-access* [site-network-access-id]
+                  +--rw site-network-access-id      svc-id
+                  +--rw site-network-access-type?   ref
+                  +--rw bearer
+                  |  +--rw bearer-reference?   {bearer-reference}?
+                  |  +--rw connection
+                  |  |  +--rw encapsulation-type?   identityref
+                  |  |  +--rw tagged-interface
+                  |  |     +--rw type?                identityref
+                  |  |     +--rw dot1q-vlan-tagged {dot1q}?
+                  |  |     |  +--rw cvlan-id    uint16
+                  |  |     +--rw qinq {qinq}?
+                  |  |     |  +--rw svlan-id    uint16
+                  |  |     |  +--rw cvlan-id    uint16
+                  +--rw ip-connection
+                  |  +--rw ipv4 {ipv4}?
+                  |  |  +--rw dhcp-relay
+                  |  |  |  +--rw customer-dhcp-servers
+                  |  |  |     +--rw server-ip-address*   inet
+                  |  |  +--rw addresses
+                  |  |     +--rw provider-address?   inet:ipv4-address
+                  |  |     +--rw customer-address?   inet:ipv4-address
+                  |  |     +--rw prefix-length?      uint8
+                  +--rw service
+                  |  +--rw qos {qos}?
+                  |  |  +--rw qos-profile
+                  |  |     +--rw (qos-profile)?
+                  |  |        +--:(standard)
+                  |  |        |  +--rw profile?   leafreaf
+                  +--rw routing-protocols
+                  |  +--rw routing-protocol* [type]
+
+
+
+Barguil, et al.           Expires April 4, 2021               [Page 106]
+
+Internet-Draft                    L3NM                      October 2020
+
+
+                  |     +--rw type                identityref
+                  |     +--rw ospf {rtg-ospf}?
+                  |     |  +--rw address-family*   address-family
+                  |     |  +--rw area-address      yang:dotted-quad
+                  |     |  +--rw metric?           uint16
+                  |     |  +--rw security
+                  |     |  |  +--rw auth-key?   string
+                  |     +--rw bgp {rtg-bgp}?
+                  |     |  +--rw autonomous-system    uint32
+                  |     |  +--rw address-family*      address-family
+                  |     |  +--rw neighbor?            inet:ip-address
+                  |     |  +--rw multihop?            uint8
+                  |     |  +--rw security
+                  |     |     +--rw auth-key?   string
+                  |     +--rw static
+                  |     |  +--rw cascaded-lan-prefixes
+                  |     |     +--rw ipv4-lan-prefixes*  {ipv4}?
+                  |     |     |  +--rw lan         inet:ipv4-prefix
+                  |     |     |  +--rw lan-tag?    string
+                  |     |     |  +--rw next-hop    inet:ipv4-address
+                  +--rw node-id?                    leafreaf
+                  +--rw service-id?                 leafreaf
+                  +--rw access-group-id?            yang:uuid
+
+                                 Figure 34
+
+   Use Cases we have implemented include:
+
+   (a).Create VPN
+
+   (b).Create Site
+
+   (c).Create/add bearers to an existing Site
+
+   (d).Create/Include Site Network Access into VPN nodes.
+
+   Version compatibility: what version/versions of the Internet-Draft
+   are known to be implemented.
+
+   draft-ietf-opsawg-l3sm-l3nm-00
+
+   Licensing: the terms under which the implementation can be used.  For
+   example: proprietary, royalty licensing, freely distributable with
+   acknowledgement (BSD style), freely distributable with requirement to
+   redistribute source (General Public License (GPL) style), and other
+   (specify).
+
+   Not available yet.
+
+
+
+Barguil, et al.           Expires April 4, 2021               [Page 107]
+
+Internet-Draft                    L3NM                      October 2020
+
+
+   Implementation experience: any useful information the implementers
+   want to share with the community.
+
+   Contact information: ideally a person's name and email address, but
+   possibly just a URL or mailing list.
+
+   Qin Wu (bill.wu@huawei.com)
+
+   The date when information about this particular implementation was
+   last updated.
+
+   2019-09-30
+
+   List other implementations that have been tested for
+   interoperability.
+
