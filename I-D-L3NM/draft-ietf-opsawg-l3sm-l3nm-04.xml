@@ -413,7 +413,7 @@
       Configuration Model". In that context, the "Domain Orchestration" and
       "Config Manager" roles may be performed by "Controllers".</t>
 
-      <figure align="center" anchor="xml_happy" title="  L3SM and L3NM">
+      <figure align="center" anchor="xml_happy" title="Reference Architecture">
         <artwork align="left"><![CDATA[
                                   +---------------+
                                   |   Customer    |
@@ -844,6 +844,83 @@
             </figure></t>
         </section>
 
+        <section anchor="ie_profiles"
+                 title="Concept of Import/Export Profiles">
+          <t>The import and export profiles construct contains a list with
+          information related with route target and distinguishers (RTs and
+          RDs), grouped and identified by 'ie-profile-id'. The identifier is
+          then referenced in one or multiple 'vpn-nodes' so the controller can
+          identify RTs and RDs to be configured for a given VRF. The subtree
+          is shown in <xref target="ie"></xref>.</t>
+
+          <t><figure align="center" anchor="ie"
+              title="Subtree Structure of Import/Export Profiles">
+              <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw ie-profiles
+           |  +--rw ie-profile* [ie-profile-id]
+           |     +--rw ie-profile-id    string
+           |     +--rw rd?              union
+           |     +--rw vpn-targets
+           |        +--rw vpn-target* [id]
+           |        |  +--rw id                   int8
+           |        |  +--rw route-targets* [route-target]
+           |        |  |  +--rw route-target    rt-types:route-target
+           |        |  +--rw route-target-type
+           |        |          rt-types:route-target-type
+           |        +--rw vpn-policies
+           |           +--rw import-policy?   string
+           |           +--rw export-policy?   string
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+                 +--rw ne-id                      string
+                 ...
+                 +--rw vpn-targets
+                 |  +--rw vpn-target* [id]
+                 |  |  +--rw id                   int8
+                 |  |  +--rw route-targets* [route-target]
+                 |  |  |  +--rw route-target    rt-types:route-target
+                 |  |  +--rw route-target-type
+                 |  |          rt-types:route-target-type
+                 |  +--rw vpn-policies
+                 |     +--rw import-policy?   string
+                 |     +--rw export-policy?   string
+                 ...
+]]></artwork>
+            </figure></t>
+        </section>
+
+        <section anchor="underlay_transport" title="Underlay Transport">
+          <t>The model allows to indicate a preference for the underlay
+          transport technology when activating a L3VPN service (<xref
+          target="transport"></xref>). This preference is especially useful in
+          networks with multiple domains and NNI types. This version of the
+          YANG module supports these options: BGP, LDP, GRE, SR, SR-TE, and
+          RSVP-TE as underlay transport mechanisms. Other profiles can be
+          defined in the future.</t>
+
+          <figure align="center" anchor="transport"
+                  title="Subtree Structure of the Underlying Transport">
+            <artwork><![CDATA[  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                  vpn-common:vpn-id
+           +  ...
+           +--rw underlay-transport
+           |  +--rw type*   identityref
+           +--rw vpn-nodes
+              +--rw vpn-node* [ne-id]
+              ...]]></artwork>
+          </figure>
+        </section>
+
         <section anchor="vpn_node" title="VPN Node">
           <t>The 'vpn-node' is an abstraction that represents a set of common
           policies applied on a given network node (tipcally, a PE) and belong
@@ -1041,8 +1118,6 @@
            |     +--rw vpn-network-access-type?   identityref
            |     +--rw connection
            |     |  ...
-           |     |  +--rw bearer
-           |     |     ...
            |     +--rw ip-connection
            |     |  ...
            |     +--rw security
@@ -1051,8 +1126,7 @@
            |     |  ...
            |     +--rw service
            |        ...
-           |  ...
-    ]]></artwork>
+           ...    ]]></artwork>
               </figure></t>
 
             <section anchor="connection" title="Connection">
@@ -1111,16 +1185,7 @@
            |     |  |        +--rw peer-ip    inet:ip-address
            |     |  +--rw bearer
            |     |     ...
-           |     +--rw ip-connection
-           |     |  ...
-           |     +--rw security
-           |     |  ...
-           |     +--rw routing-protocols
-           |     |  ...
-           |     +--rw service
-           |        ...
-           |  ...   
-           ]]></artwork>
+           ...              ]]></artwork>
               </figure>
 
               <t></t>
@@ -1159,14 +1224,6 @@
 |     |     +--rw vpls
 |     |        +--rw vcid?      union
 |     |        +--rw far-end?   union
-|     +--rw ip-connection
-|     |  ...
-|     +--rw security
-|     |  ...
-|     +--rw routing-protocols
-|     |  ...
-|     +--rw service
-|        ...
 |  ...            ]]></artwork>
               </figure>
 
@@ -1278,14 +1335,7 @@
 
               <figure align="center" anchor="ip_conn_tree-static"
                       title="IP Connection Subtree Structure: Static Mode">
-                <artwork align="left"><![CDATA[ ...
- +--rw vpn-services
-    +--rw vpn-service* [vpn-id]
-       +--rw vpn-id                  vpn-common:vpn-id
-       +  ...
-        +--rw vpn-node* [ne-id]
-           +--rw ne-id                      string
-           + ...
+                <artwork align="left"><![CDATA[           ...
            +--rw vpn-network-accesses
               |  +--rw vpn-network-access* [id]
               |     +--rw id
@@ -1328,7 +1378,7 @@
               |     |  |           +--rw customer-address?
               |     |  |           |       inet:ipv6-address
               |     |  |           +--rw prefix-length?      uint8
-               ...                        ]]></artwork>
+              ...                        ]]></artwork>
               </figure>
             </section>
 
@@ -1339,14 +1389,7 @@
 
               <t><figure align="center" anchor="security"
                   title="Security Subtree Structure">
-                  <artwork align="left"><![CDATA[ ...
- +--rw vpn-services
-    +--rw vpn-service* [vpn-id]
-       +--rw vpn-id                  vpn-common:vpn-id
-       +  ...
-       +--rw vpn-node* [ne-id]
-           +--rw ne-id                      string
-           + ...
+                  <artwork align="left"><![CDATA[           ...
            +--rw vpn-network-accesses
            |  +--rw vpn-network-access* [id]
            |     +--rw id
@@ -1373,8 +1416,7 @@
            |     |  ...
            |     +--rw service
            |        ...
-           |  ...
-    ]]></artwork>
+           |  ...    ]]></artwork>
                 </figure></t>
             </section>
 
@@ -1389,17 +1431,7 @@
 
               <t><figure align="center" anchor="routing"
                   title="Routing Subtree Structure">
-                  <artwork align="left"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 + ...
+                  <artwork align="left"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -1430,8 +1462,7 @@
                  |     |                vpn-common:address-family
                  |     +--rw service
                  |        ...
-                 +--rw multicast {vpn-common:multicast}?
-                    ...
+                 ...
 ]]></artwork>
                 </figure></t>
 
@@ -1471,17 +1502,7 @@
                   implementation to drive whether OSPFv2 or OSPFv3 is
                   used.<figure align="center" anchor="routing-ospf"
                       title="OPSF Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 + ...
+                      <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -1524,8 +1545,7 @@
                  |     |        ...
                  |     +--rw service
                  |        ...
-                 +--rw multicast {vpn-common:multicast}?
-                    ...
+                 ...
 ]]></artwork>
                     </figure></t>
 
@@ -1585,17 +1605,7 @@
                       4.4 of <xref target="RFC4271"></xref>).</t>
                     </list><figure align="center" anchor="routing-bgp"
                       title="BGP Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 + ...
+                      <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -1654,8 +1664,7 @@
                  |     |        ...
                  |     +--rw service
                  |        ...
-                 +--rw multicast {vpn-common:multicast}?
-                    ...
+                 ...
 ]]></artwork>
                     </figure></t>
 
@@ -1665,17 +1674,7 @@
                   L1, L2, or both levels.<figure align="center"
                       anchor="routing-isis"
                       title="IS-IS Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 + ...
+                      <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -1723,8 +1722,7 @@
                  |     |        ...
                  |     +--rw service
                  |        ...
-                 +--rw multicast {vpn-common:multicast}?
-                    ...
+                 ...
 ]]></artwork>
                     </figure></t>
 
@@ -1741,17 +1739,7 @@
 
               <t><figure align="center" anchor="routing-static"
                   title="Static Routing Subtree Structure">
-                  <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 + ...
+                  <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -1796,8 +1784,7 @@
                  |     |        ...
                  |     +--rw service
                  |        ...
-                 +--rw multicast {vpn-common:multicast}?
-                    ...
+                 ...
 ]]></artwork>
                 </figure></t>
 
@@ -1813,18 +1800,7 @@
 
               <t><figure align="center" anchor="services"
                   title="Services Subtree Structure">
-                  <artwork align="center"><![CDATA[module: ietf-l3vpn-ntw
-  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 +  ...
+                  <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -2117,17 +2093,7 @@
 
             <t><figure align="center" anchor="multicast"
                 title="Multicast Subtree Structure">
-                <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw vpn-node-id?               union
-                 ...
+                <artwork align="center"><![CDATA[                 ...
                  +--rw vpn-network-accesses
                  |  +--rw vpn-network-access* [id]
                  |     +--rw id
@@ -2179,83 +2145,6 @@
 
             <t></t>
           </section>
-        </section>
-
-        <section anchor="ie_profiles"
-                 title="Concept of Import/Export Profiles">
-          <t>The import and export profiles construct contains a list with
-          information related with route target and distinguishers (RTs and
-          RDs), grouped and identified by 'ie-profile-id'. The identifier is
-          then referenced in one or multiple 'vpn-nodes' so the controller can
-          identify RTs and RDs to be configured for a given VRF. The subtree
-          is shown in <xref target="ie"></xref>.</t>
-
-          <t><figure align="center" anchor="ie"
-              title="Subtree Structure of Import/Export Profiles">
-              <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw ie-profiles
-           |  +--rw ie-profile* [ie-profile-id]
-           |     +--rw ie-profile-id    string
-           |     +--rw rd?              union
-           |     +--rw vpn-targets
-           |        +--rw vpn-target* [id]
-           |        |  +--rw id                   int8
-           |        |  +--rw route-targets* [route-target]
-           |        |  |  +--rw route-target    rt-types:route-target
-           |        |  +--rw route-target-type
-           |        |          rt-types:route-target-type
-           |        +--rw vpn-policies
-           |           +--rw import-policy?   string
-           |           +--rw export-policy?   string
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 ...
-                 +--rw vpn-targets
-                 |  +--rw vpn-target* [id]
-                 |  |  +--rw id                   int8
-                 |  |  +--rw route-targets* [route-target]
-                 |  |  |  +--rw route-target    rt-types:route-target
-                 |  |  +--rw route-target-type
-                 |  |          rt-types:route-target-type
-                 |  +--rw vpn-policies
-                 |     +--rw import-policy?   string
-                 |     +--rw export-policy?   string
-                 ...
-]]></artwork>
-            </figure></t>
-        </section>
-
-        <section anchor="underlay_transport" title="Underlay Transport">
-          <t>The model allows to indicate a preference for the underlay
-          transport technology when activating a L3VPN service (<xref
-          target="transport"></xref>). This preference is especially useful in
-          networks with multiple domains and NNI types. This version of the
-          YANG module supports these options: BGP, LDP, GRE, SR, SR-TE, and
-          RSVP-TE as underlay transport mechanisms. Other profiles can be
-          defined in the future.</t>
-
-          <figure align="center" anchor="transport"
-                  title="Subtree Structure of the Underlying Transport">
-            <artwork><![CDATA[  +--rw l3vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw underlay-transport
-           |  +--rw type*   identityref
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-              ...]]></artwork>
-          </figure>
         </section>
       </section>
     </section>
@@ -4815,7 +4704,7 @@ content-type: application/yang-data+json
                   "address-id": "1",
                   "s-provider-address": "192.0.2.1",
                   "s-customer-address": "192.0.2.1",
-                  "s-prefix-length": "32"
+                  "s-prefix-length": 32
                 }
               ]
             }
@@ -4847,7 +4736,7 @@ content-type: application/yang-data+json
                   "address-id": "1",
                   "s-provider-address": "192.0.2.1",
                   "s-customer-address": "192.0.2.2",
-                  "s-prefix-length": "32"
+                  "s-prefix-length": 32
                 }
               ]
             }
@@ -4901,7 +4790,7 @@ content-type: application/yang-data+json
   "ietf-l3vpn-ntw:vpn-services": {
     "vpn-service": [
       {
-        "vpn-id": "Multicast_IPTV",
+        "vpn-id": "Multicast-IPTV",
         "customer-name": "310",
         "vpn-service-topology": "vpn-common:hub-spoke",
         "description": "Multicast IPTV VPN service"
@@ -4984,7 +4873,7 @@ content-type: application/yang-data+json
             {
               "address-id": "1",
               "s-provider-address": "172.19.48.1",
-              "s-prefix-length": "30"
+              "s-prefix-length": 30
             }
           ]
         }
