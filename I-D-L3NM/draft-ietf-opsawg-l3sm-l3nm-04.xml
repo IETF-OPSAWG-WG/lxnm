@@ -284,10 +284,11 @@
       Orchestrator in the L3NM (e.g., customer) or be used to fed some of the
       L3NM attributes (e.g., actual forwarding policies). Some of the
       information captured in L3SM may be maintained locally within the
-      Orchestrator; which is supposed to maintain a "glue" between a Customer
-      view and its network instantiation. Likewise, some of the information
-      captured and exposed using L3NM can fed the service layer (e.g.,
-      capabilities) to derive L3SM and drive VPN service order handling.</t>
+      Orchestrator; which is in charge of maintaining the correspondence
+      between a Customer view and its network instantiation. Likewise, some of
+      the information captured and exposed using L3NM can fed the service
+      layer (e.g., capabilities) to derive L3SM and drive VPN service order
+      handling.</t>
 
       <t>The L3NM does not attempt to address all deployment cases especially
       those where the L3VPN connectivity is supported through the coordination
@@ -330,10 +331,10 @@
 
       <t><list style="symbols">
           <t>Layer 3 VPN Customer Service Model (L3SM): A YANG module that
-          describes the requirements of a L3 VPN that interconnects a set of
+          describes the requirements of a L3VPN that interconnects a set of
           sites from the point of view of the customer. The customer service
           model does not provide details on the service provider network. The
-          L3 VPN Customer Service model is defined in <xref
+          L3VPN Customer Service model is defined in <xref
           target="RFC8299"></xref>.</t>
 
           <t>Layer 3 VPN Service Network Model (L3NM): A YANG module that
@@ -345,11 +346,16 @@
           to request a VPN Service to a Network controller.</t>
 
           <t>Service Orchestrator: A functional entity that interacts with the
-          customer of a L3 VPN. The Service Orchestrator interacts with the
+          customer of a L3VPN. The Service Orchestrator interacts with the
           customer using L3SM. The Service Orchestrator is responsible of the
           Customer Edge (CE) - the Provider Edge (PE) attachment circuits, the
           PE selection, and requesting the VPN service to the network
           controller.</t>
+
+          <t>Network Orchestrator: A functional entity that is hierarchically
+          intermediate between Service Orchestrator and Network Controllers. A
+          network orchestrator can manage one or several Network
+          Controllers.</t>
 
           <t>Network Controller: A functional entity responsible for the
           control and management of the service provider network.</t>
@@ -539,11 +545,11 @@
           the requested service and local guidelines. Some other parts are
           local to the Service Provider and do not map directly to
           L3SM.<vspace blankLines="1" />Note that the use of L3NM within a
-          Service Provider does assume nor preclude exposing the VPN service
-          via L3SM. This is deployment-specific. Nevertheless, the design of
-          L3NM tries to align as much as possible with the features supported
-          by the L3SM to ease grafting both L3NM and L3SM for the sake of
-          highly automated VPN service provisioning and delivery.</t>
+          Service Provider does not assume nor preclude exposing the VPN
+          service via L3SM. This is deployment-specific. Nevertheless, the
+          design of L3NM tries to align as much as possible with the features
+          supported by the L3SM to ease grafting both L3NM and L3SM for the
+          sake of highly automated VPN service provisioning and delivery.</t>
 
           <t hangText="Network Topology Modules:">A L3VPN involves nodes that
           are part of a topology managed by the Service Provider Backbone
@@ -639,7 +645,7 @@
 
     <section anchor="YANG_explanation"
              title="Description of the L3NM YANG Module">
-      <t>The L3NM ('ietf-l3vpn-ntw') is defined to manage L3 VPNs in a service
+      <t>The L3NM ('ietf-l3vpn-ntw') is defined to manage L3VPNs in a service
       provider network. In particular, the 'ietf-l3vpn-ntw' module can be used
       to create, modify, and retrieve L3VPN Services of a network.</t>
 
@@ -676,7 +682,7 @@
         define and maintain a set of common VPN profiles <xref
         target="I-D.ietf-opsawg-vpn-common"></xref> that apply to one or
         several VPN services. The exact definition of the profiles is local to
-        each network provider. </t>
+        each network provider.</t>
 
         <t>This document does not make any assumption about the exact
         definition of these profiles. How such profiles are defined is
@@ -684,21 +690,21 @@
         profiles to ease identifying local policies when building a VPN
         service. As shown in <xref target="vpn_profiles_tree"></xref>, the
         following identifiers can be included:<list style="symbols">
-            <t>'cloud-identifier': This identifier refers to a cloud service.
-            </t>
+            <t>'cloud-identifier': This identifier refers to a cloud
+            service.</t>
 
             <t>'encryption-profile-identifier': An encryption profile refers
             to a set of policies related to the encryption scheme(s) and setup
-            that can be applied when building and offering a VPN service. </t>
+            that can be applied when building and offering a VPN service.</t>
 
             <t>'qos-profile-identifier': A QoS profile refers to as set of
             policies such as classification, marking, and actions (e.g., <xref
-            target="RFC3644"></xref>). </t>
+            target="RFC3644"></xref>).</t>
 
             <t>'bfd-profile-identifier': A Bidirectional Forwarding Detection
             (BFD) profile refers to a set of BFD <xref
             target="RFC5880"></xref> policies that can be invoked when
-            building a VPN service. </t>
+            building a VPN service.</t>
 
             <t>'forwarding-profile-identifier': A forwarding profile refers to
             the policies that apply to the forwarding of packets conveyed
@@ -841,14 +847,14 @@
         <section anchor="vpn_node" title="VPN Node">
           <t>The 'vpn-node' is an abstraction that represents a set of common
           policies applied on a given network node (tipcally, a PE) and belong
-          to one L3 VPN service. In order to indicate the network nodes where
+          to one L3VPN service. In order to indicate the network nodes where
           the 'vpn-node' applies, the 'ne-id' must be indicated. The
           'vpn-node' includes a parameter to indicate the network node on
           which it is applied. In the case that the 'ne-id' points to a
           specific PE, the 'vpn-node' will likely be mapped into a VRF in the
           node. However, the model also allows to point to an abstract node.
           In this case, the network controller will decide how to split the
-          'vpn-node' into VRFs. Soem 'vpn-node' parameters are listed
+          'vpn-node' into VRFs. Some 'vpn-node' parameters are listed
           below:<list style="symbols">
               <t>local-autonomous-system: Refers to the autonomous system
               number that is locally configured in the instance. It can be
@@ -867,15 +873,16 @@
               <xref target="mc"></xref>.</t>
             </list></t>
 
-          <t>Under the VPN Node ('vpn-node') container, VPN Network Acesses
-          ('vpn-network-access') can be created. The VPN Network Acess
+          <t>Under the VPN Node ('vpn-node') container, VPN Network Accesses
+          ('vpn-network-access') can be created. The VPN Network Access
           represents the point to which sites are connected. Note that, unlike
           in L3SM, the L3NM does not need to model the customer site, only the
-          points where the traffic from the site are received. Hence, the VPN
-          Network access contains the connectivity information between the
-          provider's network and the customer premises. The VPN profiles
-          ('vpn-profiles') have a set of routing policies than can be applied
-          during the service creation.</t>
+          points where the traffic from the site are received (i.e., the PE
+          side of PE-CE connections). Hence, the VPN Network access contains
+          the connectivity information between the provider's network and the
+          customer premises. The VPN profiles ('vpn-profiles') have a set of
+          routing policies than can be applied during the service
+          creation.</t>
 
           <t>The L3NM allows to track the status ('status') of the nodes
           involved in a VPN service. Both operational and administrative
@@ -987,13 +994,13 @@
                 <t>Point-to-Point: The point-to-point type represent a direct
                 connection between the end-points. It implies the controller
                 must keep the association between a logical or physical
-                interface on the device with the id of the
+                interface on the device with the 'id' of the
                 vpn-network-access.</t>
 
                 <t>Multipoint: This option represents a broadcast connection
                 between two end-points. It implies the controller must keep
                 the association between a logical or physical interface on the
-                device with the id of the 'vpn-network-access'.</t>
+                device with the 'id' of the 'vpn-network-access'.</t>
 
                 <t>Pseudowire: Represent a connection coming from an L2VPN
                 service. It implies the controller must keep the relationship
@@ -1824,7 +1831,9 @@
                  |     |       vpn-common:vpn-id
                  |     ...
                  |     +--rw service
-                 |        ...
+                 |        +--rw svc-input-bandwidth     uint64
+                 |        +--rw svc-output-bandwidth    uint64
+                 |        +--rw svc-mtu                 uint16
                  |        +--rw qos {vpn-common:qos}?
                  |        |  +--rw qos-classification-policy
                  |        |  |  +--rw rule* [id]
@@ -4477,7 +4486,7 @@ module ietf-l3vpn-ntw {
       <t>The "ietf-l3vpn-ntw" module is used to manage Layer 3 VPNs in a
       service provider backbone network. Hence, the module can be used to
       request, modify, or retrieve L3VPN services. For example, the creation
-      of a 'vpn-service' leaf instance triggers the creation of an L3 VPN
+      of a 'vpn-service' leaf instance triggers the creation of an L3VPN
       Service in a service provider network.</t>
 
       <t>Due to the foreseen use of the "ietf-l3vpn-ntw" module, there are a
@@ -4490,12 +4499,12 @@ module ietf-l3vpn-ntw {
       are the subtrees and data nodes and their sensitivity/vulnerability in
       the "ietf-l3vpn-ntw" module: <list style="symbols">
           <t>'vpn-service': An attacker who is able to access network nodes
-          can undertake various attacks, such as deleting a running L3 VPN
+          can undertake various attacks, such as deleting a running L3VPN
           Service, interrupting all the traffic of a client. In addition, an
           attacker may modify the attributes of a running service (e.g., QoS,
           bandwidth, routing protocols), leading to malfunctioning of the
           service and therefore to SLA violations. In addition, an attacker
-          could attempt to create a L3 VPN Service or adding a new network
+          could attempt to create a L3VPN Service or adding a new network
           access. Such activity can be detected by adequately monitoring and
           tracking network configuration changes.</t>
         </list></t>
