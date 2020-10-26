@@ -36,14 +36,12 @@
   <front>
     <title abbrev="VPN Common">A Layer 2/3 VPN Common YANG Model</title>
 
-    <author fullname="Samier Barguil" initials="S.B." surname="Barguil">
+    <author fullname="Samier Barguil" initials="S." surname="Barguil">
       <organization>Telefonica</organization>
 
       <address>
         <postal>
           <street></street>
-
-          <!-- Reorder these if your country does things differently -->
 
           <city>Madrid</city>
 
@@ -51,14 +49,16 @@
 
           <code></code>
 
-          <country>ES</country>
+          <country>Spain</country>
         </postal>
 
         <phone></phone>
 
+        <facsimile></facsimile>
+
         <email>samier.barguilgiraldo.ext@telefonica.com</email>
 
-        <!-- uri and facsimile elements may also be added -->
+        <uri></uri>
       </address>
     </author>
 
@@ -78,7 +78,7 @@
 
           <code></code>
 
-          <country>ES</country>
+          <country>Spain</country>
         </postal>
 
         <phone></phone>
@@ -273,45 +273,54 @@
 
     <section title="Description of the VPN Common YANG Module">
       <t>The "ietf-vpn-common" module defines a set of common identities. It
-      also contains the following reusable groupings. <list style="symbols">
-          <t>vpn-description: <list style="none">
+      also contains the following reusable groupings: <list style="symbols">
+          <t>'vpn-description': <list style="none">
               <t>A YANG grouping that provides common administrative VPN
               information such as a name, a textual description, and a
               customer name.</t>
             </list></t>
 
-          <t>vpn-profile-cfg: <list style="none">
+          <t>'vpn-profile-cfg': <list style="none">
               <t>A YANG grouping that defines a set of profiles (encryption,
-              routing, forwarding) valid for any L2/L3 VPN.</t>
+              routing, forwarding) valid for any Layer 2/3 VPN.</t>
             </list></t>
 
-          <t>status-timestamp: <list style="none">
-              <t>A YANG grouping that defines operational and administrative
-              updates of a component.</t>
+          <t>'status-timestamp': <list style="none">
+              <t>A YANG grouping that defines the operational status updates
+              of a VPN service component.</t>
             </list></t>
 
-          <t>service-status: <list style="none">
+          <t>'service-status': <list style="none">
               <t>A YANG grouping that defines the administrative and
               operational status of a component. The grouping can be applied
               to the whole service or an endpoint.</t>
             </list></t>
 
-          <t>svc-transport-encapsulation:<list style="none">
-              <t>A YANG grouping that defines the type of underlay transport
-              for a VPN service.</t>
+          <t>'svc-transport-encapsulation':<list style="none">
+              <t>A YANG grouping that defines the type of the underlay
+              transport for a VPN service.</t>
             </list></t>
 
-          <t>rt-rd: <list style="none">
-              <t>A YANG grouping that defines the set of route targets to
-              match for import and export routes to/from VRF.</t>
+          <t>'rt-rd': <list style="none">
+              <t>A YANG grouping that defines the set of route targets,
+              defined as Route targets (RTs) and Route Distinguishers (RDs),
+              to match for import and export routes to/from a Virtual Routing
+              and Forwarding (VRF).</t>
             </list></t>
 
-          <t>vpn-node-group:<list style="none">
-              <t>A YANG grouping that is used to group VPN network
-              accesses.</t>
+          <t>'group':<list style="none">
+              <t>A YANG grouping that is used to group VPN nodes, VPN network
+              accesses, or sites.</t>
             </list></t>
-        </list>The tree diagram of the "ietf-vpn-common" module that depicts
-      the common groupings is provided in <xref target="ctree"></xref>. </t>
+
+          <t>'placement-constraints':<list style="none">
+              <t>A YANG grouping that is used to define the placement
+              constraints of a VPN node, VPN network access, or site.</t>
+            </list></t>
+        </list></t>
+
+      <t>The tree diagram of the "ietf-vpn-common" module that depicts the
+      common groupings is provided in <xref target="ctree"></xref>.</t>
 
       <t><figure align="left" anchor="ctree" title="VPN Common Tree">
           <artwork align="left"><![CDATA[module: ietf-vpn-common
@@ -373,6 +382,18 @@
     +-- groups
        +-- group* [group-id]
           +-- group-id?   string
+  grouping placement-constraints
+    +-- constraint* [constraint-type]
+       +-- constraint-type?   identityref
+       +-- target
+          +-- (target-flavor)?
+             +--:(id)
+             |  +-- group* [group-id]
+             |     +-- group-id?   string
+             +--:(all-accesses)
+             |  +-- all-other-accesses?   empty
+             +--:(all-groups)
+                +-- all-other-groups?     empty
 
 ]]></artwork>
         </figure></t>
@@ -390,7 +411,7 @@
         </list></t>
 
       <t><figure>
-          <artwork><![CDATA[<CODE BEGINS>  file "ietf-vpn-common@2020-09-15.yang"
+          <artwork><![CDATA[<CODE BEGINS>  file "ietf-vpn-common@2020-10-26.yang"
 module ietf-vpn-common {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-common";
@@ -450,7 +471,7 @@ module ietf-vpn-common {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2020-09-15 {
+  revision 2020-10-26 {
     description
       "Initial revision.";
     reference
@@ -471,11 +492,11 @@ module ietf-vpn-common {
        VPN site network accesses.";
   }
 
-  feature site-diversity {
+  feature placement-diversity {
     description
-      "Indicates the support of site diversity constraints
-       in the customer premises. An example of these
-       constraints may be to avoid connecting
+      "Indicates the support of placement diversity
+       constraints in the customer premises. An example
+       of these constraints may be to avoid connecting
        a site network access to the same Provider
        Edge as a target site network access.";
   }
@@ -588,7 +609,7 @@ module ietf-vpn-common {
 
   feature rtg-vrrp {
     description
-      "Indicates support of the Virtual Router Redundancy 
+      "Indicates support of the Virtual Router Redundancy
        Protocol (VRRP) between a cutsomer LAN and the PE.";
   }
 
@@ -724,7 +745,7 @@ module ietf-vpn-common {
     description
       "Identity for RIP protocol type.";
   }
-  
+
   identity isis {
     base routing-protocol-type;
     description
@@ -744,7 +765,7 @@ module ietf-vpn-common {
     base routing-protocol-type;
     description
       "Identity for direct protocol type.
-      
+
        This is to be used when LANs are directly connected
        to PE routers and and must be advertised in the VPN.";
   }
@@ -1039,7 +1060,7 @@ module ietf-vpn-common {
   identity dot1q {
     base encapsulation-type;
     description
-      "Identity for the support of the 'dot1q' 
+      "Identity for the support of the 'dot1q'
        encapsulation.";
   }
 
@@ -1177,7 +1198,7 @@ module ietf-vpn-common {
     description
       "Transport based on BGP-LU.";
     reference
-      "RFC 8277: Using BGP to Bind MPLS Labels to Address 
+      "RFC 8277: Using BGP to Bind MPLS Labels to Address
                  Prefixes";
   }
 
@@ -1267,7 +1288,7 @@ module ietf-vpn-common {
     description
       "Identity of BGP Ethernet VPNs.";
     reference
-      "RFC 7432: BGP MPLS-Based Ethernet VPN";  
+      "RFC 7432: BGP MPLS-Based Ethernet VPN";
   }
 
   identity t-ldp {
@@ -1275,7 +1296,7 @@ module ietf-vpn-common {
     description
       "Identity of Targeted Label Distribution Protocol.";
     reference
-      "RFC 5036: LDP Specification";  
+      "RFC 5036: LDP Specification";
   }
 
   identity h-vpls {
@@ -1284,8 +1305,8 @@ module ietf-vpn-common {
       "Identity of hierarchical VPLS.";
     reference
       "RFC 4762: Virtual Private LAN Service (VPLS) Using
-                 Label Distribution Protocol (LDP) 
-                 Signaling"; 
+                 Label Distribution Protocol (LDP)
+                 Signaling";
   }
 
   identity l2tp {
@@ -1308,7 +1329,7 @@ module ietf-vpn-common {
   identity vpws {
     base service-type;
     description
-      "Identity of the Point-to-point Virtual Private 
+      "Identity of the Point-to-point Virtual Private
        Wire Service (VPWS) service type.";
   }
 
@@ -1322,16 +1343,16 @@ module ietf-vpn-common {
   identity ldp-l2tp-vpls {
     base service-type;
     description
-      "Identity of the LDP-based or L2TP-based multipoint 
-       Virtual Private LAN Service (VPLS) service type. 
-       This VPLS uses LDP-signaled Pseudowires 
+      "Identity of the LDP-based or L2TP-based multipoint
+       Virtual Private LAN Service (VPLS) service type.
+       This VPLS uses LDP-signaled Pseudowires
        or L2TP-signaled Pseudowires.";
   }
 
   identity bgp-vpls {
     base service-type;
     description
-      "Identity of the BGP-based multipoint VPLS service type.  
+      "Identity of the BGP-based multipoint VPLS service type.
        This VPLS uses a BGP control plane.";
     reference
       "RFC 4761:  Virtual Private LAN Service (VPLS) Using
@@ -1491,6 +1512,49 @@ module ietf-vpn-common {
     description
       "Identity for all-to-one bundling, i.e., all CE-VLAN IDs
        are mapped to one L2VPN service.";
+  }
+
+  identity placement-diversity {
+    description
+      "Base identity for access placement constraints.";
+  }
+
+  identity bearer-diverse {
+    base placement-diversity;
+    description
+      "Identity for bearer diversity.
+
+       The bearers should not use common elements.";
+  }
+
+  identity pe-diverse {
+    base placement-diversity;
+    description
+      "Identity for PE diversity.";
+  }
+
+  identity pop-diverse {
+    base placement-diversity;
+    description
+      "Identity for POP diversity.";
+  }
+
+  identity linecard-diverse {
+    base placement-diversity;
+    description
+      "Identity for linecard diversity.";
+  }
+
+  identity same-pe {
+    base placement-diversity;
+    description
+      "Identity for having sites connected on the same PE.";
+  }
+
+  identity same-bearer {
+    base placement-diversity;
+    description
+      "Identity for having sites connected using the same bearer.";
   }
 
   /* Grouping */
@@ -1747,24 +1811,86 @@ module ietf-vpn-common {
     }
   }
 
-  grouping vpn-node-group {
+  grouping group {
     container groups {
       list group {
         key "group-id";
         leaf group-id {
           type string;
           description
-            "Group-id the vpn-node belongs to.";
+            "Is the group-id to which a VPN node,
+             a site, or a network access belongs to.";
         }
         description
           "List of group-ids.";
       }
       description
-        "Groups the vpn node and network access belongs to.";
+        "Lists the groups to which a VPN node, 
+         a site, or a network access belongs to.";
     }
     description
       "Grouping definition to assign
-       group-ids to group or network access.";
+       group-ids to associate VPN nodes, sites, 
+       or network accesses.";
+  }
+
+  grouping placement-constraints {
+    list constraint {
+      key "constraint-type";
+      leaf constraint-type {
+        type identityref {
+          base placement-diversity;
+        }
+        description
+          "Diversity constraint type.";
+      }
+      container target {
+        choice target-flavor {
+          case id {
+            list group {
+              key "group-id";
+              leaf group-id {
+                type string;
+                description
+                  "The constraint will apply
+                   against this particular
+                   group-id";
+              }
+              description
+                "List of groups";
+            }
+          }
+          case all-accesses {
+            leaf all-other-accesses {
+              type empty;
+              description
+                "The constraint will apply
+                 against all other network
+                 accesses of a site.";
+            }
+          }
+          case all-groups {
+            leaf all-other-groups {
+              type empty;
+              description
+                "The constraint will apply
+                 against all other groups the
+                 customer is managing.";
+            }
+          }
+          description
+            "Choice for the group definition";
+        }
+        description
+          "The constraint will apply against
+           this list of groups.";
+      }
+      description
+        "List of constraints.";
+    }
+    description
+      "Constraints for placing a network
+       access.";
   }
 }
 <CODE ENDS>]]></artwork>
@@ -1777,8 +1903,9 @@ module ietf-vpn-common {
       NETCONF <xref target="RFC6241"></xref> or RESTCONF <xref
       target="RFC8040"></xref>. The lowest NETCONF layer is the secure
       transport layer, and the mandatory-to-implement secure transport is
-      Secure Shell (SSH) [RFC6242]. The lowest RESTCONF layer is HTTPS, and
-      the mandatory-to-implement secure transport is TLS [RFC8446].</t>
+      Secure Shell (SSH) <xref target="RFC6242"></xref>. The lowest RESTCONF
+      layer is HTTPS, and the mandatory-to-implement secure transport is TLS
+      [RFC8446].</t>
 
       <t>The Network Configuration Access Control Model (NACM) <xref
       target="RFC8341"></xref> provides the means to restrict access for
