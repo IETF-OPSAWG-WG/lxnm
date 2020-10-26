@@ -45,3 +45,5 @@ You might also like to familiarize yourself with other
 | **Master**  
 |:---:|
 | [![Build Status](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master)](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master) |
+
+# Common Module :[Diff editor copy vs published version]https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/l3nm/master/draft-ietf-opsawg-vpn-common/draft-ietf-opsawg-vpn-common.txt)
