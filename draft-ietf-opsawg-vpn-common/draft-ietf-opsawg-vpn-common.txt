@@ -78,14 +78,14 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Description of the VPN Common YANG Module . . . . . . . . . .   5
-   4.  Layer 2/3 VPN Common Module . . . . . . . . . . . . . . . . .   7
-   5.  Security Considerations . . . . . . . . . . . . . . . . . . .  39
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  40
-   7.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  40
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  40
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  40
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .  41
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  44
+   4.  Layer 2/3 VPN Common Module . . . . . . . . . . . . . . . . .   8
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .  41
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  41
+   7.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  41
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  42
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  42
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .  43
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  46
 
 1.  Introduction
 
@@ -231,6 +231,11 @@ Internet-Draft                 VPN Common                   October 2020
    The "ietf-vpn-common" module defines a set of common identities.  It
    also contains the following reusable groupings:
 
+   o  'ports':
+
+         A YANG grouping that defines ranges of source and destination
+         port numbers and operators.
+
    o  'vpn-description':
 
          A YANG grouping that provides common administrative VPN
@@ -270,11 +275,6 @@ Internet-Draft                 VPN Common                   October 2020
          A YANG grouping that is used to group VPN nodes, VPN network
          accesses, or sites.
 
-   o  'placement-constraints':
-
-         A YANG grouping that is used to define the placement
-         constraints of a VPN node, VPN network access, or site.
-
 
 
 Barguil, et al.          Expires April 29, 2021                 [Page 5]
@@ -282,11 +282,37 @@ Barguil, et al.          Expires April 29, 2021                 [Page 5]
 Internet-Draft                 VPN Common                   October 2020
 
 
+   o  'placement-constraints':
+
+         A YANG grouping that is used to define the placement
+         constraints of a VPN node, VPN network access, or site.
+
    The tree diagram of the "ietf-vpn-common" module that depicts the
    common groupings is provided in Figure 3.
 
    module: ietf-vpn-common
 
+     grouping ports
+       +-- (source-port)?
+       |  +--:(source-port-range-or-operator)
+       |     +-- source-port-range-or-operator
+       |        +-- (port-range-or-operator)?
+       |           +--:(range)
+       |           |  +-- lower-port    inet:port-number
+       |           |  +-- upper-port    inet:port-number
+       |           +--:(operator)
+       |              +-- operator?     operator
+       |              +-- port          inet:port-number
+       +-- (destination-port)?
+          +--:(destination-port-range-or-operator)
+             +-- destination-port-range-or-operator
+                +-- (port-range-or-operator)?
+                   +--:(range)
+                   |  +-- lower-port    inet:port-number
+                   |  +-- upper-port    inet:port-number
+                   +--:(operator)
+                      +-- operator?     operator
+                      +-- port          inet:port-number
      grouping vpn-description
        +-- vpn-id?            vpn-common:vpn-id
        +-- vpn-name?          string
@@ -304,6 +330,14 @@ Internet-Draft                 VPN Common                   October 2020
           |  +-- id?   string
           +-- forwarding-profile-identifier* [id]
           |  +-- id?   string
+
+
+
+Barguil, et al.          Expires April 29, 2021                 [Page 6]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
           +-- routing-profile-identifier* [id]
              +-- id?   string
      grouping status-timestamp
@@ -330,14 +364,6 @@ Internet-Draft                 VPN Common                   October 2020
        |  +--:(full-autoasigned)
        |  |  +-- auto?           empty
        |  |  +--ro rd-assigned?    rt-types:route-distinguisher
-
-
-
-Barguil, et al.          Expires April 29, 2021                 [Page 6]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
        |  +--:(no-rd)
        |     +-- no-rd?          empty
        +-- vpn-targets
@@ -360,6 +386,14 @@ Internet-Draft                 VPN Common                   October 2020
           +-- export-policy?   string
      grouping group
        +-- groups
+
+
+
+Barguil, et al.          Expires April 29, 2021                 [Page 7]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
           +-- group* [group-id]
              +-- group-id?   string
      grouping placement-constraints
@@ -375,6 +409,7 @@ Internet-Draft                 VPN Common                   October 2020
                 +--:(all-groups)
                    +-- all-other-groups?     empty
 
+
                          Figure 3: VPN Common Tree
 
 4.  Layer 2/3 VPN Common Module
@@ -386,14 +421,6 @@ Internet-Draft                 VPN Common                   October 2020
 
 <CODE BEGINS>  file "ietf-vpn-common@2020-10-26.yang"
 module ietf-vpn-common {
-
-
-
-Barguil, et al.          Expires April 29, 2021                 [Page 7]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-common";
   prefix vpn-common;
@@ -412,6 +439,20 @@ Internet-Draft                 VPN Common                   October 2020
     prefix yang;
     reference
       "Section 3 of RFC 6991";
+  }
+  import ietf-packet-fields {
+    prefix packet-fields;
+
+
+
+Barguil, et al.          Expires April 29, 2021                 [Page 8]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
+    reference
+      "RFC 8519: YANG Data Model for Network Access
+                 Control Lists (ACLs)";
   }
 
   organization
@@ -442,14 +483,6 @@ Internet-Draft                 VPN Common                   October 2020
      authors of the code.  All rights reserved.
 
      Redistribution and use in source and binary forms, with or
-
-
-
-Barguil, et al.          Expires April 29, 2021                 [Page 8]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
      without modification, is permitted pursuant to, and subject to
      the license terms contained in, the Simplified BSD License set
      forth in Section 4.c of the IETF Trust's Legal Provisions
@@ -465,6 +498,14 @@ Internet-Draft                 VPN Common                   October 2020
       "Initial revision.";
     reference
       "RFC XXXX: A Layer 2/3 VPN Common YANG Model";
+
+
+
+Barguil, et al.          Expires April 29, 2021                 [Page 9]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
   }
 
   /* Features */
@@ -498,14 +539,6 @@ Internet-Draft                 VPN Common                   October 2020
       "IEEE Std 802.1Q: Bridges and Bridged Networks";
   }
 
-
-
-
-Barguil, et al.          Expires April 29, 2021                 [Page 9]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   feature qinq {
     description
       "Indicates the support of the 'qinq'
@@ -521,6 +554,14 @@ Internet-Draft                 VPN Common                   October 2020
     reference
       "RFC 7348: Virtual eXtensible Local Area  Network (VXLAN):
                  A Framework for Overlaying Virtualized Layer 2
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 10]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
                  Networks over Layer 3 Networks";
   }
 
@@ -554,14 +595,6 @@ Internet-Draft                 VPN Common                   October 2020
       "Section 9 of RFC 4364";
   }
 
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 10]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   feature extranet-vpn {
     description
       "Indicates support of extranet VPNs. That is,
@@ -577,6 +610,14 @@ Internet-Draft                 VPN Common                   October 2020
   feature qos {
     description
       "Indicates support of Classes of Services (CoSes).";
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 11]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
   }
 
   feature encryption {
@@ -610,14 +651,6 @@ Internet-Draft                 VPN Common                   October 2020
     description
       "Indicates support of RIP as the Provider/Customer
        Edge protocol.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 11]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   feature rtg-vrrp {
@@ -633,6 +666,14 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   feature bfd {
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 12]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     description
       "Indicates support of Bidirectional Forwarding Detection
        (BFD) between the CE and the PE.";
@@ -666,14 +707,6 @@ Internet-Draft                 VPN Common                   October 2020
     type enumeration {
       enum ipv4 {
         description
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 12]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
           "IPv4 address family.";
       }
       enum ipv6 {
@@ -689,6 +722,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   typedef ccm-priority-type {
     type uint8 {
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 13]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       range "0..7";
     }
     description
@@ -722,14 +763,6 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   typedef neg-mode {
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 13]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
     type enumeration {
       enum full-duplex {
         description
@@ -745,6 +778,13 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   /* Identities */
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 14]
+
+Internet-Draft                 VPN Common                   October 2020
+
 
   identity routing-protocol-type {
     description
@@ -778,14 +818,6 @@ Internet-Draft                 VPN Common                   October 2020
   identity isis {
     base routing-protocol-type;
     description
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 14]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
       "Identity for IS-IS protocol type.";
   }
 
@@ -802,6 +834,13 @@ Internet-Draft                 VPN Common                   October 2020
     base routing-protocol-type;
     description
       "Identity for direct protocol type.
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 15]
+
+Internet-Draft                 VPN Common                   October 2020
+
 
        This is to be used when LANs are directly connected
        to PE routers and and must be advertised in the VPN.";
@@ -835,13 +874,6 @@ Internet-Draft                 VPN Common                   October 2020
       "Bandwidth is per CoS.";
   }
 
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 15]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   identity bw-per-port {
     base bw-type;
     description
@@ -858,6 +890,14 @@ Internet-Draft                 VPN Common                   October 2020
   identity bw-per-svc {
     base bw-type;
     description
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 16]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       "Bandwidth is per VPN service.";
   }
 
@@ -890,14 +930,6 @@ Internet-Draft                 VPN Common                   October 2020
       "Base identity for customer applications.";
   }
 
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 16]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   identity web {
     base customer-application;
     description
@@ -914,6 +946,14 @@ Internet-Draft                 VPN Common                   October 2020
     base customer-application;
     description
       "Identity for a file transfer application
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 17]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
        (e.g., FTP, SFTP).";
   }
 
@@ -946,14 +986,6 @@ Internet-Draft                 VPN Common                   October 2020
     description
       "Identity for a management application
        (e.g., Telnet, syslog, SNMP).";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 17]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity voice {
@@ -970,6 +1002,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity embb {
     base customer-application;
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 18]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     description
       "Identity for an enhanced Mobile Broadband (eMBB)
        application.  Note that an eMBB application demands
@@ -1002,14 +1042,6 @@ Internet-Draft                 VPN Common                   October 2020
   identity ie-type {
     description
       "Defines Import-Export routing profiles.
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 18]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
        Those profiles can be reused between VPN nodes.";
   }
 
@@ -1026,6 +1058,14 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   identity import-export {
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 19]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     base ie-type;
     description
       "Import/Export a routing profile.";
@@ -1058,14 +1098,6 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity loopback {
     base site-network-access-type;
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 19]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
     description
       "Identity for loopback connections.";
   }
@@ -1082,6 +1114,14 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   identity operational-state-down {
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 20]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     base operational-status;
     description
       "Operational status is DOWN/Disabled.";
@@ -1114,14 +1154,6 @@ Internet-Draft                 VPN Common                   October 2020
     base administrative-status;
     description
       "Administrative status is up for testing purposes.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 20]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity administrative-state-pre-deployment {
@@ -1138,6 +1170,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity priority-tagged {
     base encapsulation-type;
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 21]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     description
       "Identity for the priority-tagged interface.";
   }
@@ -1170,14 +1210,6 @@ Internet-Draft                 VPN Common                   October 2020
        encapsulation.";
   }
 
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 21]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   identity ethernet-type {
     base encapsulation-type;
     description
@@ -1194,6 +1226,14 @@ Internet-Draft                 VPN Common                   October 2020
     base encapsulation-type;
     description
       "Identity of the untagged interface type.";
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 22]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
   }
 
   identity tagged-int {
@@ -1226,14 +1266,6 @@ Internet-Draft                 VPN Common                   October 2020
     base tag-type;
     description
       "An SVLAN tag.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 22]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity c-s-vlan {
@@ -1250,6 +1282,14 @@ Internet-Draft                 VPN Common                   October 2020
   identity gre {
     base protocol-type;
     description
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 23]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       "GRE encapsulation.";
     reference
       "RFC 1701: Generic Routing Encapsulation (GRE)
@@ -1282,14 +1322,6 @@ Internet-Draft                 VPN Common                   October 2020
       "Transport based on SR-TE.";
     reference
       "RFC 8426: Recommendations for RSVP-TE and Segment Routing (SR)
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 23]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
                  Label Switched Path (LSP) Coexistence";
   }
 
@@ -1306,6 +1338,14 @@ Internet-Draft                 VPN Common                   October 2020
     base protocol-type;
     description
       "Transport based on BGP-LU.";
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 24]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     reference
       "RFC 8277: Using BGP to Bind MPLS Labels to Address
                  Prefixes";
@@ -1338,14 +1378,6 @@ Internet-Draft                 VPN Common                   October 2020
     base vpn-topology;
     description
       "Identity for Hub-and-Spoke VPN topology
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 24]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
        where Hubs cannot communicate with each other.";
   }
 
@@ -1362,6 +1394,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity role {
     description
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 25]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       "Base identity of a site or a node role.";
   }
 
@@ -1387,21 +1427,13 @@ Internet-Draft                 VPN Common                   October 2020
     base role;
     description
       "VPN-Node with custom or complex role in the VPN.
-      For certain sources/destinations,  it can behave
-      as a hub but for others it can act as a spoke
-      depending on the configured policy.";
+       For certain sources/destinations,  it can behave
+       as a hub but for others it can act as a spoke
+       depending on the configured policy.";
   }
 
   identity vpn-signaling-type {
     description
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 25]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
       "Identity of VPN signaling types";
   }
 
@@ -1418,6 +1450,14 @@ Internet-Draft                 VPN Common                   October 2020
     base vpn-signaling-type;
     description
       "Identity of BGP Ethernet VPNs.";
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 26]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     reference
       "RFC 7432: BGP MPLS-Based Ethernet VPN";
   }
@@ -1451,13 +1491,6 @@ Internet-Draft                 VPN Common                   October 2020
       "Identity of service type.";
   }
 
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 26]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   identity l3vpn {
     base service-type;
     description
@@ -1473,6 +1506,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity pwe3 {
     base service-type;
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 27]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     description
       "Identity of the Pseudowire Emulation Edge to Edge
        (PWE3) service type.";
@@ -1506,14 +1547,6 @@ Internet-Draft                 VPN Common                   October 2020
     reference
       "RFC 8214: Virtual Private Wire Service Support
                  in Ethernet VPN";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 27]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity pbb-evpn {
@@ -1529,6 +1562,13 @@ Internet-Draft                 VPN Common                   October 2020
     description
       "Base identity for the VXLAN peer mode.";
   }
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 28]
+
+Internet-Draft                 VPN Common                   October 2020
+
 
   identity static-mode {
     base vxlan-peer-mode;
@@ -1562,14 +1602,6 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   identity multicast-tree-type {
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 28]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
     description
       "Base identity for multicast tree type.";
   }
@@ -1585,6 +1617,14 @@ Internet-Draft                 VPN Common                   October 2020
     description
       "Identity for ASM tree type.";
   }
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 29]
+
+Internet-Draft                 VPN Common                   October 2020
+
 
   identity bidir-tree-type {
     base multicast-tree-type;
@@ -1618,14 +1658,6 @@ Internet-Draft                 VPN Common                   October 2020
   identity tf-type {
     description
       "Identity for the traffic type.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 29]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity multicast-traffic {
@@ -1642,6 +1674,14 @@ Internet-Draft                 VPN Common                   October 2020
 
   identity unknown-unicast-traffic {
     base tf-type;
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 30]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     description
       "Identity for unknown unicast traffic.";
   }
@@ -1674,14 +1714,6 @@ Internet-Draft                 VPN Common                   October 2020
     description
       "Identity for all-to-one bundling, i.e., all CE-VLAN IDs
        are mapped to one L2VPN service.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 30]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
   }
 
   identity placement-diversity {
@@ -1698,6 +1730,14 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   identity pe-diverse {
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 31]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
     base placement-diversity;
     description
       "Identity for PE diversity.";
@@ -1729,15 +1769,40 @@ Internet-Draft                 VPN Common                   October 2020
 
   /* Grouping */
 
-  grouping vpn-description {
+  grouping ports {
+    choice source-port {
+      container source-port-range-or-operator {
+        uses packet-fields:port-range-or-operator;
+        description
+          "Source port definition.";
+      }
+      description
+        "Choice of specifying the source port or referring to
+         a group of source port numbers.";
+    }
+    choice destination-port {
+      container destination-port-range-or-operator {
+        uses packet-fields:port-range-or-operator;
+        description
+          "Destination port definition.";
+      }
 
 
 
-Barguil, et al.          Expires April 29, 2021                [Page 31]
+Barguil, et al.          Expires April 29, 2021                [Page 32]
 
 Internet-Draft                 VPN Common                   October 2020
 
 
+      description
+        "Choice of specifying a destination port or referring
+         to a group of destination port numbers.";
+    }
+    description
+      "Choice of specifying a source or destination port numbers.";
+  }
+
+  grouping vpn-description {
     leaf vpn-id {
       type vpn-common:vpn-id;
       description
@@ -1777,6 +1842,14 @@ Internet-Draft                 VPN Common                   October 2020
         description
           "List for Cloud Identifiers.";
       }
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 33]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       list encryption-profile-identifier {
         key "id";
         leaf id {
@@ -1786,14 +1859,6 @@ Internet-Draft                 VPN Common                   October 2020
              to be used.  Local administration meaning.";
         }
         description
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 32]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
           "List for encryption profile identifiers.";
       }
       list qos-profile-identifier {
@@ -1833,23 +1898,24 @@ Internet-Draft                 VPN Common                   October 2020
         key "id";
         leaf id {
           type string;
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 34]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
           description
             "Identification of the routing Profile to be used
              by the routing-protocols within sites, vpn-
              network-accesses or vpn-nodes for refering
              vrf-import/export policies.
+
              This identifier has a local meaning.";
         }
         description
           "List for Routing Profile Identifiers.";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 33]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
       }
       nacm:default-deny-write;
       description
@@ -1888,6 +1954,14 @@ Internet-Draft                 VPN Common                   October 2020
           description
             "Administrative service status.";
         }
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 35]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
         leaf last-updated {
           type yang:date-and-time;
           description
@@ -1898,14 +1972,6 @@ Internet-Draft                 VPN Common                   October 2020
           "Administrative service status.";
       }
       container oper-status {
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 34]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
         config false;
         uses status-timestamp;
         description
@@ -1937,65 +2003,77 @@ Internet-Draft                 VPN Common                   October 2020
   }
 
   grouping rt-rd {
-      choice rd-choice {
-        case directly-assigned {
-          leaf rd {
-              type rt-types:route-distinguisher;
-            }
+    choice rd-choice {
+      case directly-assigned {
+        leaf rd {
+          type rt-types:route-distinguisher;
           description
-            "Explicitly assign a Route distinguisher value";
-          }
-        case pool-assigned {
-            leaf rd-pool-name {
-                type string;
-            description
-              "The server will auto-assign a route
-               distinguisher value and use that value operationally.
-               The assignment will be selected from the pool
-               identified by the rd-pool-name.";
-            }
+            "Explicitly assign a route distinguisher (RD) value.";
+        }
 
 
 
-Barguil, et al.          Expires April 29, 2021                [Page 35]
+Barguil, et al.          Expires April 29, 2021                [Page 36]
 
 Internet-Draft                 VPN Common                   October 2020
 
 
-            leaf rd-assign {
-              type rt-types:route-distinguisher;
-              config false;
-              description
-                "Route distinguisher is assigned.";
-            }
-          }
-          case full-autoasigned {
-            leaf auto {
-                type empty;
-                description
-                "Indicates an RD is fully auto assigned.";
-              }
-          leaf rd-assigned {
-              type rt-types:route-distinguisher;
-              config false;
-              description
-              "Route distinguisher is assigned.";
-            }
-          }
-          case no-rd {
-            leaf no-rd {
-              type empty;
-          }
+        description
+          "Explicitly assign a RD value";
+      }
+      case pool-assigned {
+        leaf rd-pool-name {
+          type string;
           description
-            "Use the empty type to indicate RD has no value and
-             is not to be auto-assigned.";
+            "The server will auto-assign a route
+             distinguisher value and use that value operationally.
+             The assignment will be selected from the pool
+             identified by the rd-pool-name.";
         }
+        leaf rd-assign {
+          type rt-types:route-distinguisher;
+          config false;
+          description
+            "Route distinguisher is assigned.";
+        }
+      }
+      case full-autoasigned {
+        leaf auto {
+          type empty;
+          description
+            "Indicates an RD is fully auto assigned.";
+        }
+        leaf rd-assigned {
+          type rt-types:route-distinguisher;
+          config false;
+          description
+            "Route distinguisher is assigned.";
+        }
+      }
+      case no-rd {
+        leaf no-rd {
+          type empty;
+          description
+            "No RD is assigned.";
+        }
+        description
+          "Use the empty type to indicate RD has no value and
+           is not to be auto-assigned.";
+      }
       description
         "Route distinguisher choice between several options on providing the route distiniguisher value.";
     }
     container vpn-targets {
       description
         "Set of route-targets to match for import and export routes
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 37]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
          to/from VRF";
       uses vpn-route-targets;
     }
@@ -2010,14 +2088,6 @@ Internet-Draft                 VPN Common                   October 2020
     list vpn-target {
       key "id";
       leaf id {
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 36]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
         type int8;
         description
           "Identifies each VPN Target";
@@ -2052,6 +2122,14 @@ Internet-Draft                 VPN Common                   October 2020
       leaf import-policy {
         type string;
         description
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 38]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
           "Defines the import policy.";
       }
       leaf export-policy {
@@ -2066,14 +2144,6 @@ Internet-Draft                 VPN Common                   October 2020
     container groups {
       list group {
         key "group-id";
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 37]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
         leaf group-id {
           type string;
           description
@@ -2108,6 +2178,14 @@ Internet-Draft                 VPN Common                   October 2020
           case id {
             list group {
               key "group-id";
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 39]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
               leaf group-id {
                 type string;
                 description
@@ -2122,14 +2200,6 @@ Internet-Draft                 VPN Common                   October 2020
           case all-accesses {
             leaf all-other-accesses {
               type empty;
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 38]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
               description
                 "The constraint will apply
                  against all other network
@@ -2162,6 +2232,16 @@ Internet-Draft                 VPN Common                   October 2020
 }
 <CODE ENDS>
 
+
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 40]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
 5.  Security Considerations
 
    The YANG modules specified in this document define schemas for data
@@ -2176,15 +2256,6 @@ Internet-Draft                 VPN Common                   October 2020
    provides the means to restrict access for particular NETCONF or
    RESTCONF users to a preconfigured subset of all available NETCONF or
    RESTCONF protocol operations and content.
-
-
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 39]
-
-Internet-Draft                 VPN Common                   October 2020
-
 
    The "ietf-vpn-common" module defines a set of identities, types, and
    groupings.  These nodes are intended to be reused by other YANG
@@ -2214,6 +2285,19 @@ Internet-Draft                 VPN Common                   October 2020
 
 7.  Contributors
 
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 41]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
       Italo Busi
       Huawei Technologies
       Email: Italo.Busi@huawei.com
@@ -2233,14 +2317,6 @@ Internet-Draft                 VPN Common                   October 2020
    [RFC3688]  Mealling, M., "The IETF XML Registry", BCP 81, RFC 3688,
               DOI 10.17487/RFC3688, January 2004,
               <https://www.rfc-editor.org/info/rfc3688>.
-
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 40]
-
-Internet-Draft                 VPN Common                   October 2020
-
 
    [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
               the Network Configuration Protocol (NETCONF)", RFC 6020,
@@ -2268,6 +2344,16 @@ Internet-Draft                 VPN Common                   October 2020
               Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
               <https://www.rfc-editor.org/info/rfc8040>.
 
+
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 42]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
    [RFC8294]  Liu, X., Qu, Y., Lindem, A., Hopps, C., and L. Berger,
               "Common YANG Data Types for the Routing Area", RFC 8294,
               DOI 10.17487/RFC8294, December 2017,
@@ -2288,15 +2374,6 @@ Internet-Draft                 VPN Common                   October 2020
               barguil, s., Dios, O., Boucadair, M., Munoz, L., Jalil,
               L., and J. Ma, "A Layer 2 VPN Network YANG Model", draft-
               ietf-opsawg-l2nm-00 (work in progress), July 2020.
-
-
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 41]
-
-Internet-Draft                 VPN Common                   October 2020
-
 
    [I-D.ietf-opsawg-l3sm-l3nm]
               barguil, s., Dios, O., Boucadair, M., Munoz, L., and A.
@@ -2323,6 +2400,16 @@ Internet-Draft                 VPN Common                   October 2020
               their Specification", RFC 3086, DOI 10.17487/RFC3086,
               April 2001, <https://www.rfc-editor.org/info/rfc3086>.
 
+
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 43]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
    [RFC4364]  Rosen, E. and Y. Rekhter, "BGP/MPLS IP Virtual Private
               Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
               2006, <https://www.rfc-editor.org/info/rfc4364>.
@@ -2346,13 +2433,6 @@ Internet-Draft                 VPN Common                   October 2020
               LAN Service (VPLS) Using Label Distribution Protocol (LDP)
               Signaling", RFC 4762, DOI 10.17487/RFC4762, January 2007,
               <https://www.rfc-editor.org/info/rfc4762>.
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 42]
-
-Internet-Draft                 VPN Common                   October 2020
-
 
    [RFC5036]  Andersson, L., Ed., Minei, I., Ed., and B. Thomas, Ed.,
               "LDP Specification", RFC 5036, DOI 10.17487/RFC5036,
@@ -2378,6 +2458,14 @@ Internet-Draft                 VPN Common                   October 2020
               Networks", RFC 7348, DOI 10.17487/RFC7348, August 2014,
               <https://www.rfc-editor.org/info/rfc7348>.
 
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 44]
+
+Internet-Draft                 VPN Common                   October 2020
+
+
    [RFC7432]  Sajassi, A., Ed., Aggarwal, R., Bitar, N., Isaac, A.,
               Uttaro, J., Drake, J., and W. Henderickx, "BGP MPLS-Based
               Ethernet VPN", RFC 7432, DOI 10.17487/RFC7432, February
@@ -2402,14 +2490,6 @@ Internet-Draft                 VPN Common                   October 2020
               Prefixes", RFC 8277, DOI 10.17487/RFC8277, October 2017,
               <https://www.rfc-editor.org/info/rfc8277>.
 
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 43]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
    [RFC8299]  Wu, Q., Ed., Litkowski, S., Tomotaki, L., and K. Ogaki,
               "YANG Data Model for L3VPN Service Delivery", RFC 8299,
               DOI 10.17487/RFC8299, January 2018,
@@ -2429,6 +2509,18 @@ Internet-Draft                 VPN Common                   October 2020
               Data Model for Layer 2 Virtual Private Network (L2VPN)
               Service Delivery", RFC 8466, DOI 10.17487/RFC8466, October
               2018, <https://www.rfc-editor.org/info/rfc8466>.
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires April 29, 2021                [Page 45]
+
+Internet-Draft                 VPN Common                   October 2020
+
 
    [RFC8660]  Bashandy, A., Ed., Filsfils, C., Ed., Previdi, S.,
               Decraene, B., Litkowski, S., and R. Shakir, "Segment
@@ -2456,16 +2548,6 @@ Authors' Addresses
    Email: samier.barguilgiraldo.ext@telefonica.com
 
 
-
-
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 44]
-
-Internet-Draft                 VPN Common                   October 2020
-
-
    Oscar Gonzalez de Dios (editor)
    Telefonica
    Madrid
@@ -2491,30 +2573,4 @@ Internet-Draft                 VPN Common                   October 2020
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires April 29, 2021                [Page 45]
+Barguil, et al.          Expires April 29, 2021                [Page 46]
