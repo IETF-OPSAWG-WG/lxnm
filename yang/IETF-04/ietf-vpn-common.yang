@@ -78,11 +78,11 @@ module ietf-vpn-common {
        VPN site network accesses.";
   }
 
-  feature site-diversity {
+  feature placement-diversity {
     description
-      "Indicates the support of site diversity constraints
-       in the customer premises. An example of these
-       constraints may be to avoid connecting
+      "Indicates the support of placement diversity
+       constraints in the customer premises. An example
+       of these constraints may be to avoid connecting
        a site network access to the same Provider
        Edge as a target site network access.";
   }
@@ -1107,6 +1107,49 @@ module ietf-vpn-common {
        are mapped to one L2VPN service.";
   }
 
+  identity placement-diversity {
+    description
+      "Base identity for access placement constraints.";
+  }
+
+  identity bearer-diverse {
+    base placement-diversity;
+    description
+      "Identity for bearer diversity.
+
+       The bearers should not use common elements.";
+  }
+
+  identity pe-diverse {
+    base placement-diversity;
+    description
+      "Identity for PE diversity.";
+  }
+
+  identity pop-diverse {
+    base placement-diversity;
+    description
+      "Identity for POP diversity.";
+  }
+
+  identity linecard-diverse {
+    base placement-diversity;
+    description
+      "Identity for linecard diversity.";
+  }
+
+  identity same-pe {
+    base placement-diversity;
+    description
+      "Identity for having sites connected on the same PE.";
+  }
+
+  identity same-bearer {
+    base placement-diversity;
+    description
+      "Identity for having sites connected using the same bearer.";
+  }
+
   /* Grouping */
 
   grouping vpn-description {
@@ -1394,23 +1437,85 @@ module ietf-vpn-common {
     }
   }
 
-  grouping vpn-node-group {
+  grouping group {
     container groups {
       list group {
         key "group-id";
         leaf group-id {
           type string;
           description
-            "Group-id the vpn-node belongs to.";
+            "Is the group-id to which a VPN node,
+             a site, or a network access belongs to.";
         }
         description
           "List of group-ids.";
       }
       description
-        "Groups the vpn node and network access belongs to.";
+        "Lists the groups to which a VPN node, 
+         a site, or a network access belongs to.";
     }
     description
       "Grouping definition to assign
-       group-ids to group or network access.";
+       group-ids to associate VPN nodes, sites, 
+       or network accesses.";
+  }
+
+  grouping placement-constraints {
+    list constraint {
+      key "constraint-type";
+      leaf constraint-type {
+        type identityref {
+          base placement-diversity;
+        }
+        description
+          "Diversity constraint type.";
+      }
+      container target {
+        choice target-flavor {
+          case id {
+            list group {
+              key "group-id";
+              leaf group-id {
+                type string;
+                description
+                  "The constraint will apply
+                   against this particular
+                   group-id";
+              }
+              description
+                "List of groups";
+            }
+          }
+          case all-accesses {
+            leaf all-other-accesses {
+              type empty;
+              description
+                "The constraint will apply
+                 against all other network
+                 accesses of a site.";
+            }
+          }
+          case all-groups {
+            leaf all-other-groups {
+              type empty;
+              description
+                "The constraint will apply
+                 against all other groups the
+                 customer is managing.";
+            }
+          }
+          description
+            "Choice for the group definition";
+        }
+        description
+          "The constraint will apply against
+           this list of groups.";
+      }
+      description
+        "List of constraints.";
+    }
+    description
+      "Constraints for placing a network
+       access.";
   }
 }
