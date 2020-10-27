@@ -1183,6 +1183,79 @@ module ietf-vpn-common {
       "Choice of specifying a source or destination port numbers.";
   }
 
+  grouping qos-classification-policy {
+    list rule {
+      key "id";
+      ordered-by user;
+      leaf id {
+        type string;
+        description
+          "A description identifying the
+           qos-classification-policy rule.";
+      }
+      choice match-type {
+        default "match-flow";
+        case match-flow {
+          choice l3 {
+            container ipv4 {
+              uses packet-fields:acl-ip-header-fields;
+              uses packet-fields:acl-ipv4-header-fields;
+              description
+                "Rule set that matches IPv4 header.";
+            }
+            container ipv6 {
+              uses packet-fields:acl-ip-header-fields;
+              uses packet-fields:acl-ipv6-header-fields;
+              description
+                "Rule set that matches IPv6 header.";
+            }
+            description
+              "Either IPv4 or IPv6.";
+          }
+          choice l4 {
+            container tcp {
+              uses packet-fields:acl-tcp-header-fields;
+              uses ports;
+              description
+                "Rule set that matches TCP header.";
+            }
+            container udp {
+              uses packet-fields:acl-udp-header-fields;
+              uses ports;
+              description
+                "Rule set that matches UDP header.";
+            }
+            description
+              "Can be TCP or UDP";
+          }
+        }
+        case match-application {
+          leaf match-application {
+            type identityref {
+              base vpn-common:customer-application;
+            }
+            description
+              "Defines the application to match.";
+          }
+        }
+        description
+          "Choice for classification.";
+      }
+      leaf target-class-id {
+        type string;
+        description
+          "Identification of the class of service.
+           This identifier is internal to the
+           administration.";
+      }
+      description
+        "List of marking rules.";
+    }
+    description
+      "Configuration of the traffic classification
+       policy.";
+  }
+
   grouping vpn-description {
     leaf vpn-id {
       type vpn-common:vpn-id;
