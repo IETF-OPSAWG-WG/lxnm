@@ -57,4 +57,6 @@ You might also like to familiarize yourself with other
 |:---:|
 | [![Build Status](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master)](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master) |
 
-# Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/l3nm/master/draft-ietf-opsawg-vpn-common/draft-ietf-opsawg-vpn-common.txt)
+# Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/l3nm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt)
+# l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/l3nm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt)
+# l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/l3nm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt)
