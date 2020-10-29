@@ -1,4 +1,4 @@
-# L3NM and VPN-COMMON
+# L3NM, L2NM and VPN-COMMON
 ## L3 VPN Network-Oriented Yang Model
 
 The L3NM document specifies a L3VPN Network YANG Model (L3NM) to facilitate communication 
@@ -6,6 +6,17 @@ between a service orchestrator and a network
    controller/orchestrator.  Such data model provides a network-centric
    view of the L3VPN services.  The Yang model proposed is limited to
    BGP PE-based VPNs as described in RFCs 4026, 4110, and 4364.
+## L2 VPN Network-Oriented Yang Model
+A L2VPN Network Yang Model
+
+This document defines a YANG Data model (called, L2NM) that can be used to manage the provisioning of Layer 2 VPN services within a Service Provider Network. This YANG module provides representation of the Layer 2 VPN Service from a network standpoint. The module is meant to be used by a Network Controller to derive the configuration information that will be sent to relevant network devices.
+
+The L2SM complements the Layer 2 Service Model (RFC8466) by providing a network-centric view of the service that is internal to a Service Provider.
+
+##  A Layer 2/3 VPN Common YANG Model
+This document defines a common YANG module that is meant to be reused
+   by various VPN-related modules such as Layer 3 VPN and Layer 2 VPN
+   Network Models.
    
 # Contributing
 
