@@ -2149,7 +2149,7 @@
       groupings defined in <xref target="RFC8519"></xref>.</t>
 
       <figure align="center" anchor="module_YANG">
-        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2020-10-16.yang"
+        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2020-11-06.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -2170,28 +2170,23 @@ module ietf-l3vpn-ntw {
     reference
       "Section 3 of RFC 6991";
   }
-  import ietf-packet-fields {
-    prefix pf;
-    reference
-      "RFC 8519: YANG Data Model for Network Access
-                 Control Lists (ACLs)";
-  }
 
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
   contact
     "WG Web:   <http://tools.ietf.org/wg/opsawg/>
      WG List:  <mailto:opsawg@ietf.org>
-     Editor:   Samier Barguil
-               <mailto:samier.barguilgiraldo.ext@telefonica.com>
-     Editor:   Oscar Gonzalez de Dios
-               <mailto:oscar.gonzalezdedios@telefonica.com>
-     Editor:   Mohamed Boucadair
-              <mailto:mohamed.boucadair@orange.com>
-     Author:   Luis Angel Munoz
-               <mailto:luis-angel.munoz@vodafone.com>
-     Author:   Alejandro Aguado
-               <mailto:alejandro.aguado_martin@nokia.com>
+     
+     Editor:    Samier Barguil
+                <mailto:samier.barguilgiraldo.ext@telefonica.com>
+     Editor:    Oscar Gonzalez de Dios
+                <mailto:oscar.gonzalezdedios@telefonica.com>
+     Editor:    Mohamed Boucadair
+                <mailto:mohamed.boucadair@orange.com>
+     Author:    Luis Angel Munoz
+                <mailto:luis-angel.munoz@vodafone.com>
+     Author:    Alejandro Aguado
+                <mailto:alejandro.aguado_martin@nokia.com>
     ";
   description
     "This YANG module defines a generic network-oriented model
@@ -2211,7 +2206,7 @@ module ietf-l3vpn-ntw {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2020-10-16 {
+  revision 2020-11-06 {
     description
       "Initial revision.";
     reference
@@ -2344,35 +2339,8 @@ module ietf-l3vpn-ntw {
       "Grouping to define a set of security parameters";
   }
 
-  grouping ports {
-    choice source-port {
-      container source-port-range-or-operator {
-        uses pf:port-range-or-operator;
-        description
-          "Source port definition.";
-      }
-      description
-        "Choice of specifying the source port or
-          referring to a group of source port numbers.";
-    }
-    choice destination-port {
-      container destination-port-range-or-operator {
-        uses pf:port-range-or-operator;
-        description
-          "Destination port definition.";
-      }
-      description
-        "Choice of specifying a destination port or 
-         referring to a group of destination port 
-         numbers.";
-    }
-    description
-      "Choice of specifying a source or destination
-       port numbers.";
-  }
-
   /* Main Blocks */
-  /* Main l3nm */
+  /* Main l3vpn-ntw */
 
   container l3vpn-ntw {
     container vpn-profiles {
@@ -2484,7 +2452,7 @@ module ietf-l3vpn-ntw {
               description
                 "Node's Import/Export profile.";
             }
-            uses vpn-common:vpn-node-group;
+            uses vpn-common:group;
             container vpn-network-accesses {
               list vpn-network-access {
                 key "id";
@@ -2751,10 +2719,10 @@ module ietf-l3vpn-ntw {
                         base address-allocation-type;
                       }
                       must "not(derived-from-or-self(current(), "
-                        + "'slaac') or derived-from-or-self(current(),"
-                        + " 'provider-dhcp-slaac'))" {
+                         + "'slaac') or derived-from-or-self(current(),"
+                         + " 'provider-dhcp-slaac'))" {
                         error-message "SLAAC is only applicable to
-                                     IPv6";
+                                      IPv6";
                       }
                       description
                         "Defines how addresses are allocated.
@@ -2838,7 +2806,7 @@ module ietf-l3vpn-ntw {
                                     "Last address.";
                                 }
                                 description
-                                  "Describes IP addresses allocated by
+                                  "Describes IP addresses allocated by 
                                    DHCP.
 
                                    When only start-address or only 
@@ -3879,73 +3847,7 @@ module ietf-l3vpn-ntw {
                   container qos {
                     if-feature "vpn-common:qos";
                     container qos-classification-policy {
-                      list rule {
-                        key "id";
-                        ordered-by user;
-                        leaf id {
-                          type string;
-                          description
-                            "A description identifying the
-                             qos-classification-policy rule.";
-                        }
-                        choice match-type {
-                          default "match-flow";
-                          case match-flow {
-                            choice l3 {
-                              container ipv4 {
-                                uses pf:acl-ip-header-fields;
-                                uses pf:acl-ipv4-header-fields;
-                                description
-                                  "Rule set that matches IPv4 header.";
-                              }
-                              container ipv6 {
-                                uses pf:acl-ip-header-fields;
-                                uses pf:acl-ipv6-header-fields;
-                                description
-                                  "Rule set that matches IPv6 header.";
-                              }
-                              description
-                                "Either IPv4 or IPv6.";
-                            }
-                            choice l4 {
-                              container tcp {
-                                uses pf:acl-tcp-header-fields;
-                                uses ports;
-                                description
-                                  "Rule set that matches TCP header.";
-                              }
-                              container udp {
-                                uses pf:acl-udp-header-fields;
-                                uses ports;
-                                description
-                                  "Rule set that matches UDP header.";
-                              }
-                              description
-                                "Can be TCP or UDP";
-                            }
-                          }
-                          case match-application {
-                            leaf match-application {
-                              type identityref {
-                                base vpn-common:customer-application;
-                              }
-                              description
-                                "Defines the application to match.";
-                            }
-                          }
-                          description
-                            "Choice for classification.";
-                        }
-                        leaf target-class-id {
-                          type string;
-                          description
-                            "Identification of the class of service.
-                             This identifier is internal to the
-                             administration.";
-                        }
-                        description
-                          "List of marking rules.";
-                      }
+                      uses vpn-common:qos-classification-policy;
                       description
                         "Configuration of the traffic classification
                          policy.";
