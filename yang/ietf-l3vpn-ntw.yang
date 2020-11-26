@@ -169,6 +169,35 @@ module ietf-l3vpn-ntw {
       "Identity for the lag-tagged interface.";
   }
 
+  identity LOCAL_DEFINED_NEXT_HOP {
+    description
+      "A base identity type of local defined next-hops";
+  }
+
+  identity DROP {
+    base LOCAL_DEFINED_NEXT_HOP;
+    description
+      "Discard traffic for the corresponding destination.
+       Example: Blackhole";
+  }
+
+  identity LOCAL_LINK {
+    base LOCAL_DEFINED_NEXT_HOP;
+    description
+      "Treat traffic towards addresses within the specified
+      next-hop prefix as though they are connected to a local
+      link.";
+  }
+
+  typedef local-defined-next-hop {
+    type identityref {
+      base LOCAL_DEFINED_NEXT_HOP;
+    }
+    description
+      "Pre-defined next-hop designation for locally generated
+      routes";
+  }
+
   /* Groupings */
 
   grouping security-params {
@@ -1554,10 +1583,15 @@ module ietf-l3vpn-ntw {
                                policies.";
                           }
                           leaf next-hop {
-                            type inet:ipv4-address;
+                            type union {
+                              type inet:ip-address;
+                              type local-defined-next-hop;
+                            }
                             description
-                              "Next-hop address to use on the  
-                               customer side.";
+                              "The next-hop that is to be used for the static route
+                              - this may be specified as an IP address, an interface
+                              or a pre-defined next-hop type - for instance, DROP or
+                              LOCAL_LINK.";
                           }
                           leaf bfd-enable {
                             type boolean;
@@ -1592,10 +1626,15 @@ module ietf-l3vpn-ntw {
                                policies.";
                           }
                           leaf next-hop {
-                            type inet:ipv6-address;
+                            type union {
+                              type inet:ip-address;
+                              type local-defined-next-hop;
+                            }
                             description
-                              "Next-hop address to use on the  
-                               customer side.";
+                              "The next-hop that is to be used for the static route
+                              - this may be specified as an IP address, an interface
+                              or a pre-defined next-hop type - for instance, DROP or
+                              LOCAL_LINK.";
                           }
                           leaf bfd-enable {
                             type boolean;
