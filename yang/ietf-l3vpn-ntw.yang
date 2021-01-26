@@ -18,6 +18,11 @@ module ietf-l3vpn-ntw {
     reference
       "Section 3 of RFC 6991";
   }
+  import ietf-key-chain {
+    prefix kc;
+    reference
+      "RFC 8177: YANG Key Chain.";
+  }
 
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
@@ -150,16 +155,49 @@ module ietf-l3vpn-ntw {
 
   grouping security-params {
     description
-      "Grouping to define a set of security parameters";
+      "Grouping to define a set of security parameters.";
     container security {
       description
-        "Container for aggregating any security parameter
-          for routing sessions between a PE and a CE.";
-      leaf auth-key {
-        type string;
+        "Container for aggregating any security parameters
+         for routing sessions between a PE and a CE.";
+      leaf enable {
+        type boolean;
+        default "false";
         description
-          "MD5 authentication password for the connection
-           towards the customer edge.";
+          "Enables or disables authentication.";
+      }
+      container keying-material {
+        when "../enable = 'true'";
+        description
+          "Container for describing how a routing session
+           is to be secured between a CE and a PE.";
+        choice option {
+          description
+            "Choice of authentication options.";
+          case md5 {
+            description
+              "Uses MD5 to secure the session.";
+            reference
+              "Section 13.2 of RFC 4364";
+            leaf md5-keychain {
+              type kc:key-chain-ref;
+              description
+                "Reference to the MD5 key chain.";
+              reference
+                "RFC 8177: YANG Key Chain.";
+            }
+          }
+          case ipsec {
+            description
+              "Specifies a reference to an IKE Security
+               Association (SA).";
+            leaf sa {
+              type string;
+              description
+                "Indicates the name of the SA.";
+            }
+          }
+        }
       }
     }
   }
@@ -563,8 +601,7 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message
-                          "SLAAC is only applicable to IPv6.";
+                        error-message "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated.
@@ -1105,32 +1142,38 @@ module ietf-l3vpn-ntw {
                     leaf layer {
                       when "../enabled = 'true'" {
                         description
-                          "Require a value for layer when
-                           enabled is true.";
+                          "Indicates the layer on which encryption
+                           is enabled.";
                       }
                       type enumeration {
                         enum layer2 {
                           description
-                            "Encryption will occur at Layer 2.";
+                            "Encryption occurs at Layer 2.";
                         }
                         enum layer3 {
                           description
-                            "Encryption will occur at Layer 3.
+                            "Encryption occurs at Layer 3.
                              For example, IPsec may be used when
                              a customer requests Layer 3
                              encryption.";
                         }
                       }
                       description
-                        "Layer on which encryption is applied.";
+                        "Indicates the layer on which encryption
+                         is applied.";
                     }
                   }
                   container encryption-profile {
+                    when "../encryption/enabled = 'true'" {
+                      description
+                        "Indicates the layer on which encryption
+                         is enabled.";
+                    }
                     description
                       "Container for encryption profile.";
                     choice profile {
                       description
-                        "Choice for encryption profile.";
+                        "Choice for the encryption profile.";
                       case provider-profile {
                         leaf profile-name {
                           type leafref {
@@ -1139,29 +1182,15 @@ module ietf-l3vpn-ntw {
                                + "/encryption-profile-identifier/id";
                           }
                           description
-                            "Name of the SP profile to be applied.";
+                            "Name of the service provider's profile
+                             to be applied.";
                         }
                       }
                       case customer-profile {
-                        leaf algorithm {
-                          type string;
+                        leaf customer-key-chain {
+                          type kc:key-chain-ref;
                           description
-                            "Encryption algorithm to be used.";
-                        }
-                      }
-                    }
-                    choice key-type {
-                      default "psk";
-                      description
-                        "Choice of encryption profile.
-                         The encryption profile can be the
-                         provider profile or customer profile.";
-                      case psk {
-                        leaf preshared-key {
-                          type string;
-                          description
-                            "Pre-Shared Key (PSK) coming from the
-                             customer.";
+                            "Customer-supplied key chain.";
                         }
                       }
                     }
@@ -2039,7 +2068,7 @@ module ietf-l3vpn-ntw {
                   type boolean;
                   default "false";
                   description
-                    "If set to true, it indicates that MSDP is 
+                    "If set to true, it indicates that MSDP is
                      activated.";
                 }
                 leaf peer {
@@ -2050,8 +2079,8 @@ module ietf-l3vpn-ntw {
                 leaf local-address {
                   type inet:ip-address;
                   description
-                    "Indicates the IP address of the local end. 
-                     This local address must be configured on 
+                    "Indicates the IP address of the local end.
+                     This local address must be configured on
                      the node.";
                 }
               }
