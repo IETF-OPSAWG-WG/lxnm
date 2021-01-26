@@ -24,7 +24,7 @@ module ietf-l3vpn-ntw {
   contact
     "WG Web:   <http://tools.ietf.org/wg/opsawg/>
      WG List:  <mailto:opsawg@ietf.org>
-     
+
      Editor:    Samier Barguil
                 <mailto:samier.barguilgiraldo.ext@telefonica.com>
      Editor:    Oscar Gonzalez de Dios
@@ -72,21 +72,11 @@ module ietf-l3vpn-ntw {
       "RFC 3618: Multicast Source Discovery Protocol (MSDP)";
   }
 
-  /* Typedefs */
-
-  typedef area-address {
-    type string {
-      pattern '[0-9A-Fa-f]{2}(\.[0-9A-Fa-f]{4}){0,6}';
-    }
-    description
-      "This type defines the area address format.";
-  }
-
   /* Identities */
 
   identity address-allocation-type {
     description
-      "Base identity for address-allocation-type for 
+      "Base identity for address-allocation-type for
        PE-CE link.";
   }
 
@@ -107,8 +97,8 @@ module ietf-l3vpn-ntw {
   identity provider-dhcp-slaac {
     base address-allocation-type;
     description
-      "The Provider's network provides a DHCP service to 
-       the customer, as well as IPv6 Stateless Address 
+      "The Provider's network provides a DHCP service to
+       the customer, as well as IPv6 Stateless Address
        Autoconfiguration (SLAAC).";
     reference
       "RFC 7527: IPv6 Stateless Address Autoconfiguration";
@@ -169,37 +159,53 @@ module ietf-l3vpn-ntw {
       "Identity for the lag-tagged interface.";
   }
 
+  /* Typedefs */
+
+  typedef area-address {
+    type string {
+      pattern '[0-9A-Fa-f]{2}(\.[0-9A-Fa-f]{4}){0,6}';
+    }
+    description
+      "This type defines the area address format.";
+  }
+
   /* Groupings */
 
   grouping security-params {
+    description
+      "Grouping to define a set of security parameters";
     container security {
-      leaf auth-key {
-        type string;
-        description
-          "MD5 authentication password for the connection 
-           towards the customer edge.";
-      }
       description
         "Container for aggregating any security parameter
           for routing sessions between a PE and a CE.";
+      leaf auth-key {
+        type string;
+        description
+          "MD5 authentication password for the connection
+           towards the customer edge.";
+      }
     }
-    description
-      "Grouping to define a set of security parameters";
   }
 
   /* Main Blocks */
   /* Main l3vpn-ntw */
 
   container l3vpn-ntw {
+    description
+      "Main container for L3VPN services management.";
     container vpn-profiles {
-      uses vpn-common:vpn-profile-cfg;
       description
-        "Contains a set of valid VPN Profiles to 
+        "Contains a set of valid VPN Profiles to
          reference in the VPN service.";
+      uses vpn-common:vpn-profile-cfg;
     }
     container vpn-services {
+      description
+        "Top-level container for the VPN services.";
       list vpn-service {
         key "vpn-id";
+        description
+          "List of VPN services.";
         uses vpn-common:service-status;
         uses vpn-common:vpn-description;
         leaf l3sm-vpn-id {
@@ -224,19 +230,19 @@ module ietf-l3vpn-ntw {
             "VPN service topology.";
         }
         container ie-profiles {
+          description
+            "Container for Import/Export profiles.";
           list ie-profile {
             key "ie-profile-id";
+            description
+              "List for Imort/Export profile.";
             leaf ie-profile-id {
               type string;
               description
                 "IE profile id.";
             }
             uses vpn-common:rt-rd;
-            description
-              "List for Imort/Export profile.";
           }
-          description
-            "Container for Import/Export profiles.";
         }
         uses vpn-common:svc-transport-encapsulation;
         container vpn-nodes {
@@ -244,6 +250,8 @@ module ietf-l3vpn-ntw {
             "Container for VPN nodes.";
           list vpn-node {
             key "vpn-node-id";
+            description
+              "List for VPN node.";
             leaf vpn-node-id {
               type union {
                 type vpn-common:vpn-id;
@@ -280,7 +288,7 @@ module ietf-l3vpn-ntw {
                 base vpn-common:address-family;
               }
               description
-                "The address family used for router-id 
+                "The address family used for router-id
                  information.";
             }
             leaf node-role {
@@ -304,8 +312,12 @@ module ietf-l3vpn-ntw {
             }
             uses vpn-common:vpn-components-group;
             container vpn-network-accesses {
+              description
+                "List of accesses for a site.";
               list vpn-network-access {
                 key "id";
+                description
+                  "List of accesses for a site.";
                 leaf id {
                   type vpn-common:vpn-id;
                   description
@@ -332,28 +344,32 @@ module ietf-l3vpn-ntw {
                      point-to-point or multipoint.";
                 }
                 container connection {
+                  description
+                    "Encapsulation types";
                   leaf encapsulation-type {
                     type identityref {
                       base vpn-common:encapsulation-type;
                     }
                     default "vpn-common:untagged-int";
                     description
-                      "Encapsulation type.  By default, 
-                       the encapsulation type is set to 
+                      "Encapsulation type.  By default,
+                       the encapsulation type is set to
                        'untagged'.";
                   }
                   container logical-interface {
+                    description
+                      "Reference of a logical interface
+                       type.";
                     leaf peer-reference {
                       type uint32;
                       description
                         "Specify the associated logical peer
                          interface";
                     }
-                    description
-                      "Reference of a logical interface 
-                       type.";
                   }
                   container tagged-interface {
+                    description
+                      "Container for tagged interfaces.";
                     leaf type {
                       type identityref {
                         base vpn-common:encapsulation-type;
@@ -368,17 +384,19 @@ module ietf-l3vpn-ntw {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:dot1q')" {
                         description
-                          "Only applies when the type of the 
+                          "Only applies when the type of the
                            tagged interface is 'dot1q'.";
                       }
                       if-feature "vpn-common:dot1q";
+                      description
+                        "Tagged interface.";
                       leaf tag-type {
                         type identityref {
                           base vpn-common:tag-type;
                         }
                         default "vpn-common:c-vlan";
                         description
-                          "Tag type.  By default, the tag  
+                          "Tag type.  By default, the tag
                            type is 'c-vlan'.";
                       }
                       leaf cvlan-id {
@@ -386,44 +404,44 @@ module ietf-l3vpn-ntw {
                         description
                           "VLAN identifier.";
                       }
-                      description
-                        "Tagged interface.";
                     }
                     container priority-tagged {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:priority-tagged')" {
                         description
-                          "Only applies when the type of the 
-                           tagged interface is 
+                          "Only applies when the type of the
+                           tagged interface is
                            'priority-tagged'.";
                       }
+                      description
+                        "Priority tagged.";
                       leaf tag-type {
                         type identityref {
                           base vpn-common:tag-type;
                         }
                         default "vpn-common:c-vlan";
                         description
-                          "Tag type.  By default, the tag  
+                          "Tag type.  By default, the tag
                            type is 'c-vlan'.";
                       }
-                      description
-                        "Priority tagged.";
                     }
                     container qinq {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:qinq')" {
                         description
-                          "Only applies when the type of  
+                          "Only applies when the type of
                            the tagged interface is 'qinq'.";
                       }
                       if-feature "vpn-common:qinq";
+                      description
+                        "QinQ.";
                       leaf tag-type {
                         type identityref {
                           base vpn-common:tag-type;
                         }
                         default "vpn-common:c-s-vlan";
                         description
-                          "Tag type.  By default, the tag  
+                          "Tag type.  By default, the tag
                            type is 'c-s-vlan'.";
                       }
                       leaf svlan-id {
@@ -438,17 +456,17 @@ module ietf-l3vpn-ntw {
                         description
                           "CVLAN identifier.";
                       }
-                      description
-                        "QinQ.";
                     }
                     container qinany {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:qinany')" {
                         description
-                          "Only applies when the type of the 
+                          "Only applies when the type of the
                            tagged interface is 'qinany'.";
                       }
                       if-feature "vpn-common:qinany";
+                      description
+                        "Container for QinAny.";
                       leaf tag-type {
                         type identityref {
                           base vpn-common:tag-type;
@@ -464,17 +482,17 @@ module ietf-l3vpn-ntw {
                         description
                           "Service VLAN ID.";
                       }
-                      description
-                        "Container for QinAny.";
                     }
                     container vxlan {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:vxlan')" {
                         description
-                          "Only applies when the type of the 
+                          "Only applies when the type of the
                            tagged interface is 'vxlan'.";
                       }
                       if-feature "vpn-common:vxlan";
+                      description
+                        "QinQ.";
                       leaf vni-id {
                         type uint32;
                         mandatory true;
@@ -487,27 +505,26 @@ module ietf-l3vpn-ntw {
                         }
                         default "vpn-common:static-mode";
                         description
-                          "Specifies the VXLAN access mode. 
-                           By default, the peer mode is set  
+                          "Specifies the VXLAN access mode.
+                           By default, the peer mode is set
                            to 'static-mode'.";
                       }
                       list peer-list {
                         key "peer-ip";
+                        description
+                          "List of peer IP addresses.";
                         leaf peer-ip {
                           type inet:ip-address;
                           description
                             "Peer IP.";
                         }
-                        description
-                          "List of peer IP addresses.";
                       }
-                      description
-                        "QinQ.";
                     }
-                    description
-                      "Container for tagged interfaces.";
                   }
                   container bearer {
+                    description
+                      "Defines physical properties of a site
+                       attachment.";
                     leaf bearer-reference {
                       if-feature "vpn-common:bearer-reference";
                       type string;
@@ -516,6 +533,8 @@ module ietf-l3vpn-ntw {
                          the SP.";
                     }
                     container pseudowire {
+                      description
+                        "Pseudowire termination parameters";
                       leaf vcid {
                         type uint32;
                         description
@@ -529,10 +548,10 @@ module ietf-l3vpn-ntw {
                         description
                           "SDP/Far End/LDP neighbour reference.";
                       }
-                      description
-                        "Pseudowire termination parameters";
                     }
                     container vpls {
+                      description
+                        "Pseudowire termination parameters";
                       leaf vcid {
                         type union {
                           type uint32;
@@ -551,19 +570,16 @@ module ietf-l3vpn-ntw {
                         description
                           "SDP/Far End/LDP Neighbour reference.";
                       }
-                      description
-                        "Pseudowire termination parameters";
                     }
-                    description
-                      "Defines physical properties of a site 
-                       attachment.";
                   }
-                  description
-                    "Encapsulation types";
                 }
                 container ip-connection {
+                  description
+                    "Defines connection parameters.";
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
+                    description
+                      "IPv4-specific parameters.";
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -571,8 +587,9 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message "SLAAC is only applicable to
-                                      IPv6";
+                        error-message
+                          "SLAAC is only applicable to
+                           IPv6";
                       }
                       description
                         "Defines how addresses are allocated.
@@ -580,27 +597,32 @@ module ietf-l3vpn-ntw {
                          allocation type, then IPv4 is not enabled.";
                     }
                     choice allocation-type {
+                      description
+                        "Choice the address allocation.";
                       case provider-dhcp {
                         when "derived-from-or-self(./address-"
                            + "allocation-type, 'provider-dhcp')" {
                           description
-                            "Only applies when addresses are 
+                            "Only applies when addresses are
                              allocated by DHCP.";
                         }
+                        description
+                          "DHCP allocated addresses related
+                           parameters.";
                         leaf provider-address {
                           type inet:ipv4-address;
                           description
-                            "Address of provider side. 
+                            "Address of provider side.
 
-                             If provider-address is not specified, 
-                             then prefix length should not be 
-                             specified either.  
+                             If provider-address is not specified,
+                             then prefix length should not be
+                             specified either.
 
-                             It also implies provider-dhcp 
-                             allocation is not enabled.  
-                             
-                             If provider-address is specified, 
-                             then the prefix length may or 
+                             It also implies provider-dhcp
+                             allocation is not enabled.
+
+                             If provider-address is specified,
+                             then the prefix length may or
                              may not be specified.";
                         }
                         leaf prefix-length {
@@ -609,12 +631,12 @@ module ietf-l3vpn-ntw {
                           }
                           must '(../provider-address)' {
                             error-message
-                              "If the prefix length is specified, 
-                               provider-address must also be 
+                              "If the prefix length is specified,
+                               provider-address must also be
                                specified.";
                             description
-                              "If the prefix length is specified, 
-                               provider-address must also be 
+                              "If the prefix length is specified,
+                               provider-address must also be
                                specified.";
                           }
                           description
@@ -625,24 +647,43 @@ module ietf-l3vpn-ntw {
                         }
                         choice address-assign {
                           default "number";
+                          description
+                            "Choice for the way to assign
+                             addresses.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP 
+                                "Describes the number of IP
                                  addresses the customer requires.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
+                              description
+                                "Container for customer addresses is
+                                 allocated by DHCP.";
                               list address-group {
                                 key "group-id";
+                                description
+                                  "Describes IP addresses allocated by
+                                   DHCP.
+
+                                   When only start-address or only
+                                   end-address is present, it
+                                   represents a single address.
+                                   When both start-address and
+                                   end-address are specified, it
+                                   implies a range inclusive of
+                                   both addresses.  If no address
+                                   is specified, it implies customer
+                                   addresses group is not supported.";
                                 leaf group-id {
                                   type string;
                                   description
-                                    "Group-id for the address range 
-                                     from start-address to 
+                                    "Group-id for the address range
+                                     from start-address to
                                      end-address.";
                                 }
                                 leaf start-address {
@@ -655,54 +696,34 @@ module ietf-l3vpn-ntw {
                                   description
                                     "Last address.";
                                 }
-                                description
-                                  "Describes IP addresses allocated by 
-                                   DHCP.
-
-                                   When only start-address or only 
-                                   end-address is present, it  
-                                   represents a single address.
-                                   When both start-address and 
-                                   end-address are specified, it 
-                                   implies a range inclusive of 
-                                   both addresses.  If no address 
-                                   is specified, it implies customer
-                                   addresses group is not supported.";
                               }
-                              description
-                                "Container for customer addresses is 
-                                 allocated by DHCP.";
                             }
                           }
-                          description
-                            "Choice for the way to assign 
-                             addresses.";
                         }
-                        description
-                          "DHCP allocated addresses related 
-                           parameters.";
                       }
                       case dhcp-relay {
                         when "derived-from-or-self(./address-allocation"
                            + "-type, 'provider-dhcp-relay')" {
                           description
-                            "Only applies when provider is required to 
+                            "Only applies when provider is required to
                              implement DHCP relay function.";
                         }
+                        description
+                          "DHCP relay provided by operator.";
                         leaf dr-provider-address {
                           type inet:ipv4-address;
                           description
-                            "Address of provider side. 
+                            "Address of provider side.
 
-                             If provider-address is 
-                             not specified, then prefix length 
-                             should not be specified either.  
+                             If provider-address is
+                             not specified, then prefix length
+                             should not be specified either.
 
-                             It also implies provider-dhcp 
-                             allocation is not enabled. 
+                             It also implies provider-dhcp
+                             allocation is not enabled.
 
-                             If provider-address is specified, 
-                             then prefix length may or may 
+                             If provider-address is specified,
+                             then prefix length may or may
                              not be specified.";
                         }
                         leaf dr-prefix-length {
@@ -711,43 +732,43 @@ module ietf-l3vpn-ntw {
                           }
                           must '(../dr-provider-address)' {
                             error-message
-                              "If prefix length is specified, 
-                               provider-address must also be 
+                              "If prefix length is specified,
+                               provider-address must also be
                                specified.";
                             description
-                              "If prefix length is specified, 
-                               provider-address must also be 
+                              "If prefix length is specified,
+                               provider-address must also be
                                specified.";
                           }
                           description
-                            "Subnet prefix length expressed in bits. 
+                            "Subnet prefix length expressed in bits.
 
                              If not specified, or specified as zero,
-                             this means the customer leaves the 
+                             this means the customer leaves the
                              actual prefix  length value
                              to the provider.";
                         }
                         container customer-dhcp-servers {
+                          description
+                            "Container for list of customer
+                             DHCP servers.";
                           leaf-list server-ip-address {
                             type inet:ipv4-address;
                             description
                               "IP address of customer DHCP
                                server.";
                           }
-                          description
-                            "Container for list of customer
-                             DHCP servers.";
                         }
-                        description
-                          "DHCP relay provided by operator.";
                       }
                       case static-addresses {
                         when "derived-from-or-self(./address-allocation"
                            + "-type, 'static-address')" {
                           description
                             "Only applies when address allocation
-                            type is static.";
+                             type is static.";
                         }
+                        description
+                          "Describes IPv4 addresses used.";
                         leaf primary-address {
                           type leafref {
                             path "../address/address-id";
@@ -757,6 +778,8 @@ module ietf-l3vpn-ntw {
                         }
                         list address {
                           key "address-id";
+                          description
+                            "Describes IPv4 addresses used.";
                           leaf address-id {
                             type string;
                             description
@@ -766,7 +789,7 @@ module ietf-l3vpn-ntw {
                             type inet:ipv4-address;
                             description
                               "IPv4 Address List of the provider side.
-                               When the protocol allocation type is 
+                               When the protocol allocation type is
                                static, the provider address must be
                                configured.";
                           }
@@ -780,24 +803,18 @@ module ietf-l3vpn-ntw {
                               range "0..32";
                             }
                             description
-                              "Subnet prefix length expressed 
-                               in bits. It is applied to both 
+                              "Subnet prefix length expressed
+                               in bits. It is applied to both
                                provider-address and customer-address.";
                           }
-                          description
-                            "Describes IPv4 addresses used.";
                         }
-                        description
-                          "Describes IPv4 addresses used.";
                       }
-                      description
-                        "Choice the address allocation.";
                     }
-                    description
-                      "IPv4-specific parameters.";
                   }
                   container ipv6 {
                     if-feature "vpn-common:ipv6";
+                    description
+                      "IPv6-specific parameters.";
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -809,15 +826,20 @@ module ietf-l3vpn-ntw {
                          not enabled.";
                     }
                     choice allocation-type {
+                      description
+                        "IPv6 allocation type.";
                       choice provider-dhcp {
                         when "derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp') "
                            + "or derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp-slaac')" {
                           description
-                            "Only applies when addresses are 
+                            "Only applies when addresses are
                              allocated by DHCP.";
                         }
+                        description
+                          "DHCP allocated addresses related
+                           parameters.";
                         leaf provider-address {
                           type inet:ipv6-address;
                           description
@@ -825,9 +847,9 @@ module ietf-l3vpn-ntw {
 
                              If provider-address is not specified,
                              then prefix length should not be
-                             specified either.  It also implies 
-                             provider-dhcp allocation is not 
-                             enabled.  
+                             specified either.  It also implies
+                             provider-dhcp allocation is not
+                             enabled.
 
                              If provider-address is
                              specified, then prefix length may
@@ -839,43 +861,64 @@ module ietf-l3vpn-ntw {
                           }
                           must '(../provider-address)' {
                             error-message
-                              "If prefix length is specified, 
+                              "If prefix length is specified,
                                provider-address
                                must also be specified.";
                             description
-                              "If prefix length is specified, 
+                              "If prefix length is specified,
                                 provider-address
                                must also be specified.";
                           }
                           description
                             "Subnet prefix length expressed in
-                             bits.  
-                         
-                             If not specified, or specified as  
-                             zero, this means the customer leaves 
-                             the actual prefix length value to 
+                             bits.
+
+                             If not specified, or specified as
+                             zero, this means the customer leaves
+                             the actual prefix length value to
                              the provider.";
                         }
                         choice address-assign {
                           default "number";
+                          description
+                            "Choice for the way to assign addresses.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP  
-                                 addresses required by the 
+                                "Describes the number of IP
+                                 addresses required by the
                                  customer.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
+                              description
+                                "Container for customer addresses
+                                 allocated by DHCP.";
                               list address-group {
                                 key "group-id";
+                                description
+                                  "Describes IP addresses allocated
+                                   by DHCP.
+
+                                   When only start-address or only
+                                   end-address is present, it
+                                   represents a single address.
+
+                                   When both start-address and
+                                   end-address are specified, it
+                                   implies a range inclusive of
+                                   both addresses.
+
+                                   If no address is specified, it
+                                   implies customer addresses group
+                                   is not supported.";
                                 leaf group-id {
                                   type string;
                                   description
-                                    "Group-id for the address range 
+                                    "Group-id for the address range
                                      from start-address to
                                      end-address.";
                                 }
@@ -889,34 +932,10 @@ module ietf-l3vpn-ntw {
                                   description
                                     "Last address.";
                                 }
-                                description
-                                  "Describes IP addresses allocated  
-                                   by DHCP.
-
-                                   When only start-address or only 
-                                   end-address is present, it 
-                                   represents a single address.
-
-                                   When both start-address and  
-                                   end-address are specified, it 
-                                   implies a range inclusive of
-                                   both addresses.
-
-                                   If no address is specified, it 
-                                   implies customer addresses group 
-                                   is not supported.";
                               }
-                              description
-                                "Container for customer addresses 
-                                 allocated by DHCP.";
                             }
                           }
-                          description
-                            "Choice for the way to assign addresses.";
                         }
-                        description
-                          "DHCP allocated addresses related 
-                           parameters.";
                       }
                       case dhcp-relay {
                         when "derived-from-or-self(./address-allo"
@@ -925,18 +944,20 @@ module ietf-l3vpn-ntw {
                             "Only applies when the provider is required
                              to implement DHCP relay function.";
                         }
+                        description
+                          "DHCP relay provided by operator.";
                         leaf dr-provider-address {
                           type inet:ipv6-address;
                           description
-                            "Address of the provider side.  
+                            "Address of the provider side.
 
                              If provider-address is not specified,
                              then prefix length should not be
                              specified either.  It also implies
-                             provider-dhcp allocation is not enabled.  
+                             provider-dhcp allocation is not enabled.
 
-                             If provider address is specified, then 
-                             prefix length may or may not be 
+                             If provider address is specified, then
+                             prefix length may or may not be
                              specified.";
                         }
                         leaf dr-prefix-length {
@@ -945,46 +966,46 @@ module ietf-l3vpn-ntw {
                           }
                           must '(../dr-provider-address)' {
                             error-message
-                              "If prefix length is specified, 
-                               provider-address must also be 
+                              "If prefix length is specified,
+                               provider-address must also be
                                specified.";
                             description
-                              "If prefix length is specified, 
-                               provider-address must also be 
+                              "If prefix length is specified,
+                               provider-address must also be
                                specified.";
                           }
                           description
-                            "Subnet prefix length expressed in bits.  
-                            
-                             If not specified, or specified as zero,                              
-                             this means the customer leaves the 
+                            "Subnet prefix length expressed in bits.
+
+                             If not specified, or specified as zero,
+                             this means the customer leaves the
                              actual prefix length value to the
                              provider.";
                         }
                         container customer-dhcp-servers {
+                          description
+                            "Container for list of customer DHCP
+                             servers.";
                           leaf-list server-ip-address {
                             type inet:ipv6-address;
                             description
                               "This node contains the IP address of
-                               the customer DHCP server.  If the DHCP 
+                               the customer DHCP server.  If the DHCP
                                relay function is implemented by the
                                provider, this node contains the
                                configured value.";
                           }
-                          description
-                            "Container for list of customer DHCP 
-                             servers.";
                         }
-                        description
-                          "DHCP relay provided by operator.";
                       }
                       case static-addresses {
                         when "derived-from-or-self(./address-allocation"
                            + "-type, 'static-address')" {
                           description
-                            "Only applies when protocol allocation type  
+                            "Only applies when protocol allocation type
                              is static.";
                         }
+                        description
+                          "IPv6-specific parameters.";
                         leaf s-primary-address {
                           type leafref {
                             path "../s-address/address-id";
@@ -994,6 +1015,8 @@ module ietf-l3vpn-ntw {
                         }
                         list s-address {
                           key "address-id";
+                          description
+                            "Describes IPv6 addresses used.";
                           leaf address-id {
                             type string;
                             description
@@ -1002,9 +1025,9 @@ module ietf-l3vpn-ntw {
                           leaf provider-address {
                             type inet:ipv6-address;
                             description
-                              "IPv6 Address of the provider side.  When  
-                               the protocol allocation type is static, 
-                               the provider address must be 
+                              "IPv6 Address of the provider side.  When
+                               the protocol allocation type is static,
+                               the provider address must be
                                configured.";
                           }
                           leaf customer-address {
@@ -1018,24 +1041,26 @@ module ietf-l3vpn-ntw {
                             }
                             description
                               "Subnet prefix length expressed in bits.
-                               It is applied to both provider-address 
+                               It is applied to both provider-address
                                and customer-address.";
                           }
-                          description
-                            "Describes IPv6 addresses used.";
                         }
-                        description
-                          "IPv6-specific parameters.";
                       }
-                      description
-                        "IPv6 allocation type.";
                     }
-                    description
-                      "IPv6-specific parameters.";
                   }
                   container oam {
+                    description
+                      "Defines the Operations, Administration,
+                       and Maintenance (OAM)mechanisms used on
+                       the connection.
+
+                       BFD is set as a fault detection mechanism,
+                       but the 'oam' container can easily
+                       be augmented by other mechanisms";
                     container bfd {
                       if-feature "vpn-common:bfd";
+                      description
+                        "Container for BFD.";
                       leaf enabled {
                         type boolean;
                         default "false";
@@ -1044,24 +1069,28 @@ module ietf-l3vpn-ntw {
                       }
                       choice holdtime {
                         default "fixed";
+                        description
+                          "Choice for holdtime flavor.";
                         case fixed {
                           leaf fixed-value {
                             type uint32;
                             units "msec";
                             description
                               "Expected BFD holdtime.
-  
-                               The customer may impose some fixed  
-                               values for the holdtime period if the 
-                               provider allows the customer use this 
-                               function. 
 
-                               If the provider doesn't allow the 
-                               customer to use this function, 
+                               The customer may impose some fixed
+                               values for the holdtime period if the
+                               provider allows the customer use this
+                               function.
+
+                               If the provider doesn't allow the
+                               customer to use this function,
                                the fixed-value will not be set.";
                           }
                         }
                         case profile {
+                          description
+                            "Well-known SP profile.";
                           leaf profile-name {
                             type leafref {
                               path "/l3vpn-ntw/vpn-profiles/"
@@ -1069,52 +1098,40 @@ module ietf-l3vpn-ntw {
                                  + "bfd-profile-identifier/id";
                             }
                             description
-                              "Well-known SP profile name. 
+                              "Well-known SP profile name.
 
-                               The provider can propose some profiles  
-                               to the customer, depending on the 
-                               service level the customer wants to 
-                               achieve.  
+                               The provider can propose some profiles
+                               to the customer, depending on the
+                               service level the customer wants to
+                               achieve.
 
                                Profile names must be communicated to
                                the customer.";
                           }
-                          description
-                            "Well-known SP profile.";
                         }
-                        description
-                          "Choice for holdtime flavor.";
                       }
-                      description
-                        "Container for BFD.";
                     }
-                    description
-                      "Defines the Operations, Administration, 
-                       and Maintenance (OAM)mechanisms used on  
-                       the connection.
-
-                       BFD is set as a fault detection mechanism, 
-                       but the 'oam' container can easily
-                       be augmented by other mechanisms";
                   }
-                  description
-                    "Defines connection parameters.";
                 }
                 container security {
+                  description
+                    "Site-specific security parameters.";
                   container encryption {
                     if-feature "vpn-common:encryption";
+                    description
+                      "Container for CE-PE security encryption.";
                     leaf enabled {
                       type boolean;
                       default "false";
                       description
-                        "If true, traffic encryption on the 
-                         connection is required. It is 
+                        "If true, traffic encryption on the
+                         connection is required. It is
                          disabled, otherwise.";
                     }
                     leaf layer {
                       when "../enabled = 'true'" {
                         description
-                          "Require a value for layer when 
+                          "Require a value for layer when
                            enabled is true.";
                       }
                       type enumeration {
@@ -1126,18 +1143,20 @@ module ietf-l3vpn-ntw {
                           description
                             "Encryption will occur at Layer 3.
                              For example, IPsec may be used when
-                             a customer requests Layer 3 
+                             a customer requests Layer 3
                              encryption.";
                         }
                       }
                       description
                         "Layer on which encryption is applied.";
                     }
-                    description
-                      "Container for CE-PE security encryption.";
                   }
                   container encryption-profile {
+                    description
+                      "Container for encryption profile.";
                     choice profile {
+                      description
+                        "Choice for encryption profile.";
                       case provider-profile {
                         leaf profile-name {
                           type leafref {
@@ -1156,11 +1175,13 @@ module ietf-l3vpn-ntw {
                             "Encryption algorithm to be used.";
                         }
                       }
-                      description
-                        "Choice for encryption profile.";
                     }
                     choice key-type {
                       default "psk";
+                      description
+                        "Choice of encryption profile.
+                         The encryption profile can be the
+                         provider profile or customer profile.";
                       case psk {
                         leaf preshared-key {
                           type string;
@@ -1169,20 +1190,17 @@ module ietf-l3vpn-ntw {
                              customer.";
                         }
                       }
-                      description
-                        "Choice of encryption profile.
-                         The encryption profile can be the 
-                         provider profile or customer profile.";
                     }
-                    description
-                      "Container for encryption profile.";
                   }
-                  description
-                    "Site-specific security parameters.";
                 }
                 container routing-protocols {
+                  description
+                    "Defines routing protocols.";
                   list routing-protocol {
                     key "id";
+                    description
+                      "List of routing protocols used on
+                       the site.  This list can be augmented.";
                     leaf id {
                       type string;
                       description
@@ -1197,6 +1215,8 @@ module ietf-l3vpn-ntw {
                     }
                     list routing-profiles {
                       key "id";
+                      description
+                        "Routing profiles.";
                       leaf id {
                         type leafref {
                           path "/l3vpn-ntw/vpn-profiles"
@@ -1213,16 +1233,16 @@ module ietf-l3vpn-ntw {
                         description
                           "Import, export or both.";
                       }
-                      description
-                        "Routing profiles.";
                     }
                     container ospf {
-                      when "derived-from-or-self(../type, " 
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:ospf')" {
                         description
                           "Only applies when protocol is OSPF.";
                       }
                       if-feature "vpn-common:rtg-ospf";
+                      description
+                        "OSPF-specific configuration.";
                       leaf-list address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -1262,8 +1282,12 @@ module ietf-l3vpn-ntw {
                       uses security-params;
                       container sham-links {
                         if-feature "vpn-common:rtg-ospf-sham-link";
+                        description
+                          "List of sham links.";
                         list sham-link {
                           key "target-site";
+                          description
+                            "Creates a sham link with another site.";
                           leaf target-site {
                             type vpn-common:vpn-id;
                             description
@@ -1279,14 +1303,8 @@ module ietf-l3vpn-ntw {
                                selection.  The default value is set
                                to 1.";
                           }
-                          description
-                            "Creates a sham link with another site.";
                         }
-                        description
-                          "List of sham links.";
                       }
-                      description
-                        "OSPF-specific configuration.";
                     }
                     container bgp {
                       when "derived-from-or-self(../type, "
@@ -1295,18 +1313,20 @@ module ietf-l3vpn-ntw {
                           "Only applies when protocol is BGP.";
                       }
                       if-feature "vpn-common:rtg-bgp";
+                      description
+                        "BGP-specific configuration.";
                       leaf peer-autonomous-system {
                         type inet:as-number;
                         mandatory true;
                         description
-                          "Indicates the Customer's AS Number (ASN) in 
+                          "Indicates the Customer's AS Number (ASN) in
                            case the Customer requests BGP routing.";
                       }
                       leaf local-autonomous-system {
                         type inet:as-number;
                         description
                           "Is set to the ASN to override a peers' ASN
-                           if such feature is requested by the 
+                           if such feature is requested by the
                            Customer.";
                       }
                       leaf-list address-family {
@@ -1315,7 +1335,7 @@ module ietf-l3vpn-ntw {
                         }
                         min-elements 1;
                         description
-                          "This node contains at least one 
+                          "This node contains at least one
                            address-family to be activated.";
                       }
                       leaf-list neighbor {
@@ -1323,13 +1343,13 @@ module ietf-l3vpn-ntw {
                         description
                           "IP address(es) of the BGP neighbor. IPv4
                            and IPv6 neighbors may be indicated if
-                           two sessions will be used for IPv4 and 
+                           two sessions will be used for IPv4 and
                            IPv6.";
                       }
                       leaf multihop {
                         type uint8;
                         description
-                          "Describes the number of IP hops allowed 
+                          "Describes the number of IP hops allowed
                            between a given BGP neighbor and the PE.";
                       }
                       uses security-params;
@@ -1339,16 +1359,16 @@ module ietf-l3vpn-ntw {
                         description
                           "Includes a description of the BGP session.
                            Such description is meant to be used for
-                           diagnosis purposes. The semantic of the 
-                           description is local to an 
+                           diagnosis purposes. The semantic of the
+                           description is local to an
                            implementation.";
                       }
                       leaf as-override {
                         type boolean;
                         default "false";
                         description
-                          "Defines whether AS override is enabled, 
-                           i.e., replace the ASN of the peer specified  
+                          "Defines whether AS override is enabled,
+                           i.e., replace the ASN of the peer specified
                            in the AS Path attribute with the local
                            AS number.";
                       }
@@ -1357,21 +1377,24 @@ module ietf-l3vpn-ntw {
                         default "false";
                         description
                           "Defines whether default route(s) can be
-                           advertised to its peer. If set, the 
-                           default route(s) is advertised to its 
+                           advertised to its peer. If set, the
+                           default route(s) is advertised to its
                            peer.";
                       }
                       container bgp-max-prefix {
+                        description
+                          "Controls the behavior when a prefix
+                           maximum is reached.";
                         leaf max-prefix {
                           type uint32;
                           default "5000";
                           description
-                            "Indicates the maximimum number of BGP  
+                            "Indicates the maximimum number of BGP
                              prefixes allowed in the BGP session.
-                             
-                             It allows to control how many prefixes  
+
+                             It allows to control how many prefixes
                              can be received from a neighbor.
-                             
+
                              If the limit is exceeded, the session
                               can be teared down.";
                           reference
@@ -1385,7 +1408,7 @@ module ietf-l3vpn-ntw {
                           units "percent";
                           default "75";
                           description
-                            "When this value is reached, a warning 
+                            "When this value is reached, a warning
                              notification will be triggered.";
                         }
                         leaf violate-action {
@@ -1393,12 +1416,12 @@ module ietf-l3vpn-ntw {
                             enum warning {
                               description
                                 "Only a warning message is sent to
-                                 the peer when the limit is 
+                                 the peer when the limit is
                                  exceeded.";
                             }
                             enum discard-extra-paths {
                               description
-                                "Discards extra paths when the 
+                                "Discards extra paths when the
                                  limit is exceeded.";
                             }
                             enum restart {
@@ -1407,25 +1430,22 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           description
-                            "BGP neighbour max-prefix violate 
+                            "BGP neighbour max-prefix violate
                              action";
                         }
                         leaf restart-interval {
                           type uint16;
                           units "minutes";
                           description
-                            "Time interval (min) after which the   
+                            "Time interval (min) after which the
                              BGP session will be reestablished.";
                         }
-                        description
-                          "Controls the behavior when a prefix  
-                           maximum is reached.";
                       }
                       container bgp-timer {
                         description
-                          "Includes two BGP timers that can be  
+                          "Includes two BGP timers that can be
                            customized when building a VPN service
-                           with BGP used as CE-PE routing 
+                           with BGP used as CE-PE routing
                            protocol.";
                         leaf keep-alive {
                           type uint16 {
@@ -1434,18 +1454,18 @@ module ietf-l3vpn-ntw {
                           units "seconds";
                           default "30";
                           description
-                            "This timer indicates the KEEPALIVE 
-                             messages'  frequency between a PE 
+                            "This timer indicates the KEEPALIVE
+                             messages'  frequency between a PE
                              and a BGP peer.
-                             
-                             If set to '0', it indicates KEEPALIVE 
+
+                             If set to '0', it indicates KEEPALIVE
                              messages are disabled.
-                             
+
                              It is suggested that the maximum time
-                             between  KEEPALIVEmessages would be  
+                             between  KEEPALIVEmessages would be
                              one third of the Hold Time interval.";
                           reference
-                            "Section 4.4 of RFC 4271";            
+                            "Section 4.4 of RFC 4271";
                         }
                         leaf hold-time {
                           type uint16 {
@@ -1454,27 +1474,27 @@ module ietf-l3vpn-ntw {
                           units "seconds";
                           default "90";
                           description
-                            "It indicates the maximum number of  
-                            seconds that may elapse between the   
-                            receipt of successive KEEPALIVE 
-                            and/or UPDATE   messages from the peer.
-                            
-                            The Hold Time must be either zero or  
-                            at least three seconds.";
+                            "It indicates the maximum number of
+                             seconds that may elapse between the
+                             receipt of successive KEEPALIVE
+                             and/or UPDATE   messages from the peer.
+
+                             The Hold Time must be either zero or
+                             at least three seconds.";
                           reference
-                            "Section 4.2 of RFC 4271"; 
+                            "Section 4.2 of RFC 4271";
                         }
                       }
-                      description
-                        "BGP-specific configuration.";
                     }
                     container isis {
-                      when "derived-from-or-self(../type, " 
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:isis')" {
                         description
                           "Only applies when protocol is IS-IS.";
                       }
                       if-feature "vpn-common:rtg-isis";
+                      description
+                        "IS-IS specific configuration.";
                       leaf-list address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -1510,20 +1530,20 @@ module ietf-l3vpn-ntw {
                       leaf process-id {
                         type uint16;
                         description
-                          "Process id of the IS-IS CE-PE 
+                          "Process id of the IS-IS CE-PE
                            connection.";
                       }
                       leaf mode {
                         type enumeration {
                           enum active {
                             description
-                              "Interface sends or receives IS-IS 
+                              "Interface sends or receives IS-IS
                                protocol control packets.";
                           }
                           enum passive {
                             description
-                              "Suppresses the sending of IS-IS  
-                               updates through the specified 
+                              "Suppresses the sending of IS-IS
+                               updates through the specified
                                interface.";
                           }
                         }
@@ -1532,11 +1552,9 @@ module ietf-l3vpn-ntw {
                           "IS-IS interface mode type.";
                       }
                       uses vpn-common:service-status;
-                      description
-                        "IS-IS specific configuration.";
                     }
                     container static {
-                      when "derived-from-or-self(../type, " 
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:static')" {
                         description
                           "Only applies when protocol is static.
@@ -1546,10 +1564,16 @@ module ietf-l3vpn-ntw {
                            allocation type for the IP connection
                            must be used.";
                       }
+                      description
+                        "Configuration specific to static routing.";
                       container cascaded-lan-prefixes {
+                        description
+                          "LAN prefixes from the customer.";
                         list ipv4-lan-prefixes {
                           if-feature "vpn-common:ipv4";
                           key "lan next-hop";
+                          description
+                            "List of LAN prefixes for the site.";
                           leaf lan {
                             type inet:ipv4-prefix;
                             description
@@ -1558,21 +1582,21 @@ module ietf-l3vpn-ntw {
                           leaf lan-tag {
                             type string;
                             description
-                              "Internal tag to be used in VPN 
+                              "Internal tag to be used in VPN
                                policies.";
                           }
                           leaf next-hop {
                             type inet:ipv4-address;
                             description
-                              "Next-hop address to use on the  
+                              "Next-hop address to use on the
                                customer side.";
                           }
-                          description
-                            "List of LAN prefixes for the site.";
                         }
                         list ipv6-lan-prefixes {
                           if-feature "vpn-common:ipv6";
                           key "lan next-hop";
+                          description
+                            "List of LAN prefixes for the site.";
                           leaf lan {
                             type inet:ipv6-prefix;
                             description
@@ -1581,33 +1605,29 @@ module ietf-l3vpn-ntw {
                           leaf lan-tag {
                             type string;
                             description
-                              "Internal tag to be used in VPN 
+                              "Internal tag to be used in VPN
                                policies.";
                           }
                           leaf next-hop {
                             type inet:ipv6-address;
                             description
-                              "Next-hop address to use on the  
+                              "Next-hop address to use on the
                                customer side.";
                           }
-                          description
-                            "List of LAN prefixes for the site.";
                         }
-                        description
-                          "LAN prefixes from the customer.";
                       }
-                      description
-                        "Configuration specific to static routing.";
                     }
                     container rip {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:rip')" {
                         description
-                          "Only applies when the protocol is RIP.  
-                           For IPv4, the model assumes that RIP 
+                          "Only applies when the protocol is RIP.
+                           For IPv4, the model assumes that RIP
                            version 2 is used.";
                       }
                       if-feature "vpn-common:rtg-rip";
+                      description
+                        "Configuration specific to RIP routing.";
                       leaf-list address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -1619,16 +1639,16 @@ module ietf-l3vpn-ntw {
                            contains at least one address family
                            to be activated.";
                       }
-                      description
-                        "Configuration specific to RIP routing.";
                     }
                     container vrrp {
-                      when "derived-from-or-self(../type, " 
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:vrrp')" {
                         description
                           "Only applies when protocol is VRRP.";
                       }
                       if-feature "vpn-common:rtg-vrrp";
+                      description
+                        "Configuration specific to VRRP.";
                       leaf-list address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -1636,8 +1656,8 @@ module ietf-l3vpn-ntw {
                         min-elements 1;
                         description
                           "If VRRP is used on this site, this node
-                           contains a configured value.  This node 
-                           contains at least one address family to 
+                           contains a configured value.  This node
+                           contains at least one address family to
                            be activated.";
                       }
                       leaf vrrp-group {
@@ -1660,28 +1680,23 @@ module ietf-l3vpn-ntw {
                       leaf ping-reply {
                         type boolean;
                         description
-                          "Whether the VRRP speaker should answer 
+                          "Whether the VRRP speaker should answer
                            to ping requests";
                       }
-                      description
-                        "Configuration specific to VRRP.";
                     }
-                    description
-                      "List of routing protocols used on
-                       the site.  This list can be augmented.";
                   }
-                  description
-                    "Defines routing protocols.";
                 }
                 container service {
+                  description
+                    "Service parameters on the attachment.";
                   leaf svc-input-bandwidth {
                     type uint64;
                     units "bps";
                     mandatory true;
                     description
-                      "From the customer site's perspective, the 
-                       service input bandwidth of the connection 
-                       or download bandwidth from the SP to 
+                      "From the customer site's perspective, the
+                       service input bandwidth of the connection
+                       or download bandwidth from the SP to
                        the site.";
                   }
                   leaf svc-output-bandwidth {
@@ -1689,9 +1704,9 @@ module ietf-l3vpn-ntw {
                     units "bps";
                     mandatory true;
                     description
-                      "From the customer site's perspective, 
+                      "From the customer site's perspective,
                        the service output bandwidth of the
-                       connection or upload bandwidth from 
+                       connection or upload bandwidth from
                        the site to the SP.";
                   }
                   leaf svc-mtu {
@@ -1706,13 +1721,17 @@ module ietf-l3vpn-ntw {
                   }
                   container qos {
                     if-feature "vpn-common:qos";
+                    description
+                      "QoS configuration.";
                     container qos-classification-policy {
-                      uses vpn-common:qos-classification-policy;
                       description
                         "Configuration of the traffic classification
                          policy.";
+                      uses vpn-common:qos-classification-policy;
                     }
                     container qos-profile {
+                      description
+                        "QoS profile configuration.";
                       list qos-profile {
                         key "profile";
                         description
@@ -1738,14 +1757,16 @@ module ietf-l3vpn-ntw {
                              is applied.";
                         }
                       }
-                      description
-                        "QoS profile configuration.";
                     }
-                    description
-                      "QoS configuration.";
                   }
                   container carrierscarrier {
                     if-feature "vpn-common:carrierscarrier";
+                    description
+                      "This container is used when the customer
+                       provides MPLS-based services.  This is
+                       only used in the  case of CsC (i.e., a
+                       customer builds an MPLSservice using an
+                       IP VPN to carry its traffic).";
                     leaf signalling-type {
                       type enumeration {
                         enum ldp {
@@ -1762,7 +1783,7 @@ module ietf-l3vpn-ntw {
                              In this case, BGP must also be configured
                              as the routing protocol.";
                           reference
-                            "RFC 8277: Using BGP to Bind MPLS Labels 
+                            "RFC 8277: Using BGP to Bind MPLS Labels
                                        to Address Prefixes";
                         }
                       }
@@ -1770,15 +1791,11 @@ module ietf-l3vpn-ntw {
                       description
                         "MPLS signalling type.";
                     }
-                    description
-                      "This container is used when the customer 
-                       provides MPLS-based services.  This is 
-                       only used in the  case of CsC (i.e., a 
-                       customer builds an MPLSservice using an 
-                       IP VPN to carry its traffic).";
                   }
                   container multicast {
                     if-feature "vpn-common:multicast";
+                    description
+                      "Multicast parameters for the site.";
                     leaf site-type {
                       type enumeration {
                         enum receiver-only {
@@ -1791,7 +1808,7 @@ module ietf-l3vpn-ntw {
                         }
                         enum source-receiver {
                           description
-                            "The site has both sources and 
+                            "The site has both sources and
                              receivers.";
                         }
                       }
@@ -1810,10 +1827,10 @@ module ietf-l3vpn-ntw {
                       type enumeration {
                         enum host {
                           description
-                            "Hosts are directly connected to the 
+                            "Hosts are directly connected to the
                              provider network.
 
-                             Host protocols such as IGMP or MLD are 
+                             Host protocols such as IGMP or MLD are
                              required.";
                         }
                         enum router {
@@ -1823,12 +1840,12 @@ module ietf-l3vpn-ntw {
                         }
                         enum both {
                           description
-                            "Some hosts are behind a customer router, 
-                             and some others are directly connected  
-                             to the provider network.  Both host and  
-                             routing protocols must be used.  
+                            "Some hosts are behind a customer router,
+                             and some others are directly connected
+                             to the provider network.  Both host and
+                             routing protocols must be used.
 
-                             Typically,  IGMP and PIM will be 
+                             Typically,  IGMP and PIM will be
                              implemented.";
                         }
                       }
@@ -1841,46 +1858,41 @@ module ietf-l3vpn-ntw {
                       type boolean;
                       default "false";
                       description
-                        "When true, there is no PIM adjacency on 
+                        "When true, there is no PIM adjacency on
                          the interface.";
                     }
-                    description
-                      "Multicast parameters for the site.";
                   }
-                  description
-                    "Service parameters on the attachment.";
                 }
-                description
-                  "List of accesses for a site.";
               }
-              description
-                "List of accesses for a site.";
             }
             container maximum-routes {
+              description
+                "Defines 'maximum-routes' for the VRF.";
               list address-family {
                 key "af";
+                description
+                  "List of address families.";
                 leaf af {
                   type identityref {
                     base vpn-common:address-family;
                   }
                   description
-                    "Indicates the address family 
-                    (IPv4 or IPv6).";
+                    "Indicates the address family
+                     (IPv4 or IPv6).";
                 }
                 leaf maximum-routes {
                   type uint32;
                   description
-                    "Indicates the maximum prefixes the VRF  
+                    "Indicates the maximum prefixes the VRF
                      can accept for this address family.";
                 }
-                description
-                  "List of address families.";
               }
-              description
-                "Defines 'maximum-routes' for the VRF.";
             }
             container multicast {
               if-feature "vpn-common:multicast";
+              description
+                "Multicast global parameters for the VPN
+                 service.";
               leaf enabled {
                 type boolean;
                 default "false";
@@ -1895,28 +1907,36 @@ module ietf-l3vpn-ntw {
                   "Type of tree to be used.";
               }
               container rp {
+                description
+                  "RP parameters.";
                 container rp-group-mappings {
+                  description
+                    "RP-to-group mappings parameters.";
                   list rp-group-mapping {
                     key "id";
+                    description
+                      "List of RP-to-group mappings.";
                     leaf id {
                       type uint16;
                       description
                         "Unique identifier for the mapping.";
                     }
                     container provider-managed {
+                      description
+                        "Parameters for a provider-managed RP.";
                       leaf enabled {
                         type boolean;
                         default "false";
                         description
                           "Set to true if the Rendezvous Point (RP)
-                           must be a provider-managed node.  Set to 
+                           must be a provider-managed node.  Set to
                            false if it is a customer-managed node.";
                       }
                       leaf rp-redundancy {
                         type boolean;
                         default "false";
                         description
-                          "If true, a redundancy mechanism for the 
+                          "If true, a redundancy mechanism for the
                            RP is required.";
                       }
                       leaf optimal-traffic-delivery {
@@ -1924,8 +1944,8 @@ module ietf-l3vpn-ntw {
                         default "false";
                         description
                           "If true, the SP must ensure that
-                           traffic uses an optimal path.  An SP may 
-                           use Anycast RP or RP-tree-to-SPT 
+                           traffic uses an optimal path.  An SP may
+                           use Anycast RP or RP-tree-to-SPT
                            switchover architectures.";
                       }
                       container anycast {
@@ -1937,6 +1957,8 @@ module ietf-l3vpn-ntw {
                              enabled and delivery through
                              optimal path is activated.";
                         }
+                        description
+                          "PIM Anycast-RP parameters.";
                         leaf local-address {
                           type inet:ip-address;
                           description
@@ -1950,16 +1972,12 @@ module ietf-l3vpn-ntw {
                             "Address other RP routers
                              that share the same RP IP address.";
                         }
-                        description
-                          "PIM Anycast-RP parameters.";
                       }
-                      description
-                        "Parameters for a provider-managed RP.";
                     }
                     leaf rp-address {
                       when "../provider-managed/enabled = 'false'" {
                         description
-                          "Relevant when the RP is not 
+                          "Relevant when the RP is not
                            provider-managed.";
                       }
                       type inet:ip-address;
@@ -1969,8 +1987,12 @@ module ietf-l3vpn-ntw {
                          Used if the RP is customer-managed.";
                     }
                     container groups {
+                      description
+                        "Multicast groups associated with the RP.";
                       list group {
                         key "id";
+                        description
+                          "List of multicast groups.";
                         leaf id {
                           type uint16;
                           description
@@ -1978,6 +2000,8 @@ module ietf-l3vpn-ntw {
                         }
                         choice group-format {
                           mandatory true;
+                          description
+                            "Choice for multicast group format.";
                           case group-prefix {
                             leaf group-address {
                               type inet:ip-prefix;
@@ -1999,22 +2023,14 @@ module ietf-l3vpn-ntw {
                                  the multicast group address range.";
                             }
                           }
-                          description
-                            "Choice for multicast group format.";
                         }
-                        description
-                          "List of multicast groups.";
                       }
-                      description
-                        "Multicast groups associated with the RP.";
                     }
-                    description
-                      "List of RP-to-group mappings.";
                   }
-                  description
-                    "RP-to-group mappings parameters.";
                 }
                 container rp-discovery {
+                  description
+                    "RP discovery parameters.";
                   leaf rp-discovery-type {
                     type identityref {
                       base vpn-common:multicast-rp-discovery-type;
@@ -2030,24 +2046,22 @@ module ietf-l3vpn-ntw {
                         "Only applicable if discovery type
                          is BSR-RP.";
                     }
+                    description
+                      "Container for List of Customer
+                       BSR candidate's addresses.";
                     leaf-list bsr-candidate-address {
                       type inet:ip-address;
                       description
                         "Address of candidate Bootstrap Router
-                        (BSR).";
+                         (BSR).";
                     }
-                    description
-                      "Container for List of Customer
-                       BSR candidate's addresses.";
                   }
-                  description
-                    "RP discovery parameters.";
                 }
-                description
-                  "RP parameters.";
               }
               container msdp {
                 if-feature "msdp";
+                description
+                  "MSDP parameters.";
                 leaf enabled {
                   type boolean;
                   default "false";
@@ -2062,28 +2076,15 @@ module ietf-l3vpn-ntw {
                 leaf local-address {
                   type inet:ip-address;
                   description
-                    "IP address of the local end. This local  
-                     address must be configured on the 
+                    "IP address of the local end. This local
+                     address must be configured on the
                      node.";
                 }
-                description
-                  "MSDP parameters.";
               }
-              description
-                "Multicast global parameters for the VPN
-                 service.";
             }
-            description
-              "List for VPN node.";
           }
         }
-        description
-          "List of VPN services.";
       }
-      description
-        "Top-level container for the VPN services.";
     }
-    description
-      "Main container for L3VPN services management.";
   }
 }
