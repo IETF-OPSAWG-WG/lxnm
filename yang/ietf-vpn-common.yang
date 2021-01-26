@@ -60,7 +60,7 @@ module ietf-vpn-common {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-01-14 {
+  revision 2021-01-26 {
     description
       "Initial revision.";
     reference
@@ -138,7 +138,8 @@ module ietf-vpn-common {
 
   feature rtg-ospf {
     description
-      "Indicates support of the OSPF as the PE/CE protocol.";
+      "Indicates support of the OSPF as the Provider Edge (PE)
+       / Customer Edge (CE) protocol.";
     reference
       "RFC 4577: OSPF as the Provider/Customer Edge Protocol
                  for BGP/MPLS IP Virtual Private Networks(VPNs)";
@@ -188,8 +189,8 @@ module ietf-vpn-common {
     description
       "Indicates support of the bearer reference access
        constraint. That is, the reuse of a network connection
-       that was already ordered to the SP apart from the IP VPN
-       site.";
+       that was already ordered to the service provider apart 
+       from the IP VPN site.";
   }
 
   feature placement-diversity {
@@ -213,6 +214,11 @@ module ietf-vpn-common {
   feature input-bw {
     description
       "Indicates the support of the input bandwidth in a VPN.";
+  }
+
+  feature output-bw {
+    description
+      "Indicates the support of the output bandwidth in a VPN.";
   }
 
   /* 
@@ -649,6 +655,30 @@ module ietf-vpn-common {
        to PE routers and and must be advertised in the VPN.";
   }
 
+  identity isis-level {
+    if-feature "rtg-isis";
+    description
+      "Defines the IS-IS level for interface and system.";
+  }
+
+  identity level1 {
+    base isis-level;
+    description
+      "IS-IS level 1.";
+  }
+
+  identity level2 {
+    base isis-level;
+    description
+      "IS-IS level 2.";
+  }
+
+  identity level1-2 {
+    base isis-level;
+    description
+      "IS-IS levels 1 and 2.";
+  }
+
   /* 
    * Identities related to Routes Import and Export
    */
@@ -687,12 +717,14 @@ module ietf-vpn-common {
   }
 
   identity input-bw {
+    if-feature "input-bw";
     base bw-direction;
     description
       "Identity for the input bandwidth.";
   }
 
   identity output-bw {
+    if-feature "output-bw";
     base bw-direction;
     description
       "Identity for the output bandwidth.";
@@ -704,6 +736,7 @@ module ietf-vpn-common {
   }
 
   identity bw-per-cos {
+    if-feature "qos";   
     base bw-type;
     description
       "Bandwidth is per CoS.";
@@ -729,6 +762,7 @@ module ietf-vpn-common {
   }
 
   identity qos-profile-direction {
+    if-feature "qos";   
     description
       "Base identity for the QoS profile direction.";
   }
@@ -985,13 +1019,13 @@ module ietf-vpn-common {
   identity ssm-tree-type {
     base multicast-tree-type;
     description
-      "Identity for SSM tree type.";
+      "Identity for Source-Specific Multicast (SSM) tree type.";
   }
 
   identity asm-tree-type {
     base multicast-tree-type;
     description
-      "Identity for ASM tree type.";
+      "Identity for Any-Source Multicast (ASM) tree type.";
   }
 
   identity bidir-tree-type {
@@ -1003,7 +1037,7 @@ module ietf-vpn-common {
   identity multicast-rp-discovery-type {
     if-feature "multicast";
     description
-      "Base identity for RP discovery type.";
+      "Base identity for Rendezvous Point (RP) discovery type.";
   }
 
   identity auto-rp {
@@ -1021,7 +1055,7 @@ module ietf-vpn-common {
   identity bsr-rp {
     base multicast-rp-discovery-type;
     description
-      "Base identity for BSR discovery type.";
+      "Base identity for Bootstrap Router (BSR) discovery type.";
   }
 
   /* 
@@ -1054,9 +1088,9 @@ module ietf-vpn-common {
 
   identity bundling-type {
     description
-      "The base identity for the bundling type.  It supports
-       multiple CE-VLANs associated with an L2VPN service or
-       all CE-VLANs associated with an L2VPN service.";
+      "The base identity for the bundling type. It supports
+       a subset or all CE-VLANs associated with an L2VPN 
+       service.";
   }
 
   /* 
@@ -1194,17 +1228,19 @@ module ietf-vpn-common {
 
   identity control-mode {
     description
-      "Defines the type of control mode on L2CP protocols.";
+      "Defines the type of control mode on Layer 2 Control Protocol
+       (L2CP).";
   }
 
   identity peer {
     base control-mode;
     description
       "'peer' mode, i.e., participate in the protocol towards
-       the CE.  Peering is common for LACP and the Ethernet
-       Local Management Interface (E-LMI) and, occasionally,
-       for LLDP.  For VPLSs and VPWSs, the subscriber can also
-       request that the SP peer enable spanning tree.";
+       the CE.  Peering is common for Link Aggregation Control 
+       Protocol (LACP) and the Ethernet Local Management Interface
+       (E-LMI) and, occasionally, for Link Layer Discovery Protocol 
+       (LLDP).  For VPLSs and VPWSs, the subscriber can also
+       request that the peer service provider enables spanning tree.";
   }
 
   identity tunnel {
