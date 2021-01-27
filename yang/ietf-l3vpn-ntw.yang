@@ -260,6 +260,26 @@ module ietf-l3vpn-ntw {
           }
         }
         uses vpn-common:svc-transport-encapsulation;
+        container external-connectivity {
+          description
+            "Container for external connectivity.";
+          choice profile {
+            description
+              "Choice for the external connectivity profile.";
+            case profile {
+              leaf profile-name {
+                type leafref {
+                  path "/l3vpn-ntw/vpn-profiles"
+                     + "/valid-provider-identifiers"
+                     + "/external-connectivity-identifier/id";
+                }
+                description
+                  "Name of the service provider's profile
+                   to be applied at the service level.";
+              }
+            }
+          }
+        }
         container vpn-nodes {
           description
             "Container for VPN nodes.";
@@ -275,13 +295,6 @@ module ietf-l3vpn-ntw {
               description
                 "Type STRING or NUMBER identifier.";
             }
-            leaf local-autonomous-system {
-              if-feature "vpn-common:rtg-bgp";
-              type inet:as-number;
-              description
-                "Provider's AS number in case the customer
-                 requests BGP routing.";
-            }
             leaf description {
               type string;
               description
@@ -292,6 +305,21 @@ module ietf-l3vpn-ntw {
               description
                 "Unique identifier of the network element
                  where the VPN node is deployed.";
+            }
+            leaf node-role {
+              type identityref {
+                base vpn-common:role;
+              }
+              default "vpn-common:any-to-any-role";
+              description
+                "Role of the VPN node in the IP VPN.";
+            }
+            leaf local-autonomous-system {
+              if-feature "vpn-common:rtg-bgp";
+              type inet:as-number;
+              description
+                "Provider's AS number in case the customer
+                 requests BGP routing.";
             }
             leaf address-family {
               type identityref {
@@ -307,15 +335,6 @@ module ietf-l3vpn-ntw {
                 "The router-id information can be an IPv4
                  or IPv6 address.";
             }
-            leaf node-role {
-              type identityref {
-                base vpn-common:role;
-              }
-              default "vpn-common:any-to-any-role";
-              description
-                "Role of the VPN node in the IP VPN.";
-            }
-            uses vpn-common:service-status;
             uses vpn-common:rt-rd;
             leaf node-ie-profile {
               type leafref {
@@ -348,6 +367,7 @@ module ietf-l3vpn-ntw {
                      can accept for this address family.";
                 }
               }
+            uses vpn-common:service-status;
             }
             uses vpn-common:vpn-components-group;
             container multicast {
@@ -1714,8 +1734,8 @@ module ietf-l3vpn-ntw {
                         }
                         min-elements 1;
                         description
-                          "If IS-IS is used on this network access, 
-                           this node contains at least one address 
+                          "If IS-IS is used on this network access,
+                           this node contains at least one address
                            family to be activated.";
                       }
                       leaf area-address {
