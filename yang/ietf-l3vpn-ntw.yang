@@ -141,6 +141,35 @@ module ietf-l3vpn-ntw {
       "Identity for the lag-tagged interface.";
   }
 
+  identity local-defined-next-hop {
+    description
+      "Defines a base identity type of local defined next-hops.";
+  }
+
+  identity discard {
+    base local-defined-next-hop;
+    description
+      "Indicates an action to discard traffic for the corresponding
+       destination.
+       For example, this can be used to blackhole traffic.";
+  }
+
+  identity local-link {
+    base local-defined-next-hop;
+    description
+      "Treat traffic towards addresses within the specified
+      next-hop prefix as though they are connected to a local
+      link.";
+  }
+
+  typedef predefined-next-hop {
+    type identityref {
+      base local-defines-next-hop;
+    }
+    description
+      "Pre-defined next-hop designation for locally generated
+      routes";
+
   /* Typedefs */
 
   typedef area-address {
@@ -1404,7 +1433,7 @@ module ietf-l3vpn-ntw {
                       }
                     }
                     container static {
-                      when "derived-from-or-self(../type, "
+                      when "derived-from-or-self(../type, " 
                          + "'vpn-common:static')" {
                         description
                           "Only applies when protocol is static.
@@ -1414,16 +1443,10 @@ module ietf-l3vpn-ntw {
                            allocation type for the IP connection
                            must be used.";
                       }
-                      description
-                        "Configuration specific to static routing.";
                       container cascaded-lan-prefixes {
-                        description
-                          "LAN prefixes from the customer.";
                         list ipv4-lan-prefixes {
                           if-feature "vpn-common:ipv4";
                           key "lan next-hop";
-                          description
-                            "List of LAN prefixes for the site.";
                           leaf lan {
                             type inet:ipv4-prefix;
                             description
@@ -1432,21 +1455,43 @@ module ietf-l3vpn-ntw {
                           leaf lan-tag {
                             type string;
                             description
-                              "Internal tag to be used in VPN
+                              "Internal tag to be used in VPN 
                                policies.";
                           }
                           leaf next-hop {
-                            type inet:ipv4-address;
+                            type union {
+                              type inet:ip-address;
+                              type local-defined-next-hop;
+                            }
                             description
-                              "Next-hop address to use on the
-                               customer side.";
+                              "The next-hop that is to be used for the static route
+                              - this may be specified as an IP address, an interface
+                              , or a pre-defined next-hop type (e.g., discard or
+                              local-link).";
                           }
+                          leaf bfd-enable {
+                            type boolean;
+                            description
+                              "Enables BFD.";
+                          }
+                          leaf metric {
+                            type uint32;
+                            description
+                              "Indicates the metric associated with 
+                               the static route.";
+                          }
+                          leaf preference {
+                            type uint32;
+                            description
+                              "Indicates the preference of the static
+                               routes.";
+                          }
+                          description
+                            "List of LAN prefixes for the site.";
                         }
                         list ipv6-lan-prefixes {
                           if-feature "vpn-common:ipv6";
                           key "lan next-hop";
-                          description
-                            "List of LAN prefixes for the site.";
                           leaf lan {
                             type inet:ipv6-prefix;
                             description
@@ -1455,18 +1500,46 @@ module ietf-l3vpn-ntw {
                           leaf lan-tag {
                             type string;
                             description
-                              "Internal tag to be used in VPN
+                              "Internal tag to be used in VPN 
                                policies.";
                           }
                           leaf next-hop {
-                            type inet:ipv6-address;
+                            type union {
+                              type inet:ip-address;
+                              type predefined-next-hop;
+                            }
                             description
-                              "Next-hop address to use on the
-                               customer side.";
+                              "The next-hop that is to be used for the static route
+                              - this may be specified as an IP address, an interface
+                              , or a pre-defined next-hop type (e.g., discard or 
+                              local-link).";
                           }
+                          leaf bfd-enable {
+                            type boolean;
+                            description
+                              "Enables BFD.";
+                          }
+                          leaf metric {
+                            type uint32;
+                            description
+                              "Indicates the metric associated with
+                               the static route.";
+                          }
+                          leaf preference {
+                            type uint32;
+                            description
+                              "Indicates the preference associated 
+                               with the static route.";
+                          }
+                          description
+                            "List of LAN prefixes for the site.";
                         }
+                        description
+                          "LAN prefixes from the customer.";
                       }
-                    }
+                      description
+                        "Configuration specific to static routing.";
+                    }                                       
                     container bgp {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:bgp')" {
@@ -1784,6 +1857,8 @@ module ietf-l3vpn-ntw {
                           "IS-IS interface mode type.";
                       }
                       uses vpn-common:service-status;
+                      description
+                        "IS-IS specific configuration.";
                     }
                     container rip {
                       when "derived-from-or-self(../type, "
