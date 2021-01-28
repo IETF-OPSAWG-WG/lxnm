@@ -1,0 +1,222 @@
+module: ietf-vpn-common
+
+  grouping vpn-description
+    +-- vpn-id?            vpn-id
+    +-- vpn-name?          string
+    +-- vpn-description?   string
+    +-- customer-name?     string
+  grouping vpn-profile-cfg
+    +-- valid-provider-identifiers
+       +-- cloud-identifier* [id] {cloud-access}?
+       |  +-- id?   string
+       +-- encryption-profile-identifier* [id]
+       |  +-- id?   string
+       +-- qos-profile-identifier* [id]
+       |  +-- id?   string
+       +-- bfd-profile-identifier* [id]
+       |  +-- id?   string
+       +-- forwarding-profile-identifier* [id]
+       |  +-- id?   string
+       +-- routing-profile-identifier* [id]
+          +-- id?   string
+  grouping status-timestamp
+    +-- status?         identityref
+    +-- last-updated?   yang:date-and-time
+  grouping service-status
+    +-- status
+       +-- admin-status
+       |  +-- status?         identityref
+       |  +-- last-updated?   yang:date-and-time
+       +--ro oper-status
+          +--ro status?         identityref
+          +--ro last-updated?   yang:date-and-time
+  grouping svc-transport-encapsulation
+    +-- underlay-transport
+       +-- type*   identityref
+  grouping rt-rd
+    +-- (rd-choice)?
+    |  +--:(directly-assigned)
+    |  |  +-- rd?             rt-types:route-distinguisher
+    |  +--:(pool-assigned)
+    |  |  +-- rd-pool-name?   string
+    |  |  +--ro rd-assign?      rt-types:route-distinguisher
+    |  +--:(full-autoasigned)
+    |  |  +-- auto?           empty
+    |  |  +--ro rd-assigned?    rt-types:route-distinguisher
+    |  +--:(no-rd)
+    |     +-- no-rd?          empty
+    +-- vpn-targets
+       +-- vpn-target* [id]
+       |  +-- id?                  int8
+       |  +-- route-targets* [route-target]
+       |  |  +-- route-target?   rt-types:route-target
+       |  +-- route-target-type    rt-types:route-target-type
+       +-- vpn-policies
+          +-- import-policy?   string
+          +-- export-policy?   string
+  grouping vpn-route-targets
+    +-- vpn-target* [id]
+    |  +-- id?                  int8
+    |  +-- route-targets* [route-target]
+    |  |  +-- route-target?   rt-types:route-target
+    |  +-- route-target-type    rt-types:route-target-type
+    +-- vpn-policies
+       +-- import-policy?   string
+       +-- export-policy?   string
+  grouping group
+    +-- groups
+       +-- group* [group-id]
+          +-- group-id?   string
+  grouping placement-constraints
+    +-- constraint* [constraint-type]
+       +-- constraint-type?   identityref
+       +-- target
+          +-- (target-flavor)?
+             +--:(id)
+             |  +-- group* [group-id]
+             |     +-- group-id?   string
+             +--:(all-accesses)
+             |  +-- all-other-accesses?   empty
+             +--:(all-groups)
+                +-- all-other-groups?     empty
+  grouping ports
+    +-- (source-port)?
+    |  +--:(source-port-range-or-operator)
+    |     +-- source-port-range-or-operator
+    |        +-- (port-range-or-operator)?
+    |           +--:(range)
+    |           |  +-- lower-port    inet:port-number
+    |           |  +-- upper-port    inet:port-number
+    |           +--:(operator)
+    |              +-- operator?     operator
+    |              +-- port          inet:port-number
+    +-- (destination-port)?
+       +--:(destination-port-range-or-operator)
+          +-- destination-port-range-or-operator
+             +-- (port-range-or-operator)?
+                +--:(range)
+                |  +-- lower-port    inet:port-number
+                |  +-- upper-port    inet:port-number
+                +--:(operator)
+                   +-- operator?     operator
+                   +-- port          inet:port-number
+  grouping qos-classification-policy
+    +-- rule* [id]
+       +-- id?                        string
+       +-- (match-type)?
+       |  +--:(match-flow)
+       |  |  +-- (l3)?
+       |  |  |  +--:(ipv4)
+       |  |  |  |  +-- ipv4
+       |  |  |  |     +-- dscp?                             inet:dscp
+       |  |  |  |     +-- ecn?                              uint8
+       |  |  |  |     +-- length?                           uint16
+       |  |  |  |     +-- ttl?                              uint8
+       |  |  |  |     +-- protocol?                         uint8
+       |  |  |  |     +-- ihl?                              uint8
+       |  |  |  |     +-- flags?                            bits
+       |  |  |  |     +-- offset?                           uint16
+       |  |  |  |     +-- identification?                   uint16
+       |  |  |  |     +-- (destination-network)?
+       |  |  |  |     |  +--:(destination-ipv4-network)
+       |  |  |  |     |     +-- destination-ipv4-network?
+       |  |  |  |     |             inet:ipv4-prefix
+       |  |  |  |     +-- (source-network)?
+       |  |  |  |        +--:(source-ipv4-network)
+       |  |  |  |           +-- source-ipv4-network?
+       |  |  |  |                   inet:ipv4-prefix
+       |  |  |  +--:(ipv6)
+       |  |  |     +-- ipv6
+       |  |  |        +-- dscp?                             inet:dscp
+       |  |  |        +-- ecn?                              uint8
+       |  |  |        +-- length?                           uint16
+       |  |  |        +-- ttl?                              uint8
+       |  |  |        +-- protocol?                         uint8
+       |  |  |        +-- (destination-network)?
+       |  |  |        |  +--:(destination-ipv6-network)
+       |  |  |        |     +-- destination-ipv6-network?
+       |  |  |        |             inet:ipv6-prefix
+       |  |  |        +-- (source-network)?
+       |  |  |        |  +--:(source-ipv6-network)
+       |  |  |        |     +-- source-ipv6-network?
+       |  |  |        |             inet:ipv6-prefix
+       |  |  |        +-- flow-label?
+       |  |  |                inet:ipv6-flow-label
+       |  |  +-- (l4)?
+       |  |     +--:(tcp)
+       |  |     |  +-- tcp
+       |  |     |     +-- sequence-number?
+       |  |     |     |       uint32
+       |  |     |     +-- acknowledgement-number?
+       |  |     |     |       uint32
+       |  |     |     +-- data-offset?
+       |  |     |     |       uint8
+       |  |     |     +-- reserved?
+       |  |     |     |       uint8
+       |  |     |     +-- flags?
+       |  |     |     |       bits
+       |  |     |     +-- window-size?
+       |  |     |     |       uint16
+       |  |     |     +-- urgent-pointer?
+       |  |     |     |       uint16
+       |  |     |     +-- options?
+       |  |     |     |       binary
+       |  |     |     +-- (source-port)?
+       |  |     |     |  +--:(source-port-range-or-operator)
+       |  |     |     |     +-- source-port-range-or-operator
+       |  |     |     |        +-- (port-range-or-operator)?
+       |  |     |     |           +--:(range)
+       |  |     |     |           |  +-- lower-port
+       |  |     |     |           |  |       inet:port-number
+       |  |     |     |           |  +-- upper-port
+       |  |     |     |           |          inet:port-number
+       |  |     |     |           +--:(operator)
+       |  |     |     |              +-- operator?     operator
+       |  |     |     |              +-- port
+       |  |     |     |                      inet:port-number
+       |  |     |     +-- (destination-port)?
+       |  |     |        +--:(destination-port-range-or-operator)
+       |  |     |           +-- destination-port-range-or-operator
+       |  |     |              +-- (port-range-or-operator)?
+       |  |     |                 +--:(range)
+       |  |     |                 |  +-- lower-port
+       |  |     |                 |  |       inet:port-number
+       |  |     |                 |  +-- upper-port
+       |  |     |                 |          inet:port-number
+       |  |     |                 +--:(operator)
+       |  |     |                    +-- operator?     operator
+       |  |     |                    +-- port
+       |  |     |                            inet:port-number
+       |  |     +--:(udp)
+       |  |        +-- udp
+       |  |           +-- length?
+       |  |           |       uint16
+       |  |           +-- (source-port)?
+       |  |           |  +--:(source-port-range-or-operator)
+       |  |           |     +-- source-port-range-or-operator
+       |  |           |        +-- (port-range-or-operator)?
+       |  |           |           +--:(range)
+       |  |           |           |  +-- lower-port
+       |  |           |           |  |       inet:port-number
+       |  |           |           |  +-- upper-port
+       |  |           |           |          inet:port-number
+       |  |           |           +--:(operator)
+       |  |           |              +-- operator?     operator
+       |  |           |              +-- port
+       |  |           |                      inet:port-number
+       |  |           +-- (destination-port)?
+       |  |              +--:(destination-port-range-or-operator)
+       |  |                 +-- destination-port-range-or-operator
+       |  |                    +-- (port-range-or-operator)?
+       |  |                       +--:(range)
+       |  |                       |  +-- lower-port
+       |  |                       |  |       inet:port-number
+       |  |                       |  +-- upper-port
+       |  |                       |          inet:port-number
+       |  |                       +--:(operator)
+       |  |                          +-- operator?     operator
+       |  |                          +-- port
+       |  |                                  inet:port-number
+       |  +--:(match-application)
+       |     +-- match-application?   identityref
+       +-- target-class-id?           string
