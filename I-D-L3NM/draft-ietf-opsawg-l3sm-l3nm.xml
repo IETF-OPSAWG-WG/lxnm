@@ -314,7 +314,7 @@
       target="RFC8453"></xref> and uses the terminology defined in those
       documents.</t>
 
-      <t>This document uses the term "Network Model" defined in Section 2.1 of
+      <t>This document uses the term "network model" defined in Section 2.1 of
       <xref target="RFC8969"></xref>.</t>
 
       <t>The meaning of the symbols in the tree diagrams is defined in <xref
@@ -411,8 +411,7 @@
       "Config Manager" roles may be performed by "Controllers".</t>
 
       <figure align="center" anchor="xml_happy" title="Reference Architecture">
-        <artwork align="center"><![CDATA[
-                                  +---------------+
+        <artwork align="center"><![CDATA[                                  +---------------+
                                   |   Customer    |
                                   +---------------+
                   Customer Service Model  |
@@ -460,8 +459,7 @@
 
       <figure align="center" anchor="l3sm_actn"
               title="L3SM and L3NM in the Context of ACTN">
-        <artwork align="center"><![CDATA[
-               +----------------------------------+
+        <artwork align="center"><![CDATA[               +----------------------------------+
                | Customer                         |
                | +-----------------------------+  |
                | |             CNC             |  |
@@ -4749,7 +4747,7 @@ VIETF01 2019-11-17 Oscar, Samier, Med, Stephane, Alejandro.
           <artwork align="left"><![CDATA[                   
       +-------------+                  +------------------+    
       |             |                  | PE               |
-      |             | 192.0.2.2        |  10.0.0.1        |
+      |             | 192.0.2.2        |  198.51.100.1    |
       |   eNodeB    |>--------/------->|...........       | 
       |             |          Vlan 1  |          |       |
       |             |>--------/------->|......    |       |
@@ -4763,15 +4761,15 @@ VIETF01 2019-11-17 Oscar, Samier, Med, Stephane, Alejandro.
      ]]></artwork>
         </figure>
 
-        <t>To create a L3VPN service using the L3NM model, the following
-        sample steps can be followed:</t>
+        <t>To create a L3VPN service using the L3NM, the following sample
+        steps can be followed:</t>
 
-        <t>First: Create the 4G VPN Service (<xref
+        <t>First: Create the 4G VPN service (<xref
         target="service-mbh2"></xref>).</t>
 
         <figure align="center" anchor="service-mbh2"
                 title="Create VPN Service">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
+          <artwork align="center"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
 Host: example.com
 Content-Type: application/yang-data+json
 
@@ -4790,13 +4788,13 @@ Content-Type: application/yang-data+json
 ]]></artwork>
         </figure>
 
-        <t>Second: Create a VPN Node as depicted in <xref
-        target="service-mbh3"></xref>. In this type of service, the VPN Node
+        <t>Second: Create a VPN node as depicted in <xref
+        target="service-mbh3"></xref>. In this type of service, the VPN node
         is equivalent to the VRF configured in the physical device
-        ('ne-id'=10.0.0.1).</t>
+        ('ne-id'=198.51.100.1).</t>
 
         <figure align="center" anchor="service-mbh3" title="Create VPN Node">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+          <artwork align="center"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
       vpn-services/vpn-service=4G    
 Host: example.com
 Content-Type: application/yang-data+json
@@ -4806,7 +4804,7 @@ Content-Type: application/yang-data+json
     "vpn-node": [
       {
         "vpn-node-id": "44",
-        "ne-id": "10.0.0.1",
+        "ne-id": "198.51.100.1",
         "local-autonomous-system": "65550",
         "rd": "0:65550:1",
         "vpn-targets": {
@@ -4826,14 +4824,14 @@ Content-Type: application/yang-data+json
 }  ]]></artwork>
         </figure>
 
-        <t>Finally, two VPN Network Accesses are created using the same
+        <t>Finally, two VPN network accesses are created using the same
         physical port ('port-id'=1/1/1). Each 'vpn-network-access' has a
         particular VLAN (1,2) to differentiate the traffic between: Sync and
         data (<xref target="service-mbh4"></xref>).</t>
 
         <figure align="center" anchor="service-mbh4"
                 title="Create VPN Network Access">
-          <artwork align="left"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+          <artwork align="center"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
       vpn-services/vpn-service=4G/vpn-nodes/vpn-node=44
 content-type: application/yang-data+json
 
@@ -4857,7 +4855,7 @@ content-type: application/yang-data+json
                 {
                   "address-id": "1",
                   "s-provider-address": "192.0.2.1",
-                  "s-customer-address": "192.0.2.1",
+                  "s-customer-address": "192.0.2.2",
                   "s-prefix-length": 32
                 }
               ]
@@ -4909,6 +4907,43 @@ content-type: application/yang-data+json
   }
 }    ]]></artwork>
         </figure>
+
+        <t>Similar actions can be followed when IPv6 is supported in a VPN.
+        For example, <xref target="service-mbh3-v6"></xref> illustrates how to
+        create a VPN node that is identified with an 'ne-id' set to
+        2001:db8::1.</t>
+
+        <t><figure align="center" anchor="service-mbh3-v6"
+            title="Create VPN Node (IPv6)">
+            <artwork align="center"><![CDATA[POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/\
+      vpn-services/vpn-service=4G    
+Host: example.com
+Content-Type: application/yang-data+json
+
+{
+  "ietf-l3vpn-ntw:vpn-nodes": {
+    "vpn-node": [
+      {
+        "vpn-node-id": "44",
+        "ne-id": "2001:db8::1",
+        "local-autonomous-system": "65550",
+        "rd": "0:65550:1",
+        "vpn-targets": {
+          "vpn-target": [
+            {
+              "id": "1",
+              "route-targets": [
+                "0:65550:1"
+              ],
+              "route-target-type": "both"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}  ]]></artwork>
+          </figure></t>
       </section>
 
       <section anchor="multicast_vpn_example"
@@ -4939,8 +4974,7 @@ content-type: application/yang-data+json
 
         <figure align="center" anchor="service-mc2"
                 title=" Create Multicast VPN Service (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[             
-{
+          <artwork align="center"><![CDATA[{
   "ietf-l3vpn-ntw:vpn-services": {
     "vpn-service": [
       {
@@ -4962,15 +4996,15 @@ content-type: application/yang-data+json
 
         <figure align="center" anchor="service-mc3"
                 title="Create Multicast VPN Node (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[            
+          <artwork align="center"><![CDATA[            
 {
   "ietf-l3vpn-ntw:vpn-node": [
     {
       "vpn-node-id": "500003105",
-      "ne-id": "10.250.2.202",
+      "ne-id": "198.51.100.10",
       "autonomous-system": "3816",
       "description": "VRF_IPTV_MULTICAST",
-      "router-id": "10.250.2.202",
+      "router-id": "198.51.100.10",
       "address-family": "ipv4",
       "node-role": "vpn-common:hub-role",
       "rd": "3816:31050202",
@@ -4981,7 +5015,7 @@ content-type: application/yang-data+json
             "rp-group-mapping": [
               {
                 "id": "1",
-                "rp-address": "172.19.48.17",
+                "rp-address": "203.0.113.17",
                 "groups": {
                   "group": [
                     {
@@ -5026,7 +5060,7 @@ content-type: application/yang-data+json
           "address": [
             {
               "address-id": "1",
-              "s-provider-address": "172.19.48.1",
+              "s-provider-address": "203.0.113.1",
               "s-prefix-length": 30
             }
           ]
@@ -5042,7 +5076,7 @@ content-type: application/yang-data+json
             "peer-autonomous-system": "6500",
             "local-autonomous-system": "3816",
             "address-family": "ipv4",
-            "neighbor": "172.19.48.2",
+            "neighbor": "203.0.113.2",
             "description": "Connected to CE"
           }
         }
