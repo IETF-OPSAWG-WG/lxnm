@@ -352,9 +352,12 @@
        +-- oper-status
           +--ro status?         identityref
           +--ro last-updated?   yang:date-and-time
-  grouping svc-transport-encapsulation
-    +-- underlay-transport
-       +-- type*   identityref
+  grouping underlay-transport
+    +-- (type)?
+       +--:(abstract)
+       |  +-- transport-intance-id?   string
+       +--:(protocol)
+          +-- protocol*               identityref
   grouping rt-rd
     ...
   grouping vpn-route-targets
@@ -429,20 +432,28 @@
               to the whole service or an endpoint.</t>
             </list></t>
 
-          <t hangText="'svc-transport-encapsulation':"><list style="none">
+          <t hangText="'underlay-transport':"><list style="none">
               <t>A YANG grouping that defines the type of the underlay
-              transport for a VPN service.</t>
+              transport for a VPN service. <vspace blankLines="1" />The
+              underlay transport can be expressed as an abstract transport
+              instance identifier (e.g., an identifier of a VPN+ instance
+              <xref target="I-D.ietf-teas-enhanced-vpn"></xref>, a virtual
+              network identifier <xref
+              target="I-D.ietf-teas-actn-vn-yang"></xref>, or a network slice
+              name <xref
+              target="I-D.ietf-teas-ietf-network-slice-definition"></xref>) or
+              as an ordered list of the actual protocols to be enabled. </t>
             </list></t>
 
           <t hangText="'rt-rd': "><list style="none">
               <t>A YANG grouping that defines the set of route targets,
               defined as Route targets (RTs) and Route Distinguishers (RDs),
               to match for import and export routes to/from a Virtual Routing
-              and Forwarding (VRF). As depicted in <xref
-              target="rtrd"></xref>, the module supports these modes: direct
-              assignment, automatic assignment from a given pool, automatic
-              assignment, no assignment. <figure align="center" anchor="rtrd"
-                  title="'rt-rd' Grouping Subtree">
+              and Forwarding (VRF). <vspace blankLines="1" />As depicted in
+              <xref target="rtrd"></xref>, the module supports these modes:
+              direct assignment, automatic assignment from a given pool,
+              automatic assignment, no assignment. <figure align="center"
+                  anchor="rtrd" title="'rt-rd' Grouping Subtree">
                   <artwork align="center"><![CDATA[  grouping rt-rd
     +-- (rd-choice)?
     |  +--:(directly-assigned)
@@ -2207,27 +2218,49 @@ module ietf-vpn-common {
     }
   }
 
-  grouping svc-transport-encapsulation {
+  grouping underlay-transport {
     description
       "This grouping defines the type of underlay transport
-       for the VPN service.";
-    container underlay-transport {
+       for the VPN service. It can include an identifier to
+       an abstract transport instance to which the VPN is 
+       grafted or indicate a technical implementation that
+       is expressed as an ordered list of protocols.";
+    choice type {
       description
-        "Container for the transport underlay.";
-      leaf-list type {
-        type identityref {
-          base protocol-type;
-        }
-        ordered-by user;
+        "A choice based on the type of underlay transport
+         constraints.";
+      case abstract {
         description
-          "Protocols used to deliver a VPN service.";
+          "Indicates that the transport constraint is 
+           an abstract concept.";
+        leaf transport-instance-id {
+          type string;
+          description
+            "Includes an identifier of an abstract transport
+             instance. For example, it includes a VPN+
+             service identifier, a slice identifier, or 
+             a virtual network identifier. 
+             This is implementation-specific.";
+        }
+      }
+      case protocol {
+        description
+          "Indicates a list of protocols.";
+        leaf-list protocol {
+          type identityref {
+            base protocol-type;
+          }
+          ordered-by user;
+          description
+            "A list of transport protocols.";
+        }
       }
     }
   }
 
   grouping rt-rd {
     description
-      "Grouping for route target (RT) and route 
+      "Grouping for route target (RT) and route
        distinguisher (RD).";
     choice rd-choice {
       description
@@ -2624,6 +2657,12 @@ module ietf-vpn-common {
       <?rfc include='reference.RFC.8512'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-l3sm-l3nm'?>
+
+      <?rfc include='reference.I-D.ietf-teas-enhanced-vpn'?>
+
+      <?rfc include='reference.I-D.ietf-teas-ietf-network-slice-definition'?>
+
+      <?rfc include='reference.I-D.ietf-teas-actn-vn-yang'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-l2nm'?>
 
