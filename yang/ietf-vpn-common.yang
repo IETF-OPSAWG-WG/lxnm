@@ -1550,27 +1550,49 @@ module ietf-vpn-common {
     }
   }
 
-  grouping svc-transport-encapsulation {
+  grouping underlay-transport {
     description
       "This grouping defines the type of underlay transport
-       for the VPN service.";
-    container underlay-transport {
+       for the VPN service. It can include an identifier to
+       an abstract tranport instance to which the VPN is 
+       grafted or indicate a technical implementation that
+       is expressed as an ordered list of protocols.";
+    choice type {
       description
-        "Container for the transport underlay.";
-      leaf-list type {
-        type identityref {
-          base protocol-type;
-        }
-        ordered-by user;
+        "A choice based on the type of underlay transport
+         constrainst.";
+      case abstract {
         description
-          "Protocols used to deliver a VPN service.";
+          "Indicates that the transport constrainst is 
+           an abstract concept.";
+        leaf transport-intance-id {
+          type string;
+          description
+            "Includes an identifier of an abstract transport
+             instance. For example, it includes a VPN+
+             service identifier, a slice identifier, or 
+             a virtual network identifier. 
+             This is implementation-specific.";
+        }
+      }
+      case protocol {
+        description
+          "Indicates a list of protocols.";
+        leaf-list protocol {
+          type identityref {
+            base protocol-type;
+          }
+          ordered-by user;
+          description
+            "A list of transport protocols.";
+        }
       }
     }
   }
 
   grouping rt-rd {
     description
-      "Grouping for route target (RT) and route 
+      "Grouping for route target (RT) and route
        distinguisher (RD).";
     choice rd-choice {
       description
