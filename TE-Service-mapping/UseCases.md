@@ -1,4 +1,4 @@
-TE Service Mapping Use cases:
+## TE Service Mapping Use cases:
 
 1. I want a VPN service with a given optimization criteria for all the VPN
 	1. For example, minimum latency
