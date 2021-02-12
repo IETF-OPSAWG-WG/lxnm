@@ -23,6 +23,11 @@ module ietf-l3vpn-ntw {
     reference
       "RFC 8177: YANG Key Chain.";
   }
+  import ietf-routing-types {
+    prefix rt-types;
+    reference
+      "RFC 8294: Common YANG Data Types for the Routing Area";
+  }
 
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
@@ -1606,14 +1611,14 @@ module ietf-l3vpn-ntw {
                           "Indicates the Customer's AS Number (ASN) in
                            case the Customer requests BGP routing.";
                       }
-                      leaf-list address-family {
+                      leaf address-family {
                         type identityref {
                           base vpn-common:address-family;
                         }
-                        min-elements 1;
                         description
-                          "This node contains at least one
-                           address family to be activated.";
+                          "This node contains the address families to be
+                           activated. Dual-stack means that both IPv4  and
+                           IPv6 will be activated.";
                       }
                       leaf-list neighbor {
                         type inet:ip-address;
@@ -1648,16 +1653,35 @@ module ietf-l3vpn-ntw {
                            peer.";
                       }
                       leaf site-of-origin {
-                        type boolean;
-                        default "false";
+                        when "../address-family = 'vpn-common:ipv4' or "
+                           + "../address-family = 'vpn-common:dual-stack'" {
+                          description
+                            "Only applies if IPv4 is activated.";
+                        }
+                        type rt-types:route-origin;
                         description
                           "The Site of Origin attribute is encoded as 
                            a Route Origin Extended Community. It is meant 
-                           to uniquely identify the set of routes learned from
-                           a site via a particular CE/PE connection
+                           to uniquely identify the set of routes learned 
+                           from a site via a particular CE/PE connection
                            and is used to prevent routing loops.";
                          reference
                            "RFC4364, Section 7";
+                      }
+                      leaf ipv6-site-of-origin {
+                        when "../address-family = 'vpn-common:ipv6' or "
+                           + "../address-family = 'vpn-common:dual-stack'" {
+                          description
+                            "Only applies if IPv6 is activated.";
+                        }
+                        type rt-types:ipv6-route-origin;
+                        description
+                          "IPv6 Route Origins are IPv6 Address Specific
+                           BGP Extended that are meant to the Site of
+                           Origin for VRF information.";
+                         reference
+                           "RFC 5701: IPv6 Address Specific BGP Extended Community
+                                      Attribute";
                       }
                       container bgp-max-prefix {
                         description
