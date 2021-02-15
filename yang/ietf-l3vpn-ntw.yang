@@ -71,6 +71,16 @@ module ietf-l3vpn-ntw {
       "RFC XXXX: A Layer 3 VPN Network YANG Model";
   }
 
+  /* Features */
+
+  feature msdp {
+    description
+      "This feature indicates that Multicast Source Discovery Protocol
+       (MSDP) capabilities are supported by the VPN.";
+    reference
+      "RFC 3618: Multicast Source Discovery Protocol (MSDP)";
+  }
+
   /* Identities */
 
   identity address-allocation-type {
@@ -401,12 +411,7 @@ module ietf-l3vpn-ntw {
               if-feature "vpn-common:multicast";
               description
                 "Global multicast parameters.";
-              leaf enabled {
-                type boolean;
-                default "false";
-                description
-                  "Enables multicast.";
-              }
+              uses vpn-common:service-status;
               leaf-list tree-flavor {
                 type identityref {
                   base vpn-common:multicast-tree-type;
@@ -564,7 +569,7 @@ module ietf-l3vpn-ntw {
                 }
               }
               container msdp {
-                if-feature "vpn-common:multicast";
+                if-feature "msdp";
                 description
                   "Includes MSDP-related parameters.";
                 leaf peer {
@@ -582,7 +587,7 @@ module ietf-l3vpn-ntw {
                 uses vpn-common:service-status;
               }
               container igmp {
-                if-feature "vpn-common:multicast and vpn-common:ipv4";
+                if-feature "vpn-common:igmp and vpn-common:ipv4";
                 description
                   "Includes IGMP-related parameters.";
                 leaf subscription-channel {
@@ -611,7 +616,7 @@ module ietf-l3vpn-ntw {
                 uses vpn-common:service-status;
               }
               container mld {
-                if-feature "vpn-common:multicast and vpn-common:ipv6";
+                if-feature "vpn-common:mld and vpn-common:ipv6";
                 description
                   "Includes MLD-related parameters.";
                 leaf max-groups {
@@ -1531,6 +1536,7 @@ module ietf-l3vpn-ntw {
                               "Indicates the preference of the static
                                routes.";
                           }
+                          uses vpn-common:service-status;
                         }
                         list ipv6-lan-prefixes {
                           if-feature "vpn-common:ipv6";
@@ -1577,6 +1583,7 @@ module ietf-l3vpn-ntw {
                               "Indicates the preference associated
                                with the static route.";
                           }
+                          uses vpn-common:service-status;
                         }
                       }
                     }
@@ -2249,7 +2256,9 @@ module ietf-l3vpn-ntw {
                          the interface.";
                     }
                     container igmp {
-                      when "../protocol-type = 'host'";
+                      when "../protocol-type = 'host' and " 
+                         + "../address-family = 'vpn-common:ipv4' or " 
+                         + "'vpn-common:dual-stack'";
                       if-feature "vpn-common:ipv4";
                       description
                         "Includes IGMP-related parameters.";
@@ -2274,7 +2283,9 @@ module ietf-l3vpn-ntw {
                       uses vpn-common:service-status;
                     }
                     container mld {
-                      when "../protocol-type = 'host'";
+                      when "../protocol-type = 'host' and " 
+                         + "../address-family = 'vpn-common:ipv6' or " 
+                         + "'vpn-common:dual-stack'";
                       if-feature "vpn-common:ipv6";
                       description
                         "Includes MLD-related parameters.";
