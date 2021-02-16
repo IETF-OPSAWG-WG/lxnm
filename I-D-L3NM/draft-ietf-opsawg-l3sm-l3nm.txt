@@ -114,7 +114,7 @@ Barguil, et al.          Expires August 20, 2021                [Page 2]
 Internet-Draft                    L3NM                     February 2021
 
 
-   7.  Layer 3 Network Model . . . . . . . . . . . . . . . . . . . .  46
+   7.  L3NM YANG Module  . . . . . . . . . . . . . . . . . . . . . .  46
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  95
    9.  Security Considerations . . . . . . . . . . . . . . . . . . .  95
    10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  97
@@ -1713,11 +1713,11 @@ Internet-Draft                    L3NM                     February 2021
 6.3.2.2.3.  CE-PE Routing Protocols
 
    A service provider can configure one or more routing protocols
-   associated with a particular 'vpn-network-access' (Figure 16).  Such
-   routing protocol is enabled between the PE and the CE.  Each instance
-   is uniquely identified to accommodate scenarios where multiple
-   instances of the same routing protocol have to be configured.
-
+   associated with a particular 'vpn-network-access'.  Such routing
+   protocol is enabled between the PE and the CE.  Each instance is
+   uniquely identified to accommodate scenarios where multiple instances
+   of the same routing protocol have to be configured.  The subtree of
+   the 'routing-protocols' is shown in Figure 16.
 
 
 
@@ -1766,12 +1766,10 @@ Internet-Draft                    L3NM                     February 2021
 
                    Figure 16: Routing Subtree Structure
 
-   Routing configuration does not include low-level policies.  Such
-   policies are handed at the device configuration level.  Local
-   policies of a service provider (e.g., filtering) will be implemented
-   as part of the device configuration; these are not captured in the
-   L3NM but the model allows to associate local profiles with routing
-   instances.
+   Multiple routing instances can be defined; each uniquely identified
+   by an 'id'.  The type of a routing instance is indicated in 'type'.
+   The values of this attributes are those defined in
+   [I-D.ietf-opsawg-vpn-common] ('routing-protocol-type' identity).
 
    Configuring multiple instances of the same routing protocol does not
    automatically imply that, from a device configuration perspective,
@@ -1787,6 +1785,8 @@ Internet-Draft                    L3NM                     February 2021
    o  Multiple BGP processes with a single neighbor running in each
       process.
 
+   o  A single BGP process with multiple neighbors running.
+
 
 
 Barguil, et al.          Expires August 20, 2021               [Page 32]
@@ -1794,40 +1794,40 @@ Barguil, et al.          Expires August 20, 2021               [Page 32]
 Internet-Draft                    L3NM                     February 2021
 
 
-   o  A single BGP process with multiple neighbors running.
-
    o  A combination of both.
+
+   Routing configuration does not include low-level policies.  Such
+   policies are handed at the device configuration level.  Local
+   policies of a service provider (e.g., filtering) will be implemented
+   as part of the device configuration; these are not captured in the
+   L3NM, but the model allows to associate local profiles with routing
+   instances ('routing-profiles').
 
    The L3NM supports the configuration of one or more IPv4/IPv6 static
    routes.  Since the same structure is used for both IPv4 and IPv6, it
    was considered to have one single container to group both static
-   entries independently of their address family, but hat design was
+   entries independently of their address family, but that design was
    abandoned to ease the mapping with the structure in [RFC8299].  As
-   depicted in Figure 17, the following attributes can be defined for a
+   depicted in Figure 17, the following data nodes can be defined for a
    given IP prefix:
 
-   'lan-tag':  Indicates a local tag (e.g., myfavourite-lan) that is
+   'lan-tag':  Indicates a local tag (e.g., "myfavourite-lan") that is
       used to enforce local policies.
 
    'next-hop':  Indicates the next-hop to be used for the static route.
       It can be identified by an IP address, an interface, etc.
 
    'bfd-enable':  Indicates whether BFD is enabled or disabled for this
-      entry.
+      static route entry.
 
    'metric':  Indicates the metric associated with the static routing
       entry.
 
    'preference':  Indicates the preference associated with the static
-      routing entry.
+      route entry.  This preference is used to selecting a preferred
+      route among routes to the same destination prefix.
 
-
-
-
-
-
-
-
+   'status':  Indicates the status of a static route entry.
 
 
 
@@ -1850,54 +1850,54 @@ Barguil, et al.          Expires August 20, 2021               [Page 33]
 Internet-Draft                    L3NM                     February 2021
 
 
-            ...
-            +--rw routing-protocols
-            |  +--rw routing-protocol* [id]
-            |     ...
-            |     +--rw static
-            |     |  +--rw cascaded-lan-prefixes
-            |     |     +--rw ipv4-lan-prefixes*
-            |     |     |       [lan next-hop]
-            |     |     |       {vpn-common:ipv4}?
-            |     |     |  +--rw lan         inet:ipv4-prefix
-            |     |     |  +--rw lan-tag?      string
-            |     |     |  +--rw next-hop      union
-            |     |     |  +--rw bfd-enable?   boolean
-            |     |     |  +--rw metric?       uint32
-            |     |     |  +--rw preference?   uint32
-            |     |     |  +--rw status
-            |     |     |     +--rw admin-status
-            |     |     |     |  +--rw status?    identityref
-            |     |     |     |  +--rw last-updated?
-            |     |     |     |            yang:date-and-time
-            |     |     |     +--ro oper-status
-            |     |     |        +--ro status?   identityref
-            |     |     |        +--ro last-updated?
-            |     |     |                 yang:date-and-time
-            |     |     +--rw ipv6-lan-prefixes*
-            |     |             [lan next-hop]
-            |     |             {vpn-common:ipv6}?
-            |     |        +--rw lan         inet:ipv6-prefix
-            |     |        +--rw lan-tag?      string
-            |     |        +--rw next-hop      union
-            |     |        +--rw bfd-enable?   boolean
-            |     |        +--rw metric?       uint32
-            |     |        +--rw preference?   uint32
-            |     |        +--rw status
-            |     |           +--rw admin-status
-            |     |           |  +--rw status?   identityref
-            |     |           |  +--rw last-updated?
-            |     |           |           yang:date-and-time
-            |     |           +--ro oper-status
-            |     |              +--ro status?  identityref
-            |     |              +--ro last-updated?
-            |     |                         yang:date-and-time
-            ...
+       ...
+       +--rw routing-protocols
+       |  +--rw routing-protocol* [id]
+       |     ...
+       |     +--rw static
+       |     |  +--rw cascaded-lan-prefixes
+       |     |     +--rw ipv4-lan-prefixes*
+       |     |     |       [lan next-hop]
+       |     |     |       {vpn-common:ipv4}?
+       |     |     |  +--rw lan         inet:ipv4-prefix
+       |     |     |  +--rw lan-tag?      string
+       |     |     |  +--rw next-hop      union
+       |     |     |  +--rw bfd-enable?   boolean
+       |     |     |  +--rw metric?       uint32
+       |     |     |  +--rw preference?   uint32
+       |     |     |  +--rw status
+       |     |     |     +--rw admin-status
+       |     |     |     |  +--rw status?         identityref
+       |     |     |     |  +--rw last-updated?   yang:date-and-time
+       |     |     |     +--ro oper-status
+       |     |     |        +--ro status?         identityref
+       |     |     |        +--ro last-updated?   yang:date-and-time
+       |     |     +--rw ipv6-lan-prefixes*
+       |     |             [lan next-hop]
+       |     |             {vpn-common:ipv6}?
+       |     |        +--rw lan         inet:ipv6-prefix
+       |     |        +--rw lan-tag?      string
+       |     |        +--rw next-hop      union
+       |     |        +--rw bfd-enable?   boolean
+       |     |        +--rw metric?       uint32
+       |     |        +--rw preference?   uint32
+       |     |        +--rw status
+       |     |           +--rw admin-status
+       |     |           |  +--rw status?         identityref
+       |     |           |  +--rw last-updated?   yang:date-and-time
+       |     |           +--ro oper-status
+       |     |              +--ro status?         identityref
+       |     |              +--ro last-updated?   yang:date-and-time
+       ...
 
                 Figure 17: Static Routing Subtree Structure
 
-   In addition, this L3Nm supports the following CE-PE routing
-   protocols:
+   Also, the L3NM supports the following CE-PE routing protocols:
+
+   BGP:  The model (Figure 18) allows to configure a BGP neighbor,
+      including a set for parameters that are pertinent to be tweaked at
+      the network level for service customization purposes.  This
+      container does not aim to include every BGP parameter; a
 
 
 
@@ -1906,54 +1906,54 @@ Barguil, et al.          Expires August 20, 2021               [Page 34]
 Internet-Draft                    L3NM                     February 2021
 
 
-   BGP:  The model (Figure 18) allows to configure a BGP neighbor,
-      including a set for parameters that are pertinent to be tweaked at
-      the network level for service customization purposes.  This
-      container does not aim to include every BGP parameter; a
       comprehensive set of parameters belongs more to the BGP device
-      model.  The following parameters are captured in Figure 18.  It is
-      up to the implementation to drive the corresponding BGP device
-      configuration.
+      model.  The following data nodes are captured in Figure 18.  It is
+      up to the implementation to derive the corresponding BGP device
+      configuration:
 
-      'peer-autonomous-system':  This parameter conveys the Customer's
-         AS Number (ASN).
+      'description':  Includes a description of the BGP session.
 
-      'local-autonomous-system':  This parameter is set of AS override
-         is activated for this peer.
+      'local-autonomous-system':  Is set to the ASN to override a peers'
+         ASN if such feature is requested by the customer.
 
-      'address-family':  This attribute indicates the address-family of
-         the peer.  It can be set to IPv4, IPv6, or both address-
-         families.
+      'peer-autonomous-system':  Conveys the Customer's AS Number (ASN).
+
+      'address-family':  Indicates the address-family of the peer.  It
+         can be set to IPv4, IPv6, or dual-stack.
 
       'neighbor':  The module supports supplying two neighbors (each for
          a given address-family) or one neighbor (if 'address-family'
-         attribute is set to both IPv4 and IPv6 address-families).  A
-         list of IP address(es) of the BGP neighbor can be then conveyed
-         in this parameter.
+         attribute is set to dual-stack).  A list of IP address(es) of
+         the BGP neighbor can be then conveyed in this data node.
 
-      'multihop':  This attribute indicates the number of allowed IP
-         hops between a BGP peer and a PE.
-
-      'security':  The authentication type will be driven by the
-         implementation but the module supports any authentication that
-         uses a key as a parameter.
+      'multihop':  Indicates the number of allowed IP hops between a PE
+         and its BGP peer.
 
       'as-override':  If set, this parameter indicates whether AS
          override is enabled, i.e., replace the ASN of the peer
-         specified in the AS Path attribute with the ASN identified by
-         the 'local-autonomous-system' attribute.
-
-      'xxx':
-
-      'xxx':
+         specified in the AS_PATH BGP attribute with the ASN identified
+         by the 'local-autonomous-system' attribute.
 
       'default-route':  This attribute controls whether default route(s)
          can be advertised to the peer.
 
-      'bgp-max-prefix':  This attribute is used to control how many
-         prefixes can be received from a neighbor.  If reached, the BGP
-         session will be teared down.
+      'site-of-origin':  The Site of Origin attribute is encoded as a
+         Route Origin Extended Community.  It is meant to uniquely
+         identify the set of routes learned from a site via a particular
+         CE/PE connection and is used to prevent routing loops
+         (Section 7 of [RFC4364]).
 
+      'ipv6-site-of-origin':  IPv6 Route Origins are IPv6 Address
+         Specific BGP Extended that are meant to the Site of Origin for
+         VRF information [RFC5701].
+
+      'bgp-max-prefix':  Controls the behavior when a prefix maximum is
+         reached.
+
+      'bgp-timers':   Two timers can be captured in this container: (1)
+         'hold-time' which is the time interval that will be used for
+         the HoldTimer (Section 4.2 of [RFC4271]) when establishing a
+         BGP session. (2) 'keep-alive' which is the time interval for
 
 
 
@@ -1962,54 +1962,54 @@ Barguil, et al.          Expires August 20, 2021               [Page 35]
 Internet-Draft                    L3NM                     February 2021
 
 
-      'bgp-timers':   Two timers can be captured in this container: (1)
-         'hold-time' which is the time interval that will be used for
-         the HoldTimer (Section 4.2 of [RFC4271]) when establishing a
-         BGP session. (2) 'keep-alive' which is the time interval for
          the KeepAlive timer between a PE and a BGP peer (Section 4.4 of
          [RFC4271]).
 
-      'xxx':
+      'security':  The authentication type will be driven by the
+         implementation, but the module supports any authentication that
+         uses a key as a parameter.
 
-               ...
-               +--rw routing-protocols
-               |  +--rw routing-protocol* [id]
-               |     ...
-               |     +--rw bgp {vpn-common:rtg-bgp}?
-               |     |  +--rw description?       string
-               |     |  +--rw local-autonomous-system?
-               |     |  |       inet:as-number
-               |     |  +--rw peer-autonomous-system
-               |     |  |       inet:as-number
-               |     |  +--rw address-family?  identityref
-               |     |  +--rw neighbor*     inet:ip-address
-               |     |  +--rw multihop?         uint8
-               |     |  +--rw as-override?      boolean
-               |     |  +--rw default-route?    boolean
-               |     |  +--rw site-of-origin?
-               |     |  |       rt-types:route-origin
-               |     |  +--rw ipv6-site-of-origin?
-               |     |  |       rt-types:ipv6-route-origin
-               |     |  +--rw bgp-max-prefix
-               |     |  |  +--rw max-prefix?          uint32
-               |     |  |  +--rw warning-threshold?
-               |     |  |  |       decimal64
-               |     |  |  +--rw violate-action?
-               |     |  |  |       enumeration
-               |     |  |  +--rw restart-interval?    uint16
-               |     |  +--rw bgp-timers
-               |     |  |  +--rw keep-alive?   uint16
-               |     |  |  +--rw hold-time?    uint16
-               |     |  +--rw security
-               |     |  |  +--rw enable?            boolean
-               |     |  |  +--rw keying-material
-               |     |  |     +--rw (option)?
-               |     |  |        +--:(md5)
-               |     |  |        |  +--rw md5-keychain?
-               |     |  |        |          kc:key-chain-ref
-               |     |  |        +--:(ipsec)
-               |     |  |           +--rw sa?   string
-               |     |  +--rw status
+      'status':  Indicates the status of the BGP routing instance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2018,15 +2018,45 @@ Barguil, et al.          Expires August 20, 2021               [Page 36]
 Internet-Draft                    L3NM                     February 2021
 
 
-               |     |     +--rw admin-status
-               |     |     |  +--rw status?   identityref
-               |     |     |  +--rw last-updated?
-               |     |     |          yang:date-and-time
-               |     |     +--ro oper-status
-               |     |        +--ro status?  identityref
-               |     |        +--ro last-updated?
-               |     |                yang:date-and-time
-               ...
+   ...
+   +--rw routing-protocols
+   |  +--rw routing-protocol* [id]
+   |     ...
+   |     +--rw bgp {vpn-common:rtg-bgp}?
+   |     |  +--rw description?               string
+   |     |  +--rw local-autonomous-system?   inet:as-number
+   |     |  +--rw peer-autonomous-system     inet:as-number
+   |     |  +--rw address-family?            identityref
+   |     |  +--rw neighbor*                  inet:ip-address
+   |     |  +--rw multihop?                  uint8
+   |     |  +--rw as-override?               boolean
+   |     |  +--rw default-route?             boolean
+   |     |  +--rw site-of-origin?            rt-types:route-origin
+   |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
+   |     |  +--rw bgp-max-prefix
+   |     |  |  +--rw max-prefix?          uint32
+   |     |  |  +--rw warning-threshold?   decimal64
+   |     |  |  +--rw violate-action?      enumeration
+   |     |  |  +--rw restart-interval?    uint16
+   |     |  +--rw bgp-timers
+   |     |  |  +--rw keep-alive?   uint16
+   |     |  |  +--rw hold-time?    uint16
+   |     |  +--rw security
+   |     |  |  +--rw enable?            boolean
+   |     |  |  +--rw keying-material
+   |     |  |     +--rw (option)?
+   |     |  |        +--:(md5)
+   |     |  |        |  +--rw md5-keychain?  kc:key-chain-ref
+   |     |  |        +--:(ipsec)
+   |     |  |           +--rw sa?   string
+   |     |  +--rw status
+   |     |     +--rw admin-status
+   |     |     |  +--rw status?        identityref
+   |     |     |  +--rw last-updated?   yang:date-and-time
+   |     |     +--ro oper-status
+   |     |        +--ro status?         identityref
+   |     |        +--ro last-updated?   yang:date-and-time
+   ...
 
                  Figure 18: BGP Routing Subtree Structure
 
@@ -2035,36 +2065,6 @@ Internet-Draft                    L3NM                     February 2021
       OSPF instance can be bound to IPv4, IPv6 or both.  When only IPv4
       address-family is requested, it will be up to the implementation
       to drive whether OSPFv2 or OSPFv3 is used.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2533,7 +2533,7 @@ Internet-Draft                    L3NM                     February 2021
 
       Application match:  xxxx
 
-7.  Layer 3 Network Model
+7.  L3NM YANG Module
 
    This module uses types defined in [RFC6991] and groupings defined in
    [RFC8519].
@@ -5452,6 +5452,10 @@ Internet-Draft                    L3NM                     February 2021
               Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
               2006, <https://www.rfc-editor.org/info/rfc4364>.
 
+   [RFC5701]  Rekhter, Y., "IPv6 Address Specific BGP Extended Community
+              Attribute", RFC 5701, DOI 10.17487/RFC5701, November 2009,
+              <https://www.rfc-editor.org/info/rfc5701>.
+
    [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
               the Network Configuration Protocol (NETCONF)", RFC 6020,
               DOI 10.17487/RFC6020, October 2010,
@@ -5479,16 +5483,16 @@ Internet-Draft                    L3NM                     February 2021
               RFC 6991, DOI 10.17487/RFC6991, July 2013,
               <https://www.rfc-editor.org/info/rfc6991>.
 
-   [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
-              RFC 7950, DOI 10.17487/RFC7950, August 2016,
-              <https://www.rfc-editor.org/info/rfc7950>.
-
 
 
 Barguil, et al.          Expires August 20, 2021               [Page 98]
 
 Internet-Draft                    L3NM                     February 2021
 
+
+   [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
+              RFC 7950, DOI 10.17487/RFC7950, August 2016,
+              <https://www.rfc-editor.org/info/rfc7950>.
 
    [RFC7988]  Rosen, E., Ed., Subramanian, K., and Z. Zhang, "Ingress
               Replication Tunnels in Multicast VPN", RFC 7988,
@@ -5534,10 +5538,6 @@ Internet-Draft                    L3NM                     February 2021
               Jethanandani, M., Patel, K., Hares, S., and J. Haas, "BGP
               YANG Model for Service Provider Networks", draft-ietf-idr-
               bgp-model-10 (work in progress), November 2020.
-
-
-
-
 
 
 

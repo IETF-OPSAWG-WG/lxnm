@@ -1584,11 +1584,12 @@
 
             <section anchor="rtg" title="CE-PE Routing Protocols">
               <t>A service provider can configure one or more routing
-              protocols associated with a particular 'vpn-network-access'
-              (<xref target="routing"></xref>). Such routing protocol is
-              enabled between the PE and the CE. Each instance is uniquely
-              identified to accommodate scenarios where multiple instances of
-              the same routing protocol have to be configured.</t>
+              protocols associated with a particular 'vpn-network-access'.
+              Such routing protocol is enabled between the PE and the CE. Each
+              instance is uniquely identified to accommodate scenarios where
+              multiple instances of the same routing protocol have to be
+              configured. The subtree of the 'routing-protocols' is shown in
+              <xref target="routing"></xref>.</t>
 
               <t><figure align="center" anchor="routing"
                   title="Routing Subtree Structure">
@@ -1620,12 +1621,11 @@
 ]]></artwork>
                 </figure></t>
 
-              <t>Routing configuration does not include low-level policies.
-              Such policies are handed at the device configuration level.
-              Local policies of a service provider (e.g., filtering) will be
-              implemented as part of the device configuration; these are not
-              captured in the L3NM but the model allows to associate local
-              profiles with routing instances.</t>
+              <t>Multiple routing instances can be defined; each uniquely
+              identified by an 'id'. The type of a routing instance is
+              indicated in 'type'. The values of this attributes are those
+              defined in <xref target="I-D.ietf-opsawg-vpn-common"></xref>
+              ('routing-protocol-type' identity).</t>
 
               <t>Configuring multiple instances of the same routing protocol
               does not automatically imply that, from a device configuration
@@ -1646,29 +1646,42 @@
                   <t>A combination of both.</t>
                 </list></t>
 
+              <t>Routing configuration does not include low-level policies.
+              Such policies are handed at the device configuration level.
+              Local policies of a service provider (e.g., filtering) will be
+              implemented as part of the device configuration; these are not
+              captured in the L3NM, but the model allows to associate local
+              profiles with routing instances ('routing-profiles').</t>
+
               <t>The L3NM supports the configuration of one or more IPv4/IPv6
               static routes. Since the same structure is used for both IPv4
               and IPv6, it was considered to have one single container to
               group both static entries independently of their address family,
-              but hat design was abandoned to ease the mapping with the
+              but that design was abandoned to ease the mapping with the
               structure in <xref target="RFC8299"></xref>. As depicted in
-              <xref target="routing-static"></xref>, the following attributes
+              <xref target="routing-static"></xref>, the following data nodes
               can be defined for a given IP prefix:<list style="hanging">
                   <t hangText="'lan-tag':">Indicates a local tag (e.g.,
-                  myfavourite-lan) that is used to enforce local policies.</t>
+                  "myfavourite-lan") that is used to enforce local
+                  policies.</t>
 
                   <t hangText="'next-hop':">Indicates the next-hop to be used
                   for the static route. It can be identified by an IP address,
                   an interface, etc.</t>
 
                   <t hangText="'bfd-enable':">Indicates whether BFD is enabled
-                  or disabled for this entry.</t>
+                  or disabled for this static route entry.</t>
 
                   <t hangText="'metric':">Indicates the metric associated with
                   the static routing entry.</t>
 
                   <t hangText="'preference':">Indicates the preference
-                  associated with the static routing entry.</t>
+                  associated with the static route entry. This preference is
+                  used to selecting a preferred route among routes to the same
+                  destination prefix.</t>
+
+                  <t hangText="'status':">Indicates the status of a static
+                  route entry.</t>
                 </list></t>
 
               <t><figure align="center" anchor="routing-static"
@@ -1690,14 +1703,12 @@
 |     |     |  +--rw preference?   uint32
 |     |     |  +--rw status
 |     |     |     +--rw admin-status
-|     |     |     |  +--rw status?    identityref
-|     |     |     |  +--rw last-updated?   
-|     |     |     |            yang:date-and-time
+|     |     |     |  +--rw status?         identityref
+|     |     |     |  +--rw last-updated?   yang:date-and-time
 |     |     |     +--ro oper-status
-|     |     |        +--ro status?   identityref
-|     |     |        +--ro last-updated?    
-|     |     |                 yang:date-and-time
-|     |     +--rw ipv6-lan-prefixes*
+|     |     |        +--ro status?         identityref
+|     |     |        +--ro last-updated?   yang:date-and-time
+|     |     +--rw ipv6-lan-prefixes* 
 |     |             [lan next-hop]
 |     |             {vpn-common:ipv6}?
 |     |        +--rw lan         inet:ipv6-prefix
@@ -1708,18 +1719,16 @@
 |     |        +--rw preference?   uint32 
 |     |        +--rw status
 |     |           +--rw admin-status
-|     |           |  +--rw status?   identityref
-|     |           |  +--rw last-updated?
-|     |           |           yang:date-and-time
+|     |           |  +--rw status?         identityref
+|     |           |  +--rw last-updated?   yang:date-and-time
 |     |           +--ro oper-status
-|     |              +--ro status?  identityref
-|     |              +--ro last-updated?
-|     |                         yang:date-and-time
+|     |              +--ro status?         identityref
+|     |              +--ro last-updated?   yang:date-and-time
 ...
 ]]></artwork>
                 </figure></t>
 
-              <t>In addition, this L3Nm supports the following CE-PE routing
+              <t>Also, the L3NM supports the following CE-PE routing
               protocols: <list style="hanging">
                   <t hangText="BGP:">The model (<xref
                   target="routing-bgp"></xref>) allows to configure a BGP
@@ -1727,53 +1736,57 @@
                   to be tweaked at the network level for service customization
                   purposes. This container does not aim to include every BGP
                   parameter; a comprehensive set of parameters belongs more to
-                  the BGP device model. The following parameters are captured
+                  the BGP device model. The following data nodes are captured
                   in <xref target="routing-bgp"></xref>. It is up to the
-                  implementation to drive the corresponding BGP device
-                  configuration.<list style="hanging">
-                      <t hangText="'peer-autonomous-system':">This parameter
-                      conveys the Customer's AS Number (ASN).</t>
+                  implementation to derive the corresponding BGP device
+                  configuration:<list style="hanging">
+                      <t hangText="'description':">Includes a description of
+                      the BGP session.</t>
 
-                      <t hangText="'local-autonomous-system':">This parameter
-                      is set of AS override is activated for this peer.</t>
+                      <t hangText="'local-autonomous-system':">Is set to the
+                      ASN to override a peers' ASN if such feature is
+                      requested by the customer.</t>
 
-                      <t hangText="'address-family':">This attribute indicates
-                      the address-family of the peer. It can be set to IPv4,
-                      IPv6, or both address-families.</t>
+                      <t hangText="'peer-autonomous-system':">Conveys the
+                      Customer's AS Number (ASN).</t>
+
+                      <t hangText="'address-family':">Indicates the
+                      address-family of the peer. It can be set to IPv4, IPv6,
+                      or dual-stack.</t>
 
                       <t hangText="'neighbor':">The module supports supplying
                       two neighbors (each for a given address-family) or one
-                      neighbor (if 'address-family' attribute is set to both
-                      IPv4 and IPv6 address-families). A list of IP
-                      address(es) of the BGP neighbor can be then conveyed in
-                      this parameter.</t>
+                      neighbor (if 'address-family' attribute is set to
+                      dual-stack). A list of IP address(es) of the BGP
+                      neighbor can be then conveyed in this data node.</t>
 
-                      <t hangText="'multihop':">This attribute indicates the
-                      number of allowed IP hops between a BGP peer and a
-                      PE.</t>
-
-                      <t hangText="'security':">The authentication type will
-                      be driven by the implementation but the module supports
-                      any authentication that uses a key as a parameter.</t>
+                      <t hangText="'multihop':">Indicates the number of
+                      allowed IP hops between a PE and its BGP peer.</t>
 
                       <t hangText="'as-override':">If set, this parameter
                       indicates whether AS override is enabled, i.e., replace
-                      the ASN of the peer specified in the AS Path attribute
-                      with the ASN identified by the 'local-autonomous-system'
-                      attribute.</t>
-
-                      <t hangText="'xxx':"></t>
-
-                      <t hangText="'xxx':"></t>
+                      the ASN of the peer specified in the AS_PATH BGP
+                      attribute with the ASN identified by the
+                      'local-autonomous-system' attribute.</t>
 
                       <t hangText="'default-route':">This attribute controls
                       whether default route(s) can be advertised to the
                       peer.</t>
 
-                      <t hangText="'bgp-max-prefix':">This attribute is used
-                      to control how many prefixes can be received from a
-                      neighbor. If reached, the BGP session will be teared
-                      down.</t>
+                      <t hangText="'site-of-origin':">The Site of Origin
+                      attribute is encoded as a Route Origin Extended
+                      Community. It is meant to uniquely identify the set of
+                      routes learned from a site via a particular CE/PE
+                      connection and is used to prevent routing loops (Section
+                      7 of <xref target="RFC4364"></xref>).</t>
+
+                      <t hangText="'ipv6-site-of-origin':">IPv6 Route Origins
+                      are IPv6 Address Specific BGP Extended that are meant to
+                      the Site of Origin for VRF information <xref
+                      target="RFC5701"></xref>.</t>
+
+                      <t hangText="'bgp-max-prefix':">Controls the behavior
+                      when a prefix maximum is reached.</t>
 
                       <t hangText="'bgp-timers': ">Two timers can be captured
                       in this container: (1) 'hold-time' which is the time
@@ -1784,7 +1797,12 @@
                       peer (Section 4.4 of <xref
                       target="RFC4271"></xref>).</t>
 
-                      <t hangText="'xxx':"></t>
+                      <t hangText="'security':">The authentication type will
+                      be driven by the implementation, but the module supports
+                      any authentication that uses a key as a parameter.</t>
+
+                      <t hangText="'status':">Indicates the status of the BGP
+                      routing instance. </t>
                     </list><figure align="center" anchor="routing-bgp"
                       title="BGP Routing Subtree Structure">
                       <artwork align="center"><![CDATA[...  
@@ -1792,26 +1810,20 @@
 |  +--rw routing-protocol* [id]
 |     ...
 |     +--rw bgp {vpn-common:rtg-bgp}?
-|     |  +--rw description?       string
-|     |  +--rw local-autonomous-system?
-|     |  |       inet:as-number
-|     |  +--rw peer-autonomous-system
-|     |  |       inet:as-number
-|     |  +--rw address-family?  identityref
-|     |  +--rw neighbor*     inet:ip-address
-|     |  +--rw multihop?         uint8
-|     |  +--rw as-override?      boolean
-|     |  +--rw default-route?    boolean
-|     |  +--rw site-of-origin?            
-|     |  |       rt-types:route-origin
-|     |  +--rw ipv6-site-of-origin?       
-|     |  |       rt-types:ipv6-route-origin
+|     |  +--rw description?               string
+|     |  +--rw local-autonomous-system?   inet:as-number
+|     |  +--rw peer-autonomous-system     inet:as-number
+|     |  +--rw address-family?            identityref
+|     |  +--rw neighbor*                  inet:ip-address
+|     |  +--rw multihop?                  uint8
+|     |  +--rw as-override?               boolean
+|     |  +--rw default-route?             boolean
+|     |  +--rw site-of-origin?            rt-types:route-origin
+|     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
 |     |  +--rw bgp-max-prefix
 |     |  |  +--rw max-prefix?          uint32
-|     |  |  +--rw warning-threshold?  
-|     |  |  |       decimal64
-|     |  |  +--rw violate-action? 
-|     |  |  |       enumeration
+|     |  |  +--rw warning-threshold?   decimal64
+|     |  |  +--rw violate-action?      enumeration
 |     |  |  +--rw restart-interval?    uint16
 |     |  +--rw bgp-timers
 |     |  |  +--rw keep-alive?   uint16
@@ -1821,19 +1833,16 @@
 |     |  |  +--rw keying-material
 |     |  |     +--rw (option)?
 |     |  |        +--:(md5)
-|     |  |        |  +--rw md5-keychain?
-|     |  |        |          kc:key-chain-ref
+|     |  |        |  +--rw md5-keychain?  kc:key-chain-ref
 |     |  |        +--:(ipsec)
 |     |  |           +--rw sa?   string
 |     |  +--rw status
 |     |     +--rw admin-status
-|     |     |  +--rw status?   identityref
-|     |     |  +--rw last-updated?
-|     |     |          yang:date-and-time
+|     |     |  +--rw status?        identityref
+|     |     |  +--rw last-updated?   yang:date-and-time
 |     |     +--ro oper-status
-|     |        +--ro status?  identityref
-|     |        +--ro last-updated?
-|     |                yang:date-and-time
+|     |        +--ro status?         identityref
+|     |        +--ro last-updated?   yang:date-and-time
 ...
 ]]></artwork>
                     </figure></t>
@@ -2236,7 +2245,7 @@
       </section>
     </section>
 
-    <section anchor="YANG_module" title="Layer 3 Network Model">
+    <section anchor="YANG_module" title="L3NM YANG Module">
       <t>This module uses types defined in <xref target="RFC6991"></xref> and
       groupings defined in <xref target="RFC8519"></xref>.</t>
 
@@ -4773,6 +4782,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.3688'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-vpn-common'?>
+
+      <?rfc include='reference.RFC.5701'?>
     </references>
 
     <references title="Informative References">
