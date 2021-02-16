@@ -211,7 +211,7 @@
     <abstract>
       <t>This document defines a L3VPN Network YANG Model (L3NM) that can be
       used for the provisioning of Layer 3 Virtual Private Network (VPN)
-      services within a service provider's network. The model provides a
+      services within a service provider network. The model provides a
       network-centric view of L3VPN services.</t>
 
       <t>L3NM is meant to be used by a network controller to derive the
@@ -459,13 +459,10 @@
       Abstraction and Control of TE Networks (ACTN) <xref
       target="RFC8453"></xref>.</t>
 
-      <t>Note also that the L3SM and the L3NM may also be used in the context
-      of the ACTN architecture <xref target="RFC8453"></xref>. <xref
-      target="l3sm_actn"></xref> shows the Customer Network Controller (CNC),
-      the Multi-Domain Service Coordinator (MDSC), and the Provisioning
-      Network Controller (PNC). It also shows the interfaces between these
-      functional blocks: the CNC-MDSC Interface (CMI), the MDSC-PNC Interface
-      (MPI), and the Southbound Interface (SBI).</t>
+      <t>Note also that both the L3SM and the L3NM may be used in the context
+      of the ACTN architecture. <xref target="l3sm_actn"></xref> shows the
+      Customer Network Controller (CNC), the Multi-Domain Service Coordinator
+      (MDSC), and the Provisioning Network Controller (PNC). </t>
 
       <figure align="center" anchor="l3sm_actn"
               title="L3SM and L3NM in the Context of ACTN">
@@ -646,12 +643,12 @@
         <t>On the other hand, <xref target="RFC4364"></xref> has limitations
         such as reduced options for transport, control plane scalability,
         availability, operational inconsistency, and the need of maintaining
-        state in the backbone. Because of this, MBGP MVPN is the architectural
-        model that has been taken as the base for implementing multicast
-        service on L3VPN. In this scenario, BGP auto discovery is used to
-        discover MVPN PE members and the customer PIM signaling is sent across
-        the provider's core through MP-BGP. The multicast traffic is
-        transported on MPLS P2MP LSPs.</t>
+        state in the backbone. Because of these limitations, MBGP MVPN is the
+        architectural model that has been taken as the base for implementing
+        multicast service in L3VPNs. In this scenario, BGP auto discovery is
+        used to discover MVPN PE members and the customer PIM signaling is
+        sent across the provider's core through MP-BGP. The multicast traffic
+        is transported on MPLS P2MP LSPs.</t>
       </section>
     </section>
 
@@ -673,14 +670,14 @@
         'vpn-services' and 'vpn-profiles' (see <xref
         target="ietf-l3vpn-ntw_tree"></xref>).</t>
 
-        <t>The 'vpn-services' container maintains the set of VPN services
-        managed within the service provider's network. 'vpn-service' is the
-        data structure that abstracts a VPN service (<xref
-        target="vpn_service"></xref>).</t>
-
         <t>The 'vpn-profiles' container is used by the provider to maintain a
         set of common VPN profiles that apply to one or several VPN services
         (<xref target="vpn_profiles"></xref>).</t>
+
+        <t>The 'vpn-services' container maintains the set of VPN services
+        managed within the service provider network. 'vpn-service' is the data
+        structure that abstracts a VPN service (<xref
+        target="vpn_service"></xref>).</t>
 
         <figure align="center" anchor="ietf-l3vpn-ntw_tree"
                 title="Overall L3NM Tree Structure">
@@ -689,8 +686,14 @@
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
-         +--rw vpn-service* [vpn-id]
-            ...     ]]></artwork>
+        +--rw vpn-service* [vpn-id]
+           ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [vpn-node-id]
+                 ...
+                 +--rw vpn-network-accesses
+                    +--rw vpn-network-access* [id]
+                       ...     ]]></artwork>
         </figure>
 
         <t></t>
@@ -699,22 +702,22 @@
       <section anchor="vpn_profiles" title="VPN Profiles">
         <t>The 'vpn-profiles' container (<xref
         target="vpn_profiles_tree"></xref>) allows the network provider to
-        define and maintain a set of common VPN profiles <xref
+        define and maintain a set of VPN profiles <xref
         target="I-D.ietf-opsawg-vpn-common"></xref> that apply to one or
-        several VPN services. The exact definition of the profiles is local to
-        each network provider.</t>
+        several VPN services. </t>
 
         <t>This document does not make any assumption about the exact
-        definition of these profiles. How such profiles are defined is
-        deployment specific. The model only includes an identifier to these
-        profiles to ease identifying and binding local policies when building
-        a VPN service. As shown in <xref target="vpn_profiles_tree"></xref>,
-        the following identifiers can be included:<list style="hanging">
+        definition of these profiles. The exact definition of the profiles is
+        local to each network provider. The model only includes an identifier
+        to these profiles in order to ease identifying and binding local
+        policies when building a VPN service. As shown in <xref
+        target="vpn_profiles_tree"></xref>, the following identifiers can be
+        included:<list style="hanging">
             <t hangText="'external-connectivity-identifier':">This identifier
-            refers to a profile that defines external connectivity provided to
-            a VPN service (or a subset of VPN sites). An external connectivity
-            may be access to Internet or restricted connectivity such as
-            access to a public/private cloud.</t>
+            refers to a profile that defines the external connectivity
+            provided to a VPN service (or a subset of VPN sites). An external
+            connectivity may be an access to the Internet or a restricted
+            connectivity such as access to a public/private cloud.</t>
 
             <t hangText="'encryption-profile-identifier':">An encryption
             profile refers to a set of policies related to the encryption
@@ -769,7 +772,9 @@
         <t>The 'vpn-service' is the data structure that abstracts a VPN
         service in the service provider network. Each 'vpn-service' is
         uniquely identified by an identifier: 'vpn-id'. Such 'vpn-id' is only
-        meaningful locally within the network controller.</t>
+        meaningful locally within the network controller. The subtree of the
+        'vpn-services' is shown in <xref
+        target="vpn-service_tree"></xref>.</t>
 
         <t><figure align="center" anchor="vpn-service_tree"
             title="VPN Services Subtree Structure">
@@ -789,7 +794,7 @@
            |  +--rw admin-status
            |  |  +--rw status?         identityref
            |  |  +--rw last-updated?   yang:date-and-time
-           |  +--rw oper-status
+           |  +--ro oper-status
            |     +--ro status?         identityref
            |     +--ro last-updated?   yang:date-and-time
            +--rw ie-profiles
@@ -814,36 +819,41 @@
             <t hangText="'vpn-id':">Is an identifier that is used to uniquely
             identify the L3VPN service within L3NM scope.</t>
 
-            <t hangText="'vpn-name' and 'vpn-description':">Are used to
-            associate a name and a description with the service in order to
-            facilitate the identification of the service.</t>
+            <t hangText="'vpn-name':">Associates a name with the service in
+            order to facilitate the identification of the service.</t>
+
+            <t hangText="'vpn-description':">Includes a textual description of
+            the service.</t>
 
             <t hangText="'customer-name':">Indicates the name of the customer
             who ordered the service.</t>
 
             <t hangText="'parent-service-id':">Refers to an identifier of the
-            parent service (e.g, L3SM, IETF network slice, VPN+). This
-            identifier allows to easily correlate the (network) service as
-            built in the network with a service order.</t>
+            parent service (e.g, L3SM, IETF network slice, VPN+) that
+            triggered to the L3NM instance. This identifier allows to easily
+            correlate the (network) service as built in the network with a
+            service order.</t>
 
-            <t hangText="'vpn-type':">Indicates the VPN type (L3VPN).</t>
+            <t hangText="'vpn-type':">Indicates the VPN type. The values are
+            taken from <xref target="I-D.ietf-opsawg-vpn-common"></xref>. For
+            the L3NM, this is typically set to BGP/MPLS L3VPN.</t>
 
             <t hangText="'vpn-service-topology':">Indicates the network
-            topology for the service: hub-spoke, any-to-any, and custom. The
+            topology for the service: hub-spoke, any-to-any, or custom. The
             network implementation of this attribute is defined by the correct
-            usage of import and export profiles.</t>
+            usage of import and export profiles (Section 4.3.5 of <xref
+            target="RFC4364"></xref>).</t>
 
-            <t hangText="'status':">Allows the control of the operative and
-            administrative status of the service as a whole. The L3NM allows
-            to track service status ('status') of a given VPN service. Both
-            operational and administrative status are maintained together with
-            a timestamp. For example, a service can be created, but not put
-            into effect.<vspace blankLines="1" />Administrative and
-            operational status can be used as trigger to detect service
-            anomalies. For example, a service that is declared at the service
-            layer as active but still inactive at the network layer is an
-            indication that network provision actions are needed to align the
-            observed service with the expected service status.</t>
+            <t hangText="'status':">Is used to track service status of a given
+            VPN service. Both operational and administrative status are
+            maintained together with a timestamp. For example, a service can
+            be created, but not put into effect.<vspace
+            blankLines="1" />Administrative and operational status can be used
+            as trigger to detect service anomalies. For example, a service
+            that is declared at the service layer as active but still inactive
+            at the network layer is an indication that network provision
+            actions are needed to align the observed service with the expected
+            service status.</t>
 
             <t hangText="'ie-profiles':">Defines reusable import/export
             policies for the same 'vpn-service'. <vspace blankLines="1" />More
@@ -852,11 +862,29 @@
             <t hangText="'underlay-transport':">Describes the preference for
             the transport technology to carry the traffic of the VPN service.
             This preference is especially useful in networks with multiple
-            domains and Network-to-Network Interface (NNI) types.</t>
+            domains and Network-to-Network Interface (NNI) types. The underlay
+            transport can be expressed as an abstract transport instance
+            (e.g., an identifier of a VPN+ instance, a virtual network
+            identifier, or a network slice name) or as an ordered list of the
+            actual protocols to be enabled in the network. A rich set of
+            protocol identifiers that can be used to refer to an underlay
+            transport are defined in <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
 
             <t hangText="'external-connectivity':">Indicates whether/how
-            external connectivity is provided to the VPN service. Only a
-            pointer to a local profile is supported in this version.</t>
+            external connectivity is provided to the VPN service. For example,
+            a service provider may provide an external connectivity to a VPN
+            customer (e.g., to a public cloud). Such service may involve
+            tweaking both filtering and NAT rules (e.g., bind a Virtual
+            Routing and Forwarding (VRF) interface with a NAT instance as
+            discussed in Section 2.10 of <xref target="RFC8512"></xref>).
+            These added value features may be bound to all or a subset of
+            network accesses. Some of these added value features may be
+            implemented in a PE or in other nodes than PEs (e.g., a P node or
+            event a dedicated node that hosts the NAT function). <vspace
+            blankLines="1" />Only a pointer to a local profile that defines
+            the external connectivity feature is supported in this
+            document.</t>
 
             <t hangText="'vpn-node':">Is an abstraction that represents a set
             of policies applied to a network node and that belong to a single
@@ -868,23 +896,39 @@
             to the 'vpn-network-accesses'.<vspace blankLines="1" />Note that,
             as this is a network data model, the information about customers
             sites is not required in the model. Such information is rather
-            relevant in the L3SM. <vspace blankLines="1" />More details are
+            relevant in the L3SM. Whether that information is included in the
+            L3NM, e.g., to populate the various 'description' data node is
+            implementation specific. <vspace blankLines="1" />More details are
             provided in <xref target="vpn_node"></xref>.</t>
           </list></t>
 
-        <section anchor="ie_profiles"
-                 title="Concept of Import/Export Profiles">
+        <section anchor="ie_profiles" title="Import/Export Profiles">
           <t>The import and export profiles construct contains a list with
           information related with route targets and distinguishers (RTs and
           RDs), grouped and identified by 'ie-profile-id'. The identifier is
           then referenced in one or multiple 'vpn-nodes' (<xref
-          target="vpn_node"></xref>) so the controller can identify RTs and
-          RDs to be configured for a given VRF. The subtree is shown in <xref
-          target="ie"></xref>.</t>
+          target="vpn_node"></xref>) so that the controller can identify RTs
+          and RDs to be configured for a given VRF. The subtree of
+          'ie-profiles' is shown in <xref target="ie"></xref>.</t>
 
-          <t>Note that RDs can be explicitly configured or automatically
-          assigned. RD auto-assignment can also constrained by indicating an
-          'rd-pool-name'.</t>
+          <t>The following modes are supported in: <list style="hanging">
+              <t hangText="'full-autoasigned':">The network controller
+              auto-assigns logical resources (RTs, RDs). This can apply for
+              the deployment of new services.</t>
+
+              <t hangText="'rd-from-pool':">A variant of the previous one is
+              to indicate a pool from where the RD values can be
+              auto-assigned.</t>
+
+              <t hangText="'directly-assigned':">The network provider (service
+              orchestrator) assigns explicitly the RTs and RDs. This case will
+              fit with a brownfield scenario where some existing services need
+              to be updated by the network provider.</t>
+
+              <t hangText="'no-rd':">The (service orchestrator) explicitly
+              wants no RT/RD to be assigned. This case can be used for CE
+              testing within the network or for troubleshooting proposes.</t>
+            </list></t>
 
           <t><figure align="center" anchor="ie"
               title="Subtree Structure of Import/Export Profiles">
@@ -926,16 +970,7 @@
               +--rw vpn-node* [ne-id]
                  +--rw ne-id                      string
                  ...
-                 +--rw vpn-targets
-                 |  +--rw vpn-target* [id]
-                 |  |  +--rw id                   int8
-                 |  |  +--rw route-targets* [route-target]
-                 |  |  |  +--rw route-target    rt-types:route-target
-                 |  |  +--rw route-target-type
-                 |  |          rt-types:route-target-type
-                 |  +--rw vpn-policies
-                 |     +--rw import-policy?   string
-                 |     +--rw export-policy?   string
+                 +--rw node-ie-profile?           leafref
                  ...
 ]]></artwork>
             </figure></t>
@@ -943,58 +978,17 @@
 
         <section anchor="vpn_node" title="VPN Nodes">
           <t>The 'vpn-node' is an abstraction that represents a set of common
-          policies applied on a given network node (tipcally, a PE) and belong
-          to one L3VPN service. In order to indicate the network nodes where
-          the 'vpn-node' applies, the 'ne-id' must be indicated. The
-          'vpn-node' includes a parameter to indicate the network node on
-          which it is applied. In the case that the 'ne-id' points to a
-          specific PE, the 'vpn-node' will likely be mapped into a VRF in the
-          node. However, the model also allows to point to an abstract node.
-          In this case, the network controller will decide how to split the
-          'vpn-node' into VRFs. Some 'vpn-node' parameters are listed
-          below:<list style="hanging">
-              <t hangText="'vpn-node-id':"></t>
+          policies applied on a given network node (typically, a PE) and
+          belong to one L3VPN service. The 'vpn-node' includes a parameter to
+          indicate the network node on which it is applied. In the case that
+          the 'ne-id' points to a specific PE, the 'vpn-node' will likely be
+          mapped into a VRF in the node. However, the model also allows to
+          point to an abstract node. In this case, the network controller will
+          decide how to split the 'vpn-node' into VRFs. </t>
 
-              <t hangText="'xxxx':"></t>
-
-              <t hangText="'local-autonomous-system':">Refers to the
-              autonomous system number that is locally configured in the
-              instance. It can be overwritten for specific purposes in the
-              CE-PE BGP session.</t>
-
-              <t hangText="'maximum-routes':">Sets the maximum number of
-              prefixes allowed in the 'vpn-node' instance. This value is
-              typically set in the service request.</t>
-
-              <t hangText="'rd' and 'vpn-targets':">For the cases the logical
-              resources are managed outside the network controller, the model
-              allows to explicitely indicate the logical resources such as
-              Route targets (RTs) and Route Distinguishers (RDs) (RT,RD).</t>
-
-              <t hangText="'multicast':">Enables multicast traffic inside the
-              VPN. Refer to <xref target="mc"></xref>.</t>
-            </list></t>
-
-          <t>Under the VPN Node ('vpn-node') container, VPN Network Accesses
-          ('vpn-network-access') can be created. The VPN Network Access
-          represents the point to which sites are connected. Note that, unlike
-          in L3SM, the L3NM does not need to model the customer site, only the
-          points where the traffic from the site are received (i.e., the PE
-          side of PE-CE connections). Hence, the VPN Network access contains
-          the connectivity information between the provider's network and the
-          customer premises. The VPN profiles ('vpn-profiles') have a set of
-          routing policies than can be applied during the service
-          creation.</t>
-
-          <t>The L3NM allows to track the status ('status') of the nodes
-          involved in a VPN service. Both operational and administrative
-          status are maintained. Mismatch between an administrative status vs.
-          the operational status can be used as trigger to detect
-          anomalies.</t>
-
-          <figure align="center" anchor="vpn-node_tree"
-                  title="VPN Node Subtree Structure">
-            <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
+          <t><figure align="center" anchor="vpn-node_tree"
+              title="VPN Node Subtree Structure">
+              <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1036,54 +1030,102 @@
                  |     +--rw export-policy?   string
                  +--rw node-ie-profile?           leafref
                  +--rw maximum-routes
-                 |  +--rw address-family* [af]
-                 |  |  +--rw af                identityref
-                 |  |  +--rw maximum-routes?   uint32
-                 |  +--rw status
-                 |     +--rw admin-status
-                 |     |  +--rw status?         identityref
-                 |     |  +--rw last-updated?   yang:date-and-time
-                 |     +--rw oper-status
-                 |        +--ro status?         identityref
-                 |        +--ro last-updated?   yang:date-and-time
+                 |  +--rw selector* [address-family protocol]
+                 |     +--rw address-family    identityref
+                 |     +--rw protocol          identityref
+                 |     +--rw maximum-routes?   uint32
                  +--rw groups
                  |  +--rw group* [group-id]
                  |     +--rw group-id    string
                  +--rw multicast {vpn-common:multicast}?
                  |  ...
+                 +--rw status
+                 |  +--rw admin-status
+                 |  |  +--rw status?         identityref
+                 |  |  +--rw last-updated?   yang:date-and-time
+                 |  +--ro oper-status
+                 |     +--ro status?         identityref
+                 |     +--ro last-updated?   yang:date-and-time
                  +--rw vpn-network-accesses
                     ...]]></artwork>
-          </figure>
+            </figure></t>
 
-          <section anchor="rt_rd_assignment" title="RT/RD Assignment">
-            <t>For the cases the logical resources are managed outside the
-            network controller, the model allows to explicitely indicate the
-            logical resources such as Route targets (RTs) and Route
-            Distinguishers (RDs) (RT,RD).</t>
+          <t>In reference to the subtree shown in <xref
+          target="vpn-node_tree"></xref>, the description of 'vpn-node'
+          parameters is as follows:<list style="hanging">
+              <t hangText="'vpn-node-id':">Is an identifier that uniquely
+              identifies a node.</t>
 
-            <t>Three possible behaviors are needed to fulfil the identified
-            use cases: <list style="symbols">
-                <t>The network controller auto-assigns logical resources (RTs,
-                RDs). This can apply for new services deployment.</t>
+              <t hangText="'description':">Providers a textual description of
+              the VPN node.</t>
 
-                <t>The Network Operator/service orchestrator assigns
-                explicitly the RTs and RDs. This case will fit with a
-                brownfield scenario where some existing services needs to be
-                updated by the network operators.</t>
+              <t hangText="'ne-id':">Includes a unique identifier of the
+              network element where the VPN node is deployed.</t>
 
-                <t>The Network Operator/service orchestrator explicitly wants
-                NO RT/RD to be assigned. This case will fit in VRF-Lite
-                scenarios, CE testing inside the Network or just for
-                troubleshooting pruposes.</t>
-              </list></t>
+              <t hangText="'node-role':">Indicates the role of the VPN node in
+              the VPN. Roles values are defines defined in <xref
+              target="I-D.ietf-opsawg-vpn-common"></xref> (e.g.,
+              any-to-any-role, spoke-role, hub-role).</t>
 
-            <t>Thus a union between two yang data types are included in order
-            to support this scenarios. So, if the leaf is not created in the
-            Yang the expected behavior is the auto-assigns. If the Leaf is
-            created with a valid rd value it will be explicitly assign in the
-            VPN Node and if the leaf is created with an empty value, the RD
-            value will not be deployed in the VPN node.</t>
-          </section>
+              <t hangText="'local-autonomous-system':">Indicates the BGP
+              autonomous system number that is locally configured for the VPN
+              node.</t>
+
+              <t hangText="'address-family':">Is used to identify the address
+              family used for the Router ID. It can be set to IPv4 or
+              IPv6.</t>
+
+              <t hangText="'router-id':">Indicates a unique Router ID
+              information. It can be an IPv4 or IPv6 address as function of
+              the 'address-family'.</t>
+
+              <t hangText="'rd':">If the logical resources are managed outside
+              the network controller, the model allows to explicitly indicate
+              the logical resources such as RTs and RDs. As defined in <xref
+              target="I-D.ietf-opsawg-vpn-common"></xref> and recalled in
+              <xref target="ie_profiles"></xref>, RDs can be explicitly
+              configured or automatically assigned. RD auto- assignment can
+              also constrained by indicating an RD pool name ('rd-
+              pool-name').</t>
+
+              <t hangText="'vpn-targets':">Specifies RT import-export rules
+              for the VPN. </t>
+
+              <t hangText="'node-ie-profile':">Refer to <xref
+              target="ie_profiles"></xref>.</t>
+
+              <t hangText="'maximum-routes':">Indicates the maximum prefixes
+              that the VPN node can accept for a given address family and
+              routing protocol. If 'protocol' is set to 'any', this means that
+              the maximum value applies to any active routing protocol. </t>
+
+              <t hangText="'groups':">Lists the groups to which a VPN node
+              belongs to <xref target="I-D.ietf-opsawg-vpn-common"></xref>.
+              The 'group-id' used to associate, e.g., redundancy or protection
+              constraints with VPN nodes.</t>
+
+              <t hangText="'multicast':">Enables multicast traffic inside the
+              VPN. Refer to <xref target="mc"></xref>.</t>
+
+              <t hangText="'status':">Tracks the status of the nodes involved
+              in a VPN service. Both operational and administrative status are
+              maintained. A mismatch between an administrative status vs. the
+              operational status can be used as a trigger to detect
+              anomalies.</t>
+
+              <t hangText="'vpn-network-accesses':">Represents the point to
+              which sites are connected. Note that, unlike in L3SM, the L3NM
+              does not need to model the customer site, only the points where
+              the traffic from the site are received (i.e., the PE side of
+              PE-CE connections). Hence, the VPN network access contains the
+              connectivity information between the provider's network and the
+              customer premises. The VPN profiles ('vpn-profiles') have a set
+              of routing policies than can be applied during the service
+              creation. <vspace blankLines="1" />See <xref
+              target="sna"></xref> for more details.</t>
+            </list></t>
+
+          <t></t>
 
           <section anchor="mc" title="Multicast">
             <t>Multicast may be enabled for a particular vpn-network-node (see
@@ -1638,14 +1680,14 @@
         |     |        +--rw bfd-enable?   boolean
         |     |        +--rw metric?       uint32
         |     |        +--rw preference?   uint32 
-        |     |         +--rw status
-        |     |             +--rw admin-status
-        |     |             |  +--rw status?   identityref
-        |     |             |  +--rw last-updated?
-        |     |             |           yang:date-and-time
-        |     |             +--rw oper-status
-        |     |                +--ro status?  identityref
-        |     |                +--ro last-updated?
+        |     |        +--rw status
+        |     |           +--rw admin-status
+        |     |           |  +--rw status?   identityref
+        |     |           |  +--rw last-updated?
+        |     |           |           yang:date-and-time
+        |     |           +--rw oper-status
+        |     |              +--ro status?  identityref
+        |     |              +--ro last-updated?
         |     |                         yang:date-and-time
         |     +--rw bgp {vpn-common:rtg-bgp}?
         |     |  ...
@@ -2721,7 +2763,7 @@ module ietf-l3vpn-ntw {
                   type uint32;
                   description
                     "Indicates the maximum prefixes the VRF can accept
-                     for this address family.";
+                     for this address family and protocol.";
                 }
               }
             }
@@ -2959,6 +3001,7 @@ module ietf-l3vpn-ntw {
                 uses vpn-common:service-status;
               }
             }
+            uses vpn-common:service-status;
             container vpn-network-accesses {
               description
                 "List of network accesses.";
@@ -4658,6 +4701,7 @@ module ietf-l3vpn-ntw {
     }
   }
 }
+
 <CODE ENDS> 
 ]]></artwork>
       </figure>
@@ -4757,9 +4801,14 @@ module ietf-l3vpn-ntw {
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>Thanks to Adrian Farrel and Miguel Cros for the suggestions on the
-      document. Thanks to Philip Eardlay for the review. Lots of thanks for
-      the discussions on opsawg mailing list and at IETF meeting.</t>
+      <t>During the discussions of this work, helpful comments, suggestions,
+      and reviews were received from (listed alphabetically): Raul Arco,
+      Miguel Cros Cecilia, Joe Clarke, Adrian Farrel, Roque Gagliano,
+      Christian Jacquenet, Kireeti Kompella, and Julian Lucek. Many thanks to
+      them. Thanks to Philip Eardly for the review. </t>
+
+      <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
+      contributed to early version of the individual submission. </t>
 
       <t>This work was supported in part by the European Commission funded
       H2020-ICT-2016-2 METRO-HAUL project (G.A. 761727).</t>
@@ -4769,20 +4818,8 @@ module ietf-l3vpn-ntw {
       <t>Victor Lopez<vspace blankLines="0" /> Telefonica<vspace
       blankLines="0" /> Email: victor.lopezalvarez@telefonica.com</t>
 
-      <t>Daniel King<vspace blankLines="0" /> Old Dog Consulting<vspace
-      blankLines="0" /> Email: daniel@olddog.co.uk</t>
-
-      <t>Daniel Voyer<vspace blankLines="0" /> Bell Canada<vspace
-      blankLines="0" /> Email: daniel.voyer@bell.ca</t>
-
-      <t>Luay Jalil<vspace blankLines="0" /> Verizon<vspace blankLines="0" />
-      Email: luay.jalil@verizon.com</t>
-
       <t>Qin Wu<vspace blankLines="0" /> Huawei<vspace blankLines="0" />
       Email: bill.wu@huawei.com&gt;</t>
-
-      <t>Stephane Litkowski<vspace blankLines="0" /> Cisco<vspace
-      blankLines="0" /> Email: slitkows@cisco.com&gt;</t>
 
       <t>Manuel Julian<vspace blankLines="0" /> Vodafone<vspace
       blankLines="0" /> Email: manuel-julian.lopez@vodafone.com&gt;</t>
