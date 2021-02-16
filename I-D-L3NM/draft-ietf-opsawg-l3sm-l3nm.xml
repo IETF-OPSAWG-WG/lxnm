@@ -389,7 +389,7 @@
 
           <t hangText="AS">Autonomous System</t>
 
-          <t hangText="ASM">Any-Source Multicast </t>
+          <t hangText="ASM">Any-Source Multicast</t>
 
           <t hangText="BSR">Bootstrap Router</t>
 
@@ -760,7 +760,7 @@
         target="vpn_profiles_tree"></xref>) allows the network provider to
         define and maintain a set of VPN profiles <xref
         target="I-D.ietf-opsawg-vpn-common"></xref> that apply to one or
-        several VPN services. </t>
+        several VPN services.</t>
 
         <t>This document does not make any assumption about the exact
         definition of these profiles. The exact definition of the profiles is
@@ -1040,7 +1040,7 @@
           the 'ne-id' points to a specific PE, the 'vpn-node' will likely be
           mapped into a VRF in the node. However, the model also allows to
           point to an abstract node. In this case, the network controller will
-          decide how to split the 'vpn-node' into VRFs. </t>
+          decide how to split the 'vpn-node' into VRFs.</t>
 
           <t><figure align="center" anchor="vpn-node_tree"
               title="VPN Node Subtree Structure">
@@ -1145,7 +1145,7 @@
               pool-name').</t>
 
               <t hangText="'vpn-targets':">Specifies RT import-export rules
-              for the VPN. </t>
+              for the VPN.</t>
 
               <t hangText="'node-ie-profile':">Refer to <xref
               target="ie_profiles"></xref>.</t>
@@ -1153,7 +1153,7 @@
               <t hangText="'maximum-routes':">Indicates the maximum prefixes
               that the VPN node can accept for a given address family and
               routing protocol. If 'protocol' is set to 'any', this means that
-              the maximum value applies to any active routing protocol. </t>
+              the maximum value applies to any active routing protocol.</t>
 
               <t hangText="'groups':">Lists the groups to which a VPN node
               belongs to <xref target="I-D.ietf-opsawg-vpn-common"></xref>.
@@ -1273,90 +1273,111 @@
           </section>
 
           <section anchor="sna" title="VPN Network Access">
-            <t>A 'vpn-network-access' represents an entry point to a VPN
-            service (<xref target="vpnaccess"></xref>). In other words, this
-            container encloses the parameters that describe the access
-            information for the traffic that belongs to a particular L3VPN. As
-            such, every 'vpn-network-access' MUST belong to one and only one
-            'vpn-node'.</t>
-
-            <t>A 'vpn-network-access' includes information such as the
-            connection on which the access is defined (see <xref
-            target="connection"></xref>), the encapsulation of the traffic,
-            policies that are applied on the access, etc.</t>
-
-            <t>Each 'vpn-network-access' SHOULD have a
-            'vpn-network-access-type' to select the type of network interface
-            to be deployed in the devices. The available options are: <list
-                style="symbols">
-                <t>Point-to-Point: The point-to-point type represent a direct
-                connection between the end-points. It implies the controller
-                must keep the association between a logical or physical
-                interface on the device with the 'id' of the
-                vpn-network-access.</t>
-
-                <t>Multipoint: This option represents a broadcast connection
-                between end-points. It implies the controller must keep the
-                association between a logical or physical interface on the
-                device with the 'id' of the 'vpn-network-access'.</t>
-
-                <t>Pseudowire: Represent a connection coming from an L2VPN
-                service. It implies the controller must keep the relationship
-                between the logical tunnels or bridges on the devices with the
-                'id' of the' vpn-network-access'.</t>
-
-                <t>Loopback: It represents the creation of a logical interface
-                on the devices.</t>
-              </list></t>
-
-            <t>A PNC <xref target="RFC8453"></xref> will accept VPN requests
-            containing this construct, using the enclosed data to: configure
-            the router's interface to include the parameters described at the
-            'vpn-network-access', include the given interface into a VRF,
-            configuring policies or schedulers for processing the incoming
-            traffic, etc.</t>
+            <t>The 'vpn-network-access' encloses the parameters that describe
+            the access information for the traffic that belongs to a
+            particular L3VPN (<xref target="vpnaccess"></xref>). </t>
 
             <t><figure align="center" anchor="vpnaccess"
-                title="VPN Network Access Tree Structure">
-                <artwork align="left"><![CDATA[ ...
- +--rw vpn-services
-    +--rw vpn-service* [vpn-id]
-       +--rw vpn-id                  vpn-common:vpn-id
-       +  ...
-        +--rw vpn-node* [ne-id]
-           +--rw ne-id                      string
-           + ...
-           +--rw vpn-network-accesses
-           |  +--rw vpn-network-access* [id]
-           |     +--rw id
-           |     |       vpn-common:vpn-id
-           |     +--rw port-id?
-           |     |       vpn-common:vpn-id
-           |     +--rw description?               string
-           |     +--rw status
-           |     |  +--rw admin-enabled?   boolean
-           |     |  +--ro oper-status?     operational-type
-           |     +--rw vpn-network-access-type?   identityref
-           |     +--rw connection
-           |     |  ...
-           |     +--rw ip-connection
-           |     |  ...
-           |     +--rw security
-           |     |  ...
-           |     +--rw routing-protocols
-           |     |  ...
-           |     +--rw service
-           |        ...
-           ...    ]]></artwork>
+                title="VPN Network Access Subtree Structure">
+                <artwork align="left"><![CDATA[...
++--rw vpn-nodes
+   +--rw vpn-node* [vpn-node-id]
+      ...
+      +--rw vpn-network-accesses
+         +--rw vpn-network-access* [id]
+            +--rw id                         vpn-common:vpn-id
+            +--rw port-id?                   vpn-common:vpn-id
+            +--rw description?               string
+            +--rw vpn-network-access-type?   identityref
+            +--rw status
+            |  +--rw admin-status
+            |  |  +--rw status?         identityref
+            |  |  +--rw last-updated?   yang:date-and-time
+            |  +--ro oper-status
+            |     +--ro status?         identityref
+            |     +--ro last-updated?   yang:date-and-time
+            +--rw connection
+            |  ...
+            +--rw ip-connection
+            |  ...
+            +--rw security
+            |  ...
+            +--rw routing-protocols
+            |  ...
+            +--rw service
+               ...           ]]></artwork>
               </figure></t>
+
+            <t>In reference to the subtree depicted in <xref
+            target="vpnaccess"></xref>, a 'vpn-network-access' includes the
+            following data nodes: <list style="hanging">
+                <t hangText="'id':">Is an identifier of the VPN network
+                access.</t>
+
+                <t hangText="'port-id':">Indicates the physical port on which
+                the VPN network access is bound.</t>
+
+                <t hangText="'description':">Includes a textual description of
+                the VPN network access.</t>
+
+                <t hangText="'vpn-network-access-type':">Is used to select the
+                type of network interface to be deployed in the devices. The
+                available options are: <list style="hanging">
+                    <t hangText="Point-to-Point:">Represents a direct
+                    connection between the end-points. It implies that the
+                    controller must keep the association between a logical or
+                    physical interface on the device with the 'id' of the
+                    'vpn-network-access'.</t>
+
+                    <t hangText="Multipoint:">Represents a broadcast
+                    connection between the end-points. It implies that the
+                    controller must keep the association between a logical or
+                    physical interface on the device with the 'id' of the
+                    'vpn-network-access'.</t>
+
+                    <t hangText="Pseudowire:">Represents a connection coming
+                    from an L2VPN service. It implies that the controller must
+                    keep the relationship between the logical tunnels or
+                    bridges on the devices with the 'id' of the'
+                    vpn-network-access'.</t>
+
+                    <t hangText="Loopback:">Represents the creation of a
+                    logical interface on a device.</t>
+                  </list></t>
+
+                <t hangText="'status':">Indicates both operational and
+                administrative status of a VPN network access. </t>
+
+                <t hangText="'connection':">Represents and groups the set of
+                Layer 2 connectivity from where the traffic of the L3VPN in a
+                particular VPN Network access is coming. See <xref
+                target="connection"></xref>.</t>
+
+                <t hangText="'ip-connection':">Contains the IP addressing
+                information of a VPN network access. See <xref
+                target="ip_conn"></xref>.</t>
+
+                <t hangText="'routing-protocols':">Represents and groups the
+                set of Layer 2 connectivity from where the traffic of the
+                L3VPN in a particular VPN Network access is coming. See <xref
+                target="rtg"></xref>.</t>
+
+                <t hangText="'security':">Specifies the authentication and the
+                encryption to be applied for a given VPN network access. See
+                <xref target="sec"></xref>.</t>
+
+                <t hangText="'service':">Specifies the service parameters
+                (e.g., QoS, multicast) to apply for a given VPN network
+                access. See <xref target="svc"></xref>.</t>
+              </list></t>
+
+            <t></t>
 
             <section anchor="connection" title="Connection">
               <t>The definition of a L3VPN is commonly specified not only at
               the IP layer, but also requires to identify parameters at the
               Ethernet layer, such as encapsulation type (e.g., VLAN, QinQ,
-              QinAny, VxLAN, etc.). The 'connection' container represents and
-              groups the set of Layer 2 connectivity from where the traffic of
-              the L3VPN in a particular VPN Network access is coming.</t>
+              QinAny, VxLAN, etc.). </t>
 
               <t>Ethernet encapsulation description is not supported in <xref
               target="RFC8299"></xref>. However, this parameters are mandatory
@@ -1367,46 +1388,30 @@
 
               <figure align="center" anchor="bearerethencap_tree"
                       title="Encapsulation Subtree Structure">
-                <artwork align="left"><![CDATA[ ...
- +--rw vpn-services
-    +--rw vpn-service* [vpn-id]
-       +--rw vpn-id                  vpn-common:vpn-id
-       +  ...
-        +--rw vpn-node* [ne-id]
-           +--rw ne-id                      string
-           + ...          
-           +--rw vpn-network-accesses
-           |  +--rw vpn-network-access* [id]
-           |     +--rw id
-           |     |       vpn-common:vpn-id
-           |     ...
-           |     +--rw connection
-           |     |  +--rw encapsulation-type?   identityref
-           |     |  +--rw logical-interface
-           |     |  |  +--rw peer-reference?   uint32
-           |     |  +--rw tagged-interface
-           |     |  |  +--rw type?                identityref
-           |     |  |  +--rw dot1q-vlan-tagged
-           |     |  |  |       {vpn-common:dot1q}?
-           |     |  |  |  +--rw tag-type?   identityref
-           |     |  |  |  +--rw cvlan-id?   uint16
-           |     |  |  +--rw priority-tagged
-           |     |  |  |  +--rw tag-type?   identityref
-           |     |  |  +--rw qinq {vpn-common:qinq}?
-           |     |  |  |  +--rw tag-type?   identityref
-           |     |  |  |  +--rw svlan-id    uint16
-           |     |  |  |  +--rw cvlan-id    uint16
-           |     |  |  +--rw qinany {vpn-common:qinany}?
-           |     |  |  |  +--rw tag-type?   identityref
-           |     |  |  |  +--rw svlan-id    uint16
-           |     |  |  +--rw vxlan {vpn-common:vxlan}?
-           |     |  |     +--rw vni-id       uint32
-           |     |  |     +--rw peer-mode?   identityref
-           |     |  |     +--rw peer-list* [peer-ip]
-           |     |  |        +--rw peer-ip    inet:ip-address
-           |     |  +--rw bearer
-           |     |     ...
-           ...              ]]></artwork>
+                <artwork align="center"><![CDATA[...
++--rw connection
+|  +--rw encapsulation-type?   identityref
+|  +--rw logical-interface
+|  |  +--rw peer-reference?   uint32
+|  +--rw tagged-interface
+|  |  +--rw type?                identityref
+|  |  +--rw dot1q-vlan-tagged {vpn-common:dot1q}?
+|  |  |  +--rw tag-type?   identityref
+|  |  |  +--rw cvlan-id?   uint16
+|  |  +--rw priority-tagged
+|  |  |  +--rw tag-type?   identityref
+|  |  +--rw qinq {vpn-common:qinq}?
+|  |  |  +--rw tag-type?   identityref
+|  |  |  +--rw svlan-id    uint16
+|  |  |  +--rw cvlan-id    uint16
+|  |  +--rw qinany {vpn-common:qinany}?
+|  |  |  +--rw tag-type?   identityref
+|  |  |  +--rw svlan-id    uint16
+|  |  +--rw vxlan {vpn-common:vxlan}?
+|  |     +--rw vni-id       uint32
+|  |     +--rw peer-mode?   identityref
+|  |     +--rw peer-list* [peer-ip]
+|  |        +--rw peer-ip    inet:ip-address               ]]></artwork>
               </figure>
 
               <t></t>
@@ -1427,25 +1432,19 @@
 
               <figure align="center" anchor="rfeconfiguration_tree"
                       title="Bearer Subtree Structure">
-                <artwork align="left"><![CDATA[...
-+--rw vpn-network-accesses
-|  +--rw vpn-network-access* [id]
-|     +--rw id
-|     |       vpn-common:vpn-id
-|     ...
-|     +--rw vpn-network-access-type?   identityref
-|     +--rw connection
-|     |  ...
-|     |  +--rw bearer
-|     |     +--rw bearer-reference?   string
-|     |     |       {vpn-common:bearer-reference}?
-|     |     +--rw pseudowire
-|     |     |  +--rw vcid?      uint32
-|     |     |  +--rw far-end?   union
-|     |     +--rw vpls
-|     |        +--rw vcid?      union
-|     |        +--rw far-end?   union
-|  ...            ]]></artwork>
+                <artwork align="center"><![CDATA[...
++--rw connection
+|  ...
+|  +--rw bearer
+|     +--rw bearer-reference?   string
+|     |       {vpn-common:bearer-reference}?
+|     +--rw pseudowire
+|     |  +--rw vcid?      uint32
+|     |  +--rw far-end?   union
+|     +--rw vpls
+|        +--rw vcid?      union
+|        +--rw far-end?   union
+...            ]]></artwork>
               </figure>
 
               <t></t>
@@ -1467,84 +1466,83 @@
                   title="IP Connection Subtree Structure">
                   <artwork align="center"><![CDATA[...
 +--rw vpn-network-accesses
-|  +--rw vpn-network-access* [id]
-|     +--rw id
-|     |       vpn-common:vpn-id
-|     ...
-|     +--rw vpn-network-access-type?   identityref
-|     +--rw connection
-|     |  ...
-|     +--rw ip-connection
-|     |  +--rw ipv4 {vpn-common:ipv4}?
-|     |  |  +--rw address-allocation-type?
-|     |  |  |       identityref
-|     |  |  +--rw (allocation-type)?
-|     |  |     +--:(provider-dhcp)
-|     |  |     |  +--rw provider-address?
-|     |  |     |  |       inet:ipv4-address
-|     |  |     |  +--rw prefix-length?
-|     |  |     |  |       uint8
-|     |  |     |  +--rw (address-assign)?
-|     |  |     |     +--:(number)
-|     |  |     |     |  +--rw number-of-dynamic-address?
-|     |  |     |     |          uint16
-|     |  |     |     +--:(explicit)
-|     |  |     |        +--rw customer-addresses
-|     |  |     |           +--rw address-group*
-|     |  |     |                   [group-id]
-|     |  |     |              +--rw group-id
-|     |  |     |              |       string
-|     |  |     |              +--rw start-address?
-|     |  |     |              |       inet:ipv4-address
-|     |  |     |              +--rw end-address?
-|     |  |     |                      inet:ipv4-address
-|     |  |     +--:(dhcp-relay)
-|     |  |     |  +--rw dr-provider-address?
-|     |  |     |  |       inet:ipv4-address
-|     |  |     |  +--rw dr-prefix-length?
-|     |  |     |  |       uint8
-|     |  |     |  +--rw customer-dhcp-servers
-|     |  |     |     +--rw server-ip-address*
-|     |  |     |             inet:ipv4-address
-|     |  |     +--:(static-addresses)
-|     |  |        ...
-|     |  +--rw ipv6 {vpn-common:ipv6}?
-|     |  |  +--rw address-allocation-type?
-|     |  |  |       identityref
-|     |  |  +--rw (allocation-type)?
-|     |  |     +--:(provider-dhcp)
-|     |  |     |  +--rw (provider-dhcp)?
-|     |  |     |     +--:(provider-address)
-|     |  |     |     |  +--rw provider-address?
-|     |  |     |     |          inet:ipv6-address
-|     |  |     |     +--:(prefix-length)
-|     |  |     |     |  +--rw prefix-length?
-|     |  |     |     |          uint8
-|     |  |     |     +--:(address-assign)
-|     |  |     |        +--rw (address-assign)?
-|     |  |     |           +--:(number)
-|     |  |     |           |  +--rw number-of-dynamic-address?
-|     |  |     |           |          uint16
-|     |  |     |           +--:(explicit)
-|     |  |     |              +--rw customer-addresses
-|     |  |     |                 +--rw address-group*
-|     |  |     |                         [group-id]
-|     |  |     |                    +--rw group-id
-|     |  |     |                    |       string
-|     |  |     |                    +--rw start-address?
-|     |  |     |                    |       inet:ipv6-address
-|     |  |     |                    +--rw end-address?
-|     |  |     |                            inet:ipv6-address
-|     |  |     +--:(dhcp-relay)
-|     |  |     |  +--rw dr-provider-address?
-|     |  |     |  |       inet:ipv6-address
-|     |  |     |  +--rw dr-prefix-length?
-|     |  |     |  |       uint8
-|     |  |     |  +--rw customer-dhcp-servers
-|     |  |     |     +--rw server-ip-address*
-|     |  |     |             inet:ipv6-address
-|     |  |     +--:(static-addresses)
-|     |  |        ...]]></artwork>
+   +--rw vpn-network-access* [id]
+      ...
+      +--rw connection
+      |  ...
+      +--rw ip-connection
+      |  +--rw ipv4 {vpn-common:ipv4}?
+      |  |  ...
+      |  +--rw ipv6 {vpn-common:ipv6}?
+      |  |  ...
+]]></artwork>
+                </figure></t>
+
+              <t><figure align="center" anchor="ip_conn_tree_v4"
+                  title="IP Connection Subtree Structure (IPv4)">
+                  <artwork align="center"><![CDATA[...
++--rw ip-connection
+|  +--rw ipv4 {vpn-common:ipv4}?
+|  |  +--rw address-allocation-type?        identityref
+|  |  +--rw (allocation-type)?
+|  |     +--:(provider-dhcp)
+|  |     |  +--rw provider-address?        inet:ipv4-address
+|  |     |  +--rw prefix-length?           uint8
+|  |     |  +--rw (address-assign)?
+|  |     |     +--:(number)
+|  |     |     |  +--rw number-of-dynamic-address?      uint16
+|  |     |     +--:(explicit)
+|  |     |        +--rw customer-addresses
+|  |     |           +--rw address-group*        [group-id]
+|  |     |              +--rw group-id           string
+|  |     |              +--rw start-address?     inet:ipv4-address
+|  |     |              +--rw end-address?       inet:ipv4-address
+|  |     +--:(dhcp-relay)
+|  |     |  +--rw dr-provider-address?           inet:ipv4-address
+|  |     |  +--rw dr-prefix-length?              uint8
+|  |     |  +--rw customer-dhcp-servers
+|  |     |     +--rw server-ip-address*          inet:ipv4-address
+|  |     +--:(static-addresses)
+|  |        ...
+|  +--rw ipv6 {vpn-common:ipv6}?
+|  |  ...]]></artwork>
+                </figure></t>
+
+              <t><figure align="center" anchor="ip_conn_tree_v6"
+                  title="IP Connection Subtree Structure (IPv6)">
+                  <artwork align="center"><![CDATA[...
++--rw ip-connection
+|  +--rw ipv4 {vpn-common:ipv4}?
+|  |  ...
+|  +--rw ipv6 {vpn-common:ipv6}?
+|  |  +--rw address-allocation-type?        identityref
+|  |  +--rw (allocation-type)?
+|  |     +--:(provider-dhcp)
+|  |     |  +--rw (provider-dhcp)?
+|  |     |     +--:(provider-address)
+|  |     |     |  +--rw provider-address?   inet:ipv6-address
+|  |     |     +--:(prefix-length)
+|  |     |     |  +--rw prefix-length?     uint8
+|  |     |     +--:(address-assign)
+|  |     |        +--rw (address-assign)?
+|  |     |           +--:(number)
+|  |     |           |  +--rw number-of-dynamic-address?
+|  |     |           |          uint16
+|  |     |           +--:(explicit)
+|  |     |              +--rw customer-addresses
+|  |     |                 +--rw address-group*   [group-id]
+|  |     |                    +--rw group-id      string
+|  |     |                    +--rw start-address?
+|  |     |                    |       inet:ipv6-address
+|  |     |                    +--rw end-address?
+|  |     |                            inet:ipv6-address
+|  |     +--:(dhcp-relay)
+|  |     |  +--rw dr-provider-address?    inet:ipv6-address
+|  |     |  +--rw dr-prefix-length?       uint8
+|  |     |  +--rw customer-dhcp-servers
+|  |     |     +--rw server-ip-address*  inet:ipv6-address
+|  |     +--:(static-addresses)
+|  |        ...]]></artwork>
                 </figure></t>
 
               <t>In the case of the static addressing (<xref
@@ -1555,55 +1553,36 @@
               MUST be set with the corresponding 'address-id'.</t>
 
               <figure align="center" anchor="ip_conn_tree-static"
-                      title="IP Connection Subtree Structure: Static Mode">
-                <artwork align="left"><![CDATA[           ...
-           +--rw vpn-network-accesses
-              |  +--rw vpn-network-access* [id]
-              |     +--rw id
-              |     |       vpn-common:vpn-id
-              |     ...
-              |     +--rw vpn-network-access-type?   identityref
-              |     +--rw connection
-              |     |  ...
-              |     +--rw ip-connection
-              |     |  +--rw ipv4 {vpn-common:ipv4}?
-              |     |  |  +--rw address-allocation-type?
-              |     |  |  |       identityref
-              |     |  |  +--rw (allocation-type)?
-              |     |  |     ...
-              |     |  |     +--:(static-addresses)
-              |     |  |        +--rw primary-address?
-              |     |  |        |       -> ../address/address-id
-              |     |  |        +--rw address* [address-id]
-              |     |  |           +--rw address-id
-              |     |  |           |       string
-              |     |  |           +--rw s-provider-address?
-              |     |  |           |       inet:ipv4-address
-              |     |  |           +--rw s-customer-address?
-              |     |  |           |       inet:ipv4-address
-              |     |  |           +--rw s-prefix-length?
-              |     |  |                   uint8
-              |     |  +--rw ipv6 {vpn-common:ipv6}?
-              |     |  |  +--rw address-allocation-type?
-              |     |  |  |       identityref
-              |     |  |  +--rw (allocation-type)?
-              |     |  |     ...
-              |     |  |     +--:(static-addresses)
-              |     |  |        +--rw s-primary-address?
-              |     |  |        |       -> ../s-address/address-id
-              |     |  |        +--rw s-address* [address-id]
-              |     |  |           +--rw address-id
-              |     |  |           |       string
-              |     |  |           +--rw provider-address?
-              |     |  |           |       inet:ipv6-address
-              |     |  |           +--rw customer-address?
-              |     |  |           |       inet:ipv6-address
-              |     |  |           +--rw prefix-length?      uint8
-              ...                        ]]></artwork>
+                      title="IP Connection Subtree Structure (Static Mode)">
+                <artwork align="left"><![CDATA[...
++--rw ip-connection
+|  +--rw ipv4 {vpn-common:ipv4}?
+|  |  +--rw address-allocation-type?         identityref
+|  |  +--rw (allocation-type)?
+|  |     ...
+|  |     +--:(static-addresses)
+|  |        +--rw primary-address?        -> ../address/address-id
+|  |        +--rw address* [address-id]
+|  |           +--rw address-id              string
+|  |           +--rw s-provider-address?     inet:ipv4-address
+|  |           +--rw s-customer-address?     inet:ipv4-address
+|  |           +--rw s-prefix-length?        uint8
+|  +--rw ipv6 {vpn-common:ipv6}?
+|  |  +--rw address-allocation-type?         identityref
+|  |  +--rw (allocation-type)?
+|  |     ...
+|  |     +--:(static-addresses)
+|  |        +--rw s-primary-address?     -> ../s-address/address-id
+|  |        +--rw s-address* [address-id]
+|  |           +--rw address-id              string
+|  |           +--rw provider-address?       inet:ipv6-address
+|  |           +--rw customer-address?       inet:ipv6-address
+|  |           +--rw prefix-length?          uint8
+...                        ]]></artwork>
               </figure>
             </section>
 
-            <section anchor="ro_pro" title="CE-PE Routing Protocols">
+            <section anchor="rtg" title="CE-PE Routing Protocols">
               <t>A service provider can configure one or more routing
               protocols associated with a particular 'vpn-network-access'
               (<xref target="routing"></xref>). Such routing protocol is
@@ -1694,69 +1673,49 @@
 
               <t><figure align="center" anchor="routing-static"
                   title="Static Routing Subtree Structure">
-                  <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  +--rw cascaded-lan-prefixes
-        |     |     +--rw ipv4-lan-prefixes*
-        |     |     |       [lan next-hop]
-        |     |     |       {vpn-common:ipv4}?
-        |     |     |  +--rw lan
-        |     |     |  |       inet:ipv4-prefix
-        |     |     |  +--rw lan-tag?    string
-        |     |     |  +--rw next-hop      union
-        |     |     |  +--rw bfd-enable?   boolean
-        |     |     |  +--rw metric?       uint32
-        |     |     |  +--rw preference?   uint32
-        |     |     |  +--rw status
-        |     |     |     +--rw admin-status
-        |     |     |     |  +--rw status?    identityref
-        |     |     |     |  +--rw last-updated?   
-        |     |     |     |            yang:date-and-time
-        |     |     |     +--ro oper-status
-        |     |     |        +--ro status?   identityref
-        |     |     |        +--ro last-updated?    
-        |     |     |                 yang:date-and-time
-        |     |     +--rw ipv6-lan-prefixes*
-        |     |             [lan next-hop]
-        |     |             {vpn-common:ipv6}?
-        |     |        +--rw lan
-        |     |        |       inet:ipv6-prefix
-        |     |        +--rw lan-tag?    string
-        |     |        +--rw next-hop      union
-        |     |        +--rw bfd-enable?   boolean
-        |     |        +--rw metric?       uint32
-        |     |        +--rw preference?   uint32 
-        |     |        +--rw status
-        |     |           +--rw admin-status
-        |     |           |  +--rw status?   identityref
-        |     |           |  +--rw last-updated?
-        |     |           |           yang:date-and-time
-        |     |           +--rw oper-status
-        |     |              +--ro status?  identityref
-        |     |              +--ro last-updated?
-        |     |                         yang:date-and-time
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  ...
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  ...
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  ...
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  ...
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        ...
-        +--rw security
-           ...
+                  <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw static
+|     |  +--rw cascaded-lan-prefixes
+|     |     +--rw ipv4-lan-prefixes*
+|     |     |       [lan next-hop]
+|     |     |       {vpn-common:ipv4}?
+|     |     |  +--rw lan         inet:ipv4-prefix
+|     |     |  +--rw lan-tag?      string
+|     |     |  +--rw next-hop      union
+|     |     |  +--rw bfd-enable?   boolean
+|     |     |  +--rw metric?       uint32
+|     |     |  +--rw preference?   uint32
+|     |     |  +--rw status
+|     |     |     +--rw admin-status
+|     |     |     |  +--rw status?    identityref
+|     |     |     |  +--rw last-updated?   
+|     |     |     |            yang:date-and-time
+|     |     |     +--ro oper-status
+|     |     |        +--ro status?   identityref
+|     |     |        +--ro last-updated?    
+|     |     |                 yang:date-and-time
+|     |     +--rw ipv6-lan-prefixes*
+|     |             [lan next-hop]
+|     |             {vpn-common:ipv6}?
+|     |        +--rw lan         inet:ipv6-prefix
+|     |        +--rw lan-tag?      string
+|     |        +--rw next-hop      union
+|     |        +--rw bfd-enable?   boolean
+|     |        +--rw metric?       uint32
+|     |        +--rw preference?   uint32 
+|     |        +--rw status
+|     |           +--rw admin-status
+|     |           |  +--rw status?   identityref
+|     |           |  +--rw last-updated?
+|     |           |           yang:date-and-time
+|     |           +--ro oper-status
+|     |              +--ro status?  identityref
+|     |              +--ro last-updated?
+|     |                         yang:date-and-time
+...
 ]]></artwork>
                 </figure></t>
 
@@ -1828,68 +1787,54 @@
                       <t hangText="'xxx':"></t>
                     </list><figure align="center" anchor="routing-bgp"
                       title="BGP Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  ...
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  +--rw description?       string
-        |     |  +--rw local-autonomous-system?
-        |     |  |       inet:as-number
-        |     |  +--rw peer-autonomous-system
-        |     |  |       inet:as-number
-        |     |  +--rw address-family*  identityref
-        |     |  +--rw neighbor*     inet:ip-address
-        |     |  +--rw multihop?         uint8
-        |     |  +--rw as-override?      boolean
-        |     |  +--rw default-route?    boolean
-        |     |  +--rw bgp-max-prefix
-        |     |  |  +--rw max-prefix?          uint32
-        |     |  |  +--rw warning-threshold?  
-        |     |  |  |       decimal64
-        |     |  |  +--rw violate-action? 
-        |     |  |  |       enumeration
-        |     |  |  +--rw restart-interval?    uint16
-        |     |  +--rw bgp-timers
-        |     |  |  +--rw keep-alive?   uint16
-        |     |  |  +--rw hold-time?    uint16
-        |     |  +--rw security
-        |     |  |  +--rw enable?            boolean
-        |     |  |  +--rw keying-material
-        |     |  |     +--rw (option)?
-        |     |  |        +--:(md5)
-        |     |  |        |  +--rw md5-keychain?
-        |     |  |        |          kc:key-chain-ref
-        |     |  |        +--:(ipsec)
-        |     |  |           +--rw sa?   string
-        |     |  +--rw status
-        |     |     +--rw admin-status
-        |     |     |  +--rw status?   identityref
-        |     |     |  +--rw last-updated?
-        |     |     |          yang:date-and-time
-        |     |     +--rw oper-status
-        |     |        +--ro status?  identityref
-        |     |        +--ro last-updated?
-        |     |                yang:date-and-time
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  ...
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  ...
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  ...
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        ...
-        +--rw security
-            ...
+                      <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw bgp {vpn-common:rtg-bgp}?
+|     |  +--rw description?       string
+|     |  +--rw local-autonomous-system?
+|     |  |       inet:as-number
+|     |  +--rw peer-autonomous-system
+|     |  |       inet:as-number
+|     |  +--rw address-family?  identityref
+|     |  +--rw neighbor*     inet:ip-address
+|     |  +--rw multihop?         uint8
+|     |  +--rw as-override?      boolean
+|     |  +--rw default-route?    boolean
+|     |  +--rw site-of-origin?            
+|     |  |       rt-types:route-origin
+|     |  +--rw ipv6-site-of-origin?       
+|     |  |       rt-types:ipv6-route-origin
+|     |  +--rw bgp-max-prefix
+|     |  |  +--rw max-prefix?          uint32
+|     |  |  +--rw warning-threshold?  
+|     |  |  |       decimal64
+|     |  |  +--rw violate-action? 
+|     |  |  |       enumeration
+|     |  |  +--rw restart-interval?    uint16
+|     |  +--rw bgp-timers
+|     |  |  +--rw keep-alive?   uint16
+|     |  |  +--rw hold-time?    uint16
+|     |  +--rw security
+|     |  |  +--rw enable?            boolean
+|     |  |  +--rw keying-material
+|     |  |     +--rw (option)?
+|     |  |        +--:(md5)
+|     |  |        |  +--rw md5-keychain?
+|     |  |        |          kc:key-chain-ref
+|     |  |        +--:(ipsec)
+|     |  |           +--rw sa?   string
+|     |  +--rw status
+|     |     +--rw admin-status
+|     |     |  +--rw status?   identityref
+|     |     |  +--rw last-updated?
+|     |     |          yang:date-and-time
+|     |     +--ro oper-status
+|     |        +--ro status?  identityref
+|     |        +--ro last-updated?
+|     |                yang:date-and-time
+...
 ]]></artwork>
                     </figure></t>
 
@@ -1901,62 +1846,44 @@
                   up to the implementation to drive whether OSPFv2 or OSPFv3
                   is used.<figure align="center" anchor="routing-ospf"
                       title="OPSF Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  ...
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  ...
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  +--rw address-family*   identityref
-        |     |  +--rw area-address
-        |     |  |       yang:dotted-quad
-        |     |  +--rw metric?           uint16
-        |     |  +--rw mtu?              uint16
-        |     |  +--rw process-id?       uint16
-        |     |  +--rw sham-links
-        |     |  |       {vpn-common:rtg-ospf-sham-link}?
-        |     |  |  +--rw sham-link* [target-site]
-        |     |  |     +--rw target-site
-        |     |  |     |       vpn-common:vpn-id
-        |     |  |     +--rw metric?        uint16
-        |     |  +--rw security
-        |     |  |  +--rw enable?            boolean
-        |     |  |  +--rw keying-material
-        |     |  |     +--rw (option)?
-        |     |  |        +--:(md5)
-        |     |  |        |  +--rw md5-keychain?
-        |     |  |        |          kc:key-chain-ref
-        |     |  |        +--:(ipsec)
-        |     |  |           +--rw sa?  string
-        |     |  +--rw status
-        |     |     +--rw admin-status
-        |     |     |  +--rw status?
-        |     |     |  |       identityref
-        |     |     |  +--rw last-updated?
-        |     |     |          yang:date-and-time
-        |     |     +--rw oper-status
-        |     |        +--ro status?
-        |     |        |       identityref
-        |     |        +--ro last-updated?
-        |     |                yang:date-and-time
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  ...
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  ...
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        ...
-        +--rw security
-            ...
+                      <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw ospf {vpn-common:rtg-ospf}?
+|     |  +--rw address-family*   identityref
+|     |  +--rw area-address
+|     |  |       yang:dotted-quad
+|     |  +--rw metric?           uint16
+|     |  +--rw mtu?              uint16
+|     |  +--rw process-id?       uint16
+|     |  +--rw sham-links
+|     |  |       {vpn-common:rtg-ospf-sham-link}?
+|     |  |  +--rw sham-link* [target-site]
+|     |  |     +--rw target-site
+|     |  |     |       vpn-common:vpn-id
+|     |  |     +--rw metric?        uint16
+|     |  +--rw security
+|     |  |  +--rw enable?            boolean
+|     |  |  +--rw keying-material
+|     |  |     +--rw (option)?
+|     |  |        +--:(md5)
+|     |  |        |  +--rw md5-keychain?
+|     |  |        |          kc:key-chain-ref
+|     |  |        +--:(ipsec)
+|     |  |           +--rw sa?  string
+|     |  +--rw status
+|     |     +--rw admin-status
+|     |     |  +--rw status?
+|     |     |  |       identityref
+|     |     |  +--rw last-updated?
+|     |     |          yang:date-and-time
+|     |     +--ro oper-status
+|     |        +--ro status?
+|     |        |       identityref
+|     |        +--ro last-updated?
+|     |                yang:date-and-time
+...
 ]]></artwork>
                     </figure></t>
 
@@ -1966,137 +1893,83 @@
                   instance can run L1, L2, or both levels.<figure
                       align="center" anchor="routing-isis"
                       title="IS-IS Routing Subtree Structure">
-                      <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  ...
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  ...
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  ...
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  +--rw address-family*   identityref
-        |     |  +--rw area-address
-        |     |  |       yang:dotted-quad
-        |     |  +--rw level?            identityref
-        |     |  +--rw metric?           uint16
-        |     |  +--rw process-id?       uint16
-        |     |  +--rw mode?             enumeration
-        |     |  +--rw status
-        |     |     +--rw admin-status
-        |     |     |  +--rw status?
-        |     |     |  |       identityref
-        |     |     |  +--rw last-updated?
-        |     |     |          yang:date-and-time
-        |     |     +--rw oper-status
-        |     |        +--ro status?
-        |     |        |       identityref
-        |     |        +--ro last-updated?
-        |     |                yang:date-and-time
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  ...
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        ...
-        +--rw security
-            ...
+                      <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw isis {vpn-common:rtg-isis}?
+|     |  +--rw address-family*   identityref
+|     |  +--rw area-address
+|     |  |       yang:dotted-quad
+|     |  +--rw level?            identityref
+|     |  +--rw metric?           uint16
+|     |  +--rw process-id?       uint16
+|     |  +--rw mode?             enumeration
+|     |  +--rw status
+|     |     +--rw admin-status
+|     |     |  +--rw status?
+|     |     |  |       identityref
+|     |     |  +--rw last-updated?
+|     |     |          yang:date-and-time
+|     |     +--ro oper-status
+|     |        +--ro status?
+|     |        |       identityref
+|     |        +--ro last-updated?
+|     |                yang:date-and-time
+...
 ]]></artwork>
                     </figure></t>
 
                   <t hangText="RIP:">The module covers only a list of
                   address-family as parameter.<figure align="center"
                       anchor="rip" title="RIP Subtree Structure">
-                      <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  ...
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  ...
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  ...
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  ...
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  +--rw address-family*   identityref
-        |     |  +--rw status
-        |     |     +--rw admin-status
-        |     |     |  +--rw status?
-        |     |     |  |       identityref
-        |     |     |  +--rw last-updated?
-        |     |     |          yang:date-and-time
-        |     |     +--rw oper-status
-        |     |        +--ro status?
-        |     |        |       identityref
-        |     |        +--ro last-updated?
-        |     |                yang:date-and-time
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        ...
-        +--rw security
-            ...
+                      <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw rip {vpn-common:rtg-rip}?
+|     |  +--rw address-family*   identityref
+|     |  +--rw status
+|     |     +--rw admin-status
+|     |     |  +--rw status?
+|     |     |  |       identityref
+|     |     |  +--rw last-updated?
+|     |     |          yang:date-and-time
+|     |     +--ro oper-status
+|     |        +--ro status?
+|     |        |       identityref
+|     |        +--ro last-updated?
+|     |                yang:date-and-time
+...
 ]]></artwork>
                     </figure></t>
 
                   <t hangText="VRRP:">The module covers only a list of
                   address-family as parameter.<figure align="center"
                       anchor="vrrp" title="VRRP Subtree Structure">
-                      <artwork align="center"><![CDATA[  ...
-  +--rw vpn-network-accesses
-     +--rw vpn-network-access* [id]
-        ...  
-        +--rw routing-protocols
-        |  +--rw routing-protocol* [id]
-        |     +--rw id   string
-        |     +--rw type?               identityref
-        |     +--rw routing-profiles* [id]
-        |     |  +--rw id      leafref
-        |     |  +--rw type?   identityref
-        |     +--rw static
-        |     |  ...
-        |     +--rw bgp {vpn-common:rtg-bgp}?
-        |     |  ...
-        |     +--rw ospf {vpn-common:rtg-ospf}?
-        |     |  ...
-        |     +--rw isis {vpn-common:rtg-isis}?
-        |     |  ...
-        |     +--rw rip {vpn-common:rtg-rip}?
-        |     |  ...
-        |     +--rw vrrp {vpn-common:rtg-vrrp}?
-        |        +--rw address-family*   identityref
-        |        +--rw vrrp-group?       uint8
-        |        +--rw backup-peer?
-        |        |       inet:ip-address
-        |        +--rw priority?         uint8
-        |        +--rw ping-reply?       boolean
-        |        +--rw status
-        |           +--rw admin-status
-        |           |  +--rw status?
-        |           |  |       identityref
-        |           |  +--rw last-updated?
-        |           |          yang:date-and-time
-        |           +--rw oper-status
-        |              +--ro status?
-        |              |       identityref
-        |              +--ro last-updated?
-        |                      yang:date-and-time
-        +--rw security
-            ...
+                      <artwork align="center"><![CDATA[...  
++--rw routing-protocols
+|  +--rw routing-protocol* [id]
+|     ...
+|     +--rw vrrp {vpn-common:rtg-vrrp}?
+|        +--rw address-family*   identityref
+|        +--rw vrrp-group?       uint8
+|        +--rw backup-peer?
+|        |       inet:ip-address
+|        +--rw priority?         uint8
+|        +--rw ping-reply?       boolean
+|        +--rw status
+|           +--rw admin-status
+|           |  +--rw status?
+|           |  |       identityref
+|           |  +--rw last-updated?
+|           |          yang:date-and-time
+|           +--ro oper-status
+|              +--ro status?
+|              |       identityref
+|              +--ro last-updated?
+|                      yang:date-and-time
+...
 ]]></artwork>
                     </figure></t>
                 </list></t>
@@ -2104,7 +1977,7 @@
               <!--  (NOTE FOR EDITORS: it seems that the access-priority has been removed. We need to have one may be slightly different from L3SM) -->
             </section>
 
-            <section title="Security">
+            <section anchor="sec" title="Security">
               <t>The 'security' container specifies the authentication and the
               encryption to be applied for a given VPN network access (<xref
               target="security"></xref>).</t>
@@ -2137,59 +2010,51 @@
                 </figure></t>
             </section>
 
-            <section title="Services">
+            <section anchor="svc" title="Services">
               <t>The 'services' container specifies the service parameters to
               apply for a given VPN network access (<xref
               target="services"></xref>).</t>
 
               <t><figure align="center" anchor="services"
                   title="Services Subtree Structure">
-                  <artwork align="center"><![CDATA[                 ...
-                 +--rw vpn-network-accesses
-                 |  +--rw vpn-network-access* [id]
-                 |     +--rw id
-                 |     |       vpn-common:vpn-id
-                 |     ...
-                 |     +--rw service
-                 |        +--rw svc-input-bandwidth     uint64
-                 |        +--rw svc-output-bandwidth    uint64
-                 |        +--rw svc-mtu                 uint16
-                 |        +--rw qos {vpn-common:qos}?
-                 |        |  +--rw qos-classification-policy
-                 |        |  |  +--rw rule* [id]
-                 |        |  |     +--rw id
-                 |        |  |     |       string
-                 |        |  |     +--rw (match-type)?
-                 |        |  |     |  +--:(match-flow)
-                 |        |  |     |  |  +--rw (l3)?
-                 |        |  |     |  |  |  +--:(ipv4)
-                 |        |  |     |  |  |  |  ...
-                 |        |  |     |  |  |  +--:(ipv6)
-                 |        |  |     |  |  |     ...
-                 |        |  |     |  |  +--rw (l4)?
-                 |        |  |     |  |     +--:(tcp)
-                 |        |  |     |  |     |  ...
-                 |        |  |     |  |     +--:(udp)
-                 |        |  |     |  |        ...
-                 |        |  |     |  +--:(match-application)
-                 |        |  |     |     +--rw match-application?
-                 |        |  |     |             identityref
-                 |        |  |     +--rw target-class-id?
-                 |        |  |             string
-                 |        |  +--rw qos-profile
-                 |        |     +--rw qos-profile* [profile]
-                 |        |        +--rw profile      leafref
-                 |        |        +--rw direction?   identityref
-                 |        +--rw carrierscarrier
-                 |        |       {vpn-common:carrierscarrier}?
-                 |        |  +--rw signalling-type?   enumeration
-                 |        +--rw multicast {vpn-common:multicast}?
-                 |           +--rw site-type?        enumeration
-                 |           +--rw address-family?
-                 |           |       vpn-common:address-family
-                 |           +--rw protocol-type?    enumeration
-                 |           +--rw remote-source?    boolean
-                 ...
+                  <artwork align="center"><![CDATA[...
++--rw vpn-network-accesses
+   +--rw vpn-network-access* [id]
+      ...
+      +--rw service
+         +--rw svc-input-bandwidth     uint64
+         +--rw svc-output-bandwidth    uint64
+         +--rw svc-mtu                 uint16
+         +--rw qos {vpn-common:qos}?
+         |  +--rw qos-classification-policy
+         |  |  +--rw rule* [id]
+         |  |     +--rw id             string
+         |  |     +--rw (match-type)?
+         |  |     |  +--:(match-flow)
+         |  |     |  |  +--rw (l3)?
+         |  |     |  |  |  +--:(ipv4)
+         |  |     |  |  |  |  ...
+         |  |     |  |  |  +--:(ipv6)
+         |  |     |  |  |     ...
+         |  |     |  |  +--rw (l4)?
+         |  |     |  |     +--:(tcp)
+         |  |     |  |     |  ...
+         |  |     |  |     +--:(udp)
+         |  |     |  |        ...
+         |  |     |  +--:(match-application)
+         |  |     |     +--rw match-application?
+         |  |     |             identityref
+         |  |     +--rw target-class-id?
+         |  |             string
+         |  +--rw qos-profile
+         |     +--rw qos-profile* [profile]
+         |        +--rw profile      leafref
+         |        +--rw direction?   identityref
+         +--rw carrierscarrier
+         |       {vpn-common:carrierscarrier}?
+         |  +--rw signalling-type?   enumeration
+         +--rw multicast {vpn-common:multicast}?
+            ...                   
 ]]></artwork>
                 </figure>The following attributes are defined: <list
                   style="hanging">
@@ -2224,37 +2089,21 @@
                           <artwork align="center"><![CDATA[+--rw qos {vpn-common:qos}?
 |  +--rw qos-classification-policy
 |  |  +--rw rule* [id]
-|  |     +--rw id
-|  |     |       string
+|  |     +--rw id           string
 |  |     +--rw (match-type)?
 |  |     |  +--:(match-flow)
 |  |     |  |  +--rw (l3)?
 |  |     |  |  |  +--:(ipv4)
-|  |     |  |  |  |  ...
-|  |     |  |  |  +--:(ipv6)
-|  |     |  |  |     ...
-|  |     |  |  +--rw (l4)?
-|  |     |  |  +--rw (l3)?
-|  |     |  |  |  +--:(ipv4)
 |  |     |  |  |  |  +--rw ipv4
-|  |     |  |  |  |     +--rw dscp?
-|  |     |  |  |  |     |       inet:dscp
-|  |     |  |  |  |     +--rw ecn?
-|  |     |  |  |  |     |       uint8
-|  |     |  |  |  |     +--rw length?
-|  |     |  |  |  |     |       uint16
-|  |     |  |  |  |     +--rw ttl?
-|  |     |  |  |  |     |       uint8
-|  |     |  |  |  |     +--rw protocol?
-|  |     |  |  |  |     |       uint8
-|  |     |  |  |  |     +--rw ihl?
-|  |     |  |  |  |     |       uint8
-|  |     |  |  |  |     +--rw flags?
-|  |     |  |  |  |     |       bits
-|  |     |  |  |  |     +--rw offset?
-|  |     |  |  |  |     |       uint16
-|  |     |  |  |  |     +--rw identification?
-|  |     |  |  |  |     |       uint16
+|  |     |  |  |  |     +--rw dscp?              inet:dscp
+|  |     |  |  |  |     +--rw ecn?               uint8
+|  |     |  |  |  |     +--rw length?            uint16
+|  |     |  |  |  |     +--rw ttl?               uint8
+|  |     |  |  |  |     +--rw protocol?          uint8
+|  |     |  |  |  |     +--rw ihl?               uint8
+|  |     |  |  |  |     +--rw flags?             bits
+|  |     |  |  |  |     +--rw offset?            uint16
+|  |     |  |  |  |     +--rw identification?    uint16
 |  |     |  |  |  |     +--rw (destination-network)?
 |  |     |  |  |  |     |  +--:(destination-ipv4-network)
 |  |     |  |  |  |     |     +--rw destination-ipv4-network?
@@ -2265,16 +2114,11 @@
 |  |     |  |  |  |  inet:ipv4-prefix
 |  |     |  |  |  +--:(ipv6)
 |  |     |  |  |     +--rw ipv6
-|  |     |  |  |        +--rw dscp?
-|  |     |  |  |        |       inet:dscp
-|  |     |  |  |        +--rw ecn?
-|  |     |  |  |        |       uint8
-|  |     |  |  |        +--rw length?
-|  |     |  |  |        |       uint16
-|  |     |  |  |        +--rw ttl?
-|  |     |  |  |        |       uint8
-|  |     |  |  |        +--rw protocol?
-|  |     |  |  |        |       uint8
+|  |     |  |  |        +--rw dscp?              inet:dscp
+|  |     |  |  |        +--rw ecn?               uint8
+|  |     |  |  |        +--rw length?            uint16
+|  |     |  |  |        +--rw ttl?               uint8
+|  |     |  |  |        +--rw protocol?          uint8
 |  |     |  |  |        +--rw (destination-network)?
 |  |     |  |  |        |  +--:(destination-ipv6-network)
 |  |     |  |  |        |     +--rw destination-ipv6-network?
@@ -2302,34 +2146,22 @@
                           <artwork align="center"><![CDATA[+--rw qos {vpn-common:qos}?
 |  +--rw qos-classification-policy
 |  |  +--rw rule* [id]
-|  |     +--rw id
-|  |     |       string
+|  |     +--rw id           string
 |  |     +--rw (match-type)?
 |  |     |  +--:(match-flow)
 |  |     |  |  +--rw (l3)?
-|  |     |  |  |  +--:(ipv4)
-|  |     |  |  |  |  ...
-|  |     |  |  |  +--:(ipv6)
-|  |     |  |  |     ...
+|  |     |  |  |  ...
 |  |     |  |  +--rw (l4)?
 |  |     |  |     +--:(tcp)
 |  |     |  |     |  +--rw tcp
-|  |     |  |     |     +--rw sequence-number?
-|  |     |  |     |     |       uint32
-|  |     |  |     |     +--rw acknowledgement-number?
-|  |     |  |     |     |       uint32
-|  |     |  |     |     +--rw data-offset?
-|  |     |  |     |     |       uint8
-|  |     |  |     |     +--rw reserved?
-|  |     |  |     |     |       uint8
-|  |     |  |     |     +--rw flags?
-|  |     |  |     |     |       bits
-|  |     |  |     |     +--rw window-size?
-|  |     |  |     |     |       uint16
-|  |     |  |     |     +--rw urgent-pointer?
-|  |     |  |     |     |       uint16
-|  |     |  |     |     +--rw options?
-|  |     |  |     |     |       binary
+|  |     |  |     |     +--rw sequence-number?          uint32
+|  |     |  |     |     +--rw acknowledgement-number?   uint32
+|  |     |  |     |     +--rw data-offset?              uint8
+|  |     |  |     |     +--rw reserved?                 uint8
+|  |     |  |     |     +--rw flags?                    bits
+|  |     |  |     |     +--rw window-size?              uint16
+|  |     |  |     |     +--rw urgent-pointer?           uint16
+|  |     |  |     |     +--rw options?                  binary
 |  |     |  |     |     +--rw (source-port)?
 |  |     |  |     |     |  +--:(source-port-range-or-operator)
 |  |     |  |     |     |     +--rw source-port-range-or-operator
@@ -2360,8 +2192,7 @@
 |  |     |  |     |                           inet:port-number
 |  |     |  |     +--:(udp)
 |  |     |  |        +--rw udp
-|  |     |  |           +--rw length?
-|  |     |  |           |       uint16
+|  |     |  |           +--rw length?                    uint16
 |  |     |  |           +--rw (source-port)?
 |  |     |  |           |  +--:(source-port-range-or-operator)
 |  |     |  |           |     +--rw source-port-range-or-operator
@@ -2390,7 +2221,7 @@
 |  |     |  |                          |       operator
 |  |     |  |                          +--rw port
 |  |     |  |                                  inet:port-number
-                 ...
+...
 ]]></artwork>
                         </figure></t>
 
@@ -4861,10 +4692,10 @@ module ietf-l3vpn-ntw {
       and reviews were received from (listed alphabetically): Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Adrian Farrel, Roque Gagliano,
       Christian Jacquenet, Kireeti Kompella, and Julian Lucek. Many thanks to
-      them. Thanks to Philip Eardly for the review. </t>
+      them. Thanks to Philip Eardly for the review.</t>
 
       <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
-      contributed to early version of the individual submission. </t>
+      contributed to early version of the individual submission.</t>
 
       <t>This work was supported in part by the European Commission funded
       H2020-ICT-2016-2 METRO-HAUL project (G.A. 761727).</t>
@@ -5247,7 +5078,7 @@ Content-Type: application/yang-data+json
 
         <figure align="center" anchor="service-mc1"
                 title="Multicast L3VPN Service Example">
-          <artwork align="left"><![CDATA[                                                        
+          <artwork align="center"><![CDATA[                                                        
               +-----------+   +------+     +------+    +-----------+
               | Multicast |---|  CE  |--/--|  PE  |----|  Backbone |
               |  source   |   +------+     +------+    |   IP/MPLS |
@@ -5293,9 +5124,9 @@ Content-Type: application/yang-data+json
       "vpn-node-id": "500003105",
       "ne-id": "198.51.100.10",
       "autonomous-system": "3816",
-      "description": "VRF_IPTV_MULTICAST",
+      "description": "VRF-IPTV-MULTICAST",
       "router-id": "198.51.100.10",
-      "address-family": "ipv4",
+      "address-family": "vpn-common:ipv4",
       "node-role": "vpn-common:hub-role",
       "rd": "3816:31050202",
       "multicast": {
@@ -5333,7 +5164,7 @@ Content-Type: application/yang-data+json
 
         <figure align="center" anchor="service-mc4"
                 title="Create VPN Network Access (Excerpt of the Message Request Body)">
-          <artwork align="left"><![CDATA[   
+          <artwork align="center"><![CDATA[ 
  {
   "ietf-l3vpn-ntw:vpn-network-access": {
     "vpn-network-access-id": "1/1/1",
@@ -5365,7 +5196,7 @@ Content-Type: application/yang-data+json
           "bgp": {
             "peer-autonomous-system": "6500",
             "local-autonomous-system": "3816",
-            "address-family": "ipv4",
+            "address-family": "vpn-common:ipv4",
             "neighbor": "203.0.113.2",
             "description": "Connected to CE"
           }
