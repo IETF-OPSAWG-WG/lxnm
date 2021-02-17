@@ -1325,22 +1325,16 @@ module ietf-l3vpn-ntw {
                   container oam {
                     description
                       "Defines the Operations, Administration,
-                       and Maintenance (OAM) mechanisms used on
+                       and Maintenance (OAM) mechanisms used on IP
                        the connection.
 
                        BFD is set as a fault detection mechanism,
-                       but the 'oam' container can easily
-                       be augmented by other mechanisms";
+                       but other mechanisms can be defined in the
+                       future.";
                     container bfd {
                       if-feature "vpn-common:bfd";
                       description
                         "Container for BFD.";
-                      leaf enabled {
-                        type boolean;
-                        default "false";
-                        description
-                          "If true, BFD activation is required.";
-                      }
                       choice holdtime {
                         default "fixed";
                         description
@@ -1377,13 +1371,28 @@ module ietf-l3vpn-ntw {
                                The provider can propose some profiles
                                to the customer, depending on the
                                service level the customer wants to
-                               achieve.
-
-                               Profile names must be communicated to
-                               the customer.";
+                               achieve.";
                           }
                         }
                       }
+                      container authentication {
+                        presence "Enables BFD authentication";
+                        description
+                          "Parameters for BFD authentication.";
+                        leaf key-chain {
+                          type key-chain:key-chain-ref;
+                          description
+                            "Name of the key-chain.";
+                        }
+                        leaf meticulous {
+                          type boolean;
+                          description
+                            "Enables meticulous mode.";
+                          reference
+                            "Section 6.7 of RFC 5880";
+                        }
+                      }
+                      uses vpn-common:service-status;
                     }
                   }
                 }
@@ -1468,6 +1477,7 @@ module ietf-l3vpn-ntw {
                                discard or local-link).";
                           }
                           leaf bfd-enable {
+                            if-feature "vpn-common:bfd";
                             type boolean;
                             description
                               "Enables BFD.";
@@ -1515,6 +1525,7 @@ module ietf-l3vpn-ntw {
                                discard or local-link).";
                           }
                           leaf bfd-enable {
+                            if-feature "vpn-common:bfd";
                             type boolean;
                             description
                               "Enables BFD.";
