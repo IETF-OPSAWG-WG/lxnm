@@ -1387,29 +1387,26 @@
 
             <section anchor="connection" title="Connection">
               <t>The definition of a L3VPN is commonly specified not only at
-              the IP layer, but also requires to identify parameters at the
-              Ethernet layer, such as encapsulation type (e.g., VLAN, QinQ,
-              QinAny, VxLAN, etc.).</t>
+              the IP layer, but also requires to provide parameters at the
+              Ethernet layer, such as specifying an encapsulation type (e.g.,
+              VLAN, QinQ, QinAny, VxLAN, etc.). The L3NM uses the 'connection'
+              container to specify such parameters. </t>
 
-              <t>Ethernet encapsulation description is not supported in <xref
-              target="RFC8299"></xref>. However, this parameter is required
-              mandatory to configure the PE interfaces. Thus, in the L3NM,
-              these parameters uses the connection container inside the
-              'vpn-network-access'. This container defines protocols and
-              parameters to enable connectivity at Layer 2.</t>
+              <t>A site, as per <xref target="RFC4176"></xref> represents a
+              VPN customer's location that is connected to the service
+              provider network via a CE-PE link, which can access at least one
+              VPN. The connection from the site to the service provider
+              network is the bearer. Every site is associated with a list of
+              bearers. A bearer is the layer two connections with the site. In
+              the L3NM, it is assumed that the bearer has been allocated by
+              the service provider at the service orchestration stage. The
+              bearer is associated to a network element and a port. Hence, a
+              bearer is just a bearer-reference to allow the translation
+              between a service request (e.g., L3SM) and L3NM.</t>
 
-              <t>Additionally, the 'bearer-reference' and the pseudowire
-              termination are supported. A site, as per <xref
-              target="RFC4176"></xref> represents a VPN customer's location
-              that is connected to the service provider network via a CE-PE
-              link, which can access at least one VPN. The connection from the
-              site to the service provider network is the bearer. Every site
-              is associated with a list of bearers. A bearer is the layer two
-              connections with the site. In the module it is assumed that the
-              bearer has been allocated by the service provider at the service
-              orchestration step. The bearer is associated to a network
-              element and a port. Hence, a bearer is just a bearer-reference
-              to allow the translation between L3SM and L3NM.</t>
+              <t>As shown in <xref target="bearerethencap_tree"></xref>, the
+              'connection' container defines protocols and parameters to
+              enable connectivity at Layer 2. </t>
 
               <figure align="center" anchor="bearerethencap_tree"
                       title="Connection Subtree Structure">
@@ -1450,8 +1447,6 @@
               </figure>
 
               <t></t>
-
-              <t></t>
             </section>
 
             <section anchor="ip_conn" title="IP Connections">
@@ -1460,20 +1455,12 @@
               The allocated address represents the PE interface address
               configuration. </t>
 
-              <t>The IP connection container is designed to support both IPv4
-              and IPv6. It also supports three IP address assignment modes:
-              SLAAC <xref target="RFC7527"></xref>, Provider DHCP, DHCP relay,
-              and static addressing. Only one of them is enabled for a given
-              service.<!--Med: Check if slaac need to be mentionned--></t>
-
               <t><figure align="center" anchor="ip_conn_tree"
                   title="IP Connection Subtree Structure">
                   <artwork align="center"><![CDATA[...
 +--rw vpn-network-accesses
    +--rw vpn-network-access* [id]
       ...
-      +--rw connection
-      |  ...
       +--rw ip-connection
       |  +--rw ipv4 {vpn-common:ipv4}?
       |  |  ...
@@ -1482,6 +1469,15 @@
       ...
 ]]></artwork>
                 </figure></t>
+
+              <t>The IP connection container is designed to support both IPv4
+              and IPv6. It supports four IP address assignment modes: SLAAC
+              <xref target="RFC7527"></xref>, provider DHCP, DHCP relay, and
+              static addressing. The SLAAC mode applies only for IPv6. Only
+              one mode is enabled for a given service. </t>
+
+              <t><xref target="ip_conn_tree_v4"></xref> shows the structure of
+              the dynamic IPv4 address assignment.</t>
 
               <t><figure align="center" anchor="ip_conn_tree_v4"
                   title="IP Connection Subtree Structure (IPv4)">
@@ -1511,6 +1507,9 @@
 |  |        ...
 ...]]></artwork>
                 </figure></t>
+
+              <t><xref target="ip_conn_tree_v6"></xref> shows the structure of
+              the dynamic IPv6 address assignment.</t>
 
               <t><figure align="center" anchor="ip_conn_tree_v6"
                   title="IP Connection Subtree Structure (IPv6)">
@@ -1584,10 +1583,6 @@
 |              +--rw prefix-length?          uint8
 ...                        ]]></artwork>
               </figure>
-
-              <t></t>
-
-              <t></t>
 
               <t></t>
             </section>
@@ -2386,9 +2381,10 @@
 
     <section anchor="YANG_module" title="L3NM YANG Module">
       <t>This module uses types defined in <xref target="RFC6991"></xref> and
-      groupings defined in <xref target="RFC8519"></xref>.</t>
+      groupings defined in <xref target="RFC8519"></xref>, <xref
+      target="RFC8177"></xref>, and <xref target="RFC8294"></xref>.</t>
 
-      <figure align="center" anchor="module_YANG">
+      <figure align="center">
         <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-01-26.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
@@ -5059,6 +5055,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.7166'?>
 
       <?rfc include='reference.RFC.6565'?>
+
+      <?rfc include='reference.RFC.8177'?>
     </references>
 
     <references title="Informative References">
