@@ -1649,14 +1649,15 @@ module ietf-l3vpn-ntw {
                           type uint32;
                           default "5000";
                           description
-                            "Indicates the maximimum number of BGP
+                            "Indicates the maximum number of BGP
                              prefixes allowed in the BGP session.
 
                              It allows to control how many prefixes
                              can be received from a neighbor.
 
-                             If the limit is exceeded, the session
-                              can be teared down.";
+                             If the limit is exceeded, the action
+                             indicated in violate-action will be
+                             followed.";
                           reference
                             "RFC4271, Section 8.2.2.";
                         }
@@ -1686,7 +1687,7 @@ module ietf-l3vpn-ntw {
                             }
                             enum restart {
                               description
-                                "Restart after a time interval.";
+                                "Restarts after a time interval.";
                             }
                           }
                           description
@@ -1747,7 +1748,7 @@ module ietf-l3vpn-ntw {
                       }
                       container security {
                         description
-                          "Container for BGP security parameters 
+                          "Container for BGP security parameters
                            between a PE and a CE.";
                         leaf enable {
                           type boolean;
@@ -1861,17 +1862,6 @@ module ietf-l3vpn-ntw {
                            in the routing state calculation and
                            path selection.";
                       }
-                      leaf mtu {
-                        type uint16;
-                        description
-                          "Maximum transmission unit for a given
-                           OSPF link.";
-                      }
-                      leaf process-id {
-                        type uint16;
-                        description
-                          "Process id of the OSPF CE-PE connection.";
-                      }
                       container sham-links {
                         if-feature "vpn-common:rtg-ospf-sham-link";
                         description
@@ -1897,7 +1887,14 @@ module ietf-l3vpn-ntw {
                           }
                         }
                       }
-                      container secuirty {
+                      leaf max-lsa {
+                        type uint32 {
+                          range "1..4294967294";
+                        }
+                        description
+                          "Maximum number of allowed LSAs OSPF.";
+                      }
+                      container security {
                         description
                           "Authentication configuration.";
                         leaf enable {
@@ -1962,7 +1959,7 @@ module ietf-l3vpn-ntw {
                       if-feature "vpn-common:rtg-isis";
                       description
                         "IS-IS specific configuration.";
-                      leafaddress-family {
+                      leaf address-family {
                         type identityref {
                           base vpn-common:address-family;
                         }
@@ -1991,12 +1988,6 @@ module ietf-l3vpn-ntw {
                            in the routing state calculation and
                            path selection.";
                       }
-                      leaf process-id {
-                        type uint16;
-                        description
-                          "Process id of the IS-IS CE-PE
-                           connection.";
-                      }
                       leaf mode {
                         type enumeration {
                           enum active {
@@ -2014,6 +2005,53 @@ module ietf-l3vpn-ntw {
                         default "active";
                         description
                           "IS-IS interface mode type.";
+                      }
+                      container security {
+                        description
+                          "Authentication configuration.";
+                        leaf enable {
+                          type boolean;
+                          default "false";
+                          description
+                            "Enables or disables authentication.";
+                        }
+                        container keying-material {
+                          when "../enable = 'true'";
+                          description
+                            "Container for describing how an IS-IS session
+                             is to be secured between a CE and a PE.";
+                          choice option {
+                            description
+                              "Options for IS-IS authentication.";
+                            case auth-key-chain {
+                              leaf key-chain {
+                                type key-chain:key-chain-ref;
+                                description
+                                  "key-chain name.";
+                              }
+                            }
+                            case auth-key-explicit {
+                              leaf key-id {
+                                type uint32;
+                                description
+                                  "Key Identifier";
+                              }
+                              leaf key {
+                                type string;
+                                description
+                                  "IS-IS authentication key.";
+                              }
+                              leaf crypto-algorithm {
+                                type identityref {
+                                  base key-chain:crypto-algorithm;
+                                }
+                                description
+                                  "Indicates the cryptographic algorithm
+                                   associated with the key.";
+                              }
+                            }
+                          }
+                        }
                       }
                       uses vpn-common:service-status;
                     }
@@ -2051,7 +2089,6 @@ module ietf-l3vpn-ntw {
                         type identityref {
                           base vpn-common:address-family;
                         }
-                        min-elements 1;
                         description
                           "Indicates whether IPv4, IPv6, or both
                            address families are to be enabled.";
@@ -2158,7 +2195,7 @@ module ietf-l3vpn-ntw {
                 container service {
                   description
                     "Service parameters on the attachment.";
-                  leaf svc-input-bandwidth {
+                  leaf input-bandwidth {
                     type uint64;
                     units "bps";
                     mandatory true;
@@ -2168,7 +2205,7 @@ module ietf-l3vpn-ntw {
                        or download bandwidth from the SP to
                        the site.";
                   }
-                  leaf svc-output-bandwidth {
+                  leaf output-bandwidth {
                     type uint64;
                     units "bps";
                     mandatory true;
@@ -2178,15 +2215,15 @@ module ietf-l3vpn-ntw {
                        connection or upload bandwidth from
                        the site to the SP.";
                   }
-                  leaf svc-mtu {
+                  leaf mtu {
                     type uint16;
                     units "bytes";
                     mandatory true;
                     description
                       "MTU at service level.  If the service is IP,
                        it refers to the IP MTU.  If CsC is enabled,
-                       the requested 'svc-mtu' leaf will refer
-                        to the MPLS MTU and not to the IP MTU.";
+                       the requested MTU will refer
+                       to the MPLS MTU and not to the IP MTU.";
                   }
                   container qos {
                     if-feature "vpn-common:qos";
