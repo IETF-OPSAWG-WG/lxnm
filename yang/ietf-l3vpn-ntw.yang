@@ -19,7 +19,7 @@ module ietf-l3vpn-ntw {
       "Section 3 of RFC 6991";
   }
   import ietf-key-chain {
-    prefix kc;
+    prefix key-chain;
     reference
       "RFC 8177: YANG Key Chain.";
   }
@@ -182,57 +182,6 @@ module ietf-l3vpn-ntw {
       "This type defines the area address format.";
   }
 
-  /* Groupings */
-
-  grouping security-params {
-    description
-      "Grouping to define a set of security parameters.";
-    container security {
-      description
-        "Container for aggregating any security parameters for routing
-         sessions between a PE and a CE.";
-      leaf enable {
-        type boolean;
-        default "false";
-        description
-          "Enables or disables authentication.";
-      }
-      container keying-material {
-        when "../enable = 'true'";
-        description
-          "Container for describing how a routing session is to be
-           secured between a CE and a PE.";
-        choice option {
-          description
-            "Choice of authentication options.";
-          case md5 {
-            description
-              "Uses MD5 to secure the session.";
-            reference
-              "Section 13.2 of RFC 4364";
-            leaf md5-keychain {
-              type kc:key-chain-ref;
-              description
-                "Reference to the MD5 key chain.";
-              reference
-                "RFC 8177: YANG Key Chain.";
-            }
-          }
-          case ipsec {
-            description
-              "Specifies a reference to an IKE Security
-               Association (SA).";
-            leaf sa {
-              type string;
-              description
-                "Indicates the name of the SA.";
-            }
-          }
-        }
-      }
-    }
-  }
-
   /* Main Blocks */
   /* Main l3vpn-ntw */
 
@@ -294,7 +243,7 @@ module ietf-l3vpn-ntw {
         container underlay-transport {
           description
             "Container for external connectivity.";
-           uses vpn-common:underlay-transport;
+          uses vpn-common:underlay-transport;
         }
         container external-connectivity {
           description
@@ -1483,13 +1432,7 @@ module ietf-l3vpn-ntw {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:static')" {
                         description
-                          "Only applies when protocol is static.
-
-                           BGP activation requires the provider to
-                           know the address of the customer peer.
-                           When BGP is enabled, the 'static-address'
-                           allocation type for the IP connection
-                           must be used.";
+                          "Only applies when protocol is static.";
                       }
                       description
                         "Configuration specific to static routing.";
@@ -1802,7 +1745,71 @@ module ietf-l3vpn-ntw {
                             "Section 4.2 of RFC 4271";
                         }
                       }
-                      uses security-params;
+                      container security {
+                        description
+                          "Container for BGP security parameters 
+                           between a PE and a CE.";
+                        leaf enable {
+                          type boolean;
+                          default "false";
+                          description
+                            "Enables or disables authentication.";
+                        }
+                        container keying-material {
+                          when "../enable = 'true'";
+                          description
+                            "Container for describing how a BGP routing
+                             session is to be secured between a PE and
+                             a CE.";
+                          choice option {
+                            description
+                              "Choice of authentication options.";
+                            case md5 {
+                              description
+                                "Uses MD5 to secure the session.";
+                              reference
+                                "Section 13.2 of RFC 4364";
+                              leaf md5-keychain {
+                                type key-chain:key-chain-ref;
+                                description
+                                  "Reference to the MD5 key chain.";
+                                reference
+                                  "RFC 8177: YANG Key Chain.";
+                              }
+                            }
+                            case auth-key-explicit {
+                              leaf key-id {
+                                type uint32;
+                                description
+                                  "Key Identifier";
+                              }
+                              leaf key {
+                                type string;
+                                description
+                                  "OSPF authentication key.";
+                              }
+                              leaf crypto-algorithm {
+                                type identityref {
+                                  base key-chain:crypto-algorithm;
+                                }
+                                description
+                                  "Indicates the cryptographic algorithm
+                                   associated with the key.";
+                              }
+                            }
+                            case ipsec {
+                              description
+                                "Specifies a reference to an IKE Security
+                                 Association (SA).";
+                              leaf sa {
+                                type string;
+                                description
+                                  "Indicates the name of the SA.";
+                              }
+                            }
+                          }
+                        }
+                      }
                       uses vpn-common:service-status;
                     }
                     container ospf {
@@ -1814,21 +1821,19 @@ module ietf-l3vpn-ntw {
                       if-feature "vpn-common:rtg-ospf";
                       description
                         "OSPF-specific configuration.";
-                      leaf-list address-family {
+                      leaf address-family {
                         type identityref {
                           base vpn-common:address-family;
                         }
-                        min-elements 1;
                         description
-                          "If OSPF is used on this site, this node
-                           contains at least one address family
-                           to be activated.";
+                          "Indicates whether IPv4, IPv6, or
+                           both are to be activated.";
                       }
-                      leaf area-address {
+                      leaf area-id {
                         type yang:dotted-quad;
                         mandatory true;
                         description
-                          "Area address.";
+                          "Area ID.";
                       }
                       leaf metric {
                         type uint16;
@@ -1874,7 +1879,62 @@ module ietf-l3vpn-ntw {
                           }
                         }
                       }
-                      uses security-params;
+                      container secuirty {
+                        description
+                          "Authentication configuration.";
+                        leaf enable {
+                          type boolean;
+                          default "false";
+                          description
+                            "Enables or disables authentication.";
+                        }
+                        container keying-material {
+                          when "../enable = 'true'";
+                          description
+                            "Container for describing how an OSPF session
+                             is to be secured between a CE and a PE.";
+                          choice option {
+                            description
+                              "Options for OSPF authentication
+                               configuration.";
+                            case auth-key-chain {
+                              leaf key-chain {
+                                type key-chain:key-chain-ref;
+                                description
+                                  "key-chain name.";
+                              }
+                            }
+                            case auth-key-explicit {
+                              leaf key-id {
+                                type uint32;
+                                description
+                                  "Key Identifier";
+                              }
+                              leaf key {
+                                type string;
+                                description
+                                  "OSPF authentication key.";
+                              }
+                              leaf crypto-algorithm {
+                                type identityref {
+                                  base key-chain:crypto-algorithm;
+                                }
+                                description
+                                  "Indicates the cryptographic algorithm
+                                   associated with the key.";
+                              }
+                            }
+                            case ipsec {
+                              leaf sa {
+                                type string;
+                                description
+                                  "Indicates the Security Association (SA)
+                                   name.";
+                              }
+                            }
+                          }
+                        }
+                      }
                       uses vpn-common:service-status;
                     }
                     container isis {
@@ -2076,7 +2136,7 @@ module ietf-l3vpn-ntw {
                       }
                       case customer-profile {
                         leaf customer-key-chain {
-                          type kc:key-chain-ref;
+                          type key-chain:key-chain-ref;
                           description
                             "Customer-supplied key chain.";
                         }
@@ -2322,14 +2382,14 @@ module ietf-l3vpn-ntw {
                       leaf hello-interval {
                         type uint8;
                         units "seconds";
-                        default 30;
+                        default "30";
                         description
                           "PIM hello-messages interval.";
                       }
                       leaf dr-priority {
                         type uint16;
                         description
-                          "Value to increase or decrease the 
+                          "Value to increase or decrease the
                            chances of a given DR being elected.";
                       }
                       uses vpn-common:service-status;
