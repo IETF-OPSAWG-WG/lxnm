@@ -264,7 +264,7 @@
 
       <t>The L3NM YANG module is initially built with a prune and extend
       approach, taking as a starting points the YANG module described in <xref
-      target="RFC8299"></xref>. Nevertheless,the L3NM is not defined as an
+      target="RFC8299"></xref>. Nevertheless, the L3NM is not defined as an
       augment to L3SM because a specific structure is required to meet
       network-oriented L3 needs.</t>
 
@@ -1167,8 +1167,8 @@
 
               <t hangText="'groups':">Lists the groups to which a VPN node
               belongs to <xref target="I-D.ietf-opsawg-vpn-common"></xref>.
-              The 'group-id' used to associate, e.g., redundancy or protection
-              constraints with VPN nodes.</t>
+              The 'group-id' is used to associate, e.g., redundancy or
+              protection constraints with VPN nodes.</t>
 
               <t hangText="'multicast':">Enables multicast traffic inside the
               VPN. Refer to <xref target="mc"></xref>.</t>
@@ -1310,6 +1310,8 @@
             |  ...
             +--rw ip-connection
             |  ...
+            +--rw oam
+            |  ...
             +--rw security
             |  ...
             +--rw routing-protocols
@@ -1390,14 +1392,27 @@
               QinAny, VxLAN, etc.).</t>
 
               <t>Ethernet encapsulation description is not supported in <xref
-              target="RFC8299"></xref>. However, this parameters are mandatory
-              to configure the PE interfaces. Thus, in the L3NM, these
-              parameters uses the connection container inside the
+              target="RFC8299"></xref>. However, this parameter is required
+              mandatory to configure the PE interfaces. Thus, in the L3NM,
+              these parameters uses the connection container inside the
               'vpn-network-access'. This container defines protocols and
               parameters to enable connectivity at Layer 2.</t>
 
+              <t>Additionally, the 'bearer-reference' and the pseudowire
+              termination are supported. A site, as per <xref
+              target="RFC4176"></xref> represents a VPN customer's location
+              that is connected to the service provider network via a CE-PE
+              link, which can access at least one VPN. The connection from the
+              site to the service provider network is the bearer. Every site
+              is associated with a list of bearers. A bearer is the layer two
+              connections with the site. In the module it is assumed that the
+              bearer has been allocated by the service provider at the service
+              orchestration step. The bearer is associated to a network
+              element and a port. Hence, a bearer is just a bearer-reference
+              to allow the translation between L3SM and L3NM.</t>
+
               <figure align="center" anchor="bearerethencap_tree"
-                      title="Encapsulation Subtree Structure">
+                      title="Connection Subtree Structure">
                 <artwork align="center"><![CDATA[...
 +--rw connection
 |  +--rw encapsulation-type?   identityref
@@ -1421,30 +1436,7 @@
 |  |     +--rw vni-id       uint32
 |  |     +--rw peer-mode?   identityref
 |  |     +--rw peer-list* [peer-ip]
-|  |        +--rw peer-ip    inet:ip-address               ]]></artwork>
-              </figure>
-
-              <t></t>
-
-              <t>Additionally, the 'bearer-reference' and the pseudowire
-              termination are supported (see <xref
-              target="rfeconfiguration_tree"></xref>). A site, as per <xref
-              target="RFC4176"></xref> represents a VPN customer's location
-              that is connected to the service provider network via a CE-PE
-              link, which can access at least one VPN. The connection from the
-              site to the service provider network is the bearer. Every site
-              is associated with a list of bearers. A bearer is the layer two
-              connections with the site. In the module it is assumed that the
-              bearer has been allocated by the service provider at the service
-              orchestration step. The bearer is associated to a network
-              element and a port. Hence, a bearer is just a bearer-reference
-              to allow the translation between L3SM and L3NM.</t>
-
-              <figure align="center" anchor="rfeconfiguration_tree"
-                      title="Bearer Subtree Structure">
-                <artwork align="center"><![CDATA[...
-+--rw connection
-|  ...
+|  |        +--rw peer-ip    inet:ip-address
 |  +--rw bearer
 |     +--rw bearer-reference?   string
 |     |       {vpn-common:bearer-reference}?
@@ -1454,7 +1446,7 @@
 |     +--rw vpls
 |        +--rw vcid?      union
 |        +--rw far-end?   union
-...            ]]></artwork>
+...               ]]></artwork>
               </figure>
 
               <t></t>
@@ -1463,14 +1455,16 @@
             </section>
 
             <section anchor="ip_conn" title="IP Connections">
-              <t>IP connection container (<xref target="ip_conn_tree"></xref>)
-              has the parameters of the 'vpn-network-access' addressing
-              information. The address allocated in this container would
-              represent the PE interface address configuration. The IP
-              connection container is designed to support both IPv4 and IPv6.
-              It also supports three IP address assignment modes: SLAAC <xref
-              target="RFC7527"></xref>, Provider DHCP, DHCP relay, and static
-              addressing. Only one of them is enabled for a given service.<!--Med: Check if slaac need to be mentionned--></t>
+              <t>This container is used to group the IP addressing information
+              of a VPN network access (<xref target="ip_conn_tree"></xref>).
+              The allocated address represents the PE interface address
+              configuration. </t>
+
+              <t>The IP connection container is designed to support both IPv4
+              and IPv6. It also supports three IP address assignment modes:
+              SLAAC <xref target="RFC7527"></xref>, Provider DHCP, DHCP relay,
+              and static addressing. Only one of them is enabled for a given
+              service.<!--Med: Check if slaac need to be mentionned--></t>
 
               <t><figure align="center" anchor="ip_conn_tree"
                   title="IP Connection Subtree Structure">
@@ -1484,7 +1478,8 @@
       |  +--rw ipv4 {vpn-common:ipv4}?
       |  |  ...
       |  +--rw ipv6 {vpn-common:ipv6}?
-      |  |  ...
+      |     ...
+      ...
 ]]></artwork>
                 </figure></t>
 
@@ -1514,8 +1509,7 @@
 |  |     |     +--rw server-ip-address*          inet:ipv4-address
 |  |     +--:(static-addresses)
 |  |        ...
-|  +--rw ipv6 {vpn-common:ipv6}?
-|  |  ...]]></artwork>
+...]]></artwork>
                 </figure></t>
 
               <t><figure align="center" anchor="ip_conn_tree_v6"
@@ -1525,34 +1519,34 @@
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
-|  |  +--rw address-allocation-type?        identityref
-|  |  +--rw (allocation-type)?
-|  |     +--:(provider-dhcp)
-|  |     |  +--rw (provider-dhcp)?
-|  |     |     +--:(provider-address)
-|  |     |     |  +--rw provider-address?   inet:ipv6-address
-|  |     |     +--:(prefix-length)
-|  |     |     |  +--rw prefix-length?     uint8
-|  |     |     +--:(address-assign)
-|  |     |        +--rw (address-assign)?
-|  |     |           +--:(number)
-|  |     |           |  +--rw number-of-dynamic-address?
-|  |     |           |          uint16
-|  |     |           +--:(explicit)
-|  |     |              +--rw customer-addresses
-|  |     |                 +--rw address-group*   [group-id]
-|  |     |                    +--rw group-id      string
-|  |     |                    +--rw start-address?
-|  |     |                    |       inet:ipv6-address
-|  |     |                    +--rw end-address?
-|  |     |                            inet:ipv6-address
-|  |     +--:(dhcp-relay)
-|  |     |  +--rw dr-provider-address?    inet:ipv6-address
-|  |     |  +--rw dr-prefix-length?       uint8
-|  |     |  +--rw customer-dhcp-servers
-|  |     |     +--rw server-ip-address*  inet:ipv6-address
-|  |     +--:(static-addresses)
-|  |        ...]]></artwork>
+|     +--rw address-allocation-type?        identityref
+|     +--rw (allocation-type)?
+|        +--:(provider-dhcp)
+|        |  +--rw (provider-dhcp)?
+|        |     +--:(provider-address)
+|        |     |  +--rw provider-address?   inet:ipv6-address
+|        |     +--:(prefix-length)
+|        |     |  +--rw prefix-length?     uint8
+|        |     +--:(address-assign)
+|        |        +--rw (address-assign)?
+|        |           +--:(number)
+|        |           |  +--rw number-of-dynamic-address?
+|        |           |          uint16
+|        |           +--:(explicit)
+|        |              +--rw customer-addresses
+|        |                 +--rw address-group*   [group-id]
+|        |                    +--rw group-id      string
+|        |                    +--rw start-address?
+|        |                    |       inet:ipv6-address
+|        |                    +--rw end-address?
+|        |                            inet:ipv6-address
+|        +--:(dhcp-relay)
+|        |  +--rw dr-provider-address?    inet:ipv6-address
+|        |  +--rw dr-prefix-length?       uint8
+|        |  +--rw customer-dhcp-servers
+|        |     +--rw server-ip-address*  inet:ipv6-address
+|        +--:(static-addresses)
+|           ...]]></artwork>
                 </figure></t>
 
               <t>In the case of the static addressing (<xref
@@ -1578,18 +1572,24 @@
 |  |           +--rw s-customer-address?     inet:ipv4-address
 |  |           +--rw s-prefix-length?        uint8
 |  +--rw ipv6 {vpn-common:ipv6}?
-|  |  +--rw address-allocation-type?         identityref
-|  |  +--rw (allocation-type)?
-|  |     ...
-|  |     +--:(static-addresses)
-|  |        +--rw s-primary-address?     -> ../s-address/address-id
-|  |        +--rw s-address* [address-id]
-|  |           +--rw address-id              string
-|  |           +--rw provider-address?       inet:ipv6-address
-|  |           +--rw customer-address?       inet:ipv6-address
-|  |           +--rw prefix-length?          uint8
+|     +--rw address-allocation-type?         identityref
+|     +--rw (allocation-type)?
+|        ...
+|        +--:(static-addresses)
+|           +--rw s-primary-address?     -> ../s-address/address-id
+|           +--rw s-address* [address-id]
+|              +--rw address-id              string
+|              +--rw provider-address?       inet:ipv6-address
+|              +--rw customer-address?       inet:ipv6-address
+|              +--rw prefix-length?          uint8
 ...                        ]]></artwork>
               </figure>
+
+              <t></t>
+
+              <t></t>
+
+              <t></t>
             </section>
 
             <section anchor="rtg" title="CE-PE Routing Protocols">
@@ -2085,6 +2085,43 @@
               <!--  (NOTE FOR EDITORS: it seems that the access-priority has been removed. We need to have one may be slightly different from L3SM) -->
             </section>
 
+            <section title="OAM">
+              <t></t>
+
+              <t></t>
+
+              <t>xxx</t>
+
+              <t>**** rfc5880#section-6.7 ***</t>
+
+              <t></t>
+
+              <t><figure align="center" anchor="oam"
+                  title="IP Connection Subtree Structure (OAM)">
+                  <artwork align="left"><![CDATA[...
++--rw ip-connection
+|  ...
+|  +--rw oam
+|     +--rw bfd {vpn-common:bfd}?
+|        +--rw (holdtime)?
+|        |  +--:(fixed)
+|        |  |  +--rw fixed-value?    uint32
+|        |  +--:(profile)
+|        |  |  +--rw profile-name?   leafref
+|        +--rw authentication!
+|        |  +--rw key-chain?    key-chain:key-chain-ref
+|        |  +--rw meticulous?   boolean
+|        +--rw status
+|           +--rw admin-status
+|              |  +--rw status?         identityref
+|              |  +--rw last-updated?   yang:date-and-time
+|              +--ro oper-status
+|                 +--ro status?         identityref
+|                 +--ro last-updated?   yang:date-and-time 
+...                     ]]></artwork>
+                </figure></t>
+            </section>
+
             <section anchor="sec" title="Security">
               <t>The 'security' container specifies the authentication and the
               encryption to be applied for a given VPN network access traffic.
@@ -2137,30 +2174,7 @@
          +--rw output-bandwidth    uint64
          +--rw mtu                 uint16
          +--rw qos {vpn-common:qos}?
-         |  +--rw qos-classification-policy
-         |  |  +--rw rule* [id]
-         |  |     +--rw id             string
-         |  |     +--rw (match-type)?
-         |  |     |  +--:(match-flow)
-         |  |     |  |  +--rw (l3)?
-         |  |     |  |  |  +--:(ipv4)
-         |  |     |  |  |  |  ...
-         |  |     |  |  |  +--:(ipv6)
-         |  |     |  |  |     ...
-         |  |     |  |  +--rw (l4)?
-         |  |     |  |     +--:(tcp)
-         |  |     |  |     |  ...
-         |  |     |  |     +--:(udp)
-         |  |     |  |        ...
-         |  |     |  +--:(match-application)
-         |  |     |     +--rw match-application?
-         |  |     |             identityref
-         |  |     +--rw target-class-id?
-         |  |             string
-         |  +--rw qos-profile
-         |     +--rw qos-profile* [profile]
-         |        +--rw profile      leafref
-         |        +--rw direction?   identityref
+         |  ...
          +--rw carrierscarrier
          |       {vpn-common:carrierscarrier}?
          |  +--rw signalling-type?   enumeration
@@ -2180,17 +2194,40 @@
                   <t hangText="'mtu':">Indicates the MTU at service level. It
                   can be the IP MTU or MPLS MTU, for example.</t>
 
-                  <t hangText="'carrierscarrier':">Groups a set of parameters
-                  that are used when CsC is enabled such the use of BGP for
-                  signalling purposes <xref target="RFC8277"></xref>.</t>
-
-                  <t hangText="'multicast':">Specifies the multicast mode and
-                  other service-related attributes such as the address-family.
-                  TBC</t>
-
                   <t hangText="'qos':">Is used to define a set of QoS policies
-                  to apply on a given connection. Classification can be based
-                  on many criteria such as: <list style="hanging">
+                  to apply on a given connection (<xref
+                  target="qos-sub"></xref>). <figure align="center"
+                      anchor="qos-sub" title="Services Subtree Structure">
+                      <artwork align="center"><![CDATA[...
++--rw qos {vpn-common:qos}?
+|  +--rw qos-classification-policy
+|  |  +--rw rule* [id]
+|  |     +--rw id             string
+|  |     +--rw (match-type)?
+|  |     |  +--:(match-flow)
+|  |     |  |  +--rw (l3)?
+|  |     |  |  |  +--:(ipv4)
+|  |     |  |  |  |  ...
+|  |     |  |  |  +--:(ipv6)
+|  |     |  |  |     ...
+|  |     |  |  +--rw (l4)?
+|  |     |  |     +--:(tcp)
+|  |     |  |     |  ...
+|  |     |  |     +--:(udp)
+|  |     |  |        ...
+|  |     |  +--:(match-application)
+|  |     |     +--rw match-application?
+|  |     |             identityref
+|  |     +--rw target-class-id?
+|  |             string
+|  +--rw qos-profile
+|     +--rw qos-profile* [profile]
+|        +--rw profile      leafref
+|        +--rw direction?   identityref
+...                   
+]]></artwork>
+                    </figure>Classification can be based on many criteria such
+                  as: <list style="hanging">
                       <t hangText="Layer 3:">As shown in <xref
                       target="services-l4"></xref>, classification can be
                       based on any IP header field or a combination thereof.
@@ -2240,11 +2277,6 @@
 |  |     |  |  |        |             inet:ipv6-prefix
 |  |     |  |  |        +--rw flow-label?
 |  |     |  |  |                   inet:ipv6-flow-label
-|  |     |  |  +--rw (l4)?
-|  |     |  |     +--:(tcp)
-|  |     |  |     |  ...
-|  |     |  |     +--:(udp)
-|  |     |  |        ...
 ...
 ]]></artwork>
                         </figure></t>
@@ -2333,8 +2365,16 @@
                         </figure></t>
 
                       <t hangText="Application match:">Relies upon
-                      application-specific classification. </t>
+                      application-specific classification.</t>
                     </list></t>
+
+                  <t hangText="'carrierscarrier':">Groups a set of parameters
+                  that are used when CsC is enabled such the use of BGP for
+                  signalling purposes <xref target="RFC8277"></xref>.</t>
+
+                  <t hangText="'multicast':">Specifies the multicast mode and
+                  other service-related attributes such as the address-family.
+                  TBC</t>
                 </list></t>
 
               <t></t>
@@ -3674,70 +3714,6 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container oam {
-                    description
-                      "Defines the Operations, Administration,
-                       and Maintenance (OAM) mechanisms used on
-                       the connection.
-
-                       BFD is set as a fault detection mechanism,
-                       but the 'oam' container can easily
-                       be augmented by other mechanisms";
-                    container bfd {
-                      if-feature "vpn-common:bfd";
-                      description
-                        "Container for BFD.";
-                      leaf enabled {
-                        type boolean;
-                        default "false";
-                        description
-                          "If true, BFD activation is required.";
-                      }
-                      choice holdtime {
-                        default "fixed";
-                        description
-                          "Choice for holdtime flavor.";
-                        case fixed {
-                          leaf fixed-value {
-                            type uint32;
-                            units "msec";
-                            description
-                              "Expected BFD holdtime.
-
-                               The customer may impose some fixed
-                               values for the holdtime period if the
-                               provider allows the customer use this
-                               function.
-
-                               If the provider doesn't allow the
-                               customer to use this function,
-                               the fixed-value will not be set.";
-                          }
-                        }
-                        case profile {
-                          description
-                            "Well-known SP profile.";
-                          leaf profile-name {
-                            type leafref {
-                              path "/l3vpn-ntw/vpn-profiles"
-                                 + "/valid-provider-identifiers"
-                                 + "/bfd-profile-identifier/id";
-                            }
-                            description
-                              "Well-known service provider profile name.
-
-                               The provider can propose some profiles
-                               to the customer, depending on the
-                               service level the customer wants to
-                               achieve.
-
-                               Profile names must be communicated to
-                               the customer.";
-                          }
-                        }
-                      }
-                    }
-                  }
                 }
                 container routing-protocols {
                   description
@@ -3820,6 +3796,7 @@ module ietf-l3vpn-ntw {
                                discard or local-link).";
                           }
                           leaf bfd-enable {
+                            if-feature "vpn-common:bfd";
                             type boolean;
                             description
                               "Enables BFD.";
@@ -3867,6 +3844,7 @@ module ietf-l3vpn-ntw {
                                discard or local-link).";
                           }
                           leaf bfd-enable {
+                            if-feature "vpn-common:bfd";
                             type boolean;
                             description
                               "Enables BFD.";
@@ -4470,6 +4448,79 @@ module ietf-l3vpn-ntw {
                       }
                       uses vpn-common:service-status;
                     }
+                  }
+                }
+                container oam {
+                  description
+                    "Defines the Operations, Administration,
+                     and Maintenance (OAM) mechanisms used on IP
+                     the connection.
+
+                     BFD is set as a fault detection mechanism,
+                     but other mechanisms can be defined in the
+                     future.";
+                  container bfd {
+                    if-feature "vpn-common:bfd";
+                    description
+                      "Container for BFD.";
+                    choice holdtime {
+                      default "fixed";
+                      description
+                        "Choice for holdtime flavor.";
+                      case fixed {
+                        leaf fixed-value {
+                          type uint32;
+                          units "msec";
+                          description
+                            "Expected BFD holdtime.
+
+                             The customer may impose some fixed
+                             values for the holdtime period if the
+                             provider allows the customer use this
+                             function.
+
+                             If the provider doesn't allow the
+                             customer to use this function,
+                             the fixed-value will not be set.";
+                        }
+                      }
+                      case profile {
+                        description
+                          "Well-known SP profile.";
+                        leaf profile-name {
+                          type leafref {
+                            path "/l3vpn-ntw/vpn-profiles"
+                               + "/valid-provider-identifiers"
+                               + "/bfd-profile-identifier/id";
+                          }
+                          description
+                            "Well-known service provider profile name.
+
+                             The provider can propose some profiles
+                             to the customer, depending on the
+                             service level the customer wants to
+                             achieve.";
+                        }
+                      }
+                    }
+                    container authentication {
+                      presence "Enables BFD authentication";
+                      description
+                        "Parameters for BFD authentication.";
+                      leaf key-chain {
+                        type key-chain:key-chain-ref;
+                        description
+                          "Name of the key-chain.";
+                      }
+                      leaf meticulous {
+                        type boolean;
+                        description
+                          "Enables meticulous mode.";
+                        reference
+                          "Section 6.7 of RFC 5880";
+                      }
+                    }
+                    uses vpn-common:service-status;
                   }
                 }
                 container security {
