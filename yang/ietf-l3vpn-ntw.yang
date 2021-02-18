@@ -858,6 +858,42 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv4";
                     description
                       "IPv4-specific parameters.";
+                    leaf provider-address {
+                      type inet:ipv4-address;
+                      description
+                        "Address used at provider side.
+
+                         If provider-address is not specified,
+                         then prefix length should not be
+                         specified either.
+
+                         It also implies provider-dhcp allocation
+                         is not enabled.
+
+                         If provider-address is specified, then the
+                         prefix length may or may not be
+                         specified.";
+                    }
+                    leaf prefix-length {
+                      type uint8 {
+                        range "0..32";
+                      }
+                      must '(../provider-address)' {
+                        error-message
+                          "If the prefix length is specified,
+                           provider-address must also be
+                           specified.";
+                        description
+                          "If the prefix length is specified,
+                           provider-address must also be
+                           specified.";
+                      }
+                      description
+                        "Subnet prefix length expressed in bits.
+                         If not specified, or specified as zero,
+                         this means the customer leaves the actual
+                         prefix length value to the provider.";
+                    }
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -874,7 +910,7 @@ module ietf-l3vpn-ntw {
                     }
                     choice allocation-type {
                       description
-                        "Choice the address allocation.";
+                        "Choice of the address allocation.";
                       case provider-dhcp {
                         when "derived-from-or-self(./address-"
                            + "allocation-type, 'provider-dhcp')" {
@@ -885,42 +921,6 @@ module ietf-l3vpn-ntw {
                         description
                           "DHCP allocated addresses related
                            parameters.";
-                        leaf provider-address {
-                          type inet:ipv4-address;
-                          description
-                            "Address used at provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.
-
-                             It also implies provider-dhcp allocation
-                             is not enabled.
-
-                             If provider-address is specified, then the
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf prefix-length {
-                          type uint8 {
-                            range "0..32";
-                          }
-                          must '(../provider-address)' {
-                            error-message
-                              "If the prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If the prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-                             If not specified, or specified as zero,
-                             this means the customer leaves the actual
-                             prefix length value to the provider.";
-                        }
                         choice address-assign {
                           default "number";
                           description
@@ -987,44 +987,6 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
-                        leaf dr-provider-address {
-                          type inet:ipv4-address;
-                          description
-                            "Address of the provider side.
-
-                             If provider-address is
-                             not specified, then prefix length
-                             should not be specified either.
-
-                             It also implies provider-dhcp
-                             allocation is not enabled.
-
-                             If provider-address is specified,
-                             then prefix length may or may
-                             not be specified.";
-                        }
-                        leaf dr-prefix-length {
-                          type uint8 {
-                            range "0..32";
-                          }
-                          must '(../dr-provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-
-                             If not specified, or specified as zero,
-                             this means the customer leaves the
-                             actual prefix  length value
-                             to the provider.";
-                        }
                         container customer-dhcp-servers {
                           description
                             "Container for list of customer
@@ -1061,27 +1023,10 @@ module ietf-l3vpn-ntw {
                             description
                               "Used static IPv4 address.";
                           }
-                          leaf s-provider-address {
-                            type inet:ipv4-address;
-                            description
-                              "IPv4 Address List of the provider side.
-                               When the protocol allocation type is
-                               static, the provider address must be
-                               configured.";
-                          }
-                          leaf s-customer-address {
+                          leaf customer-address {
                             type inet:ipv4-address;
                             description
                               "IPv4 address at the customer side.";
-                          }
-                          leaf s-prefix-length {
-                            type uint8 {
-                              range "0..32";
-                            }
-                            description
-                              "Subnet prefix length expressed
-                               in bits. It is applied to both
-                               provider-address and customer-address.";
                           }
                         }
                       }
@@ -1091,6 +1036,43 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv6";
                     description
                       "IPv6-specific parameters.";
+                    leaf provider-address {
+                      type inet:ipv6-address;
+                      description
+                        "Address of the provider side.
+
+                         If provider-address is not specified,
+                         then prefix length should not be
+                         specified either.  It also implies
+                         provider-dhcp allocation is not enabled.
+
+                         If provider-address is specified, then
+                         prefix length may or may not be
+                         specified.";
+                    }
+                    leaf prefix-length {
+                      type uint8 {
+                        range "0..128";
+                      }
+                      must '(../provider-address)' {
+                        error-message
+                          "If prefix length is specified,
+                           provider-address
+                           must also be specified.";
+                        description
+                          "If prefix length is specified,
+                           provider-address must also be
+                           specified.";
+                      }
+                      description
+                        "Subnet prefix length expressed in
+                         bits.
+
+                         If not specified, or specified as
+                         zero, this means the customer leaves
+                         the actual prefix length value to
+                         the provider.";
+                    }
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -1104,7 +1086,7 @@ module ietf-l3vpn-ntw {
                     choice allocation-type {
                       description
                         "IPv6 allocation type.";
-                      choice provider-dhcp {
+                      case provider-dhcp {
                         when "derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp') "
                            + "or derived-from-or-self(./address-allo"
@@ -1116,43 +1098,6 @@ module ietf-l3vpn-ntw {
                         description
                           "DHCP allocated addresses related
                            parameters.";
-                        leaf provider-address {
-                          type inet:ipv6-address;
-                          description
-                            "Address of the provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.  It also implies
-                             provider-dhcp allocation is not enabled.
-
-                             If provider-address is specified, then
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf prefix-length {
-                          type uint8 {
-                            range "0..128";
-                          }
-                          must '(../provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address
-                               must also be specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in
-                             bits.
-
-                             If not specified, or specified as
-                             zero, this means the customer leaves
-                             the actual prefix length value to
-                             the provider.";
-                        }
                         choice address-assign {
                           default "number";
                           description
@@ -1220,42 +1165,6 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
-                        leaf dr-provider-address {
-                          type inet:ipv6-address;
-                          description
-                            "Address of the provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.  It also implies
-                             provider-dhcp allocation is not enabled.
-
-                             If provider address is specified, then
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf dr-prefix-length {
-                          type uint8 {
-                            range "0..128";
-                          }
-                          must '(../dr-provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-
-                             If not specified, or specified as zero,
-                             this means the customer leaves the
-                             actual prefix length value to the
-                             provider.";
-                        }
                         container customer-dhcp-servers {
                           description
                             "Container for list of customer DHCP
@@ -1280,7 +1189,7 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "IPv6-specific parameters.";
-                        leaf s-primary-address {
+                        leaf primary-address {
                           type leafref {
                             path "../s-address/address-id";
                           }
@@ -1296,27 +1205,10 @@ module ietf-l3vpn-ntw {
                             description
                               "IPv4 Address";
                           }
-                          leaf provider-address {
-                            type inet:ipv6-address;
-                            description
-                              "IPv6 Address of the provider side.  When
-                               the protocol allocation type is static,
-                               the provider address must be
-                               configured.";
-                          }
                           leaf customer-address {
                             type inet:ipv6-address;
                             description
                               "The IPv6 Address of the customer side.";
-                          }
-                          leaf prefix-length {
-                            type uint8 {
-                              range "0..128";
-                            }
-                            description
-                              "Subnet prefix length expressed in bits.
-                               It is applied to both provider-address
-                               and customer-address.";
                           }
                         }
                       }
