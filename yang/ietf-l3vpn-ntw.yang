@@ -858,27 +858,16 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv4";
                     description
                       "IPv4-specific parameters.";
-                    leaf provider-address {
+                    leaf local-address {
                       type inet:ipv4-address;
                       description
-                        "Address used at provider side.
-
-                         If provider-address is not specified,
-                         then prefix length should not be
-                         specified either.
-
-                         It also implies provider-dhcp allocation
-                         is not enabled.
-
-                         If provider-address is specified, then the
-                         prefix length may or may not be
-                         specified.";
+                        "This address is used at provider side.";
                     }
                     leaf prefix-length {
                       type uint8 {
                         range "0..32";
                       }
-                      must '(../provider-address)' {
+                      must '(../local-address)' {
                         error-message
                           "If the prefix length is specified,
                            provider-address must also be
@@ -904,13 +893,15 @@ module ietf-l3vpn-ntw {
                         error-message "SLAAC is only applicable to IPv6.";
                       }
                       description
-                        "Defines how addresses are allocated.
+                        "Defines how addresses are allocated to the
+                         peer site.
+
                          If there is no value for the address
                          allocation type, then IPv4 is not enabled.";
                     }
                     choice allocation-type {
                       description
-                        "Choice of the address allocation.";
+                        "Choice of the IPv4 address allocation.";
                       case provider-dhcp {
                         when "derived-from-or-self(./address-"
                            + "allocation-type, 'provider-dhcp')" {
@@ -921,34 +912,43 @@ module ietf-l3vpn-ntw {
                         description
                           "DHCP allocated addresses related
                            parameters.";
+                        leaf dhcp-server-enable {
+                          type boolean;
+                          default "true";
+                          description
+                            "Enables a DHCP service on this access.
+                             The following information are passed to
+                             the provider's DHCP server.";
+                        }
                         choice address-assign {
                           default "number";
                           description
-                            "Choice for the way to assign
-                             addresses.";
+                            "Choice for how IPv4 addresses are assigned.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP addresses
-                                 that the customer requires.";
+                                "Specifies the number of IP addresses
+                                 to be assigned to the customer on this
+                                 access.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
                               description
-                                "Container for customer addresses is
-                                 allocated by DHCP.";
+                                "Container for customer addresses to be
+                                 allocated using DHCP.";
                               list address-group {
                                 key "group-id";
                                 description
-                                  "Describes IP addresses allocated by
-                                   DHCP.
+                                  "Describes IP addresses to be allocated
+                                   by DHCP.
 
                                    When only start-address or only
                                    end-address is present, it
                                    represents a single address.
+
                                    When both start-address and
                                    end-address are specified, it
                                    implies a range inclusive of
@@ -987,6 +987,12 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
+                        leaf dhcp-relay-enable {
+                          type boolean;
+                          default "true";
+                          description
+                            "Enables the DHCP relay function for this access.";
+                        }
                         container customer-dhcp-servers {
                           description
                             "Container for list of customer
@@ -1036,33 +1042,14 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv6";
                     description
                       "IPv6-specific parameters.";
-                    leaf provider-address {
-                      type inet:ipv6-address;
+                    leaf local-address {
+                      type inet:ipv6-prefix;
                       description
-                        "Address of the provider side.
-
-                         If provider-address is not specified,
-                         then prefix length should not be
-                         specified either.  It also implies
-                         provider-dhcp allocation is not enabled.
-
-                         If provider-address is specified, then
-                         prefix length may or may not be
-                         specified.";
+                        "Address of the provider side.";
                     }
                     leaf prefix-length {
                       type uint8 {
                         range "0..128";
-                      }
-                      must '(../provider-address)' {
-                        error-message
-                          "If prefix length is specified,
-                           provider-address
-                           must also be specified.";
-                        description
-                          "If prefix length is specified,
-                           provider-address must also be
-                           specified.";
                       }
                       description
                         "Subnet prefix length expressed in
@@ -1093,34 +1080,41 @@ module ietf-l3vpn-ntw {
                            + "cation-type, 'provider-dhcp-slaac')" {
                           description
                             "Only applies when addresses are
-                             allocated by DHCP.";
+                             allocated by DHCPv6.";
                         }
                         description
-                          "DHCP allocated addresses related
+                          "DHCPv6 allocated addresses related
                            parameters.";
+                        leaf dhcp-server-enable {
+                          type boolean;
+                          default "true";
+                          description
+                            "Enables DHCPv6 service for this access.";
+                        }
                         choice address-assign {
                           default "number";
                           description
-                            "Choice for the way to assign addresses.";
+                            "Choice for the way to assign IPv6 prefixes.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP addresses
-                                 that are required by the customer.";
+                                "Describes the number of IPv6 prefixes
+                                 that are allocated to the customer
+                                 on this access.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
                               description
-                                "Container for customer addresses
-                                 allocated by DHCP.";
+                                "Container for customer IPv6 addresses
+                                 allocated by DHCPv6.";
                               list address-group {
                                 key "group-id";
                                 description
-                                  "Describes IP addresses allocated
-                                   by DHCP.
+                                  "Describes IPv6 addresses allocated
+                                   by DHCPv6.
 
                                    When only start-address or only
                                    end-address is present, it
@@ -1165,6 +1159,12 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
+                        leaf dhcp-relay-enable {
+                          type boolean;
+                          default "true";
+                          description
+                            "Enables the DHCP relay function for this access.";
+                        }
                         container customer-dhcp-servers {
                           description
                             "Container for list of customer DHCP
