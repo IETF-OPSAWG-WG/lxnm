@@ -100,7 +100,7 @@ Table of Contents
      7.3.  VPN Services  . . . . . . . . . . . . . . . . . . . . . .  14
        7.3.1.  Import/Export Profiles  . . . . . . . . . . . . . . .  17
        7.3.2.  VPN Nodes . . . . . . . . . . . . . . . . . . . . . .  19
-         7.3.2.1.  Multicast . . . . . . . . . . . . . . . . . . . .  22
+         7.3.2.1.  Multicast . . . . . . . . . . . . . . . . . . . .  23
          7.3.2.2.  VPN Network Access  . . . . . . . . . . . . . . .  24
            7.3.2.2.1.  Connection  . . . . . . . . . . . . . . . . .  26
            7.3.2.2.2.  IP Connections  . . . . . . . . . . . . . . .  28
@@ -130,8 +130,8 @@ Internet-Draft               L3NM YANG Model               February 2021
    Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 116
      B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 116
      B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 116
-     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 116
-     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 116
+     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 117
+     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 117
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 117
 
 1.  Introduction
@@ -144,7 +144,7 @@ Internet-Draft               L3NM YANG Model               February 2021
    limits the usage of the L3SM to the role of a Customer Service Model
    (as per [RFC8309]).
 
-   This document defined a YANG module called L3VPN Network Model
+   This document defines a YANG module called L3VPN Network Model
    (L3NM).  The L3NM is aimed at providing a network-centric view of
    Layer 3 (L3) VPN services.  This data model can be used to facilitate
    communication between the service orchestrator (or a network
@@ -536,16 +536,16 @@ Internet-Draft               L3NM YANG Model               February 2021
       external view which is visible to customers: L3VPN Service YANG
       data Model (L3SM) [RFC8299].
 
-      Typically, the L3NM can be fed with inputs that are requested by
-      customers, typically, relying upon a L3SM template.  Concretely,
-      some parts of the L3SM module can be directly mapped into L3NM
-      while other parts are generated as a function of the requested
-      service and local guidelines.  Some other parts are local to the
-      service provider and do not map directly to L3SM.
+      The L3NM can be fed with inputs that are requested by customers,
+      typically, relying upon a L3SM template.  Concretely, some parts
+      of the L3SM module can be directly mapped into L3NM while other
+      parts are generated as a function of the requested service and
+      local guidelines.  Some other parts are local to the service
+      provider and do not map directly to L3SM.
 
       Note that the use of L3NM within a service provider does not
-      assume nor preclude exposing the VPN service via L3SM.  This is
-      deployment-specific.  Nevertheless, the design of L3NM tries to
+      assume nor preclude exposing the VPN service via the L3SM.  This
+      is deployment-specific.  Nevertheless, the design of L3NM tries to
       align as much as possible with the features supported by the L3SM
       to ease grafting both L3NM and L3SM for the sake of highly
       automated VPN service provisioning and delivery.
@@ -660,7 +660,7 @@ Internet-Draft               L3NM YANG Model               February 2021
 
    The L3NM ('ietf-l3vpn-ntw') is defined to manage L3VPNs in a service
    provider network.  In particular, the 'ietf-l3vpn-ntw' module can be
-   used to create, modify, and retrieve L3VPN Services of a network.
+   used to create, modify, and retrieve L3VPN services of a network.
 
    The full tree diagram of the module can be generated using the
    "pyang" tool [PYANG].  That tree is not included here because it is
@@ -825,7 +825,8 @@ Internet-Draft               L3NM YANG Model               February 2021
 
                  Figure 5: VPN Services Subtree Structure
 
-   The 'vpn-service' data nodes listed in Figure 5 are as follows:
+   The description of the VPN service data nodes that are depicted in
+   Figure 5 are as follows:
 
    'vpn-id':  Is an identifier that is used to uniquely identify the
       L3VPN service within L3NM scope.
@@ -833,7 +834,6 @@ Internet-Draft               L3NM YANG Model               February 2021
    'vpn-name':  Associates a name with the service in order to
       facilitate the identification of the service.
 
-   'vpn-description':  Includes a textual description of the service.
 
 
 
@@ -842,13 +842,21 @@ Barguil, et al.          Expires August 22, 2021               [Page 15]
 Internet-Draft               L3NM YANG Model               February 2021
 
 
+   'vpn-description':  Includes a textual description of the service.
+
+      The internal structure of a VPN description is local to each VPN
+      service provider.
+
    'customer-name':  Indicates the name of the customer who ordered the
       service.
 
    'parent-service-id':  Refers to an identifier of the parent service
-      (e.g, L3SM, IETF network slice, VPN+) that triggered to the L3NM
-      instance.  This identifier allows to easily correlate the
-      (network) service as built in the network with a service order.
+      (e.g, L3SM, IETF network slice, VPN+) that triggered the creation
+      of the VPN service.  This identifier is used to easily correlate
+      the (network) service as built in the network with a service
+      order.  A controller can use that correlation to enrich or
+      populate some fields (e.g., description fields) as a function of
+      local deployments.
 
    'vpn-type':  Indicates the VPN type.  The values are taken from
       [I-D.ietf-opsawg-vpn-common].  For the L3NM, this is typically set
@@ -859,16 +867,17 @@ Internet-Draft               L3NM YANG Model               February 2021
       implementation of this attribute is defined by the correct usage
       of import and export profiles (Section 4.3.5 of [RFC4364]).
 
-   'status':  Is used to track service status of a given VPN service.
-      Both operational and administrative status are maintained together
-      with a timestamp.  For example, a service can be created, but not
-      put into effect.
+   'status':  Is used to track the service status of a given VPN
+      service.  Both operational and administrative status are
+      maintained together with a timestamp.  For example, a service can
+      be created, but not put into effect.
 
-      Administrative and operational status can be used as trigger to
+      Administrative and operational status can be used as a trigger to
       detect service anomalies.  For example, a service that is declared
-      at the service layer as active but still inactive at the network
-      layer is an indication that network provision actions are needed
-      to align the observed service with the expected service status.
+      at the service layer as being active but still inactive at the
+      network layer is an indication that network provision actions are
+      needed to align the observed service status with the expected
+      service status.
 
    'ie-profiles':  Defines reusable import/export policies for the same
       'vpn-service'.
@@ -881,15 +890,6 @@ Internet-Draft               L3NM YANG Model               February 2021
       and Network-to-Network Interface (NNI) types.  The underlay
       transport can be expressed as an abstract transport instance
       (e.g., an identifier of a VPN+ instance, a virtual network
-      identifier, or a network slice name) or as an ordered list of the
-      actual protocols to be enabled in the network.  A rich set of
-      protocol identifiers that can be used to refer to an underlay
-      transport are defined in [I-D.ietf-opsawg-vpn-common].
-
-   'external-connectivity':  Indicates whether/how external connectivity
-      is provided to the VPN service.  For example, a service provider
-      may provide an external connectivity to a VPN customer (e.g., to a
-      public cloud).  Such service may involve tweaking both filtering
 
 
 
@@ -898,6 +898,16 @@ Barguil, et al.          Expires August 22, 2021               [Page 16]
 Internet-Draft               L3NM YANG Model               February 2021
 
 
+      identifier, or a network slice name) or as an ordered list of the
+      actual protocols to be enabled in the network.
+
+      A rich set of protocol identifiers that can be used to refer to an
+      underlay transport are defined in [I-D.ietf-opsawg-vpn-common].
+
+   'external-connectivity':  Indicates whether/how external connectivity
+      is provided to the VPN service.  For example, a service provider
+      may provide an external connectivity to a VPN customer (e.g., to a
+      public cloud).  Such service may involve tweaking both filtering
       and NAT rules (e.g., bind a Virtual Routing and Forwarding (VRF)
       interface with a NAT instance as discussed in Section 2.10 of
       [RFC8512]).  These added value features may be bound to all or a
@@ -937,6 +947,13 @@ Internet-Draft               L3NM YANG Model               February 2021
 
    The following modes are supported in:
 
+
+
+Barguil, et al.          Expires August 22, 2021               [Page 17]
+
+Internet-Draft               L3NM YANG Model               February 2021
+
+
    'full-autoasigned':  The network controller auto-assigns logical
       resources (RTs, RDs).  This can apply for the deployment of new
       services.
@@ -946,29 +963,12 @@ Internet-Draft               L3NM YANG Model               February 2021
 
    'directly-assigned':  The VPN service provider (service orchestrator)
       assigns explicitly the RTs and RDs.  This case will fit with a
-
-
-
-Barguil, et al.          Expires August 22, 2021               [Page 17]
-
-Internet-Draft               L3NM YANG Model               February 2021
-
-
       brownfield scenario where some existing services need to be
       updated by the VPN service provider.
 
    'no-rd':  The (service orchestrator) explicitly wants no RT/RD to be
       assigned.  This case can be used for CE testing within the network
       or for troubleshooting proposes.
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1144,10 +1144,11 @@ Internet-Draft               L3NM YANG Model               February 2021
 
                    Figure 7: VPN Node Subtree Structure
 
-   In reference to the subtree shown in Figure 7, the description of
-   'vpn-node' parameters is as follows:
+   In reference to the subtree shown in Figure 7, the description of VPN
+   node data nodes is as follows:
 
-   'vpn-node-id':  Is an identifier that uniquely identifies a node.
+   'vpn-node-id':  Is an identifier that uniquely identifies a node that
+      enable a VPN network access.
 
    'description':  Providers a textual description of the VPN node.
 
@@ -1158,18 +1159,17 @@ Internet-Draft               L3NM YANG Model               February 2021
       values are defines defined in [I-D.ietf-opsawg-vpn-common] (e.g.,
       any-to-any-role, spoke-role, hub-role).
 
-   'local-autonomous-system':  Indicates the BGP autonomous system
-      number that is locally configured for the VPN node.
+   'local-autonomous-system':  Indicates the BGP Autonomous System
+      Number (ASN) that is configured for the VPN node.
 
    'address-family':  Is used to identify the address family used for
       the Router ID.  It can be set to IPv4 or IPv6.
 
    'router-id':  Indicates a unique Router ID information.  It can be an
-      IPv4 or IPv6 address as function of the 'address-family'.
+      IPv4 or IPv6 address as a function of the enclosed address-family.
 
-   'rd':  If the logical resources are managed outside the network
-      controller, the model allows to explicitly indicate the logical
-      resources such as RTs and RDs.  As defined in
+
+
 
 
 
@@ -1178,12 +1178,16 @@ Barguil, et al.          Expires August 22, 2021               [Page 21]
 Internet-Draft               L3NM YANG Model               February 2021
 
 
-      [I-D.ietf-opsawg-vpn-common] and recalled in Section 7.3.1, RDs
-      can be explicitly configured or automatically assigned.  RD auto-
-      assignment can also constrained by indicating an RD pool name
-      ('rd- pool-name').
+   'rd':  If the logical resources are managed outside the network
+      controller, the model allows to explicitly indicate the logical
+      resources such as RTs and RDs.
 
-   'vpn-targets':  Specifies RT import-export rules for the VPN.
+      As defined in [I-D.ietf-opsawg-vpn-common] and recalled in
+      Section 7.3.1, RDs can be explicitly configured or automatically
+      assigned.  RD auto- assignment can also constrained by indicating
+      an RD pool name ('rd- pool-name').
+
+   'vpn-targets':  Specifies RT import/export rules for the VPN service.
 
    'node-ie-profile':  Refer to Section 7.3.1.
 
@@ -1200,21 +1204,35 @@ Internet-Draft               L3NM YANG Model               February 2021
    'multicast':  Enables multicast traffic inside the VPN.  Refer to
       Section 7.3.2.1.
 
-   'status':  Tracks the status of the nodes involved in a VPN service.
+   'status':  Tracks the status of a node involved in a VPN service.
       Both operational and administrative status are maintained.  A
-      mismatch between an administrative status vs. the operational
+      mismatch between the administrative status vs. the operational
       status can be used as a trigger to detect anomalies.
 
    'vpn-network-accesses':  Represents the point to which sites are
-      connected.  Note that, unlike in L3SM, the L3NM does not need to
-      model the customer site, only the points where the traffic from
-      the site are received (i.e., the PE side of PE-CE connections).
-      Hence, the VPN network access contains the connectivity
-      information between the provider's network and the customer
-      premises.  The VPN profiles ('vpn-profiles') have a set of routing
-      policies than can be applied during the service creation.
+      connected.
+
+      Note that, unlike in L3SM, the L3NM does not need to model the
+      customer site, only the points where the traffic from the site are
+      received (i.e., the PE side of PE-CE connections).  Hence, the VPN
+      network access contains the connectivity information between the
+      provider's network and the customer premises.  The VPN profiles
+      ('vpn-profiles') have a set of routing policies that can be
+      applied during the service creation.
 
       See Section 7.3.2.2 for more details.
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires August 22, 2021               [Page 22]
+
+Internet-Draft               L3NM YANG Model               February 2021
+
 
 7.3.2.1.  Multicast
 
@@ -1226,14 +1244,6 @@ Internet-Draft               L3NM YANG Model               February 2021
 
    When ASM is used, the model supports the configuration of rendez-vous
    points (RPs).  RP discovery may be 'static', 'bsr-rp', or 'auto-rp'.
-
-
-
-Barguil, et al.          Expires August 22, 2021               [Page 22]
-
-Internet-Draft               L3NM YANG Model               February 2021
-
-
    When set to 'static', RP to multicast grouping mapping MUST be
    configured as part of the 'rp-group-mappings' container.  The RP MAY
    be a provider node or a customer node.  When the RP is a customer
@@ -1272,6 +1282,14 @@ Internet-Draft               L3NM YANG Model               February 2021
                       |  |  |     |  +--rw enabled?
                       |  |  |     |  |       boolean
                       |  |  |     |  +--rw rp-redundancy?
+
+
+
+Barguil, et al.          Expires August 22, 2021               [Page 23]
+
+Internet-Draft               L3NM YANG Model               February 2021
+
+
                       |  |  |     |  |       boolean
                       |  |  |     |  +--rw optimal-traffic-delivery?
                       |  |  |     |  |       boolean
@@ -1282,14 +1300,6 @@ Internet-Draft               L3NM YANG Model               February 2021
                       |  |  |     |             inet:ip-address
                       |  |  |     +--rw rp-address
                       |  |  |     |       inet:ip-address
-
-
-
-Barguil, et al.          Expires August 22, 2021               [Page 23]
-
-Internet-Draft               L3NM YANG Model               February 2021
-
-
                       |  |  |     +--rw groups
                       |  |  |        +--rw group* [id]
                       |  |  |           +--rw id
@@ -1319,19 +1329,9 @@ Internet-Draft               L3NM YANG Model               February 2021
 
 7.3.2.2.  VPN Network Access
 
-   The 'vpn-network-access' encloses the parameters that describe the
-   access information for the traffic that belongs to a particular L3VPN
-   (Figure 9).
-
-
-
-
-
-
-
-
-
-
+   The 'vpn-network-access' includes a set of data nodes that describe
+   the access information for the traffic that belongs to a particular
+   L3VPN (Figure 9).
 
 
 
@@ -1917,7 +1917,7 @@ Internet-Draft               L3NM YANG Model               February 2021
       'description':  Includes a description of the BGP session.
 
       'local-autonomous-system':  Is set to the AS Number (ASN) to
-         override a peers' ASN if such feature is requested by the
+         override a customer ASN if such feature is requested by the
          customer.
 
       'peer-autonomous-system':  Conveys the customer's ASN.
@@ -1934,7 +1934,7 @@ Internet-Draft               L3NM YANG Model               February 2021
          and its BGP peer.
 
       'as-override':  If set, this parameter indicates whether ASN
-         override is enabled, i.e., replace the ASN of the peer
+         override is enabled, i.e., replace the ASN of the customer
          specified in the AS_PATH BGP attribute with the ASN identified
          in the 'local-autonomous-system' attribute.
 
@@ -2466,7 +2466,7 @@ Barguil, et al.          Expires August 22, 2021               [Page 44]
 Internet-Draft               L3NM YANG Model               February 2021
 
 
-   The following attributes are defined:
+   The following data nodes are defined:
 
    'input-bandwidth':  Indicates the inbound bandwidth of the connection
       (i.e., download bandwidth from the SP to the site).
@@ -4405,9 +4405,9 @@ Internet-Draft               L3NM YANG Model               February 2021
                         default "false";
                         description
                           "Defines whether AS override is enabled,
-                           i.e., replace the ASN of the peer specified
-                           in the AS Path attribute with the local
-                           AS number.";
+                           i.e., replace the ASN of the customer
+                           specified in the AS Path attribute with
+                           the local ASN.";
                       }
                       leaf default-route {
                         type boolean;
@@ -6375,9 +6375,9 @@ Internet-Draft               L3NM YANG Model               February 2021
    Finally, create the VPN Network Access with multicast enabled (see
    the excerpt of the request message body shown in Figure 36).
 
-         {
-          "ietf-l3vpn-ntw:vpn-network-access": {
-            "vpn-network-access-id": "1/1/1",
+       {
+         "ietf-l3vpn-ntw:vpn-network-access": {
+           "vpn-network-access-id": "1/1/1",
 
 
 
@@ -6386,54 +6386,54 @@ Barguil, et al.          Expires August 22, 2021              [Page 114]
 Internet-Draft               L3NM YANG Model               February 2021
 
 
-            "description": "Connected_to_source",
-            "status": {
-              "admin-enabled": "true"
-            },
-            "vpn-network-access-type": "vpn-common:point-to-point",
-            "ip-connection": {
-              "ipv4": {
-                "local-address": "203.0.113.1",
-                "prefix-length": 30,
-                "address-allocation-type": "static-address",
-                "static-addresses": {
-                  "primary-address": "1",
-                  "address": [
-                    {
-                      "address-id": "1"
-                      "customer-address": "203.0.113.2"
-                    }
-                  ]
-                }
-              }
-            },
-            "routing-protocols": {
-              "routing-protocol": [
-                {
-                  "id": "1",
-                  "type": "vpn-common:bgp",
-                  "bgp": {
-                    "peer-autonomous-system": "6500",
-                    "local-autonomous-system": "3816",
-                    "address-family": "vpn-common:ipv4",
-                    "neighbor": "203.0.113.2",
-                    "description": "Connected to CE"
-                  }
-                }
-              ]
-            },
-            "service": {
-              "multicast": {
-                "multicast-site-type": "source-only",
-                "multicast-address-family": {
-                  "ipv4": "true"
-                },
-                "protocol-type": "router"
-              }
-            }
-          }
-        }
-
+           "description": "Connected_to_source",
+           "status": {
+             "admin-enabled": "true"
+           },
+           "vpn-network-access-type": "vpn-common:point-to-point",
+           "ip-connection": {
+             "ipv4": {
+               "local-address": "203.0.113.1",
+               "prefix-length": 30,
+               "address-allocation-type": "static-address",
+               "static-addresses": {
+                 "primary-address": "1",
+                 "address": [
+                   {
+                     "address-id": "1",
+                     "customer-address": "203.0.113.2"
+                   }
+                 ]
+               }
+             }
+           },
+           "routing-protocols": {
+             "routing-protocol": [
+               {
+                 "id": "1",
+                 "type": "vpn-common:bgp",
+                 "bgp": {
+                   "peer-autonomous-system": "6500",
+                   "local-autonomous-system": "3816",
+                   "address-family": "vpn-common:ipv4",
+                   "neighbor": "203.0.113.2",
+                   "description": "Connected to CE"
+                 }
+               }
+             ]
+           },
+           "service": {
+             "multicast": {
+               "multicast-site-type": "source-only",
+               "address-family": "vpn-common:ipv4",
+               "protocol-type": "router",
+               "pim": {
+                 "hello-interval": 60,
+                 "status": {
+                   "admin-status": {
+                     "status": "vpn-common:administrative-state-up"
+                   }
+                   "oper-status": {
 
 
 
@@ -6441,6 +6441,15 @@ Barguil, et al.          Expires August 22, 2021              [Page 115]
 
 Internet-Draft               L3NM YANG Model               February 2021
 
+
+                     "status": "vpn-common:operational-state-up"
+                   }
+                 }
+               }
+             }
+           }
+         }
+       }
 
    Figure 36: Create VPN Network Access (Excerpt of the Message Request
                                    Body)
@@ -6480,6 +6489,15 @@ B.2.  Huawei Implementation
    Details can be found at: https://github.com/IETF-OPSAWG-
    WG/l3nm/blob/master/Implementattion/Huawei.txt
 
+
+
+
+
+Barguil, et al.          Expires August 22, 2021              [Page 116]
+
+Internet-Draft               L3NM YANG Model               February 2021
+
+
 B.3.  Infinera Implementation
 
    Details can be found at: https://github.com/IETF-OPSAWG-
@@ -6489,14 +6507,6 @@ B.4.  Ribbon-ECI Implementation
 
    Details can be found at: https://github.com/IETF-OPSAWG-
    WG/l3nm/blob/master/Implementattion/Ribbon-ECI.txt
-
-
-
-
-Barguil, et al.          Expires August 22, 2021              [Page 116]
-
-Internet-Draft               L3NM YANG Model               February 2021
-
 
 Authors' Addresses
 
@@ -6531,6 +6541,19 @@ Authors' Addresses
    Email: luis-angel.munoz@vodafone.com
 
 
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires August 22, 2021              [Page 117]
+
+Internet-Draft               L3NM YANG Model               February 2021
+
+
    Alejandro Aguado
    Nokia
    Madrid
@@ -6549,4 +6572,37 @@ Authors' Addresses
 
 
 
-Barguil, et al.          Expires August 22, 2021              [Page 117]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires August 22, 2021              [Page 118]
