@@ -2033,20 +2033,29 @@
                   allows to enable VRRP on the 'vpn-network-access' interface.
                   The following data nodes are supported:<list style="hanging">
                       <t hangText="'address-family':">Indicates whether IPv4,
-                      IPv6, or both address families are to be activated.</t>
+                      IPv6, or both address families are to be activated. Note
+                      that VRRP version 3 <xref target="RFC5798"></xref>
+                      supports both IPv4 and IPv6.</t>
 
-                      <t hangText="'vrrp-group':"></t>
+                      <t hangText="'vrrp-group':">Is used to identify the VRRP
+                      group.</t>
 
-                      <t hangText="'backup-peer':"></t>
+                      <t hangText="'backup-peer':">Carries the IP address of
+                      the peer</t>
 
-                      <t hangText="'priority':"></t>
+                      <t hangText="'priority':">Assigns the VRRP election
+                      priority for the backup virtual router.</t>
 
-                      <t hangText="'ping-reply':"></t>
+                      <t hangText="'ping-reply':">Controls whether ping
+                      requests can be replied to.</t>
 
-                      <t hangText="'status':">Indicates the status of the OSPF
-                      routing instance.</t>
-                    </list><figure align="center" anchor="vrrp"
-                      title="VRRP Subtree Structure">
+                      <t hangText="'status':">Indicates the status of the VRRP
+                      instance.</t>
+                    </list>Note that no security data node is included for
+                  VRRP as there isn't currently any type of VRRP
+                  authentication (see Section 9 of <xref
+                  target="RFC5798"></xref>).<figure align="center"
+                      anchor="vrrp" title="VRRP Subtree Structure">
                       <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
@@ -2068,8 +2077,6 @@
 ]]></artwork>
                     </figure></t>
                 </list></t>
-
-              <!--  (NOTE FOR EDITORS: it seems that the access-priority has been removed. We need to have one may be slightly different from L3SM) -->
             </section>
 
             <section title="OAM">
@@ -4316,23 +4323,27 @@ module ietf-l3vpn-ntw {
                           range "1..255";
                         }
                         description
-                          "VRRP group number.";
+                          "Includes the VRRP group identifier.";
                       }
                       leaf backup-peer {
                         type inet:ip-address;
                         description
-                          "IP address of the peer";
+                          "Indicates the IP address of the peer.";
                       }
                       leaf priority {
-                        type uint8;
+                        type uint8 {
+                          range "1..254";
+                        }
+                        default 100;
                         description
-                          "Local priority of the VRRP speaker.";
+                          "Sets the local priority of the VRRP 
+                           speaker.";
                       }
                       leaf ping-reply {
                         type boolean;
                         description
-                          "Whether the VRRP speaker should answer
-                           to ping requests.";
+                          "Controls whether the VRRP speaker should 
+                           answer to ping requests.";
                       }
                       uses vpn-common:service-status;
                     }
@@ -4949,6 +4960,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.6565'?>
 
       <?rfc include='reference.RFC.8177'?>
+
+      <?rfc include='reference.RFC.5798'?>
     </references>
 
     <references title="Informative References">
