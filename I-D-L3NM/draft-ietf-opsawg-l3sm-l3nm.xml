@@ -1201,11 +1201,130 @@
           <t></t>
 
           <section anchor="mc" title="Multicast">
-            <t>Multicast may be enabled for a particular vpn-network-node (see
-            <xref target="multicast"></xref>).</t>
+            <t>Multicast may be enabled for a particular VPN at the VPN node
+            and VPN network access levels (see <xref
+            target="all-multicast"></xref>).</t>
 
-            <t>The model supports a single type of tree (Any-Source Multicast
-            (ASM), Source-Specific Multicast (SSM), or bidirectional).</t>
+            <t><figure align="center" anchor="all-multicast"
+                title="Overall Multicast Subtree Structure">
+                <artwork align="center"><![CDATA[           ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [vpn-node-id]
+                 ...
+                 +--rw multicast {vpn-common:multicast}?
+                 |  +--rw status
+                 |  |  +--rw admin-status
+                 |  |  |  +--rw status?         identityref
+                 |  |  |  +--rw last-updated?   yang:date-and-time
+                 |  |  +--ro oper-status
+                 |  |     +--ro status?         identityref
+                 |  |     +--ro last-updated?   yang:date-and-time
+                 |  +--rw tree-flavor*   identityref
+                 |  +--rw rp
+                 |  |  +--rw rp-group-mappings
+                 |  |  |  +--rw rp-group-mapping* [id]
+                 |  |  |     +--rw id                  uint16
+                 |  |  |     +--rw provider-managed
+                 |  |  |     |  +--rw enabled?                    boolean
+                 |  |  |     |  +--rw rp-redundancy?              boolean
+                 |  |  |     |  +--rw optimal-traffic-delivery?   boolean
+                 |  |  |     |  +--rw anycast
+                 |  |  |     |     +--rw local-address?    inet:ip-address
+                 |  |  |     |     +--rw rp-set-address*   inet:ip-address
+                 |  |  |     +--rw rp-address          inet:ip-address
+                 |  |  |     +--rw groups
+                 |  |  |        +--rw group* [id]
+                 |  |  |           +--rw id                     uint16
+                 |  |  |           +--rw (group-format)
+                 |  |  |              +--:(group-prefix)
+                 |  |  |              |  +--rw group-address?   inet:ip-prefix
+                 |  |  |              +--:(startend)
+                 |  |  |                 +--rw group-start?     inet:ip-address
+                 |  |  |                 +--rw group-end?       inet:ip-address
+                 |  |  +--rw rp-discovery
+                 |  |     +--rw rp-discovery-type?   identityref
+                 |  |     +--rw bsr-candidates
+                 |  |        +--rw bsr-candidate-address*   inet:ip-address
+                 |  +--rw msdp {msdp}?
+                 |  |  +--rw peer?            inet:ip-address
+                 |  |  +--rw local-address?   inet:ip-address
+                 |  |  +--rw status
+                 |  |     +--rw admin-status
+                 |  |     |  +--rw status?         identityref
+                 |  |     |  +--rw last-updated?   yang:date-and-time
+                 |  |     +--ro oper-status
+                 |  |        +--ro status?         identityref
+                 |  |        +--ro last-updated?   yang:date-and-time
+                 |  +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
+                 |  |  +--rw subscription-channel?   inet:ip-address
+                 |  |  +--rw max-groups?             uint32
+                 |  |  +--rw max-entries?            uint32
+                 |  |  +--rw version?                identityref
+                 |  |  +--rw status
+                 |  |     +--rw admin-status
+                 |  |     |  +--rw status?         identityref
+                 |  |     |  +--rw last-updated?   yang:date-and-time
+                 |  |     +--ro oper-status
+                 |  |        +--ro status?         identityref
+                 |  |        +--ro last-updated?   yang:date-and-time
+                 |  +--rw mld {vpn-common:mld and vpn-common:ipv6}?
+                 |     +--rw max-groups?    uint32
+                 |     +--rw max-entries?   uint32
+                 |     +--rw version?       identityref
+                 |     +--rw status
+                 |        +--rw admin-status
+                 |        |  +--rw status?         identityref
+                 |        |  +--rw last-updated?   yang:date-and-time
+                 |        +--ro oper-status
+                 |           +--ro status?         identityref
+                 |           +--ro last-updated?   yang:date-and-time
+                 +--rw vpn-network-accesses
+                    +--rw vpn-network-access* [id]
+                       ...
+                       +--rw service
+                          ...
+                          +--rw multicast {vpn-common:multicast}?
+                             +--rw access-type?      enumeration
+                             +--rw address-family?   identityref
+                             +--rw protocol-type?    enumeration
+                             +--rw remote-source?    boolean
+                             +--rw igmp {vpn-common:ipv4}?
+                             |  +--rw max-groups?    uint32
+                             |  +--rw max-entries?   uint32
+                             |  +--rw version?       identityref
+                             |  +--rw status
+                             |     +--rw admin-status
+                             |     |  +--rw status?         identityref
+                             |     |  +--rw last-updated?   yang:date-and-time
+                             |     +--ro oper-status
+                             |        +--ro status?         identityref
+                             |        +--ro last-updated?   yang:date-and-time
+                             +--rw mld {vpn-common:ipv6}?
+                             |  +--rw max-groups?    uint32
+                             |  +--rw max-entries?   uint32
+                             |  +--rw version?       identityref
+                             |  +--rw status
+                             |     +--rw admin-status
+                             |     |  +--rw status?         identityref
+                             |     |  +--rw last-updated?   yang:date-and-time
+                             |     +--ro oper-status
+                             |        +--ro status?         identityref
+                             |        +--ro last-updated?   yang:date-and-time
+                             +--rw pim {vpn-common:pim}?
+                                +--rw hello-interval?   uint8
+                                +--rw dr-priority?      uint16
+                                +--rw status
+                                   +--rw admin-status
+                                   |  +--rw status?         identityref
+                                   |  +--rw last-updated?   yang:date-and-time
+                                   +--ro oper-status
+                                      +--ro status?         identityref
+                                      +--ro last-updated?   yang:date-and-time
+]]></artwork>
+              </figure></t>
+
+            <t>The model supports a single type of tree: Any-Source Multicast
+            (ASM), Source-Specific Multicast (SSM), or bidirectional.</t>
 
             <t>When ASM is used, the model supports the configuration of
             rendez-vous points (RPs). RP discovery may be 'static', 'bsr-rp',
@@ -1222,72 +1341,18 @@
             <t>When a particular VPN using ASM requires a more optimal traffic
             delivery, 'optimal-traffic-delivery' can be set. When set to
             'true', the implementation must use any mechanism to provide a
-            more optimal traffic delivery for the customer. Anycast is one of
-            the mechanisms to enhance RPs redundancy, resilience against
-            failures, and to recover from failures quickly.</t>
+            more optimal traffic delivery for the customer. For example,
+            anycast is one of the mechanisms to enhance RPs redundancy,
+            resilience against failures, and to recover from failures
+            quickly.</t>
 
             <t>For redundancy purposes, Multicast Source Discovery Protocol
             (MSDP) <xref target="RFC3618"></xref> may be enabled and used to
             share the state about sources between multiple RPs. The purpose of
             MSDP in this context is to enhance the robustness of the multicast
-            service. MSDP may be configured on Non-RP routers, which is useful
+            service. MSDP may be configured on non-RP routers, which is useful
             in a domain that does not support multicast sources, but does
             support multicast transit.</t>
-
-            <t><figure align="center" anchor="multicast"
-                title="Multicast Subtree Structure">
-                <artwork align="center"><![CDATA[           +--rw vpn-nodes
-              +--rw vpn-node* [vpn-node-id]
-                 ...
-                 +--rw multicast {vpn-common:multicast}?
-                 |  +--rw enabled?       boolean
-                 |  +--rw tree-flavor*   identityref
-                 |  +--rw rp
-                 |  |  +--rw rp-group-mappings
-                 |  |  |  +--rw rp-group-mapping* [id]
-                 |  |  |     +--rw id                  uint16
-                 |  |  |     +--rw provider-managed
-                 |  |  |     |  +--rw enabled?
-                 |  |  |     |  |       boolean
-                 |  |  |     |  +--rw rp-redundancy?
-                 |  |  |     |  |       boolean
-                 |  |  |     |  +--rw optimal-traffic-delivery?
-                 |  |  |     |  |       boolean
-                 |  |  |     |  +--rw anycast
-                 |  |  |     |     +--rw local-address?
-                 |  |  |     |     |       inet:ip-address
-                 |  |  |     |     +--rw rp-set-address*
-                 |  |  |     |             inet:ip-address
-                 |  |  |     +--rw rp-address
-                 |  |  |     |       inet:ip-address
-                 |  |  |     +--rw groups
-                 |  |  |        +--rw group* [id]
-                 |  |  |           +--rw id
-                 |  |  |           |       uint16
-                 |  |  |           +--rw (group-format)
-                 |  |  |              +--:(group-prefix)
-                 |  |  |              |  +--rw group-address?
-                 |  |  |              |          inet:ip-prefix
-                 |  |  |              +--:(startend)
-                 |  |  |                 +--rw group-start?
-                 |  |  |                 |       inet:ip-address
-                 |  |  |                 +--rw group-end?
-                 |  |  |                         inet:ip-address
-                 |  |  +--rw rp-discovery
-                 |  |     +--rw rp-discovery-type?   identityref
-                 |  |     +--rw bsr-candidates
-                 |  |        +--rw bsr-candidate-address*
-                 |  |                inet:ip-address
-                 |  +--rw msdp {msdp}?
-                 |     +--rw enabled?         boolean
-                 |     +--rw peer?            inet:ip-address
-                 |     +--rw local-address?   inet:ip-address
-                 +--rw vpn-network-accesses
-                    ...
-]]></artwork>
-              </figure></t>
-
-            <t></t>
           </section>
 
           <section anchor="sna" title="VPN Network Access">
