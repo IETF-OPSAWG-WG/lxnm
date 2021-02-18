@@ -1390,7 +1390,7 @@
               the IP layer, but also requires to provide parameters at the
               Ethernet layer, such as specifying an encapsulation type (e.g.,
               VLAN, QinQ, QinAny, VxLAN, etc.). The L3NM uses the 'connection'
-              container to specify such parameters. </t>
+              container to specify such parameters.</t>
 
               <t>A site, as per <xref target="RFC4176"></xref> represents a
               VPN customer's location that is connected to the service
@@ -1406,7 +1406,7 @@
 
               <t>As shown in <xref target="bearerethencap_tree"></xref>, the
               'connection' container defines protocols and parameters to
-              enable connectivity at Layer 2. </t>
+              enable connectivity at Layer 2.</t>
 
               <figure align="center" anchor="bearerethencap_tree"
                       title="Connection Subtree Structure">
@@ -1453,7 +1453,7 @@
               <t>This container is used to group the IP addressing information
               of a VPN network access (<xref target="ip_conn_tree"></xref>).
               The allocated address represents the PE interface address
-              configuration. </t>
+              configuration.</t>
 
               <t><figure align="center" anchor="ip_conn_tree"
                   title="IP Connection Subtree Structure">
@@ -1467,14 +1467,14 @@
       |  +--rw ipv6 {vpn-common:ipv6}?
       |     ...
       ...
+
 ]]></artwork>
                 </figure></t>
 
               <t>The IP connection container is designed to support both IPv4
-              and IPv6. It supports four IP address assignment modes: SLAAC
-              <xref target="RFC7527"></xref>, provider DHCP, DHCP relay, and
-              static addressing. The SLAAC mode applies only for IPv6. Only
-              one mode is enabled for a given service. </t>
+              and IPv6. It supports three IP address assignment modes:
+              provider DHCP, DHCP relay, and static addressing. Only one mode
+              is enabled for a given service.</t>
 
               <t><xref target="ip_conn_tree_v4"></xref> shows the structure of
               the dynamic IPv4 address assignment.</t>
@@ -1484,28 +1484,29 @@
                   <artwork align="center"><![CDATA[...
 +--rw ip-connection
 |  +--rw ipv4 {vpn-common:ipv4}?
-|  |  +--rw address-allocation-type?        identityref
+|  |  +--rw local-address?                           inet:ipv4-address
+|  |  +--rw prefix-length?                           uint8
+|  |  +--rw address-allocation-type?                 identityref
 |  |  +--rw (allocation-type)?
 |  |     +--:(provider-dhcp)
-|  |     |  +--rw provider-address?        inet:ipv4-address
-|  |     |  +--rw prefix-length?           uint8
+|  |     |  +--rw dhcp-server-enable?                boolean
 |  |     |  +--rw (address-assign)?
 |  |     |     +--:(number)
-|  |     |     |  +--rw number-of-dynamic-address?      uint16
+|  |     |     |  +--rw number-of-dynamic-address?   uint16
 |  |     |     +--:(explicit)
 |  |     |        +--rw customer-addresses
-|  |     |           +--rw address-group*        [group-id]
-|  |     |              +--rw group-id           string
-|  |     |              +--rw start-address?     inet:ipv4-address
-|  |     |              +--rw end-address?       inet:ipv4-address
+|  |     |           +--rw address-group* [group-id]
+|  |     |              +--rw group-id         string
+|  |     |              +--rw start-address?   inet:ipv4-address
+|  |     |              +--rw end-address?     inet:ipv4-address
 |  |     +--:(dhcp-relay)
-|  |     |  +--rw dr-provider-address?           inet:ipv4-address
-|  |     |  +--rw dr-prefix-length?              uint8
+|  |     |  +--rw dhcp-relay-enable?                 boolean
 |  |     |  +--rw customer-dhcp-servers
-|  |     |     +--rw server-ip-address*          inet:ipv4-address
+|  |     |     +--rw server-ip-address*   inet:ipv4-address
 |  |     +--:(static-addresses)
 |  |        ...
-...]]></artwork>
+...
+]]></artwork>
                 </figure></t>
 
               <t><xref target="ip_conn_tree_v6"></xref> shows the structure of
@@ -1518,34 +1519,29 @@
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
-|     +--rw address-allocation-type?        identityref
+|     +--rw local-address?                           inet:ipv6-prefix
+|     +--rw prefix-length?                           uint8
+|     +--rw address-allocation-type?                 identityref
 |     +--rw (allocation-type)?
 |        +--:(provider-dhcp)
-|        |  +--rw (provider-dhcp)?
-|        |     +--:(provider-address)
-|        |     |  +--rw provider-address?   inet:ipv6-address
-|        |     +--:(prefix-length)
-|        |     |  +--rw prefix-length?     uint8
-|        |     +--:(address-assign)
-|        |        +--rw (address-assign)?
-|        |           +--:(number)
-|        |           |  +--rw number-of-dynamic-address?
-|        |           |          uint16
-|        |           +--:(explicit)
-|        |              +--rw customer-addresses
-|        |                 +--rw address-group*   [group-id]
-|        |                    +--rw group-id      string
-|        |                    +--rw start-address?
-|        |                    |       inet:ipv6-address
-|        |                    +--rw end-address?
-|        |                            inet:ipv6-address
+|        |  +--rw dhcp-server-enable?                boolean
+|        |  +--rw (address-assign)?
+|        |     +--:(number)
+|        |     |  +--rw number-of-dynamic-address?   uint16
+|        |     +--:(explicit)
+|        |        +--rw customer-addresses
+|        |           +--rw address-group* [group-id]
+|        |              +--rw group-id         string
+|        |              +--rw start-address?   inet:ipv6-address
+|        |              +--rw end-address?     inet:ipv6-address
 |        +--:(dhcp-relay)
-|        |  +--rw dr-provider-address?    inet:ipv6-address
-|        |  +--rw dr-prefix-length?       uint8
+|        |  +--rw dhcp-relay-enable?                 boolean
 |        |  +--rw customer-dhcp-servers
-|        |     +--rw server-ip-address*  inet:ipv6-address
+|        |     +--rw server-ip-address*   inet:ipv6-address
 |        +--:(static-addresses)
-|           ...]]></artwork>
+|           ...
+...
+]]></artwork>
                 </figure></t>
 
               <t>In the case of the static addressing (<xref
@@ -1567,20 +1563,16 @@
 |  |        +--rw primary-address?        -> ../address/address-id
 |  |        +--rw address* [address-id]
 |  |           +--rw address-id              string
-|  |           +--rw s-provider-address?     inet:ipv4-address
-|  |           +--rw s-customer-address?     inet:ipv4-address
-|  |           +--rw s-prefix-length?        uint8
+|  |           +--rw customer-address?     inet:ipv4-address
 |  +--rw ipv6 {vpn-common:ipv6}?
 |     +--rw address-allocation-type?         identityref
 |     +--rw (allocation-type)?
 |        ...
 |        +--:(static-addresses)
-|           +--rw s-primary-address?     -> ../s-address/address-id
-|           +--rw s-address* [address-id]
+|           +--rw primary-address?     -> ../address/address-id
+|           +--rw address* [address-id]
 |              +--rw address-id              string
-|              +--rw provider-address?       inet:ipv6-address
 |              +--rw customer-address?       inet:ipv6-address
-|              +--rw prefix-length?          uint8
 ...                        ]]></artwork>
               </figure>
 
@@ -1593,7 +1585,7 @@
               Such routing protocol is enabled between the PE and the CE. Each
               instance is uniquely identified to accommodate scenarios where
               multiple instances of the same routing protocol have to be
-              configured on the same link. </t>
+              configured on the same link.</t>
 
               <t>The subtree of the 'routing-protocols' is shown in <xref
               target="routing"></xref>.</t>
@@ -1749,7 +1741,7 @@
                   implementation to derive the corresponding BGP device
                   configuration:<list style="hanging">
                       <t hangText="'description':">Includes a description of
-                      the BGP session. </t>
+                      the BGP session.</t>
 
                       <t hangText="'local-autonomous-system':">Is set to the
                       AS Number (ASN) to override a peers' ASN if such feature
@@ -1826,7 +1818,7 @@
                       target="RFC4364"></xref> as it allows to enable TCP-AO
                       <xref target="RFC5925"></xref> and accommodates the
                       installed base that make use of MD5. In addition, the
-                      module includes a provision for the use of IPsec. </t>
+                      module includes a provision for the use of IPsec.</t>
 
                       <t hangText="'status':">Indicates the status of the BGP
                       routing instance.</t>
@@ -1892,20 +1884,20 @@
                       address-family is requested, it will be up to the
                       implementation to decide whether OSPFv2 <xref
                       target="RFC2328"></xref> or OSPFv3 <xref
-                      target="RFC5340"></xref> is used. </t>
+                      target="RFC5340"></xref> is used.</t>
 
                       <t hangText="'area-id':">Indicates the OSPF Area ID.</t>
 
                       <t hangText="'metric':">Associates a metric with OSPF
-                      routes. </t>
+                      routes.</t>
 
                       <t hangText="'sham-links':">Is used to create OSPF sham
                       links between two VPN network accesses sharing the same
                       area and having a backdoor link (Section 4.2.7 of <xref
                       target="RFC4577"></xref>).</t>
 
-                      <t hangText="'max-lsa':"> Sets the maximum number of
-                      LSAs that the OSPF instance will accept.</t>
+                      <t hangText="'max-lsa':">Sets the maximum number of LSAs
+                      that the OSPF instance will accept.</t>
 
                       <t hangText="'security':">Controls the authentication
                       schemes to be enabled for the OSPF instance. The
@@ -1959,7 +1951,7 @@
                   following IS-IS data nodes are supported:<list
                       style="hanging">
                       <t hangText="'address-family':">Indicates whether IPv4,
-                      IPv6, or both address families are to be activated. </t>
+                      IPv6, or both address families are to be activated.</t>
 
                       <t hangText="'area-address':">Indicates the IS-IS area
                       address.</t>
@@ -1977,7 +1969,7 @@
                       the interface).</t>
 
                       <t hangText="'security':">Controls the authentication
-                      schemes to be enabled for the IS-IS instance. </t>
+                      schemes to be enabled for the IS-IS instance.</t>
 
                       <t hangText="'status':">Indicates the status of the OSPF
                       routing instance.</t>
@@ -2085,12 +2077,12 @@
               Operations, Administration, and Maintenance (OAM) mechanisms
               used for a VPN network access. In the current version of the
               L3NM, only BFD is supported. The current data nodes can be
-              specified: </t>
+              specified:</t>
 
               <t><list style="hanging">
                   <t hangText="holdtime':">Is used to indicate the expected
                   BFD holddown time. The value can be set by the customer or
-                  selected from a profile. </t>
+                  selected from a profile.</t>
 
                   <t hangText="'security':">Includes the required information
                   to enable the BFD authentication modes discussed in Section
@@ -2131,7 +2123,7 @@
               As depicted in the subtree shown in <xref
               target="security"></xref>, the L3NM can be used to directly
               control the encryption to put in place (e.g., Layer 2 or Layer 3
-              encryption) or invoke a local encryption profile. </t>
+              encryption) or invoke a local encryption profile.</t>
 
               <t><figure align="center" anchor="security"
                   title="Security Subtree Structure">
@@ -3254,6 +3246,31 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv4";
                     description
                       "IPv4-specific parameters.";
+                    leaf local-address {
+                      type inet:ipv4-address;
+                      description
+                        "This address is used at provider side.";
+                    }
+                    leaf prefix-length {
+                      type uint8 {
+                        range "0..32";
+                      }
+                      must '(../local-address)' {
+                        error-message
+                          "If the prefix length is specified,
+                           provider-address must also be
+                           specified.";
+                        description
+                          "If the prefix length is specified,
+                           provider-address must also be
+                           specified.";
+                      }
+                      description
+                        "Subnet prefix length expressed in bits.
+                         If not specified, or specified as zero,
+                         this means the customer leaves the actual
+                         prefix length value to the provider.";
+                    }
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -3264,13 +3281,15 @@ module ietf-l3vpn-ntw {
                         error-message "SLAAC is only applicable to IPv6.";
                       }
                       description
-                        "Defines how addresses are allocated.
+                        "Defines how addresses are allocated to the
+                         peer site.
+
                          If there is no value for the address
                          allocation type, then IPv4 is not enabled.";
                     }
                     choice allocation-type {
                       description
-                        "Choice the address allocation.";
+                        "Choice of the IPv4 address allocation.";
                       case provider-dhcp {
                         when "derived-from-or-self(./address-"
                            + "allocation-type, 'provider-dhcp')" {
@@ -3281,70 +3300,43 @@ module ietf-l3vpn-ntw {
                         description
                           "DHCP allocated addresses related
                            parameters.";
-                        leaf provider-address {
-                          type inet:ipv4-address;
+                        leaf dhcp-server-enable {
+                          type boolean;
+                          default "true";
                           description
-                            "Address used at provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.
-
-                             It also implies provider-dhcp allocation
-                             is not enabled.
-
-                             If provider-address is specified, then the
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf prefix-length {
-                          type uint8 {
-                            range "0..32";
-                          }
-                          must '(../provider-address)' {
-                            error-message
-                              "If the prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If the prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-                             If not specified, or specified as zero,
-                             this means the customer leaves the actual
-                             prefix length value to the provider.";
+                            "Enables a DHCP service on this access.
+                             The following information are passed to
+                             the provider's DHCP server.";
                         }
                         choice address-assign {
                           default "number";
                           description
-                            "Choice for the way to assign
-                             addresses.";
+                            "Choice for how IPv4 addresses are assigned.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP addresses
-                                 that the customer requires.";
+                                "Specifies the number of IP addresses
+                                 to be assigned to the customer on this
+                                 access.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
                               description
-                                "Container for customer addresses is
-                                 allocated by DHCP.";
+                                "Container for customer addresses to be
+                                 allocated using DHCP.";
                               list address-group {
                                 key "group-id";
                                 description
-                                  "Describes IP addresses allocated by
-                                   DHCP.
+                                  "Describes IP addresses to be allocated
+                                   by DHCP.
 
                                    When only start-address or only
                                    end-address is present, it
                                    represents a single address.
+
                                    When both start-address and
                                    end-address are specified, it
                                    implies a range inclusive of
@@ -3383,43 +3375,11 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
-                        leaf dr-provider-address {
-                          type inet:ipv4-address;
+                        leaf dhcp-relay-enable {
+                          type boolean;
+                          default "true";
                           description
-                            "Address of the provider side.
-
-                             If provider-address is
-                             not specified, then prefix length
-                             should not be specified either.
-
-                             It also implies provider-dhcp
-                             allocation is not enabled.
-
-                             If provider-address is specified,
-                             then prefix length may or may
-                             not be specified.";
-                        }
-                        leaf dr-prefix-length {
-                          type uint8 {
-                            range "0..32";
-                          }
-                          must '(../dr-provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-
-                             If not specified, or specified as zero,
-                             this means the customer leaves the
-                             actual prefix  length value
-                             to the provider.";
+                            "Enables the DHCP relay function for this access.";
                         }
                         container customer-dhcp-servers {
                           description
@@ -3457,27 +3417,10 @@ module ietf-l3vpn-ntw {
                             description
                               "Used static IPv4 address.";
                           }
-                          leaf s-provider-address {
-                            type inet:ipv4-address;
-                            description
-                              "IPv4 Address List of the provider side.
-                               When the protocol allocation type is
-                               static, the provider address must be
-                               configured.";
-                          }
-                          leaf s-customer-address {
+                          leaf customer-address {
                             type inet:ipv4-address;
                             description
                               "IPv4 address at the customer side.";
-                          }
-                          leaf s-prefix-length {
-                            type uint8 {
-                              range "0..32";
-                            }
-                            description
-                              "Subnet prefix length expressed
-                               in bits. It is applied to both
-                               provider-address and customer-address.";
                           }
                         }
                       }
@@ -3487,6 +3430,24 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:ipv6";
                     description
                       "IPv6-specific parameters.";
+                    leaf local-address {
+                      type inet:ipv6-prefix;
+                      description
+                        "Address of the provider side.";
+                    }
+                    leaf prefix-length {
+                      type uint8 {
+                        range "0..128";
+                      }
+                      description
+                        "Subnet prefix length expressed in
+                         bits.
+
+                         If not specified, or specified as
+                         zero, this means the customer leaves
+                         the actual prefix length value to
+                         the provider.";
+                    }
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -3500,78 +3461,48 @@ module ietf-l3vpn-ntw {
                     choice allocation-type {
                       description
                         "IPv6 allocation type.";
-                      choice provider-dhcp {
+                      case provider-dhcp {
                         when "derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp') "
                            + "or derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp-slaac')" {
                           description
                             "Only applies when addresses are
-                             allocated by DHCP.";
+                             allocated by DHCPv6.";
                         }
                         description
-                          "DHCP allocated addresses related
+                          "DHCPv6 allocated addresses related
                            parameters.";
-                        leaf provider-address {
-                          type inet:ipv6-address;
+                        leaf dhcp-server-enable {
+                          type boolean;
+                          default "true";
                           description
-                            "Address of the provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.  It also implies
-                             provider-dhcp allocation is not enabled.
-
-                             If provider-address is specified, then
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf prefix-length {
-                          type uint8 {
-                            range "0..128";
-                          }
-                          must '(../provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address
-                               must also be specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in
-                             bits.
-
-                             If not specified, or specified as
-                             zero, this means the customer leaves
-                             the actual prefix length value to
-                             the provider.";
+                            "Enables DHCPv6 service for this access.";
                         }
                         choice address-assign {
                           default "number";
                           description
-                            "Choice for the way to assign addresses.";
+                            "Choice for the way to assign IPv6 prefixes.";
                           case number {
                             leaf number-of-dynamic-address {
                               type uint16;
                               default "1";
                               description
-                                "Describes the number of IP addresses
-                                 that are required by the customer.";
+                                "Describes the number of IPv6 prefixes
+                                 that are allocated to the customer
+                                 on this access.";
                             }
                           }
                           case explicit {
                             container customer-addresses {
                               description
-                                "Container for customer addresses
-                                 allocated by DHCP.";
+                                "Container for customer IPv6 addresses
+                                 allocated by DHCPv6.";
                               list address-group {
                                 key "group-id";
                                 description
-                                  "Describes IP addresses allocated
-                                   by DHCP.
+                                  "Describes IPv6 addresses allocated
+                                   by DHCPv6.
 
                                    When only start-address or only
                                    end-address is present, it
@@ -3616,41 +3547,11 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "DHCP relay provided by operator.";
-                        leaf dr-provider-address {
-                          type inet:ipv6-address;
+                        leaf dhcp-relay-enable {
+                          type boolean;
+                          default "true";
                           description
-                            "Address of the provider side.
-
-                             If provider-address is not specified,
-                             then prefix length should not be
-                             specified either.  It also implies
-                             provider-dhcp allocation is not enabled.
-
-                             If provider address is specified, then
-                             prefix length may or may not be
-                             specified.";
-                        }
-                        leaf dr-prefix-length {
-                          type uint8 {
-                            range "0..128";
-                          }
-                          must '(../dr-provider-address)' {
-                            error-message
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                            description
-                              "If prefix length is specified,
-                               provider-address must also be
-                               specified.";
-                          }
-                          description
-                            "Subnet prefix length expressed in bits.
-
-                             If not specified, or specified as zero,
-                             this means the customer leaves the
-                             actual prefix length value to the
-                             provider.";
+                            "Enables the DHCP relay function for this access.";
                         }
                         container customer-dhcp-servers {
                           description
@@ -3676,14 +3577,14 @@ module ietf-l3vpn-ntw {
                         }
                         description
                           "IPv6-specific parameters.";
-                        leaf s-primary-address {
+                        leaf primary-address {
                           type leafref {
-                            path "../s-address/address-id";
+                            path "../address/address-id";
                           }
                           description
                             "Principal address of the connection";
                         }
-                        list s-address {
+                        list address {
                           key "address-id";
                           description
                             "Describes IPv6 addresses used.";
@@ -3692,27 +3593,10 @@ module ietf-l3vpn-ntw {
                             description
                               "IPv4 Address";
                           }
-                          leaf provider-address {
-                            type inet:ipv6-address;
-                            description
-                              "IPv6 Address of the provider side.  When
-                               the protocol allocation type is static,
-                               the provider address must be
-                               configured.";
-                          }
                           leaf customer-address {
                             type inet:ipv6-address;
                             description
                               "The IPv6 Address of the customer side.";
-                          }
-                          leaf prefix-length {
-                            type uint8 {
-                              range "0..128";
-                            }
-                            description
-                              "Subnet prefix length expressed in bits.
-                               It is applied to both provider-address
-                               and customer-address.";
                           }
                         }
                       }
@@ -4457,8 +4341,7 @@ module ietf-l3vpn-ntw {
                 container oam {
                   description
                     "Defines the Operations, Administration,
-                     and Maintenance (OAM) mechanisms used on IP
-                     the connection.
+                     and Maintenance (OAM) mechanisms used.
 
                      BFD is set as a fault detection mechanism,
                      but other mechanisms can be defined in the
@@ -4710,19 +4593,19 @@ module ietf-l3vpn-ntw {
                     description
                       "Multicast parameters for the network
                        access.";
-                    leaf site-type {
+                    leaf access-type {
                       type enumeration {
                         enum receiver-only {
                           description
-                            "The site only has receivers.";
+                            "The peer site only has receivers.";
                         }
                         enum source-only {
                           description
-                            "The site only has sources.";
+                            "The peer site only has sources.";
                         }
                         enum source-receiver {
                           description
-                            "The site has both sources and
+                            "The peer site has both sources and
                              receivers.";
                         }
                       }
@@ -4962,7 +4845,8 @@ module ietf-l3vpn-ntw {
       and reviews were received from (listed alphabetically): Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Adrian Farrel, Roque Gagliano,
       Christian Jacquenet, Kireeti Kompella, and Julian Lucek. Many thanks to
-      them. Thanks to Philip Eardly for the review.</t>
+      them. Thanks to Philip Eardly for the review of an early version of the
+      document.</t>
 
       <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
       contributed to early version of the individual submission.</t>
@@ -5261,15 +5145,15 @@ content-type: application/yang-data+json
         "vpn-network-access-type": "vpn-common:point-to-point",
         "ip-connection": {
           "ipv4": {
+            "local-address": "192.0.2.1",
+            "prefix-length": 32,
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
               "address": [
                 {
                   "address-id": "1",
-                  "s-provider-address": "192.0.2.1",
-                  "s-customer-address": "192.0.2.2",
-                  "s-prefix-length": 32
+                  "s-customer-address": "192.0.2.2"
                 }
               ]
             }
@@ -5293,15 +5177,15 @@ content-type: application/yang-data+json
         },
         "ip-connection": {
           "ipv4": {
+            "local-address": "192.0.2.1",
+            "prefix-length": 32,
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
               "address": [
                 {
                   "address-id": "1",
-                  "s-provider-address": "192.0.2.1",
-                  "s-customer-address": "192.0.2.2",
-                  "s-prefix-length": 32
+                  "customer-address": "192.0.2.2"
                 }
               ]
             }
@@ -5467,14 +5351,15 @@ Content-Type: application/yang-data+json
     "vpn-network-access-type": "vpn-common:point-to-point",
     "ip-connection": {
       "ipv4": {
+        "local-address": "203.0.113.1",
+        "prefix-length": 30,
         "address-allocation-type": "static-address",
         "static-addresses": {
           "primary-address": "1",
           "address": [
             {
-              "address-id": "1",
-              "s-provider-address": "203.0.113.1",
-              "s-prefix-length": 30
+              "address-id": "1"
+              "customer-address": "203.0.113.2"
             }
           ]
         }
