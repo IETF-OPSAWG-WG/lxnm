@@ -1368,9 +1368,10 @@
 
         <section anchor="ip_conn" title="IP Connections">
           <t>This container is used to group the IP addressing information of
-          a VPN network access (<xref target="ip_conn_tree"></xref>). The
-          allocated address represents the PE interface address
-          configuration.</t>
+          a VPN network access. The allocated address represents the PE
+          interface address configuration. As shown in <xref
+          target="ip_conn_tree"></xref>, this container can include IPv4,
+          IPv6, or both information if dual-stack is enabled. </t>
 
           <t><figure align="center" anchor="ip_conn_tree"
               title="IP Connection Subtree Structure">
@@ -1388,10 +1389,10 @@
 ]]></artwork>
             </figure></t>
 
-          <t>The IP connection container is designed to support both IPv4 and
-          IPv6. It supports three IP address assignment modes: provider DHCP,
-          DHCP relay, and static addressing. Only one mode is enabled for a
-          given service.</t>
+          <t>For both IPv4 and IPv6, the IP connection supports three IP
+          address assignment modes for customer addresses: provider DHCP, DHCP
+          relay, and static addressing. Only one mode is enabled for a given
+          service.</t>
 
           <t><xref target="ip_conn_tree_v4"></xref> shows the structure of the
           dynamic IPv4 address assignment.</t>
@@ -1401,8 +1402,7 @@
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
 |  +--rw ipv4 {vpn-common:ipv4}?
-|  |  +--rw local-address?                           inet:ipv4-address
-|  |  +--rw prefix-length?                           uint8
+|  |  +--rw local-address?                           inet:ipv4-prefix
 |  |  +--rw address-allocation-type?                 identityref
 |  |  +--rw (allocation-type)?
 |  |     +--:(provider-dhcp)
@@ -1437,7 +1437,6 @@
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
 |     +--rw local-address?                           inet:ipv6-prefix
-|     +--rw prefix-length?                           uint8
 |     +--rw address-allocation-type?                 identityref
 |     +--rw (allocation-type)?
 |        +--:(provider-dhcp)
@@ -1486,11 +1485,12 @@
 |     +--rw (allocation-type)?
 |        ...
 |        +--:(static-addresses)
-|           +--rw primary-address?     -> ../address/address-id
+|           +--rw primary-address?     -> ../address/prefix-id
 |           +--rw address* [address-id]
-|              +--rw address-id              string
-|              +--rw customer-address?       inet:ipv6-address
-...                        ]]></artwork>
+|              +--rw prefix-id              string
+|              +--rw customer-prefix?     inet:ipv6-prefix
+...                       
+]]></artwork>
           </figure>
 
           <t></t>
@@ -3423,29 +3423,9 @@ module ietf-l3vpn-ntw {
                     description
                       "IPv4-specific parameters.";
                     leaf local-address {
-                      type inet:ipv4-address;
+                      type inet:ipv4-prefix;
                       description
                         "This address is used at provider side.";
-                    }
-                    leaf prefix-length {
-                      type uint8 {
-                        range "0..32";
-                      }
-                      must '(../local-address)' {
-                        error-message
-                          "If the prefix length is specified,
-                           provider-address must also be
-                           specified.";
-                        description
-                          "If the prefix length is specified,
-                           provider-address must also be
-                           specified.";
-                      }
-                      description
-                        "Subnet prefix length expressed in bits.
-                         If not specified, or specified as zero,
-                         this means the customer leaves the actual
-                         prefix length value to the provider.";
                     }
                     leaf address-allocation-type {
                       type identityref {
@@ -3611,19 +3591,6 @@ module ietf-l3vpn-ntw {
                       description
                         "Address of the provider side.";
                     }
-                    leaf prefix-length {
-                      type uint8 {
-                        range "0..128";
-                      }
-                      description
-                        "Subnet prefix length expressed in
-                         bits.
-
-                         If not specified, or specified as
-                         zero, this means the customer leaves
-                         the actual prefix length value to
-                         the provider.";
-                    }
                     leaf address-allocation-type {
                       type identityref {
                         base address-allocation-type;
@@ -3752,27 +3719,28 @@ module ietf-l3vpn-ntw {
                              is static.";
                         }
                         description
-                          "IPv6-specific parameters.";
+                          "IPv6-specific parameters for static 
+                           allocation.";
                         leaf primary-address {
                           type leafref {
-                            path "../address/address-id";
+                            path "../address/prefix-id";
                           }
                           description
                             "Principal address of the connection";
                         }
                         list address {
-                          key "address-id";
+                          key "prefix-id";
                           description
-                            "Describes IPv6 addresses used.";
-                          leaf address-id {
+                            "Describes IPv6 prefixes used.";
+                          leaf prefix-id {
                             type string;
                             description
-                              "IPv4 Address";
+                              "An identifier of an IPv6 prefix.";
                           }
-                          leaf customer-address {
-                            type inet:ipv6-address;
+                          leaf customer-prefix {
+                            type inet:ipv6-prefix;
                             description
-                              "The IPv6 Address of the customer side.";
+                              "An IPv6 prefix of the customer side.";
                           }
                         }
                       }
@@ -4969,7 +4937,6 @@ module ietf-l3vpn-ntw {
     }
   }
 }
-
 <CODE ENDS> 
 ]]></artwork>
       </figure>
@@ -5375,8 +5342,7 @@ content-type: application/yang-data+json
         "vpn-network-access-type": "vpn-common:point-to-point",
         "ip-connection": {
           "ipv4": {
-            "local-address": "192.0.2.1",
-            "prefix-length": 32,
+            "local-address": "192.0.2.1/32",
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
@@ -5407,8 +5373,7 @@ content-type: application/yang-data+json
         },
         "ip-connection": {
           "ipv4": {
-            "local-address": "192.0.2.1",
-            "prefix-length": 32,
+            "local-address": "192.0.2.1/32",
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
@@ -5489,7 +5454,7 @@ Content-Type: application/yang-data+json
         "vpn-network-access-type": "vpn-common:loopback",
         "ip-connection": {
           "ipv6": {
-            "local-address": "2001:db8::1"
+            "local-address": "2001:db8::1/128"
           }
         }
       }      
@@ -5611,8 +5576,7 @@ Content-Type: application/yang-data+json
     "vpn-network-access-type": "vpn-common:point-to-point",
     "ip-connection": {
       "ipv4": {
-        "local-address": "203.0.113.1",
-        "prefix-length": 30,
+        "local-address": "203.0.113.1/32",
         "address-allocation-type": "static-address",
         "static-addresses": {
           "primary-address": "1",
