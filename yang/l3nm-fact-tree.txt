@@ -1,0 +1,713 @@
+module: ietf-l3vpn-ntw-fact
+  +--rw l3vpn-ntw
+     +--rw vpn-profiles
+     |  +--rw valid-provider-identifiers
+     |     +--rw external-connectivity-identifier* [id] {external-connectivity}?
+     |     |  +--rw id    string
+     |     +--rw encryption-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw qos-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw bfd-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw forwarding-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw routing-profile-identifier* [id]
+     |        +--rw id    string
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                   vpn-id
+           +--rw vpn-name?                string
+           +--rw vpn-description?         string
+           +--rw customer-name?           string
+           +--rw parent-service-id?       vpn-common:vpn-id
+           +--rw vpn-type?                identityref
+           +--rw vpn-service-topology?    identityref
+           +--rw status
+           |  +--rw admin-status
+           |  |  +--rw status?         identityref
+           |  |  +--rw last-updated?   yang:date-and-time
+           |  +--ro oper-status
+           |     +--ro status?         identityref
+           |     +--ro last-updated?   yang:date-and-time
+           +--rw vpn-instance-profiles
+           |  +--rw vpn-instance-profile* [profile-id]
+           |     +--rw profile-id                 string
+           |     +--rw role?                      identityref
+           |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
+           |     +--rw (rd-choice)?
+           |     |  +--:(directly-assigned)
+           |     |  |  +--rw rd?                  rt-types:route-distinguisher
+           |     |  +--:(pool-assigned)
+           |     |  |  +--rw rd-pool-name?        string
+           |     |  |  +--ro rd-from-pool?        rt-types:route-distinguisher
+           |     |  +--:(full-autoasigned)
+           |     |  |  +--rw auto?                empty
+           |     |  |  +--ro rd-auto?             rt-types:route-distinguisher
+           |     |  +--:(no-rd)
+           |     |     +--rw no-rd?               empty
+           |     +--rw vpn-targets
+           |     |  +--rw vpn-target* [id]
+           |     |  |  +--rw id                   int8
+           |     |  |  +--rw route-targets* [route-target]
+           |     |  |  |  +--rw route-target    rt-types:route-target
+           |     |  |  +--rw route-target-type    rt-types:route-target-type
+           |     |  +--rw vpn-policies
+           |     |     +--rw import-policy?   string
+           |     |     +--rw export-policy?   string
+           |     +--rw maximum-routes
+           |     |  +--rw selector* [address-family protocol]
+           |     |     +--rw address-family    identityref
+           |     |     +--rw protocol          identityref
+           |     |     +--rw maximum-routes?   uint32
+           |     +--rw multicast {vpn-common:multicast}?
+           |        +--rw status
+           |        |  +--rw admin-status
+           |        |  |  +--rw status?         identityref
+           |        |  |  +--rw last-updated?   yang:date-and-time
+           |        |  +--ro oper-status
+           |        |     +--ro status?         identityref
+           |        |     +--ro last-updated?   yang:date-and-time
+           |        +--rw tree-flavor*   identityref
+           |        +--rw rp
+           |        |  +--rw rp-group-mappings
+           |        |  |  +--rw rp-group-mapping* [id]
+           |        |  |     +--rw id                  uint16
+           |        |  |     +--rw provider-managed
+           |        |  |     |  +--rw enabled?                    boolean
+           |        |  |     |  +--rw rp-redundancy?              boolean
+           |        |  |     |  +--rw optimal-traffic-delivery?   boolean
+           |        |  |     |  +--rw anycast
+           |        |  |     |     +--rw local-address?    inet:ip-address
+           |        |  |     |     +--rw rp-set-address*   inet:ip-address
+           |        |  |     +--rw rp-address          inet:ip-address
+           |        |  |     +--rw groups
+           |        |  |        +--rw group* [id]
+           |        |  |           +--rw id                     uint16
+           |        |  |           +--rw (group-format)
+           |        |  |              +--:(group-prefix)
+           |        |  |              |  +--rw group-address?   inet:ip-prefix
+           |        |  |              +--:(startend)
+           |        |  |                 +--rw group-start?     inet:ip-address
+           |        |  |                 +--rw group-end?       inet:ip-address
+           |        |  +--rw rp-discovery
+           |        |     +--rw rp-discovery-type?   identityref
+           |        |     +--rw bsr-candidates
+           |        |        +--rw bsr-candidate-address*   inet:ip-address
+           |        +--rw msdp {msdp}?
+           |        |  +--rw peer?            inet:ip-address
+           |        |  +--rw local-address?   inet:ip-address
+           |        |  +--rw status
+           |        |     +--rw admin-status
+           |        |     |  +--rw status?         identityref
+           |        |     |  +--rw last-updated?   yang:date-and-time
+           |        |     +--ro oper-status
+           |        |        +--ro status?         identityref
+           |        |        +--ro last-updated?   yang:date-and-time
+           |        +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
+           |        |  +--rw static-group* [group-addr]
+           |        |  |  +--rw group-addr     rt-types:ipv4-multicast-group-address
+           |        |  |  +--rw source-addr?   rt-types:ipv4-multicast-source-address
+           |        |  +--rw max-groups?     uint32
+           |        |  +--rw max-entries?    uint32
+           |        |  +--rw version?        identityref
+           |        |  +--rw status
+           |        |     +--rw admin-status
+           |        |     |  +--rw status?         identityref
+           |        |     |  +--rw last-updated?   yang:date-and-time
+           |        |     +--ro oper-status
+           |        |        +--ro status?         identityref
+           |        |        +--ro last-updated?   yang:date-and-time
+           |        +--rw mld {vpn-common:mld and vpn-common:ipv6}?
+           |        |  +--rw static-group* [group-addr]
+           |        |  |  +--rw group-addr     rt-types:ipv6-multicast-group-address
+           |        |  |  +--rw source-addr?   rt-types:ipv6-multicast-source-address
+           |        |  +--rw max-groups?     uint32
+           |        |  +--rw max-entries?    uint32
+           |        |  +--rw version?        identityref
+           |        |  +--rw status
+           |        |     +--rw admin-status
+           |        |     |  +--rw status?         identityref
+           |        |     |  +--rw last-updated?   yang:date-and-time
+           |        |     +--ro oper-status
+           |        |        +--ro status?         identityref
+           |        |        +--ro last-updated?   yang:date-and-time
+           |        +--rw pim {vpn-common:pim}?
+           |           +--rw hello-interval?   uint8
+           |           +--rw dr-priority?      uint16
+           |           +--rw status
+           |              +--rw admin-status
+           |              |  +--rw status?         identityref
+           |              |  +--rw last-updated?   yang:date-and-time
+           |              +--ro oper-status
+           |                 +--ro status?         identityref
+           |                 +--ro last-updated?   yang:date-and-time
+           +--rw underlay-transport
+           |  +--rw (type)?
+           |     +--:(abstract)
+           |     |  +--rw transport-instance-id?   string
+           |     |  +--rw instance-type?           identityref
+           |     +--:(protocol)
+           |        +--rw protocol*                identityref
+           +--rw external-connectivity {vpn-common:external-connectivity}?
+           |  +--rw (profile)?
+           |     +--:(profile)
+           |        +--rw profile-name?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/external-connectivity-identifier/id
+           +--rw vpn-nodes
+              +--rw vpn-node* [vpn-node-id]
+                 +--rw vpn-node-id                     union
+                 +--rw description?                    string
+                 +--rw ne-id?                          string
+                 +--rw local-autonomous-system?        inet:as-number {vpn-common:rtg-bgp}?
+                 +--rw address-family?                 identityref
+                 +--rw router-id?                      inet:ip-address
+                 +--rw active-vpn-instance-profiles
+                 |  +--rw vpn-instance-profile* [profile-id]
+                 |     +--rw profile-id                 -> /l3vpn-ntw/vpn-services/vpn-service/vpn-instance-profiles/vpn-instance-profile/profile-id
+                 |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
+                 |     +--rw (rd-choice)?
+                 |     |  +--:(directly-assigned)
+                 |     |  |  +--rw rd?                  rt-types:route-distinguisher
+                 |     |  +--:(pool-assigned)
+                 |     |  |  +--rw rd-pool-name?        string
+                 |     |  |  +--ro rd-from-pool?        rt-types:route-distinguisher
+                 |     |  +--:(full-autoasigned)
+                 |     |  |  +--rw auto?                empty
+                 |     |  |  +--ro rd-auto?             rt-types:route-distinguisher
+                 |     |  +--:(no-rd)
+                 |     |     +--rw no-rd?               empty
+                 |     +--rw vpn-targets
+                 |     |  +--rw vpn-target* [id]
+                 |     |  |  +--rw id                   int8
+                 |     |  |  +--rw route-targets* [route-target]
+                 |     |  |  |  +--rw route-target    rt-types:route-target
+                 |     |  |  +--rw route-target-type    rt-types:route-target-type
+                 |     |  +--rw vpn-policies
+                 |     |     +--rw import-policy?   string
+                 |     |     +--rw export-policy?   string
+                 |     +--rw maximum-routes
+                 |     |  +--rw selector* [address-family protocol]
+                 |     |     +--rw address-family    identityref
+                 |     |     +--rw protocol          identityref
+                 |     |     +--rw maximum-routes?   uint32
+                 |     +--rw multicast {vpn-common:multicast}?
+                 |        +--rw status
+                 |        |  +--rw admin-status
+                 |        |  |  +--rw status?         identityref
+                 |        |  |  +--rw last-updated?   yang:date-and-time
+                 |        |  +--ro oper-status
+                 |        |     +--ro status?         identityref
+                 |        |     +--ro last-updated?   yang:date-and-time
+                 |        +--rw tree-flavor*   identityref
+                 |        +--rw rp
+                 |        |  +--rw rp-group-mappings
+                 |        |  |  +--rw rp-group-mapping* [id]
+                 |        |  |     +--rw id                  uint16
+                 |        |  |     +--rw provider-managed
+                 |        |  |     |  +--rw enabled?                    boolean
+                 |        |  |     |  +--rw rp-redundancy?              boolean
+                 |        |  |     |  +--rw optimal-traffic-delivery?   boolean
+                 |        |  |     |  +--rw anycast
+                 |        |  |     |     +--rw local-address?    inet:ip-address
+                 |        |  |     |     +--rw rp-set-address*   inet:ip-address
+                 |        |  |     +--rw rp-address          inet:ip-address
+                 |        |  |     +--rw groups
+                 |        |  |        +--rw group* [id]
+                 |        |  |           +--rw id                     uint16
+                 |        |  |           +--rw (group-format)
+                 |        |  |              +--:(group-prefix)
+                 |        |  |              |  +--rw group-address?   inet:ip-prefix
+                 |        |  |              +--:(startend)
+                 |        |  |                 +--rw group-start?     inet:ip-address
+                 |        |  |                 +--rw group-end?       inet:ip-address
+                 |        |  +--rw rp-discovery
+                 |        |     +--rw rp-discovery-type?   identityref
+                 |        |     +--rw bsr-candidates
+                 |        |        +--rw bsr-candidate-address*   inet:ip-address
+                 |        +--rw msdp {msdp}?
+                 |        |  +--rw peer?            inet:ip-address
+                 |        |  +--rw local-address?   inet:ip-address
+                 |        |  +--rw status
+                 |        |     +--rw admin-status
+                 |        |     |  +--rw status?         identityref
+                 |        |     |  +--rw last-updated?   yang:date-and-time
+                 |        |     +--ro oper-status
+                 |        |        +--ro status?         identityref
+                 |        |        +--ro last-updated?   yang:date-and-time
+                 |        +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
+                 |        |  +--rw static-group* [group-addr]
+                 |        |  |  +--rw group-addr     rt-types:ipv4-multicast-group-address
+                 |        |  |  +--rw source-addr?   rt-types:ipv4-multicast-source-address
+                 |        |  +--rw max-groups?     uint32
+                 |        |  +--rw max-entries?    uint32
+                 |        |  +--rw version?        identityref
+                 |        |  +--rw status
+                 |        |     +--rw admin-status
+                 |        |     |  +--rw status?         identityref
+                 |        |     |  +--rw last-updated?   yang:date-and-time
+                 |        |     +--ro oper-status
+                 |        |        +--ro status?         identityref
+                 |        |        +--ro last-updated?   yang:date-and-time
+                 |        +--rw mld {vpn-common:mld and vpn-common:ipv6}?
+                 |        |  +--rw static-group* [group-addr]
+                 |        |  |  +--rw group-addr     rt-types:ipv6-multicast-group-address
+                 |        |  |  +--rw source-addr?   rt-types:ipv6-multicast-source-address
+                 |        |  +--rw max-groups?     uint32
+                 |        |  +--rw max-entries?    uint32
+                 |        |  +--rw version?        identityref
+                 |        |  +--rw status
+                 |        |     +--rw admin-status
+                 |        |     |  +--rw status?         identityref
+                 |        |     |  +--rw last-updated?   yang:date-and-time
+                 |        |     +--ro oper-status
+                 |        |        +--ro status?         identityref
+                 |        |        +--ro last-updated?   yang:date-and-time
+                 |        +--rw pim {vpn-common:pim}?
+                 |           +--rw hello-interval?   uint8
+                 |           +--rw dr-priority?      uint16
+                 |           +--rw status
+                 |              +--rw admin-status
+                 |              |  +--rw status?         identityref
+                 |              |  +--rw last-updated?   yang:date-and-time
+                 |              +--ro oper-status
+                 |                 +--ro status?         identityref
+                 |                 +--ro last-updated?   yang:date-and-time
+                 +--rw groups
+                 |  +--rw group* [group-id]
+                 |     +--rw group-id    string
+                 +--rw status
+                 |  +--rw admin-status
+                 |  |  +--rw status?         identityref
+                 |  |  +--rw last-updated?   yang:date-and-time
+                 |  +--ro oper-status
+                 |     +--ro status?         identityref
+                 |     +--ro last-updated?   yang:date-and-time
+                 +--rw vpn-network-accesses
+                    +--rw vpn-network-access* [id]
+                       +--rw id                         vpn-common:vpn-id
+                       +--rw port-id?                   vpn-common:vpn-id
+                       +--rw description?               string
+                       +--rw vpn-network-access-type?   identityref
+                       +--rw vpn-instance-profile-id?   -> /l3vpn-ntw/vpn-services/vpn-service/vpn-nodes/vpn-node/active-vpn-instance-profiles/vpn-instance-profile/profile-id
+                       +--rw status
+                       |  +--rw admin-status
+                       |  |  +--rw status?         identityref
+                       |  |  +--rw last-updated?   yang:date-and-time
+                       |  +--ro oper-status
+                       |     +--ro status?         identityref
+                       |     +--ro last-updated?   yang:date-and-time
+                       +--rw connection
+                       |  +--rw encapsulation-type?   identityref
+                       |  +--rw logical-interface
+                       |  |  +--rw peer-reference?   uint32
+                       |  +--rw tagged-interface
+                       |  |  +--rw type?                identityref
+                       |  |  +--rw dot1q-vlan-tagged {vpn-common:dot1q}?
+                       |  |  |  +--rw tag-type?   identityref
+                       |  |  |  +--rw cvlan-id?   uint16
+                       |  |  +--rw priority-tagged
+                       |  |  |  +--rw tag-type?   identityref
+                       |  |  +--rw qinq {vpn-common:qinq}?
+                       |  |  |  +--rw tag-type?   identityref
+                       |  |  |  +--rw svlan-id    uint16
+                       |  |  |  +--rw cvlan-id    uint16
+                       |  |  +--rw qinany {vpn-common:qinany}?
+                       |  |  |  +--rw tag-type?   identityref
+                       |  |  |  +--rw svlan-id    uint16
+                       |  |  +--rw vxlan {vpn-common:vxlan}?
+                       |  |     +--rw vni-id       uint32
+                       |  |     +--rw peer-mode?   identityref
+                       |  |     +--rw peer-list* [peer-ip]
+                       |  |        +--rw peer-ip    inet:ip-address
+                       |  +--rw bearer
+                       |     +--rw bearer-reference?   string {vpn-common:bearer-reference}?
+                       |     +--rw pseudowire
+                       |     |  +--rw vcid?      uint32
+                       |     |  +--rw far-end?   union
+                       |     +--rw vpls
+                       |        +--rw vcid?      union
+                       |        +--rw far-end?   union
+                       +--rw ip-connection
+                       |  +--rw ipv4 {vpn-common:ipv4}?
+                       |  |  +--rw local-address?                           inet:ipv4-prefix
+                       |  |  +--rw address-allocation-type?                 identityref
+                       |  |  +--rw (allocation-type)?
+                       |  |     +--:(provider-dhcp)
+                       |  |     |  +--rw dhcp-server-enable?                boolean
+                       |  |     |  +--rw (address-assign)?
+                       |  |     |     +--:(number)
+                       |  |     |     |  +--rw number-of-dynamic-address?   uint16
+                       |  |     |     +--:(explicit)
+                       |  |     |        +--rw customer-addresses
+                       |  |     |           +--rw address-group* [group-id]
+                       |  |     |              +--rw group-id         string
+                       |  |     |              +--rw start-address?   inet:ipv4-address
+                       |  |     |              +--rw end-address?     inet:ipv4-address
+                       |  |     +--:(dhcp-relay)
+                       |  |     |  +--rw dhcp-relay-enable?                 boolean
+                       |  |     |  +--rw customer-dhcp-servers
+                       |  |     |     +--rw server-ip-address*   inet:ipv4-address
+                       |  |     +--:(static-addresses)
+                       |  |        +--rw primary-address?                   -> ../address/address-id
+                       |  |        +--rw address* [address-id]
+                       |  |           +--rw address-id          string
+                       |  |           +--rw customer-address?   inet:ipv4-address
+                       |  +--rw ipv6 {vpn-common:ipv6}?
+                       |     +--rw local-address?                           inet:ipv6-prefix
+                       |     +--rw address-allocation-type?                 identityref
+                       |     +--rw (allocation-type)?
+                       |        +--:(provider-dhcp)
+                       |        |  +--rw dhcp-server-enable?                boolean
+                       |        |  +--rw (address-assign)?
+                       |        |     +--:(number)
+                       |        |     |  +--rw number-of-dynamic-address?   uint16
+                       |        |     +--:(explicit)
+                       |        |        +--rw customer-addresses
+                       |        |           +--rw address-group* [group-id]
+                       |        |              +--rw group-id         string
+                       |        |              +--rw start-address?   inet:ipv6-address
+                       |        |              +--rw end-address?     inet:ipv6-address
+                       |        +--:(dhcp-relay)
+                       |        |  +--rw dhcp-relay-enable?                 boolean
+                       |        |  +--rw customer-dhcp-servers
+                       |        |     +--rw server-ip-address*   inet:ipv6-address
+                       |        +--:(static-addresses)
+                       |           +--rw primary-address?                   -> ../address/prefix-id
+                       |           +--rw address* [prefix-id]
+                       |              +--rw prefix-id          string
+                       |              +--rw customer-prefix?   inet:ipv6-prefix
+                       +--rw routing-protocols
+                       |  +--rw routing-protocol* [id]
+                       |     +--rw id                  string
+                       |     +--rw type?               identityref
+                       |     +--rw routing-profiles* [id]
+                       |     |  +--rw id      -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/routing-profile-identifier/id
+                       |     |  +--rw type?   identityref
+                       |     +--rw static
+                       |     |  +--rw cascaded-lan-prefixes
+                       |     |     +--rw ipv4-lan-prefixes* [lan next-hop] {vpn-common:ipv4}?
+                       |     |     |  +--rw lan           inet:ipv4-prefix
+                       |     |     |  +--rw lan-tag?      string
+                       |     |     |  +--rw next-hop      union
+                       |     |     |  +--rw bfd-enable?   boolean {vpn-common:bfd}?
+                       |     |     |  +--rw metric?       uint32
+                       |     |     |  +--rw preference?   uint32
+                       |     |     |  +--rw status
+                       |     |     |     +--rw admin-status
+                       |     |     |     |  +--rw status?         identityref
+                       |     |     |     |  +--rw last-updated?   yang:date-and-time
+                       |     |     |     +--ro oper-status
+                       |     |     |        +--ro status?         identityref
+                       |     |     |        +--ro last-updated?   yang:date-and-time
+                       |     |     +--rw ipv6-lan-prefixes* [lan next-hop] {vpn-common:ipv6}?
+                       |     |        +--rw lan           inet:ipv6-prefix
+                       |     |        +--rw lan-tag?      string
+                       |     |        +--rw next-hop      union
+                       |     |        +--rw bfd-enable?   boolean {vpn-common:bfd}?
+                       |     |        +--rw metric?       uint32
+                       |     |        +--rw preference?   uint32
+                       |     |        +--rw status
+                       |     |           +--rw admin-status
+                       |     |           |  +--rw status?         identityref
+                       |     |           |  +--rw last-updated?   yang:date-and-time
+                       |     |           +--ro oper-status
+                       |     |              +--ro status?         identityref
+                       |     |              +--ro last-updated?   yang:date-and-time
+                       |     +--rw bgp {vpn-common:rtg-bgp}?
+                       |     |  +--rw description?               string
+                       |     |  +--rw local-autonomous-system?   inet:as-number
+                       |     |  +--rw peer-autonomous-system     inet:as-number
+                       |     |  +--rw address-family?            identityref
+                       |     |  +--rw neighbor*                  inet:ip-address
+                       |     |  +--rw multihop?                  uint8
+                       |     |  +--rw as-override?               boolean
+                       |     |  +--rw default-route?             boolean
+                       |     |  +--rw site-of-origin?            rt-types:route-origin
+                       |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
+                       |     |  +--rw bgp-max-prefix
+                       |     |  |  +--rw max-prefix?          uint32
+                       |     |  |  +--rw warning-threshold?   decimal64
+                       |     |  |  +--rw violate-action?      enumeration
+                       |     |  |  +--rw restart-interval?    uint16
+                       |     |  +--rw bgp-timers
+                       |     |  |  +--rw keep-alive?   uint16
+                       |     |  |  +--rw hold-time?    uint16
+                       |     |  +--rw security
+                       |     |  |  +--rw enable?            boolean
+                       |     |  |  +--rw keying-material
+                       |     |  |     +--rw (option)?
+                       |     |  |        +--:(tcp-ao)
+                       |     |  |        |  +--rw enable-tcp-ao?      boolean
+                       |     |  |        |  +--rw ao-keychain?        key-chain:key-chain-ref
+                       |     |  |        +--:(md5)
+                       |     |  |        |  +--rw md5-keychain?       key-chain:key-chain-ref
+                       |     |  |        +--:(explicit)
+                       |     |  |        |  +--rw key-id?             uint32
+                       |     |  |        |  +--rw key?                string
+                       |     |  |        |  +--rw crypto-algorithm?   identityref
+                       |     |  |        +--:(ipsec)
+                       |     |  |           +--rw sa?                 string
+                       |     |  +--rw status
+                       |     |     +--rw admin-status
+                       |     |     |  +--rw status?         identityref
+                       |     |     |  +--rw last-updated?   yang:date-and-time
+                       |     |     +--ro oper-status
+                       |     |        +--ro status?         identityref
+                       |     |        +--ro last-updated?   yang:date-and-time
+                       |     +--rw ospf {vpn-common:rtg-ospf}?
+                       |     |  +--rw address-family?   identityref
+                       |     |  +--rw area-id           yang:dotted-quad
+                       |     |  +--rw metric?           uint16
+                       |     |  +--rw sham-links {vpn-common:rtg-ospf-sham-link}?
+                       |     |  |  +--rw sham-link* [target-site]
+                       |     |  |     +--rw target-site    vpn-common:vpn-id
+                       |     |  |     +--rw metric?        uint16
+                       |     |  +--rw max-lsa?          uint32
+                       |     |  +--rw security
+                       |     |  |  +--rw enable?            boolean
+                       |     |  |  +--rw keying-material
+                       |     |  |     +--rw (option)?
+                       |     |  |        +--:(auth-key-chain)
+                       |     |  |        |  +--rw key-chain?          key-chain:key-chain-ref
+                       |     |  |        +--:(auth-key-explicit)
+                       |     |  |        |  +--rw key-id?             uint32
+                       |     |  |        |  +--rw key?                string
+                       |     |  |        |  +--rw crypto-algorithm?   identityref
+                       |     |  |        +--:(ipsec)
+                       |     |  |           +--rw sa?                 string
+                       |     |  +--rw status
+                       |     |     +--rw admin-status
+                       |     |     |  +--rw status?         identityref
+                       |     |     |  +--rw last-updated?   yang:date-and-time
+                       |     |     +--ro oper-status
+                       |     |        +--ro status?         identityref
+                       |     |        +--ro last-updated?   yang:date-and-time
+                       |     +--rw isis {vpn-common:rtg-isis}?
+                       |     |  +--rw address-family?   identityref
+                       |     |  +--rw area-address      yang:dotted-quad
+                       |     |  +--rw level?            identityref
+                       |     |  +--rw metric?           uint16
+                       |     |  +--rw mode?             enumeration
+                       |     |  +--rw security
+                       |     |  |  +--rw enable?            boolean
+                       |     |  |  +--rw keying-material
+                       |     |  |     +--rw (option)?
+                       |     |  |        +--:(auth-key-chain)
+                       |     |  |        |  +--rw key-chain?          key-chain:key-chain-ref
+                       |     |  |        +--:(auth-key-explicit)
+                       |     |  |           +--rw key-id?             uint32
+                       |     |  |           +--rw key?                string
+                       |     |  |           +--rw crypto-algorithm?   identityref
+                       |     |  +--rw status
+                       |     |     +--rw admin-status
+                       |     |     |  +--rw status?         identityref
+                       |     |     |  +--rw last-updated?   yang:date-and-time
+                       |     |     +--ro oper-status
+                       |     |        +--ro status?         identityref
+                       |     |        +--ro last-updated?   yang:date-and-time
+                       |     +--rw rip {vpn-common:rtg-rip}?
+                       |     |  +--rw address-family?   identityref
+                       |     |  +--rw status
+                       |     |     +--rw admin-status
+                       |     |     |  +--rw status?         identityref
+                       |     |     |  +--rw last-updated?   yang:date-and-time
+                       |     |     +--ro oper-status
+                       |     |        +--ro status?         identityref
+                       |     |        +--ro last-updated?   yang:date-and-time
+                       |     +--rw vrrp {vpn-common:rtg-vrrp}?
+                       |        +--rw address-family?   identityref
+                       |        +--rw vrrp-group?       uint8
+                       |        +--rw backup-peer?      inet:ip-address
+                       |        +--rw priority?         uint8
+                       |        +--rw ping-reply?       boolean
+                       |        +--rw status
+                       |           +--rw admin-status
+                       |           |  +--rw status?         identityref
+                       |           |  +--rw last-updated?   yang:date-and-time
+                       |           +--ro oper-status
+                       |              +--ro status?         identityref
+                       |              +--ro last-updated?   yang:date-and-time
+                       +--rw oam
+                       |  +--rw bfd {vpn-common:bfd}?
+                       |     +--rw (holdtime)?
+                       |     |  +--:(fixed)
+                       |     |  |  +--rw fixed-value?    uint32
+                       |     |  +--:(profile)
+                       |     |     +--rw profile-name?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/bfd-profile-identifier/id
+                       |     +--rw authentication!
+                       |     |  +--rw key-chain?    key-chain:key-chain-ref
+                       |     |  +--rw meticulous?   boolean
+                       |     +--rw status
+                       |        +--rw admin-status
+                       |        |  +--rw status?         identityref
+                       |        |  +--rw last-updated?   yang:date-and-time
+                       |        +--ro oper-status
+                       |           +--ro status?         identityref
+                       |           +--ro last-updated?   yang:date-and-time
+                       +--rw security
+                       |  +--rw encryption {vpn-common:encryption}?
+                       |  |  +--rw enabled?   boolean
+                       |  |  +--rw layer?     enumeration
+                       |  +--rw encryption-profile
+                       |     +--rw (profile)?
+                       |        +--:(provider-profile)
+                       |        |  +--rw profile-name?         -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/encryption-profile-identifier/id
+                       |        +--:(customer-profile)
+                       |           +--rw customer-key-chain?   key-chain:key-chain-ref
+                       +--rw service
+                          +--rw input-bandwidth     uint64
+                          +--rw output-bandwidth    uint64
+                          +--rw mtu                 uint16
+                          +--rw qos {vpn-common:qos}?
+                          |  +--rw qos-classification-policy
+                          |  |  +--rw rule* [id]
+                          |  |     +--rw id                         string
+                          |  |     +--rw (match-type)?
+                          |  |     |  +--:(match-flow)
+                          |  |     |  |  +--rw (l3)?
+                          |  |     |  |  |  +--:(ipv4)
+                          |  |     |  |  |  |  +--rw ipv4
+                          |  |     |  |  |  |     +--rw dscp?                             inet:dscp
+                          |  |     |  |  |  |     +--rw ecn?                              uint8
+                          |  |     |  |  |  |     +--rw length?                           uint16
+                          |  |     |  |  |  |     +--rw ttl?                              uint8
+                          |  |     |  |  |  |     +--rw protocol?                         uint8
+                          |  |     |  |  |  |     +--rw ihl?                              uint8
+                          |  |     |  |  |  |     +--rw flags?                            bits
+                          |  |     |  |  |  |     +--rw offset?                           uint16
+                          |  |     |  |  |  |     +--rw identification?                   uint16
+                          |  |     |  |  |  |     +--rw (destination-network)?
+                          |  |     |  |  |  |     |  +--:(destination-ipv4-network)
+                          |  |     |  |  |  |     |     +--rw destination-ipv4-network?   inet:ipv4-prefix
+                          |  |     |  |  |  |     +--rw (source-network)?
+                          |  |     |  |  |  |        +--:(source-ipv4-network)
+                          |  |     |  |  |  |           +--rw source-ipv4-network?        inet:ipv4-prefix
+                          |  |     |  |  |  +--:(ipv6)
+                          |  |     |  |  |     +--rw ipv6
+                          |  |     |  |  |        +--rw dscp?                             inet:dscp
+                          |  |     |  |  |        +--rw ecn?                              uint8
+                          |  |     |  |  |        +--rw length?                           uint16
+                          |  |     |  |  |        +--rw ttl?                              uint8
+                          |  |     |  |  |        +--rw protocol?                         uint8
+                          |  |     |  |  |        +--rw (destination-network)?
+                          |  |     |  |  |        |  +--:(destination-ipv6-network)
+                          |  |     |  |  |        |     +--rw destination-ipv6-network?   inet:ipv6-prefix
+                          |  |     |  |  |        +--rw (source-network)?
+                          |  |     |  |  |        |  +--:(source-ipv6-network)
+                          |  |     |  |  |        |     +--rw source-ipv6-network?        inet:ipv6-prefix
+                          |  |     |  |  |        +--rw flow-label?                       inet:ipv6-flow-label
+                          |  |     |  |  +--rw (l4)?
+                          |  |     |  |     +--:(tcp)
+                          |  |     |  |     |  +--rw tcp
+                          |  |     |  |     |     +--rw sequence-number?                            uint32
+                          |  |     |  |     |     +--rw acknowledgement-number?                     uint32
+                          |  |     |  |     |     +--rw data-offset?                                uint8
+                          |  |     |  |     |     +--rw reserved?                                   uint8
+                          |  |     |  |     |     +--rw flags?                                      bits
+                          |  |     |  |     |     +--rw window-size?                                uint16
+                          |  |     |  |     |     +--rw urgent-pointer?                             uint16
+                          |  |     |  |     |     +--rw options?                                    binary
+                          |  |     |  |     |     +--rw (source-port)?
+                          |  |     |  |     |     |  +--:(source-port-range-or-operator)
+                          |  |     |  |     |     |     +--rw source-port-range-or-operator
+                          |  |     |  |     |     |        +--rw (port-range-or-operator)?
+                          |  |     |  |     |     |           +--:(range)
+                          |  |     |  |     |     |           |  +--rw lower-port    inet:port-number
+                          |  |     |  |     |     |           |  +--rw upper-port    inet:port-number
+                          |  |     |  |     |     |           +--:(operator)
+                          |  |     |  |     |     |              +--rw operator?     operator
+                          |  |     |  |     |     |              +--rw port          inet:port-number
+                          |  |     |  |     |     +--rw (destination-port)?
+                          |  |     |  |     |        +--:(destination-port-range-or-operator)
+                          |  |     |  |     |           +--rw destination-port-range-or-operator
+                          |  |     |  |     |              +--rw (port-range-or-operator)?
+                          |  |     |  |     |                 +--:(range)
+                          |  |     |  |     |                 |  +--rw lower-port    inet:port-number
+                          |  |     |  |     |                 |  +--rw upper-port    inet:port-number
+                          |  |     |  |     |                 +--:(operator)
+                          |  |     |  |     |                    +--rw operator?     operator
+                          |  |     |  |     |                    +--rw port          inet:port-number
+                          |  |     |  |     +--:(udp)
+                          |  |     |  |        +--rw udp
+                          |  |     |  |           +--rw length?                                     uint16
+                          |  |     |  |           +--rw (source-port)?
+                          |  |     |  |           |  +--:(source-port-range-or-operator)
+                          |  |     |  |           |     +--rw source-port-range-or-operator
+                          |  |     |  |           |        +--rw (port-range-or-operator)?
+                          |  |     |  |           |           +--:(range)
+                          |  |     |  |           |           |  +--rw lower-port    inet:port-number
+                          |  |     |  |           |           |  +--rw upper-port    inet:port-number
+                          |  |     |  |           |           +--:(operator)
+                          |  |     |  |           |              +--rw operator?     operator
+                          |  |     |  |           |              +--rw port          inet:port-number
+                          |  |     |  |           +--rw (destination-port)?
+                          |  |     |  |              +--:(destination-port-range-or-operator)
+                          |  |     |  |                 +--rw destination-port-range-or-operator
+                          |  |     |  |                    +--rw (port-range-or-operator)?
+                          |  |     |  |                       +--:(range)
+                          |  |     |  |                       |  +--rw lower-port    inet:port-number
+                          |  |     |  |                       |  +--rw upper-port    inet:port-number
+                          |  |     |  |                       +--:(operator)
+                          |  |     |  |                          +--rw operator?     operator
+                          |  |     |  |                          +--rw port          inet:port-number
+                          |  |     |  +--:(match-application)
+                          |  |     |     +--rw match-application?   identityref
+                          |  |     +--rw target-class-id?           string {qos}?
+                          |  +--rw qos-action
+                          |  |  +--rw rule* [id]
+                          |  |     +--rw id                     string
+                          |  |     +--rw target-class-id?       string
+                          |  |     +--rw inbound-rate-limit?    decimal64
+                          |  |     +--rw outbound-rate-limit?   decimal64
+                          |  +--rw qos-profile
+                          |     +--rw qos-profile* [profile]
+                          |        +--rw profile      -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/qos-profile-identifier/id
+                          |        +--rw direction?   identityref
+                          +--rw carrierscarrier {vpn-common:carrierscarrier}?
+                          |  +--rw signalling-type?   enumeration
+                          +--rw multicast {vpn-common:multicast}?
+                             +--rw access-type?      enumeration
+                             +--rw address-family?   identityref
+                             +--rw protocol-type?    enumeration
+                             +--rw remote-source?    boolean
+                             +--rw igmp {vpn-common:igmp}?
+                             |  +--rw static-group* [group-addr]
+                             |  |  +--rw group-addr     rt-types:ipv4-multicast-group-address
+                             |  |  +--rw source-addr?   rt-types:ipv4-multicast-source-address
+                             |  +--rw max-groups?          uint32
+                             |  +--rw max-entries?         uint32
+                             |  +--rw max-group-sources?   uint32
+                             |  +--rw version?             identityref
+                             |  +--rw status
+                             |     +--rw admin-status
+                             |     |  +--rw status?         identityref
+                             |     |  +--rw last-updated?   yang:date-and-time
+                             |     +--ro oper-status
+                             |        +--ro status?         identityref
+                             |        +--ro last-updated?   yang:date-and-time
+                             +--rw mld {vpn-common:mld}?
+                             |  +--rw static-group* [group-addr]
+                             |  |  +--rw group-addr     rt-types:ipv6-multicast-group-address
+                             |  |  +--rw source-addr?   rt-types:ipv6-multicast-source-address
+                             |  +--rw max-groups?          uint32
+                             |  +--rw max-entries?         uint32
+                             |  +--rw max-group-sources?   uint32
+                             |  +--rw version?             identityref
+                             |  +--rw status
+                             |     +--rw admin-status
+                             |     |  +--rw status?         identityref
+                             |     |  +--rw last-updated?   yang:date-and-time
+                             |     +--ro oper-status
+                             |        +--ro status?         identityref
+                             |        +--ro last-updated?   yang:date-and-time
+                             +--rw pim {vpn-common:pim}?
+                                +--rw priority?         uint8
+                                +--rw hello-interval?   uint8
+                                +--rw dr-priority?      uint16
+                                +--rw status
+                                   +--rw admin-status
+                                   |  +--rw status?         identityref
+                                   |  +--rw last-updated?   yang:date-and-time
+                                   +--ro oper-status
+                                      +--ro status?         identityref
+                                      +--ro last-updated?   yang:date-and-time
