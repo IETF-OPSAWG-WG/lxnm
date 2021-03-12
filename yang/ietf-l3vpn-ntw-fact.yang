@@ -1,6 +1,6 @@
-module ietf-l3vpn-ntw-fact {
+module ietf-l3vpn-ntw {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw-fact";
+  namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
   prefix l3nm;
 
   import ietf-vpn-common {
@@ -35,7 +35,7 @@ module ietf-l3vpn-ntw-fact {
     "WG Web:   <http://tools.ietf.org/wg/opsawg/>
      WG List:  <mailto:opsawg@ietf.org>
 
-     Editor:    Samier Barguil
+     Author:    Samier Barguil
                 <mailto:samier.barguilgiraldo.ext@telefonica.com>
      Editor:    Oscar Gonzalez de Dios
                 <mailto:oscar.gonzalezdedios@telefonica.com>
@@ -64,7 +64,7 @@ module ietf-l3vpn-ntw-fact {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-02-19 {
+  revision 2021-03-12 {
     description
       "Initial revision.";
     reference
@@ -187,7 +187,10 @@ module ietf-l3vpn-ntw-fact {
   grouping vpn-instance-profile {
     description
       "Grouping for data nodes that may be factorized
-       among many levels of the model.";
+       among many levels of the model. The grouping can
+       be used to define generic profiles at the VPN service
+       level and then called at the VPN node and VPN network
+       access levels.";
     leaf local-autonomous-system {
       if-feature "vpn-common:rtg-bgp";
       type inet:as-number;
@@ -554,15 +557,15 @@ module ietf-l3vpn-ntw-fact {
         uses vpn-common:service-status;
         container vpn-instance-profiles {
           description
-            "Container for configured VPN instance profiles.";
+            "Container for a list of VPN instance profiles.";
           list vpn-instance-profile {
             key "profile-id";
             description
-              "List of VPN instance profile.";
+              "List of VPN instance profiles.";
             leaf profile-id {
               type string;
               description
-                "VPN instance profile id.";
+                "VPN instance profile identifier.";
             }
             leaf role {
               type identityref {
@@ -663,6 +666,12 @@ module ietf-l3vpn-ntw-fact {
                   description
                     "Node's Import/Export profile.";
                 }
+                leaf router-id {
+                  type inet:ip-address;
+                  description
+                    "The router-id information can be an IPv4 or IPv6
+                     address.";
+                }
                 uses vpn-instance-profile;
               }
             }
@@ -699,14 +708,14 @@ module ietf-l3vpn-ntw-fact {
                     "Describes the type of connection, e.g.,
                      point-to-point or multipoint.";
                 }
-                leaf vpn-instance-profile-id {
+                leaf vpn-instance-profile {
                   type leafref {
                     path "/l3vpn-ntw/vpn-services/vpn-service"
                        + "/vpn-nodes/vpn-node/active-vpn-instance-profiles"
                        + "/vpn-instance-profile/profile-id";
                   }
                   description
-                    "xxx.";
+                    "An identifier of an active VPN instance profile.";
                 }
                 uses vpn-common:service-status;
                 container connection {
