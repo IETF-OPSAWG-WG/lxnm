@@ -4,7 +4,9 @@
 This document defines a common YANG module that is meant to be reused
    by various VPN-related modules such as Layer 3 VPN and Layer 2 VPN
    Network Models.
-   
+
+### Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt)
+
 ## L3 VPN Network-Oriented YANG Model
 
 The L3NM document specifies a L3VPN Network YANG Model (L3NM) to facilitate communication 
@@ -12,6 +14,8 @@ between a service orchestrator and a network
    controller/orchestrator.  Such data model provides a network-centric
    view of the L3VPN services.  The Yang model proposed is limited to
    BGP PE-based VPNs as described in RFCs 4026, 4110, and 4364.
+  
+### l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt)
    
 ## L2 VPN Network-Oriented YANG Model
 A L2VPN Network Yang Model
@@ -20,6 +24,8 @@ This document defines a YANG Data model (called, L2NM) that can be used to manag
 
 The L2SM complements the Layer 2 Service Model (RFC8466) by providing a network-centric view of the service that is internal to a Service Provider.
 
+### l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt)
+
 ##  A YANG Model for Network and VPN Service Performance Monitoring
 This document defines a YANG model for
    both Network Performance Monitoring and VPN Service Performance
@@ -27,6 +33,9 @@ This document defines a YANG model for
    on the topology at higher layer or the service topology between VPN
    sites.
    
+### PM Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-yang-vpn-service-pm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-pm/draft-ietf-opsawg-yang-vpn-service-pm.txt)
+
+
 # Contributing
 
 This repository relates to activities in the Internet Engineering Task Force
@@ -66,7 +75,4 @@ You might also like to familiarize yourself with other
 |:---:|
 | [![Build Status](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master)](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master) |
 
-# Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt)
-# l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt)
-# l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt)
-# PM Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-yang-vpn-service-pm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-pm/draft-ietf-opsawg-yang-vpn-service-pm.txt)
+
