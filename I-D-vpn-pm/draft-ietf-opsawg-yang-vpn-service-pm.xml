@@ -1,0 +1,1397 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!-- edited with XMLSPY v5 rel. 3 U (http://www.xmlspy.com)
+     by Daniel M Kohn (private) -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY rfc2119 PUBLIC "" "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<rfc category="std" docName="draft-ietf-opsawg-yang-vpn-service-pm-latest"
+     ipr="trust200902">
+  <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+
+  <?rfc toc="yes" ?>
+
+  <?rfc symrefs="yes" ?>
+
+  <?rfc sortrefs="yes"?>
+
+  <?rfc iprnotified="no" ?>
+
+  <?rfc strict="yes" ?>
+
+  <front>
+    <title abbrev="Network and VPN Service PM YANG">A YANG Model for Network
+    and VPN Service Performance Monitoring</title>
+
+    <author fullname="Bo Wu" initials="B." surname="Wu">
+      <organization>Huawei</organization>
+
+      <address>
+        <postal>
+          <street>101 Software Avenue, Yuhua District</street>
+
+          <city>Nanjing</city>
+
+          <region>Jiangsu</region>
+
+          <code>210012</code>
+
+          <country>China</country>
+        </postal>
+
+        <email>lana.wubo@huawei.com</email>
+      </address>
+    </author>
+
+    <author fullname="Qin Wu" initials="Q." surname="Wu">
+      <organization>Huawei</organization>
+
+      <address>
+        <postal>
+          <street>101 Software Avenue, Yuhua District</street>
+
+          <city>Nanjing</city>
+
+          <region>Jiangsu</region>
+
+          <code>210012</code>
+
+          <country>China</country>
+        </postal>
+
+        <email>bill.wu@huawei.com</email>
+      </address>
+    </author>
+
+    <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+      <organization>Orange</organization>
+
+      <address>
+        <postal>
+          <street>Rennes 35000</street>
+
+          <country>France</country>
+        </postal>
+
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+
+    <author fullname="Oscar Gonzalez de Dios" initials="O."
+            surname="Gonzalez de Dios">
+      <organization>Telefonica</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city>Madrid</city>
+
+          <country>ES</country>
+        </postal>
+
+        <email>oscar.gonzalezdedios@telefonica.com</email>
+      </address>
+    </author>
+
+    <author fullname="Bin Wen" initials="B" surname="Wen">
+      <organization>Comcast</organization>
+
+      <address>
+        <email>bin_wen@comcast.com</email>
+      </address>
+    </author>
+
+    <author fullname="Change Liu" initials="C" surname="Liu">
+      <organization>China Unicom</organization>
+
+      <address>
+        <email>liuc131@chinaunicom.cn</email>
+      </address>
+    </author>
+
+    <author fullname="Honglei Xu" initials="H." surname="Xu">
+      <organization>China Telecom</organization>
+
+      <address>
+        <email>xuhl.bri@chinatelecom.cn</email>
+      </address>
+    </author>
+
+    <date year="2021" />
+
+    <area>OPS Area</area>
+
+    <workgroup>OPSAWG Working Group</workgroup>
+
+    <keyword>RFC</keyword>
+
+    <keyword>Request for Comments</keyword>
+
+    <keyword>I-D</keyword>
+
+    <keyword>Internet-Draft</keyword>
+
+    <keyword>VPN Performance Measurement Telemetry</keyword>
+
+    <abstract>
+      <t>The data model defined in RFC8345 introduces vertical layering
+      relationships between networks that can be augmented to cover
+      network/service topologies. This document defines a YANG model for both
+      Network Performance Monitoring and VPN Service Performance Monitoring
+      that can be used to monitor and manage network performance on the
+      topology at higher layer or the service topology between VPN sites.</t>
+
+      <t>This document does not define metrics for network performance or
+      mechanisms for measuring network performance. The YANG model defined in
+      this document is designed as an augmentation to the network topology
+      YANG model defined in RFC 8345 and draws on relevant YANG types defined
+      in RFC 6991, RFC 8299, RFC 8345, and RFC 8532.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="intro" title="Introduction">
+      <t><xref target="RFC4176"></xref> provides a framework for L3VPN
+      operations and management and specifies that performance management is
+      required after service configuration. This document defines a YANG Model
+      for both network performance monitoring and VPN service performance
+      monitoring that can be used to monitor and manage network performance on
+      the topology level or the service topology between VPN sites.</t>
+
+      <t>This document does not introduce new metrics for network performance
+      or mechanisms for measuring network performance, but uses the existing
+      mechanisms and statistics to show the performance monitoring statistics
+      at the network and service layers. The YANG model defined in this
+      document is designed as an augmentation to the network topology YANG
+      model defined in <xref target="RFC8345"></xref> and draws on relevant
+      YANG types defined in <xref target="RFC6991"></xref>, <xref
+      target="RFC8299"></xref>, <xref target="RFC8345"></xref>, and <xref
+      target="RFC8532"></xref>.</t>
+    </section>
+
+    <section title="Terminology">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in BCP 14
+      <xref target="RFC2119"></xref><xref target="RFC8174"></xref> when, and
+      only when, they appear in all capitals, as shown here.</t>
+
+      <t>Tree diagrams used in this document follow the notation defined in
+      <xref target="RFC8340"></xref>.</t>
+    </section>
+
+    <section title="Network and VPN Service Performance Monitoring Model Usage">
+      <t>Models are key for automatic management operations. According to
+      <xref target="I-D.ietf-opsawg-model-automation-framework"></xref> ,
+      together with service and network models, performance measurement
+      telemetry model can monitor network performance to meet specific service
+      SLA requirements. The model defined in this document is to derive VPN or
+      network level performance data based on lower-level data collected via
+      monitoring counters in the devices.</t>
+
+      <figure anchor="fig1" title="Reference Architecture">
+        <artwork><![CDATA[                            +---------------+
+                            |   Customer    |
+                            +---------------+
+            Customer Service Models |
+                                    |
+                            +-----------------+
+                            |    Service      |
+                            |  Orchestration  |
+                            +-----------------+
+            Service Network Models | | Network and VPN Service PM Model
+                                   | |
+                            +-----------------+
+                            |     Network     |
+                            |   Controller    |
+                            +-------|----------+
+                                    |
+            +------------------------------------------------+
+                                  Network
+]]></artwork>
+      </figure>
+
+      <t>As shown in <xref target="fig1"></xref> , the network and VPN service
+      performance monitoring model can be used to expose some performance
+      information to the above layer. The information can be used by the
+      orchestrator to subscribe to performance data. The controller will then
+      notify the orchestrator of corresponding parameter changes.</t>
+
+      <t>Before using the Network and VPN Service PM Model, the mapping
+      between the VPN Service topology and the underlying physical network has
+      been setup, and the performance monitoring data per link in the
+      underlying network can be collected using network performance
+      measurement method such as MPLS Loss and Delay Measurement <xref
+      target="RFC6374"></xref>.</t>
+
+      <t>The performance monitoring information reflecting the quality of the
+      Network or VPN service such as end to end network performance data
+      between source node and destination node in the network or between VPN
+      sites can be aggregated or calculated using, for example, PCEP solution
+      [RFC8233] [RFC7471] [RFC8570] [RFC8571] or LMAP <xref
+      target="RFC8194"></xref>.</t>
+
+      <t>The measurement interval and report interval associated with these
+      performance data usually depends on configuration parameters.</t>
+
+      <section title="Retrieval via Pub/Sub Mechanism">
+        <t>Some applications such as service-assurance applications, which
+        must maintain a continuous view of operational data and state, can use
+        subscription model <xref target="RFC8641"></xref> to subscribe to the
+        specific Network performance data or VPN service performance data they
+        are interested in, at the data source.</t>
+
+        <t>The data source can then use the Network and VPN service assurance
+        model defined in this document and the YANG Push model <xref
+        target="RFC8641"></xref> to distribute specific telemetry data to
+        target recipients.</t>
+      </section>
+
+      <section title="On demand Retrieval via RPC Model">
+        <t>To obtain a snapshot of a large amount of performance data from a
+        network element (including network controllers), service-assurance
+        applications may use polling-based methods such as RPC model to fetch
+        performance data on demand.</t>
+      </section>
+    </section>
+
+    <section title="Description of the Data Model">
+      <t>This document defines the YANG module "ietf-network-vpn-pm", which is
+      an augmentation to the "ietf-network" and "ietf-network-topology".</t>
+
+      <t>The performance monitoring data is augmented to service topology as
+      shown in <xref target="aug"></xref>.</t>
+
+      <figure anchor="aug" title="Module Augmentation">
+        <artwork><![CDATA[+----------------------+          +-----------------------+
+|ietf-network          |          |Network and VPN Service|
+|ietf-network-topology |<---------|Performance Monitoring |
++----------------------+ augments |        Model          |
+                                  +-----------------------+]]></artwork>
+      </figure>
+
+      <section anchor="layering"
+               title="Layering Relationship Between Multiple Layers of Topology">
+        <t><xref target="RFC8345"></xref> defines a YANG <xref
+        target="RFC7950"></xref> data model for network/service topologies and
+        inventories. The service topology described in <xref
+        target="RFC8345"></xref> includes the virtual topology for a service
+        layer above Layer 1 (L1), Layer 2 (L2), and Layer 3 (L3). This service
+        topology has the generic topology elements of node, link, and
+        terminating point. One typical example of a service topology is
+        described in Figure 3 of <xref target="RFC8345"></xref>: two VPN
+        service topologies instantiated over a common L3 topology. Each VPN
+        service topology is mapped onto a subset of nodes from the common L3
+        topology.</t>
+
+        <t><xref target="fig3"></xref> illustrates an example of a topology
+        mapping between the VPN service topology and an underlying
+        network:</t>
+
+        <figure anchor="fig3"
+                title="Example of topology mapping between VPN Service Topo and Underlying network">
+          <artwork><![CDATA[                VPN-SVC 1           VPN-SVC 2
+                   /                     \
+      VPN-Service-topology 1     VPN-Service-topology-2
+          /     |      \            /     |      \
+     Site-1A Site-1B Site1-C    Site-2A Site-2B Site-2C    Top-Down
+       |          |       |       |         |     |     Service Topology
+       CE         CE     CE      CE        CE     CE
+       |          |       |       |         |     |
+       PE         PE     PE      PE        PE     PE
+   ====|==========|=======|=======|=========|=====|====================
+       +-------+  |        \    /           /     |
+    Bottom-up  |  |         \ /           /       |
+    Network    |  |         /\           /        |
+    topology   |  |       /    \        |         |
+               |  |      |       |      |         |
+           node1 node2 node3   node4   node5    node6]]></artwork>
+        </figure>
+
+        <t>As shown in <xref target="fig3"></xref>, two VPN services
+        topologies are both built on top of one common underlying physical
+        network:<list style="symbols">
+            <t>VPN-SVC 1: supporting "hub-spoke" communications for Customer 1
+            connecting the customer's access at 3 sites. Site-1A, Site-1B, and
+            Site-1C are connected to PEs that are mapped to nodes 1, 2, and 3
+            in the underlying physical network. <vspace
+            blankLines="0" />Site-1 A plays the role of hub while Site-2 B and
+            C plays the role of spoke.</t>
+
+            <t>VPN-SVC 2: supporting "hub-spoke disjoint" communications for
+            Customer 2 connecting the customer's access at 3 sites. Site-2A,
+            Site-2B, and Site-2C are connected to PEs that are mapped to nodes
+            4, 5, and 6 in the underlying physical network. <vspace
+            blankLines="1" />Site-2 A and B play the role of hub while Site-2
+            C plays the role of spoke.</t>
+          </list></t>
+
+        <t></t>
+      </section>
+
+      <section title="Network Level">
+        <t>For network performance monitoring, the attributes of "Network
+        Level" that defined in <xref target="RFC8345"></xref> do not need to
+        be extended.</t>
+
+        <t>For VPN service performance monitoring, this document defines some
+        new network service type: "L3VPN, L2VPN". When a network topology data
+        instance contains the L3VPN or L2VPN network type, it represents an
+        VPN instance that can perform performance monitoring.</t>
+
+        <t>This model defines only the following minimal set of Network level
+        network topology attributes:<list style="symbols">
+            <t>"vpn-id": Refers to an identifier of VPN service
+            (e.g.,L3NM<xref target="I-D.ietf-opsawg-l3sm-l3nm"></xref>). This
+            identifier allows to correlate the performance status with the
+            network service configuration.</t>
+
+            <t>"vpn-topo": The type of VPN service topology, this model
+            supports "any-to-any", "Hub and Spoke" (where Hubs can exchange
+            traffic), and "Hub and Spoke disjoint" (where Hubs cannot exchange
+            traffic). <xref target="RFC8299"></xref> defines a YANG model for
+            L3VPN Service Delivery. Three types of VPN service topologies are
+            supported in : "any to any", "hub and spoke", and "hub and spoke
+            disjoint". These VPN topology types can be used to describe how
+            VPN sites communicate with each other.</t>
+          </list></t>
+
+        <t><figure anchor="ntree"
+            title="Network Level View of the hierarchies">
+            <artwork><![CDATA[module: ietf-network-vpn-pm
+  augment /nw:networks/nw:network/nw:network-types:
+    +--rw network-service-type!
+       +--rw network-service-type?   identityref
+  augment /nw:networks/nw:network:
+    +--rw vpn-topo-attributes
+       +--rw vpn-id?    vpn-common:vpn-id
+       +--rw vpn-topology?   identityref   
+]]></artwork>
+          </figure></t>
+      </section>
+
+      <section title="Node Level">
+        <t>For network performance monitoring, the attributes of "Node Level"
+        that defined in [RFC8345] do not need to be extended.</t>
+
+        <t>For VPN service performance monitoring, this model defines only the
+        following minimal set of Node level network topology attributes:</t>
+
+        <t><list style="symbols">
+            <t>"node-type" (Attribute): Indicates the type of the node, such
+            as PE or ASBR. This "node-type" can be used to report performance
+            metric between any two nodes each with specific node-type.</t>
+
+            <t>"site-id" (Constraint): Uniquely identifies the site within the
+            overall network infrastructure.</t>
+
+            <t>"site-role" (Constraint): Defines the role of the site in a
+            particular VPN topology.</t>
+
+            <t>"vpn-summary-statistics": IPv4 statistics, and IPv6 statistics
+            have been specified separately. And MAC statistics could be
+            extended for L2VPN.</t>
+          </list></t>
+
+        <t><figure anchor="nodetree"
+            title="Node Level View of the hierarchies">
+            <artwork><![CDATA[  augment /nw:networks/nw:network/nw:node:
+    +--rw node-attributes
+    |  +--rw node-type?   identityref
+    |  +--rw site-id?     string
+    |  +--rw site-role?   identityref
+    +--rw vpn-summary-statistics
+       +--rw ipv4
+       |  +--rw total-routes?          uint32
+       |  +--rw total-active-routes?   uint32
+       +--rw ipv6
+          +--rw total-routes?          uint32
+          +--rw total-active-routes?   uint32
+]]></artwork>
+          </figure></t>
+
+        <t></t>
+      </section>
+
+      <section title="Link and Termination Point Level">
+        <t>The link nodes are classified into two types: one is topology link
+        defined in <xref target="RFC8345"></xref>, and the other is abstract
+        link of a VPN between PEs.</t>
+
+        <t>The performance data of the link is a collection of counters that
+        report the performance status. The data for the topology link can be
+        based on BGP-LS <xref target="RFC8571"></xref>. The statistics of the
+        VPN abstract links can be collected based on VPN OAM mechanisms, e.g.
+        TWAMP etc. Alternatively, the data can base on the underlay technology
+        OAM mechanism, for example, GRE tunnel OAM.</t>
+
+        <t><figure anchor="ltree"
+            title="Link and Termination point Level View of the hierarchies">
+            <artwork><![CDATA[  augment /nw:networks/nw:network/nt:link:
+    +--rw link-type?   identityref
+  augment /nw:networks/nw:network/nt:link:
+    +--rw low-percentile?              percentile
+    +--rw middle-percentile?           percentile
+    +--rw high-percentile?             percentile
+    +--rw reference-time?              yang:date-and-time
+    +--rw measurement-interval?        uint32
+    +--ro link-telemetry-attributes
+       +--ro loss-statistics
+       |  +--ro packet-loss-count?          yang:counter32
+       |  +--ro packet-reorder-count?       yang:counter32
+       |  +--ro packets-out-of-seq-count?   yang:counter32
+       |  +--ro packets-dup-count?          yang:counter32
+       |  +--ro loss-ratio?                 percentage
+       +--ro delay-statistics
+       |  +--ro direction?                 identityref
+       |  +--ro unit-value?                identityref
+       |  +--ro min-delay-value?           yang:gauge64
+       |  +--ro max-delay-value?           yang:gauge64
+       |  +--ro low-delay-percentile?      yang:gauge64
+       |  +--ro middle-delay-percentile?   yang:gauge64
+       |  +--ro high-delay-percentile?     yang:gauge64
+       +--ro jitter-statistics
+          +--ro unit-value?                 identityref
+          +--ro min-jitter-value?           yang:gauge32
+          +--ro max-jitter-value?           yang:gauge32
+          +--ro low-jitter-percentile?      yang:gauge32
+          +--ro middle-jitter-percentile?   yang:gauge32
+          +--ro high-jitter-percentile?     yang:gauge32
+  augment /nw:networks/nw:network/nw:node/nt:termination-point:
+    +--ro tp-telemetry-attributes
+       +--ro inbound-octets?             yang:counter64
+       +--ro inbound-unicast?            yang:counter64
+       +--ro inbound-nunicast?           yang:counter64
+       +--ro inbound-discards?           yang:counter32
+       +--ro inbound-errors?             yang:counter32
+       +--ro inbound-unknown-protocol?   yang:counter32
+       +--ro outbound-octets?            yang:counter64
+       +--ro outbound-unicast?           yang:counter64
+       +--ro outbound-nunicast?          yang:counter64
+       +--ro outbound-discards?          yang:counter32
+       +--ro outbound-errors?            yang:counter32
+       +--ro outbound-qlen?              uint32 ]]></artwork>
+          </figure></t>
+
+        <t>For the nodes of the link in the figure, this module defines the
+        following minimal set of link level performance attributes:<list
+            style="symbols">
+            <t>"link-type": Indicates the abstract link of a VPN, such as GRE
+            or IP-in-IP. The leaf refers to an identifier of VPN Common
+            "underlay-transport" <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref>, which describes the
+            transport technology to carry the traffic of the VPN service.</t>
+
+            <t>Percentile parameters: The module supports reporting delay and
+            jitter metric by percentile values. By default, low percentile
+            (10th percentile), mid percentile (50th percentile), high
+            percentile (90th percentile) are used. Setting a percentile into
+            0.00 indicates the client is not interested in receiving
+            particular percentile. If all percentile nodes are set to 0.00,
+            this represents that no percentile related nodes will be reported
+            for a given performance metric (e.g. one-way delay, one-way delay
+            variation) and only peak/min values will be reported. For example,
+            a client can inform the server that it is interested in receiving
+            only high percentiles. Then for a given link, at a given
+            "reference-time" &ldquo;measurement-interval", the
+            high-delay-percentile and high-jitter-percentile will be
+            reported.</t>
+
+            <t>Loss Statistics: A set of loss statistics attributes that are
+            used to measure end to end loss between VPN sites or between any
+            two network nodes. The exact loss value or the loss percentage can
+            be reported.</t>
+
+            <t>Delay Statistics: A set of delay statistics attributes that are
+            used to measure end to end latency between VPN sites or between
+            any two network nodes. The peak/min values or percentile values
+            can be reported.</t>
+
+            <t>Jitter Statistics: A set of IP Packet Delay Variation <xref
+            target="RFC3393"></xref> statistics attributes that are used to
+            measure end to end jitter between VPN sites or between any two
+            network nodes. The peak/min values or percentile values can be
+            reported.</t>
+          </list></t>
+
+        <t>For the nodes of &rdquo;termination points&ldquo; in the figure,
+        the module defines the following minimal set of statistics: <list
+            style="symbols">
+            <t>Inbound statistics: A set of inbound statistics attributes that
+            are used to measure the inbound statistics of the termination
+            point, such as received packets, received packets with errors,
+            etc.</t>
+
+            <t>Outbound statistics: A set of outbound statistics attributes
+            that are used to measure the outbound statistics of the
+            termination point, such as sent packets, packets that could not be
+            sent due to errors, etc.</t>
+          </list></t>
+      </section>
+    </section>
+
+    <section title="Example of I2RS Pub/Sub Retrieval">
+      <t>This example shows the way for a client to subscribe for the
+      Performance monitoring information between node A and node B in the L3
+      network topology built on top of the underlying network . The
+      performance monitoring parameter that the client is interested in is end
+      to end loss attribute.</t>
+
+      <figure>
+        <artwork><![CDATA[    <rpc netconf:message-id="101"
+       xmlns:netconf="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <establish-subscription
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
+          <stream-subtree-filter>
+             <networks 
+        xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
+                <network>
+                 <network-id>l3-network</network-id>
+                 <network-service-type 
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                    L3VPN
+                 </network-service-type>
+                   <node>
+                     <node-id>A</node-id>
+                     <node-attributes 
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                       <node-type>pe</node-type>
+                     </node-attribtues>
+                     <termination-point 
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                      <tp-id>1-0-1</tp-id>
+                      <tp-telemetry-attributes 
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                       <inbound-octets>150</inbound-octets>
+                       <outbound-octets>100</outbound-octets>
+                      </tp-telemetry-attributes>
+                     </termination-point>
+                   </node>
+                   <node>
+                     <node-id>B</node-id>
+                     <node-attributes 
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                      <node-type>pe</node-type>
+                     </node-attribtues>
+                       <termination-point 
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                         <tp-id>2-0-1</tp-id>
+                         <tp-telemetry-attributes 
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                           <inbound-octets>150</inbound-octets>
+                           <outbound-octets>100</outbound-octets>
+                         </tp-telemetry-attributes>
+                      </termination-point>
+                    </node>
+                    <link 
+             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                     <link-id>A-B</link-id>
+                      <source>
+                        <source-node>A</source-node>
+                      </source>
+                      <destination>
+                       <dest-node>B</dest-node>
+                      </destination>
+                      <link-type>mpls-te</link-type>
+                      <link-telemetry-attributes
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                        <loss-statistics>
+                         <packet-loss-count>100</packet-loss-count>
+                        </loss-statistics>
+                      </link-telemetry-attributes>
+                    </link>
+                </network>
+              </networks>
+           </stream-subtree-filter>
+         <period 
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push:1.0">
+          500
+       </period>
+       </establish-subscription>
+    </rpc>]]></artwork>
+      </figure>
+    </section>
+
+    <section title="Example of RPC-based Retrieval">
+      <t>This example shows the way for the client to use RPC model to fetch
+      performance data on demand, e.g., the client requests
+      "packet-loss-count" between PE1 in site 1 and PE2 in site 2 belonging to
+      the same VPN1.</t>
+
+      <figure>
+        <artwork><![CDATA[    
+ <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+        message-id="1">
+   <report 
+        xmlns="urn:ietf:params:xml:ns:yang:example-service-pm-report">
+      <networks xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
+        <network>
+         <network-id>vpn1</network-id>
+         <node>
+          <node-id>A</node-id>
+          <node-attributes 
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+            <node-type>pe</node-type>
+          </node-attribtues>
+          <termination-point 
+             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+           <tp-id>1-0-1</tp-id>
+           <tp-telemetry-attributes 
+              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+            <inbound-octets>100</inbound-octets>
+            <outbound-octets>150</outbound-octets>
+           </tp-telemetry-attributes>
+          </termination-point>  
+         </node>
+         <node>
+          <node-id>B</node-id>
+          <node-attributes 
+              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+            <node-type>pe</node-type>
+          </node-attribtues>
+          <termination-point 
+             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+           <tp-id>2-0-1</tp-id>
+           <tp-telemetry-attributes 
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+            <inbound-octets>150</inbound-octets>
+            <outbound-octets>100</outbound-octets>
+           </tp-telemetry-attributes>
+          </termination-point>  
+         </node>
+         <link> 
+         <link-id>A-B</link-id>
+          <source>
+           <source-node>A</source-node>
+          </source>
+          <destination>
+           <dest-node>B</dest-node>
+          </destination>
+         <link-type>mpls-te</link-type>
+          <telemetry-attributes 
+             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-pm">
+           <loss-statistics>
+            <packet-loss-count>120</packet-loss-count>
+           </loss-statistics>
+          </telemetry-attributes>
+         </link>
+       </network>
+     </report>
+   </rpc> ]]></artwork>
+      </figure>
+    </section>
+
+    <section title="Network and VPN Service Assurance YANG Module">
+      <t>This module uses types defined in <xref target="RFC8345"></xref>,
+      <xref target="RFC8299"></xref> and <xref target="RFC8532"></xref>.</t>
+
+      <figure>
+        <artwork><![CDATA[<CODE BEGINS> file "ietf-network-vpn-pm@2021-01-15.yang"
+module ietf-network-vpn-pm {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm";
+  prefix nvp;
+
+  import ietf-yang-types {
+    prefix yang;
+    reference
+      "RFC 6991: Common YANG Types.";
+  }
+  import ietf-vpn-common {
+    prefix vpn-common;
+  }
+  import ietf-network {
+    prefix nw;
+    reference
+      "Section 6.1 of RFC 8345: A YANG Data Model for Network
+       Topologies";
+  }
+  import ietf-network-topology {
+    prefix nt;
+    reference
+      "Section 6.2 of RFC 8345: A YANG Data Model for Network
+       Topologies";
+  }
+  import ietf-lime-time-types {
+    prefix lime;
+    reference
+      "RFC 8532: Generic YANG Data Model for the Management of
+       Operations, Administration, and Maintenance (OAM) Protocols
+       That Use Connectionless Communications";
+  }
+
+  organization
+    "IETF OPSAWG Working Group";
+  contact
+    "Editor: Qin Wu
+             <bill.wu@huawei.com>
+     Editor: Bo Wu
+             <lana.wubo@huawei.com>
+     Editor: Mohamed Boucadair
+             <mohamed.boucadair@orange.com>";
+  description
+    "This module defines a model for Network and VPN Service Performance
+     monitoring.
+
+     Copyright (c) 2021 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Simplified BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (http://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX; see
+     the RFC itself for full legal notices.";
+
+  revision 2021-01-15 {
+    description
+      "Initial revision.";
+    reference
+      "RFC XXXX: A YANG Model for Network and VPN Service Performance
+                 Monitoring";
+  }
+
+  identity pe {
+    base vpn-common:role;
+    description
+      "Identity for PE type";
+  }
+
+  identity ce {
+    base vpn-common:role;
+    description
+      "Identity for CE type";
+  }
+
+  identity asbr {
+    base vpn-common:role;
+    description
+      "Identity for ASBR type";
+  }
+
+  identity p {
+    base vpn-common:role;
+    description
+      "Identity for P type";
+  }
+
+  identity link-type {
+    base vpn-common:protocol-type;
+    description
+      "Base identity for link type, e.g.,GRE, MPLS TE, VXLAN.";
+  }
+
+  identity VXLAN {
+    base link-type;
+    description
+      "Base identity for VXLAN Tunnel.";
+  }
+
+  identity ip-in-ip {
+    base link-type;
+    description
+      "Base identity for IP in IP Tunnel.";
+  }
+
+  identity direction {
+    description
+      "Base Identity for measurement direction including
+       one way measurement and two way measurement.";
+  }
+
+  identity one-way {
+    base direction;
+    description
+      "Identity for one way measurement.";
+  }
+
+  identity two-way {
+    base direction;
+    description
+      "Identity for two way measurement.";
+  }
+
+  typedef percentage {
+    type decimal64 {
+      fraction-digits 5;
+      range "0..100";
+    }
+    description
+      "Percentage.";
+  }
+
+  typedef percentile {
+    type decimal64 {
+      fraction-digits 5;
+    }
+    description
+      "The percentile is a statistical value that indicates that a
+       certain percentage of a set of data falls below it.";
+  }
+
+  grouping vpn-summary-statistics {
+    description
+      "VPN Statistics grouping used for network topology
+       augmentation.";
+    container vpn-summary-statistics {
+      description
+        "Container for VPN summary statistics.";
+      container ipv4 {
+        leaf total-routes {
+          type uint32;
+          description
+            "Total routes for the VPN.";
+        }
+        leaf total-active-routes {
+          type uint32;
+          description
+            "Total active routes for the VPN.";
+        }
+        description
+          "IPv4-specific parameters.";
+      }
+      container ipv6 {
+        leaf total-routes {
+          type uint32;
+          description
+            "Total routes for the VPN.";
+        }
+        leaf total-active-routes {
+          type uint32;
+          description
+            "Total active routes for the VPN.";
+        }
+        description
+          "IPv6-specific parameters.";
+      }
+    }
+  }
+
+  grouping link-error-statistics {
+    description
+      "Grouping for per link error statistics.";
+    container loss-statistics {
+      description
+        "Per link loss statistics.";
+      leaf packet-loss-count {
+        type yang:counter32;
+        description
+          "Total received packet drops count.";
+      }
+      leaf packet-reorder-count {
+        type yang:counter32;
+        description
+          "Total received packet reordered count.";
+      }
+      leaf packets-out-of-seq-count {
+        type yang:counter32;
+        description
+          "Total received out of sequence count.";
+      }
+      leaf packets-dup-count {
+        type yang:counter32;
+        description
+          "Total received packet duplicates count.";
+      }
+      leaf loss-ratio {
+        type percentage;
+        description
+          "Loss ratio of the packets. Express as percentage
+           of packets lost with respect to packets sent.";
+      }
+    }
+  }
+
+  grouping link-delay-statistics {
+    description
+      "Grouping for per link delay statistics";
+    container delay-statistics {
+      description
+        "Link delay summarised information. By default,
+         one way measurement protocol (e.g., OWAMP) is used
+         to measure delay.";
+      leaf direction {
+        type identityref {
+          base direction;
+        }
+        default "one-way";
+        description
+          "Define measurement direction including one way
+           measurement and two way measurement.";
+      }
+      leaf unit-value {
+        type identityref {
+          base lime:time-unit-type;
+        }
+        default "lime:milliseconds";
+        description
+          "Time units, where the options are s, ms, ns, etc.";
+      }
+      leaf min-delay-value {
+        type yang:gauge64;
+        description
+          "Minimum delay value observed.";
+      }
+      leaf max-delay-value {
+        type yang:gauge64;
+        description
+          "Maximum delay value observed.";
+      }
+      leaf low-delay-percentile {
+        type yang:gauge64;
+        description
+          "Low percentile of the delay observed with
+           specific measurement method.";
+      }
+      leaf middle-delay-percentile {
+        type yang:gauge64;
+        description
+          "Middle percentile of the delay observed with
+           specific measurement method.";
+      }
+      leaf high-delay-percentile {
+        type yang:gauge64;
+        description
+          "High percentile of the delay observed with
+           specific measurement method.";
+      }
+    }
+  }
+
+  grouping link-jitter-statistics {
+    description
+      "Grouping for per link jitter statistics";
+    container jitter-statistics {
+      description
+        "Link jitter summarised information. By default,
+         jitter is measured using IP Packet Delay Variation
+         (IPDV).";
+      leaf unit-value {
+        type identityref {
+          base lime:time-unit-type;
+        }
+        default "lime:milliseconds";
+        description
+          "Time units, where the options are s, ms, ns, etc.";
+      }
+      leaf min-jitter-value {
+        type yang:gauge32;
+        description
+          "Minimum jitter value observed.";
+      }
+      leaf max-jitter-value {
+        type yang:gauge32;
+        description
+          "Maximum jitter value observed.";
+      }
+      leaf low-jitter-percentile {
+        type yang:gauge32;
+        description
+          "Low percentile of the jitter observed.";
+      }
+      leaf middle-jitter-percentile {
+        type yang:gauge32;
+        description
+          "Middle percentile of the jitter observed.";
+      }
+      leaf high-jitter-percentile {
+        type yang:gauge32;
+        description
+          "High percentile of the jitter observed.";
+      }
+    }
+  }
+
+  grouping tp-svc-telemetry {
+    leaf inbound-octets {
+      type yang:counter64;
+      description
+        "The total number of octets received on the
+         interface, including framing characters.";
+    }
+    leaf inbound-unicast {
+      type yang:counter64;
+      description
+        "Inbound unicast packets were received, and delivered
+         to a higher layer during the last period.";
+    }
+    leaf inbound-nunicast {
+      type yang:counter64;
+      description
+        "The number of non-unicast (i.e., subnetwork-
+         broadcast or subnetwork-multicast) packets
+         delivered to a higher-layer protocol.";
+    }
+    leaf inbound-discards {
+      type yang:counter32;
+      description
+        "The number of inbound packets which were chosen
+         to be discarded even though no errors had been
+         detected to prevent their being deliverable to a
+         higher-layer protocol.";
+    }
+    leaf inbound-errors {
+      type yang:counter32;
+      description
+        "The number of inbound packets that contained
+         errors preventing them from being deliverable to a
+         higher-layer protocol.";
+    }
+    leaf inbound-unknown-protocol {
+      type yang:counter32;
+      description
+        "The number of packets received via the interface
+         which were discarded because of an unknown or
+         unsupported protocol.";
+    }
+    leaf outbound-octets {
+      type yang:counter64;
+      description
+        "The total number of octets transmitted out of the
+         interface, including framing characters.";
+    }
+    leaf outbound-unicast {
+      type yang:counter64;
+      description
+        "The total number of packets that higher-level
+         protocols requested be transmitted to a
+         subnetwork-unicast address, including those that
+         were discarded or not sent.";
+    }
+    leaf outbound-nunicast {
+      type yang:counter64;
+      description
+        "The total number of packets that higher-level
+         protocols requested be transmitted to a non-
+         unicast (i.e., a subnetwork-broadcast or
+         subnetwork-multicast) address, including those
+         that were discarded or not sent.";
+    }
+    leaf outbound-discards {
+      type yang:counter32;
+      description
+        "The number of outbound packets which were chosen
+         to be discarded even though no errors had been
+         detected to prevent their being transmitted.  One
+         possible reason for discarding such a packet could
+         be to free up buffer space.";
+    }
+    leaf outbound-errors {
+      type yang:counter32;
+      description
+        "The number of outbound packets that contained
+         errors preventing them from being deliverable to a
+         higher-layer protocol.";
+    }
+    leaf outbound-qlen {
+      type uint32;
+      description
+        " Length of the queue of the interface from where
+          the packet is forwarded out.  The queue depth could
+           be the current number of memory buffers used by the
+          queue and a packet can consume one or more memory buffers
+          thus constituting device-level information.";
+    }
+    description
+      "Grouping for interface service telemetry.";
+  }
+
+  augment "/nw:networks/nw:network/nw:network-types" {
+    description
+      "Defines the service topologyies types";
+    container network-service-type {
+      presence "Indicates Network service topology";
+      leaf network-service-type {
+        type identityref {
+          base vpn-common:service-type;
+        }
+        description
+          "The presence identifies the network service type,
+           e.g., L3VPN, L2VPN, etc.";
+      }
+      description
+        "Container for vpn service type.";
+    }
+  }
+
+  augment "/nw:networks/nw:network" {
+    when 'nw:network-types/nvp:network-service-type' {
+      description
+        "Augment only for VPN Network topology.";
+    }
+    description
+      "Augment the network with service topology attributes";
+    container vpn-topo-attributes {
+      leaf vpn-id {
+        type vpn-common:vpn-id;
+        description
+          "Pointer to the parent VPN service(e.g., L3NM),
+           if any.";
+      }
+      leaf vpn-topology {
+        type identityref {
+          base vpn-common:vpn-topology;
+        }
+        description
+          "VPN service topology, e.g., hub-spoke, any-to-any,
+           hub-spoke-disjoint";
+      }
+      description
+        "Container for vpn topology attributes.";
+    }
+  }
+
+  augment "/nw:networks/nw:network/nw:node" {
+    when '../nw:network-types/nvp:network-service-type' {
+      description
+        "Augment only for VPN Network topology.";
+    }
+    description
+      "Augment the network node with service topology attributes";
+    container node-attributes {
+      leaf node-type {
+        type identityref {
+          base vpn-common:role;
+        }
+        description
+          "Node type, e.g., PE, P, ASBR.";
+      }
+      leaf site-id {
+        type string;
+        description
+          "Associated vpn site";
+      }
+      leaf site-role {
+        type identityref {
+          base vpn-common:role;
+        }
+        default "vpn-common:any-to-any-role";
+        description
+          "Role of the site in the VPN.";
+      }
+      description
+        "Container for service topology attributes.";
+    }
+    uses vpn-summary-statistics;
+  }
+
+  augment "/nw:networks/nw:network/nt:link" {
+    when '../nw:network-types/nvp:network-service-type' {
+      description
+        "Augment only for VPN Network topology.";
+    }
+    description
+      "Augment the network topology link with service topology
+       attributes";
+    leaf link-type {
+      type identityref {
+        base vpn-common:protocol-type;
+      }
+      description
+        "Underlay-transport type, e.g., GRE, LDP, etc.";
+    }
+  }
+
+  augment "/nw:networks/nw:network/nt:link" {
+    description
+      "Augment the network topology link with service topology
+       attributes";
+    leaf low-percentile {
+      type percentile;
+      default "10.00";
+      description
+        "Low percentile to report. Setting low-percentile
+         into 0.00 indicates the client is not interested in receiving
+         low percentile.";
+    }
+    leaf middle-percentile {
+      type percentile;
+      default "50.00";
+      description
+        "Middle percentile to report. Setting middle-percentile
+         into 0.00 indicates the client is not interested in receiving
+         middle percentile.";
+    }
+    leaf high-percentile {
+      type percentile;
+      default "90.00";
+      description
+        "High percentile to report. Setting high-percentile
+         into 0.00 indicates the client is not interested in receiving
+         high percentile";
+    }
+    leaf reference-time {
+      type yang:date-and-time;
+      description
+        "The time that the current Measurement Interval started.";
+    }
+    leaf measurement-interval {
+      type uint32;
+      units "seconds";
+      default "60";
+      description
+        "Interval to calculate performance metric.";
+    }
+    container link-telemetry-attributes {
+      config false;
+      uses link-error-statistics;
+      uses link-delay-statistics;
+      uses link-jitter-statistics;
+      description
+        "Container for service telemetry attributes.";
+    }
+  }
+
+  augment "/nw:networks/nw:network/nw:node/nt:termination-point" {
+    description
+      "Augment the network topology termination point with vpn
+       service attributes";
+    container tp-telemetry-attributes {
+      config false;
+      uses tp-svc-telemetry;
+      description
+        "Container for termination point service telemetry attributes.";
+    }
+  }
+}
+<CODE ENDS>]]></artwork>
+      </figure>
+    </section>
+
+    <section title="Security Considerations">
+      <t>The YANG modules defined in this document MAY be accessed via the
+      RESTCONF protocol <xref target="RFC8040"></xref> or NETCONF protocol
+      <xref target="RFC6241"></xref>. The lowest RESTCONF or NETCONF layer
+      requires that the transport-layer protocol provides both data integrity
+      and confidentiality, see Section 2 in [RFC8040] and [RFC6241]. The
+      lowest NETCONF layer is the secure transport layer, and the
+      mandatory-to-implement secure transport is Secure Shell (SSH)[RFC6242] .
+      The lowest RESTCONF layer is HTTPS, and the mandatory-to-implement
+      secure transport is TLS <xref target="RFC8446"></xref>.</t>
+
+      <t>The NETCONF access control model <xref target="RFC8341"></xref>
+      provides the means to restrict access for particular NETCONF or RESTCONF
+      users to a preconfigured subset of all available NETCONF or RESTCONF
+      protocol operations and content.</t>
+
+      <t>There are a number of data nodes defined in this YANG module that are
+      writable/creatable/deletable (i.e., config true, which is the default).
+      These data nodes may be considered sensitive or vulnerable in some
+      network environments. Write operations (e.g., edit-config) to these data
+      nodes without proper protection can have a negative effect on network
+      operations. These are the subtrees and data nodes and their
+      sensitivity/vulnerability: <list style="symbols">
+          <t>/nw:networks/nw:network/svc-topo:svc-telemetry-attributes</t>
+
+          <t>/nw:networks/nw:network/nw:node/svc-topo:node-attributes</t>
+        </list></t>
+    </section>
+
+    <section title="IANA Considerations">
+      <t>This document requests IANA to register the following URI in the "ns"
+      subregistry within the "IETF XML Registry" <xref
+      target="RFC3688"></xref>:</t>
+
+      <figure>
+        <artwork><![CDATA[   URI: urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm
+   Registrant Contact: The IESG.
+   XML: N/A, the requested URI is an XML namespace.
+]]></artwork>
+      </figure>
+
+      <t>This document requests IANA to register the following YANG module in
+      the "YANG Module Names" subregistry <xref target="RFC6020"></xref>
+      within the "YANG Parameters" registry.</t>
+
+      <figure>
+        <artwork><![CDATA[   Name:         ietf-network-vpn-pm
+   Namespace:    urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm
+   Maintained by IANA: N
+   Prefix:       nvp
+   Reference:    RFC XXXX
+]]></artwork>
+      </figure>
+    </section>
+
+    <section title="Acknowledgements">
+      <t>Thanks to Joe Clarke, Adrian Farrel, Greg Mirsky,Roque Gagliano,Erez
+      Segev for reviewing this draft and providing important input to this
+      document.</t>
+    </section>
+
+    <section title="Contributors">
+      <figure>
+        <artwork><![CDATA[   Michale Wang
+   Huawei
+   Email:wangzitao@huawei.com
+
+   Roni Even
+   Huawei
+   Email: ron.even.tlv@gmail.com ]]></artwork>
+      </figure>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include='reference.RFC.2119'?>
+
+      <?rfc include="reference.RFC.3688"?>
+
+      <?rfc include='reference.RFC.3393'?>
+
+      <?rfc include="reference.RFC.6020"?>
+
+      <?rfc include="reference.RFC.6241"?>
+
+      <?rfc include="reference.RFC.6242"?>
+
+      <?rfc include="reference.RFC.6374"?>
+
+      <?rfc include='reference.RFC.6991'?>
+
+      <?rfc include="reference.RFC.8446"?>
+
+      <?rfc include="reference.RFC.7950"?>
+
+      <?rfc include='reference.RFC.8174'?>
+
+      <?rfc include='reference.RFC.8299'?>
+
+      <?rfc include="reference.RFC.8340"?>
+
+      <?rfc include="reference.RFC.8345"?>
+
+      <?rfc include='reference.RFC.8641'?>
+
+      <?rfc include='reference.RFC.8532'?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include='reference.I-D.ietf-opsawg-l3sm-l3nm'?>
+
+      <?rfc include='reference.I-D.ietf-opsawg-vpn-common'?>
+
+      <?rfc include='reference.I-D.ietf-opsawg-model-automation-framework'?>
+
+      <?rfc include='reference.RFC.4176'?>
+
+      <?rfc include="reference.RFC.7471"?>
+
+      <?rfc include="reference.RFC.8570"?>
+
+      <?rfc include="reference.RFC.8233"?>
+
+      <?rfc include='reference.RFC.8040'?>
+
+      <?rfc include='reference.RFC.8194'?>
+
+      <?rfc include='reference.RFC.8341'?>
+
+      <?rfc include="reference.RFC.8571"?>
+    </references>
+  </back>
+</rfc>
