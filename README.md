@@ -73,6 +73,6 @@ You might also like to familiarize yourself with other
 
 | **Master**  
 |:---:|
-| [![Build Status](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master)](https://travis-ci.org/IETF-OPSAWG-WG/l3nm.svg?branch=master) |
+| [![Build Status](https://travis-ci.org/IETF-OPSAWG-WG/lxnm.svg?branch=master)](https://travis-ci.org/IETF-OPSAWG-WG/lxnm.svg?branch=master) |
 
 
