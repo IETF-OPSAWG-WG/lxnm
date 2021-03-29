@@ -5,7 +5,7 @@ This document defines a common YANG module that is meant to be reused
    by various VPN-related modules such as Layer 3 VPN and Layer 2 VPN
    Network Models.
 
-### Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt)
+### Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt) or https://tinyurl.com/vpn-common-latest
 
 ## L3 VPN Network-Oriented YANG Model
 
