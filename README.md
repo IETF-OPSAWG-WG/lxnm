@@ -15,7 +15,7 @@ between a service orchestrator and a network
    view of the L3VPN services.  The Yang model proposed is limited to
    BGP PE-based VPNs as described in RFCs 4026, 4110, and 4364.
   
-### l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt)
+### l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt) or https://tinyurl.com/l3nm-latest
    
 ## L2 VPN Network-Oriented YANG Model
 A L2VPN Network Yang Model
