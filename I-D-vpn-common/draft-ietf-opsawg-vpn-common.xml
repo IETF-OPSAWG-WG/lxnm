@@ -217,18 +217,18 @@
 
     <section title="Description of the VPN Common YANG Module">
       <t>The "ietf-vpn-common" module defines a set of common VPN-related
-      features, e.g.: <list style="symbols">
-          <t>Encapsulation features such as Dot1q <xref
+      features, e.g.: <list style="hanging">
+          <t hangText="Encapsulation features">such as Dot1q <xref
           target="IEEE802.1Q"></xref>, QinQ <xref
           target="IEEE802.1ad"></xref>, and <xref target="RFC7348">Virtual
           eXtensible Local Area Network (VXLAN)</xref>. </t>
 
-          <t>Multicast <xref target="RFC6513"></xref>,</t>
+          <t hangText="Multicast [RFC6513]."></t>
 
-          <t>Routing features such as OSPF <xref target="RFC4577"></xref>,
-          Bidirectional Forwarding Detection (BFD) <xref
-          target="RFC5880"></xref>, and Virtual Router Redundancy Protocol
-          (VRRP) <xref target="RFC5798"></xref>.</t>
+          <t hangText="Routing features">such as OSPF <xref
+          target="RFC4577"></xref>, Bidirectional Forwarding Detection (BFD)
+          <xref target="RFC5880"></xref>, and Virtual Router Redundancy
+          Protocol (VRRP) <xref target="RFC5798"></xref>.</t>
         </list> Also, the module defines a set of identities, including:<list
           style="hanging">
           <t hangText="'service-type':">Used to identify the VPN service type.
@@ -318,7 +318,7 @@
     +-- vpn-policies
        +-- import-policy?   string
        +-- export-policy?   string
-  grouping rt-rd
+  grouping route-distinguisher
     ...
   grouping vpn-components-group
     +-- groups
@@ -393,7 +393,7 @@
               identifier <xref
               target="I-D.ietf-teas-actn-vn-yang"></xref><xref
               target="RFC8453"></xref>, or a network slice name <xref
-              target="I-D.ietf-teas-ietf-network-slice-definition"></xref>) or
+              target="I-D.ietf-teas-ietf-network-slice-framework"></xref>) or
               as an ordered list of the actual protocols to be enabled in the
               network. <vspace blankLines="1" />The module supports a rich set
               of protocol identifiers that can be used, e.g., to refer to an
@@ -405,10 +405,10 @@
               Virtualization Encapsulation (GENEVE) <xref
               target="RFC8926"></xref>, Segment Routing (SR) <xref
               target="RFC8660"></xref><xref target="RFC8663"></xref><xref
-              target="RFC8754"></xref>, SR-TE <xref target="RFC8426"></xref>,
-              Resource ReSerVation Protocol (RSVP) with traffic engineering
-              extensions <xref target="RFC3209"></xref>, and BGP with labeled
-              prefixes <xref target="RFC8277"></xref>.</t>
+              target="RFC8754"></xref>, SR-TE, Resource ReSerVation Protocol
+              (RSVP) with traffic engineering extensions <xref
+              target="RFC3209"></xref>, and BGP with labeled prefixes <xref
+              target="RFC8277"></xref>.</t>
             </list></t>
 
           <t hangText="'vpn-route-targets':"><list style="none">
@@ -417,37 +417,44 @@
               target="RFC4364"></xref><xref target="RFC4664"></xref>).</t>
             </list></t>
 
-          <t hangText="'rt-rd': "><list style="none">
-              <t>A YANG grouping that defines the set of route targets,
-              defined as Route Targets (RTs) and Route Distinguishers (RDs),
-              to match for import and export routes to/from a Virtual Routing
-              and Forwarding (VRF). <vspace blankLines="1" />As depicted in
-              <xref target="rtrd"></xref>, the module supports these RD
-              assignment modes: direct assignment, automatic assignment from a
-              given pool, automatic assignment, no assignment. <figure
-                  align="center" anchor="rtrd"
+          <t hangText="'route-distinguisher': "><list style="none">
+              <t>A YANG grouping that defines Route Distinguishers (RDs).
+              <vspace blankLines="1" />As depicted in <xref
+              target="rtrd"></xref>, the module supports these RD assignment
+              modes: direct assignment, automatic assignment from a given
+              pool, automatic assignment, and no assignment. In addition, the
+              module supports the following assignment modes of the Assigned
+              Number subfield (Section 4.2 of <xref target="RFC4364"></xref>):
+              explicit assignment, auto-assignment from a pool, and full
+              auto-assignment. When such modes are used, an implementation
+              uses other configuration parameters (e.g., router-id, Autonomous
+              System number (ASN)) as a value of the Administrator subfield
+              and, thus, to build the RD. <figure align="center" anchor="rtrd"
                   title="'rt-rd' Grouping Subtree">
-                  <artwork align="center"><![CDATA[  grouping rt-rd
+                  <artwork align="center"><![CDATA[  grouping route-distinguisher
     +-- (rd-choice)?
-    |  +--:(directly-assigned)
-    |  |  +-- rd?             rt-types:route-distinguisher
-    |  +--:(pool-assigned)
-    |  |  +-- rd-pool-name?   string
-    |  |  +--ro rd-from-pool?   rt-types:route-distinguisher
-    |  +--:(full-autoasigned)
-    |  |  +-- auto?           empty
-    |  |  +--ro rd-auto?        rt-types:route-distinguisher
-    |  +--:(no-rd)
-    |     +-- no-rd?          empty
-    +-- vpn-targets
-       +-- vpn-target* [id]
-       |  +-- id?                  int8
-       |  +-- route-targets* [route-target]
-       |  |  +-- route-target?   rt-types:route-target
-       |  +-- route-target-type    rt-types:route-target-type
-       +-- vpn-policies
-          +-- import-policy?   string
-          +-- export-policy?   string
+       +--:(directly-assigned)
+       |  +-- rd?               rt-types:route-distinguisher
+       +--:(directly-assigned-suffix)
+       |  +-- rd-suffix?        uint16
+       +--:(auto-assigned)
+       |  +-- rd-auto
+       |     +-- (auto-mode)?
+       |     |  +--:(from-pool)
+       |     |  |  +-- rd-pool-name?   string
+       |     |  +--:(full-auto)
+       |     |     +-- auto?           empty
+       |     +--ro auto-assigned-rd?   rt-types:route-distinguisher
+       +--:(auto-assigned-suffix)
+       |  +-- rd-auto-suffix
+       |     +-- (auto-mode)?
+       |     |  +--:(from-pool)
+       |     |  |  +-- rd-pool-name?        string
+       |     |  +--:(full-auto)
+       |     |     +-- auto?                empty
+       |     +--ro auto-assigned-rd-suffix?   uint16
+       +--:(no-rd)
+          +-- no-rd?            empty
 ]]></artwork>
                 </figure></t>
             </list></t>
@@ -631,7 +638,7 @@
       also uses the extension defined in <xref target="RFC8341"></xref>.</t>
 
       <t><figure>
-          <artwork><![CDATA[<CODE BEGINS>  file "ietf-vpn-common@2021-02-22.yang"
+          <artwork><![CDATA[<CODE BEGINS>  file "ietf-vpn-common@2021-04-05.yang"
 module ietf-vpn-common {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-common";
@@ -694,7 +701,7 @@ module ietf-vpn-common {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-02-22 {
+  revision 2021-04-05 {
     description
       "Initial revision.";
     reference
@@ -1626,12 +1633,10 @@ module ietf-vpn-common {
   }
 
   identity sr-te {
-    base protocol-type;
+    base sr;
     description
-      "Transport is based on SR-TE.";
-    reference
-      "RFC 8426: Recommendations for RSVP-TE and Segment Routing (SR)
-                 Label Switched Path (LSP) Coexistence";
+      "Transport is based on SR with traffic engineering (TE)
+       enabled.";
   }
 
   identity rsvp-te {
@@ -2321,7 +2326,7 @@ module ietf-vpn-common {
         leaf status {
           type identityref {
             base administrative-status;
-          }        
+          }
           description
             "Administrative service status.";
         }
@@ -2435,49 +2440,118 @@ module ietf-vpn-common {
     }
   }
 
-  grouping rt-rd {
+  grouping route-distinguisher {
     description
-      "Grouping for route target (RT) and route
-       distinguisher (RD).";
+      "Grouping for route distinguisher (RD).";
     choice rd-choice {
       description
         "Route distinguisher choice between several options
-         on providing the route distiniguisher value.";
+         on providing the route distinguisher value.";
       case directly-assigned {
         description
           "Explicitly assign an RD value.";
         leaf rd {
           type rt-types:route-distinguisher;
           description
-            "Explicitly assign an RD value.";
+            "Indicates an RD value that is explicitly
+             assigned.";
         }
       }
-      case pool-assigned {
-        leaf rd-pool-name {
-          type string;
+      case directly-assigned-suffix {
+        description
+          "Explicitly the value of the Assigned Number subfield
+           of the RD. The Administrator subfield of the RD will 
+           be based on other configuration information such as 
+           router-id or ASN.";
+        leaf rd-suffix {
+          type uint16;
           description
-            "The server will auto-assign a route distinguisher value
-             and use that value operationally. The assignment will be
-             made from the pool identified by the rd-pool-name.";
-        }
-        leaf rd-from-pool {
-          type rt-types:route-distinguisher;
-          config false;
-          description
-            "The RD assigned from the pool name.";
+            "Indicates the value of the Assigned Number
+             subfield that is explicitly assigned.";
         }
       }
-      case full-autoasigned {
-        leaf auto {
-          type empty;
+      case auto-assigned {
+        description
+          "The RD is auto-assigned.";
+        container rd-auto {
           description
-            "Indicates an RD is fully auto assigned.";
+            "The RD is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode. RD can be
+               automatically assigned either with or without
+               indicating a pool from which the RD should be 
+               taken. 
+
+               For both cases, the server will auto-assign an RD 
+               value 'auto-assigned-rd' and use that value 
+               operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The auto-assignment will be made from the pool
+                   identified by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates an RD is fully auto-assigned.";
+              }
+            }
+          }
+          leaf auto-assigned-rd {
+            type rt-types:route-distinguisher;
+            config false;
+            description
+              "The value of the auto-assigned RD.";
+          }
         }
-        leaf rd-auto {
-          type rt-types:route-distinguisher;
-          config false;
+      }
+      case auto-assigned-suffix {
+        description
+          "The value of the Assigned Number subfield will
+           be auto-assigned. The Administrator subfield
+           will be based on other configuration information such as 
+           router-id or ASN.";
+        container rd-auto-suffix {
           description
-            "Auto assigned RD.";
+            "The Assigned Number subfield is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode of the Assigned Number
+               subfield. This number can be automatically assigned 
+               either with or without indicating a pool from which 
+               the value should be taken. 
+
+               For both cases, the server will auto-assign
+               'auto-assigned-rd-suffix' and use that value to build 
+               the RD that will be used operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The assignment will be made from the pool identified
+                   by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates the Assigned Number is fully auto assigned.";
+              }
+            }
+          }
+          leaf auto-assigned-rd-suffix {
+            type uint16;
+            config false;
+            description
+              "Includes the value of the Assigned Number subfield that is 
+               auto-assigned .";
+          }
         }
       }
       case no-rd {
@@ -2490,12 +2564,6 @@ module ietf-vpn-common {
             "No RD is assigned.";
         }
       }
-    }
-    container vpn-targets {
-      description
-        "Set of route targets to match for import and export routes
-         to/from VRF.";
-      uses vpn-route-targets;
     }
   }
 
@@ -2636,7 +2704,7 @@ module ietf-vpn-common {
           }
           choice l4 {
             description
-              "Includes Layer 4 specific information
+              "Includes Layer 4 specific information.
                This version focuses on TCP and UDP.";
             container tcp {
               description
@@ -2727,11 +2795,11 @@ module ietf-vpn-common {
       <t>During the discussions of this work, helpful comments and reviews
       were received from (listed alphabetically): Alejandro Aguado, Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel, Roque
-      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, and Erez
-      Segev. Many thanks to them.</t>
+      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, Erez
+      Segev, and Paul Sherratt. Many thanks to them.</t>
 
-      <t>Many thanks to Radek Krejci for the yangdoctors review and Wesley
-      Eddy for the tsvart review.</t>
+      <t>Many thanks to Radek Krejci for the yangdoctors review, Wesley Eddy
+      for the tsvart review, and Ron Bonica for the Rtgdid review.</t>
     </section>
 
     <section title="Contributors">
@@ -2801,8 +2869,6 @@ module ietf-vpn-common {
 
       <?rfc include='reference.I-D.ietf-teas-enhanced-vpn'?>
 
-      <?rfc include='reference.I-D.ietf-teas-ietf-network-slice-definition'?>
-
       <?rfc include='reference.I-D.ietf-teas-actn-vn-yang'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-l2nm'?>
@@ -2832,8 +2898,6 @@ module ietf-vpn-common {
       <?rfc include='reference.RFC.8663'?>
 
       <?rfc include='reference.RFC.8754'?>
-
-      <?rfc include='reference.RFC.8426'?>
 
       <?rfc include='reference.RFC.8277'?>
 
@@ -2874,6 +2938,45 @@ module ietf-vpn-common {
       <?rfc include='reference.RFC.8453'?>
 
       <?rfc include='reference.RFC.4960'?>
+
+      <reference anchor="I-D.ietf-teas-ietf-network-slice-framework"
+                 target="https://datatracker.ietf.org/doc/draft-ietf-teas-ietf-network-slice-framework/">
+        <front>
+          <title>Framework for IETF Network Slices</title>
+
+          <author fullname="E. Gray">
+            <organization></organization>
+          </author>
+
+          <author fullname="J. Drake">
+            <organization></organization>
+
+            <address>
+              <postal>
+                <street></street>
+
+                <city></city>
+
+                <region></region>
+
+                <code></code>
+
+                <country></country>
+              </postal>
+
+              <phone></phone>
+
+              <facsimile></facsimile>
+
+              <email></email>
+
+              <uri></uri>
+            </address>
+          </author>
+
+          <date month="March" year="2021" />
+        </front>
+      </reference>
 
       <reference anchor="IEEE802.1Q">
         <front>

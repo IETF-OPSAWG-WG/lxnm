@@ -78,17 +78,17 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Description of the VPN Common YANG Module . . . . . . . . . .   3
-   4.  Layer 2/3 VPN Common Module . . . . . . . . . . . . . . . . .  11
-   5.  Security Considerations . . . . . . . . . . . . . . . . . . .  54
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  54
-   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  54
-   8.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  55
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  55
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  55
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  56
+   4.  Layer 2/3 VPN Common Module . . . . . . . . . . . . . . . . .  12
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .  56
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  56
+   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  56
+   8.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  57
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  57
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  57
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  58
    Appendix A.  Example of Common Data Nodes in Early L2NM/L3NM
-                Designs  . . . . . . . . . . . . . . . . . . . . . .  61
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  63
+                Designs  . . . . . . . . . . . . . . . . . . . . . .  63
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  65
 
 1.  Introduction
 
@@ -135,13 +135,13 @@ Internet-Draft            VPN Common YANG Model               April 2021
    The "ietf-vpn-common" module defines a set of common VPN-related
    features, e.g.:
 
-   o  Encapsulation features such as Dot1q [IEEE802.1Q], QinQ
+   Encapsulation features  such as Dot1q [IEEE802.1Q], QinQ
       [IEEE802.1ad], and Virtual eXtensible Local Area Network (VXLAN)
       [RFC7348].
 
-   o  Multicast [RFC6513],
+   Multicast [RFC6513].
 
-   o  Routing features such as OSPF [RFC4577], Bidirectional Forwarding
+   Routing features  such as OSPF [RFC4577], Bidirectional Forwarding
       Detection (BFD) [RFC5880], and Virtual Router Redundancy Protocol
       (VRRP) [RFC5798].
 
@@ -240,7 +240,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
             +-- vpn-policies
                +-- import-policy?   string
                +-- export-policy?   string
-          grouping rt-rd
+          grouping route-distinguisher
             ...
           grouping vpn-components-group
             +-- groups
@@ -323,7 +323,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
          transport instance (e.g., an identifier of a VPN+ instance
          [I-D.ietf-teas-enhanced-vpn], a virtual network identifier
          [I-D.ietf-teas-actn-vn-yang][RFC8453], or a network slice name
-         [I-D.ietf-teas-ietf-network-slice-definition]) or as an ordered
+         [I-D.ietf-teas-ietf-network-slice-framework]) or as an ordered
          list of the actual protocols to be enabled in the network.
 
          The module supports a rich set of protocol identifiers that can
@@ -339,52 +339,52 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
          Network Virtualization Encapsulation (GENEVE) [RFC8926],
-         Segment Routing (SR) [RFC8660][RFC8663][RFC8754], SR-TE
-         [RFC8426], Resource ReSerVation Protocol (RSVP) with traffic
-         engineering extensions [RFC3209], and BGP with labeled prefixes
-         [RFC8277].
+         Segment Routing (SR) [RFC8660][RFC8663][RFC8754], SR-TE,
+         Resource ReSerVation Protocol (RSVP) with traffic engineering
+         extensions [RFC3209], and BGP with labeled prefixes [RFC8277].
 
    'vpn-route-targets':
 
          A YANG grouping that defines Route Target import/export rules
          used in a BGP-enabled VPN (e.g., [RFC4364][RFC4664]).
 
-   'rt-rd':
+   'route-distinguisher':
 
-         A YANG grouping that defines the set of route targets, defined
-         as Route Targets (RTs) and Route Distinguishers (RDs), to match
-         for import and export routes to/from a Virtual Routing and
-         Forwarding (VRF).
+         A YANG grouping that defines Route Distinguishers (RDs).
 
          As depicted in Figure 2, the module supports these RD
          assignment modes: direct assignment, automatic assignment from
-         a given pool, automatic assignment, no assignment.
+         a given pool, automatic assignment, and no assignment.  In
+         addition, the module supports the following assignment modes of
+         the Assigned Number subfield (Section 4.2 of [RFC4364]):
+         explicit assignment, auto-assignment from a pool, and full
+         auto-assignment.  When such modes are used, an implementation
+         uses other configuration parameters (e.g., router-id,
+         Autonomous System number (ASN)) as a value of the Administrator
+         subfield and, thus, to build the RD.
 
-         grouping rt-rd
-           +-- (rd-choice)?
-           |  +--:(directly-assigned)
-           |  |  +-- rd?             rt-types:route-distinguisher
-           |  +--:(pool-assigned)
-           |  |  +-- rd-pool-name?   string
-           |  |  +--ro rd-from-pool?   rt-types:route-distinguisher
-           |  +--:(full-autoasigned)
-           |  |  +-- auto?           empty
-           |  |  +--ro rd-auto?        rt-types:route-distinguisher
-           |  +--:(no-rd)
-           |     +-- no-rd?          empty
-           +-- vpn-targets
-              +-- vpn-target* [id]
-              |  +-- id?                  int8
-              |  +-- route-targets* [route-target]
-              |  |  +-- route-target?   rt-types:route-target
-              |  +-- route-target-type    rt-types:route-target-type
-              +-- vpn-policies
-                 +-- import-policy?   string
-                 +-- export-policy?   string
 
-                    Figure 2: 'rt-rd' Grouping Subtree
 
-   'vpn-components-group':
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -393,6 +393,35 @@ Barguil, et al.          Expires October 9, 2021                [Page 7]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
+
+      grouping route-distinguisher
+        +-- (rd-choice)?
+           +--:(directly-assigned)
+           |  +-- rd?               rt-types:route-distinguisher
+           +--:(directly-assigned-suffix)
+           |  +-- rd-suffix?        uint16
+           +--:(auto-assigned)
+           |  +-- rd-auto
+           |     +-- (auto-mode)?
+           |     |  +--:(from-pool)
+           |     |  |  +-- rd-pool-name?   string
+           |     |  +--:(full-auto)
+           |     |     +-- auto?           empty
+           |     +--ro auto-assigned-rd?   rt-types:route-distinguisher
+           +--:(auto-assigned-suffix)
+           |  +-- rd-auto-suffix
+           |     +-- (auto-mode)?
+           |     |  +--:(from-pool)
+           |     |  |  +-- rd-pool-name?        string
+           |     |  +--:(full-auto)
+           |     |     +-- auto?                empty
+           |     +--ro auto-assigned-rd-suffix?   uint16
+           +--:(no-rd)
+              +-- no-rd?            empty
+
+                    Figure 2: 'rt-rd' Grouping Subtree
+
+   'vpn-components-group':
 
          A YANG grouping that is used to group VPN nodes, VPN network
          accesses, or sites.  For example, diversity or redundancy
@@ -408,6 +437,18 @@ Internet-Draft            VPN Common YANG Model               April 2021
          A YANG grouping that defines ranges of source and destination
          port numbers and operators.  The subtree of this grouping is
          depicted in Figure 3.
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires October 9, 2021                [Page 8]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
              grouping ports
                +-- (source-port)?
@@ -442,14 +483,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
          'protocol' data node under 'l3', but only TCP and UDP specific
          match criteria are elaborated in this version as these
          protocols are widely used in the context of VPN services.
-
-
-
-Barguil, et al.          Expires October 9, 2021                [Page 8]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
          Augmentations can be considered in the future to add other
          Layer 4 specific data nodes (e.g., Stream Control Transmission
          Protocol [RFC4960]), if needed.
@@ -465,6 +498,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
           |  |  |  |     +-- dscp?                             inet:dscp
           |  |  |  |     +-- ecn?                              uint8
           |  |  |  |     +-- length?                           uint16
+
+
+
+Barguil, et al.          Expires October 9, 2021                [Page 9]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
           |  |  |  |     +-- ttl?                              uint8
           |  |  |  |     +-- protocol?                         uint8
           |  |  |  |     +-- ihl?                              uint8
@@ -498,14 +539,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
           |  |  |                inet:ipv6-flow-label
           |  |  +-- (l4)?
           |  |     +--:(tcp)
-
-
-
-Barguil, et al.          Expires October 9, 2021                [Page 9]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
           |  |     |  +-- tcp
           |  |     |     +-- sequence-number?                 uint32
           |  |     |     +-- acknowledgement-number?          uint32
@@ -521,6 +554,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
           |  |     |     |        +-- (port-range-or-operator)?
           |  |     |     |           +--:(range)
           |  |     |     |           |  +-- lower-port
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 10]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
           |  |     |     |           |  |       inet:port-number
           |  |     |     |           |  +-- upper-port
           |  |     |     |           |          inet:port-number
@@ -554,14 +595,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
           |  |           |           |  +-- upper-port
           |  |           |           |          inet:port-number
           |  |           |           +--:(operator)
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 10]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
           |  |           |              +-- operator?     operator
           |  |           |              +-- port
           |  |           |                      inet:port-number
@@ -577,6 +610,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
           |  |                       +--:(operator)
           |  |                          +-- operator?     operator
           |  |                          +-- port
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 11]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
           |  |                                  inet:port-number
           |  +--:(match-application)
           |     +-- match-application?   identityref
@@ -589,7 +630,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
    This module uses types defined in [RFC6991], [RFC8294], and
    [RFC8519].  It also uses the extension defined in [RFC8341].
 
-<CODE BEGINS>  file "ietf-vpn-common@2021-02-22.yang"
+<CODE BEGINS>  file "ietf-vpn-common@2021-04-05.yang"
 module ietf-vpn-common {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-vpn-common";
@@ -610,14 +651,6 @@ module ietf-vpn-common {
     reference
       "Section 3 of RFC 6991";
   }
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 11]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   import ietf-packet-fields {
     prefix packet-fields;
     reference
@@ -633,6 +666,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
      Author:  Samier Barguil
               <mailto:samier.barguilgiraldo.ext@telefonica.com>
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 12]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
      Author:  Oscar Gonzalez de Dios
               <mailto:oscar.gonzalezdedios@telefonica.com>
      Editor:  Mohamed Boucadair
@@ -660,19 +701,12 @@ Internet-Draft            VPN Common YANG Model               April 2021
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-02-22 {
+  revision 2021-04-05 {
     description
       "Initial revision.";
     reference
       "RFC XXXX: A Layer 2/3 VPN Common YANG Model";
   }
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 12]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
 
   /******** Collection of VPN-related Features ********/
   /*
@@ -688,6 +722,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   feature qinq {
     description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 13]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
       "Indicates the support of the QinQ encapsulation.";
     reference
       "IEEE Std 802.1ad: Provider Bridges";
@@ -722,14 +764,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Indicates multicast capabilities support in a VPN.";
     reference
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 13]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
       "RFC 6513: Multicast in MPLS/BGP IP VPNs";
   }
 
@@ -744,6 +778,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   feature mld {
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 14]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "Indicates support of Multicast Listener Discovery (MLD).";
     reference
@@ -778,14 +820,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
    * Features related to routing protocols
    */
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 14]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   feature rtg-ospf {
     description
       "Indicates support of the OSPF as the Provider Edge (PE)/
@@ -800,6 +834,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Indicates support of OSPF sham links.";
     reference
       "Section 4.2.7 of RFC 4577";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 15]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   feature rtg-bgp {
@@ -834,14 +876,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "RFC 5880: Bidirectional Forwarding Detection (BFD)";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 15]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   /*
    * Features related to VPN service constraints
    */
@@ -856,6 +890,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   feature placement-diversity {
     description
       "Indicates support of placement diversity constraints in the
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 16]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
        customer premises. An example of these constraints may be to
        avoid connecting a site network access to the same Provider
        Edge as a target site network access.";
@@ -890,14 +932,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   feature fast-reroute {
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 16]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "Indicates support of Fast Reroute (FRR).";
   }
@@ -911,6 +945,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Indicates support of the VPN to provide external
        connectivity (e.g., Internet, private or public cloud).";
   }
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 17]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   feature extranet-vpn {
     description
@@ -946,14 +988,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for IPv6 address family.";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 17]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity dual-stack {
     base address-family;
     description
@@ -968,6 +1002,13 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Base identity of the VPN topology.";
   }
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 18]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity any-to-any {
     base vpn-topology;
@@ -1002,14 +1043,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
    * Identities related to network access types
    */
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 18]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity site-network-access-type {
     description
       "Base identity for site network access type.";
@@ -1025,6 +1058,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base site-network-access-type;
     description
       "Identity for multipoint connections, e.g., Ethernet broadcast
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 19]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
        segment.";
   }
 
@@ -1058,14 +1099,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity operational-state-down {
     base operational-status;
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 19]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "Operational status is DOWN/Disabled.";
   }
@@ -1080,6 +1113,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Base identity for administrative status.";
   }
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 20]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity administrative-state-up {
     base administrative-status;
@@ -1115,13 +1156,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Base identity of a site or a node role.";
   }
 
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 20]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity any-to-any-role {
     base role;
     description
@@ -1136,6 +1170,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity hub-role {
     base role;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 21]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "A node or a site isacting as a Hub IP VPN.";
   }
@@ -1171,13 +1213,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for PE diversity.";
   }
 
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 21]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity pop-diverse {
     base placement-diversity;
     description
@@ -1191,6 +1226,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   identity same-pe {
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 22]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     base placement-diversity;
     description
       "Identity for having sites connected on the same PE.";
@@ -1226,14 +1269,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     reference
       "RFC 4761: Virtual Private LAN Service (VPLS) Using BGP for
                  Auto-Discovery and Signaling
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 22]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
        RFC 4762: Virtual Private LAN Service (VPLS) Using Label
                  Distribution Protocol (LDP) Signaling";
   }
@@ -1246,6 +1281,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     reference
       "RFC8214: Virtual Private Wire Service Support in Ethernet VPN";
   }
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 23]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity pbb-evpn {
     base service-type;
@@ -1282,14 +1325,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for VPN signaling types";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 23]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity bgp-signaling {
     base vpn-signaling-type;
     description
@@ -1303,6 +1338,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity ldp-signaling {
     base vpn-signaling-type;
     description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 24]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
       "Identity for Targeted Label Distribution Protocol.";
     reference
       "RFC 5036: LDP Specification";
@@ -1338,14 +1381,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for BGP routing protocol type.";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 24]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity ospf {
     if-feature "rtg-ospf";
     base routing-protocol-type;
@@ -1359,6 +1394,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity rip {
     if-feature "rtg-rip";
     base routing-protocol-type;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 25]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "Identity for RIP routing protocol type.";
   }
@@ -1394,14 +1437,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for any routing protocol type.
 
        This can be, e.g., used to set policies that apply to any
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 25]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
        routing protocol in place.";
   }
 
@@ -1415,6 +1450,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base isis-level;
     description
       "Identity for IS-IS level 1.";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 26]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   identity level2 {
@@ -1450,14 +1493,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity export {
     base ie-type;
     description
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 26]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
       "Identity for 'export' routing profile.";
     reference
       "Section 4.3.1 of RFC4364";
@@ -1471,6 +1506,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   /*
    * Identities related to bandwidth and QoS
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 27]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
    */
 
   identity bw-direction {
@@ -1506,14 +1549,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity bw-per-port {
     base bw-type;
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 27]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "The bandwidth is per site network access.";
   }
@@ -1527,6 +1562,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity bw-per-service {
     base bw-type;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 28]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "The bandwidth is per VPN service.";
   }
@@ -1562,14 +1605,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity transport-instance-type {
     description
       "Base identity for underlay transport instance type.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 28]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   }
 
   identity virtual-network {
@@ -1583,6 +1618,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity enhanced-vpn {
     base transport-instance-type;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 29]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "Identity for the Enhanced VPN (VPN+). VPN+ is an
        approach that is based on existing VPN and Traffic
@@ -1618,14 +1661,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     reference
       "RFC 2003: IP Encapsulation within IP
        RFC 2473: Generic Packet Tunneling in IPv6 Specification";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 29]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   }
 
   identity ip-in-ipv4 {
@@ -1639,6 +1674,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity ip-in-ipv6 {
     base ip-in-ip;
     description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 30]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
       "Transport is based on IP over IPv6.";
     reference
       "RFC 2473: Generic Packet Tunneling in IPv6 Specification";
@@ -1674,14 +1717,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base protocol-type;
     description
       "Transport is based on VxLAN.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 30]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     reference
       "RFC 7348: Virtual eXtensible Local Area  Network (VXLAN):
                  A Framework for Overlaying Virtualized Layer 2
@@ -1695,6 +1730,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
        Encapsulation (GENEVE).";
     reference
       "RFC 8926: Geneve: Generic Network Virtualization Encapsulation";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 31]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   identity ldp {
@@ -1731,13 +1774,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "RFC 8660: Segment Routing with the MPLS Data Plane";
   }
 
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 31]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity srv6 {
     base sr;
     description
@@ -1748,12 +1784,18 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   identity sr-te {
-    base protocol-type;
+    base sr;
     description
-      "Transport is based on SR-TE.";
-    reference
-      "RFC 8426: Recommendations for RSVP-TE and Segment Routing (SR)
-                 Label Switched Path (LSP) Coexistence";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 32]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
+      "Transport is based on SR with traffic engineering (TE)
+       enabled.";
   }
 
   identity rsvp-te {
@@ -1787,13 +1829,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Base identity for the encapsulation type.";
   }
 
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 32]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity priority-tagged {
     base encapsulation-type;
     description
@@ -1806,6 +1841,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Identity for the support of the Dot1q encapsulation.";
   }
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 33]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity qinq {
     if-feature "qinq";
@@ -1842,14 +1885,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity untagged-int {
     base encapsulation-type;
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 33]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "Identity of the untagged interface type.";
   }
@@ -1863,6 +1898,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity lag-int {
     if-feature "lag-interface";
     base encapsulation-type;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 34]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "Identity of the LAG interface type.";
     reference
@@ -1898,14 +1941,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   /*
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 34]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
    * Identities related to VXLAN
    */
 
@@ -1919,6 +1954,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base vxlan-peer-mode;
     description
       "Identity for VXLAN access in the static mode.";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 35]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   identity bgp-mode {
@@ -1954,14 +1997,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity multicast-tree-type {
     if-feature "multicast";
     description
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 35]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
       "Base identity for multicast tree type.";
   }
 
@@ -1975,6 +2010,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base multicast-tree-type;
     description
       "Identity for Any-Source Multicast (ASM) tree type.";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 36]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   identity bidir-tree-type {
@@ -2010,14 +2053,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   identity group-management-protocol {
     if-feature "multicast";
     description
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 36]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
       "Identity for multicast group management protocol.";
   }
 
@@ -2030,6 +2065,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
        RFC 2236: Internet Group Management Protocol, Version 2
        RFC 3376: Internet Group Management Protocol, Version 3";
   }
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 37]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity mld-proto {
     base group-management-protocol;
@@ -2066,14 +2109,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   identity igmpv2 {
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 37]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     base igmp-version;
     description
       "Identity for IGMPv2.";
@@ -2087,6 +2122,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for IGMPv2.";
     reference
       "RFC 3376: Internet Group Management Protocol, Version 3";
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 38]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
   }
 
   identity mld-version {
@@ -2122,14 +2165,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   identity multicast-traffic {
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 38]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     base tf-type;
     description
       "Identity for multicast traffic.";
@@ -2143,6 +2178,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity unknown-unicast-traffic {
     base tf-type;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 39]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "Identity for unknown unicast traffic.";
   }
@@ -2178,14 +2221,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     base customer-application;
     description
       "Identity for a database application.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 39]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   }
 
   identity social {
@@ -2199,6 +2234,13 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Identity for a gaming application.";
   }
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 40]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   identity p2p {
     base customer-application;
@@ -2234,14 +2276,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
        loss rate, reliability, and many other parameters.";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 40]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity urllc {
     base customer-application;
     description
@@ -2256,6 +2290,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Identity for a massive Machine Type Communications (mMTC)
        application.  Note that an mMTC application demands network
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 41]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
        performance with a wide variety of characteristics, such as data
        rate, latency, loss rate, reliability, and many other
        parameters.";
@@ -2290,14 +2332,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
     description
       "Identity for all-to-one bundling, i.e., all C-VLAN IDs are mapped
        to one L2VPN service.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 41]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   }
 
   /*
@@ -2312,6 +2346,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
   identity peer {
     base control-mode;
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 42]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
     description
       "'peer' mode, i.e., participate in the protocol towards the CE.
        Peering is common for Link Aggregation Control Protocol (LACP)
@@ -2346,14 +2388,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Identity for the full-duplex mode.";
   }
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 42]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   identity auto-neg {
     base neg-mode;
     description
@@ -2368,6 +2402,13 @@ Internet-Draft            VPN Common YANG Model               April 2021
       "Defines an identifier that is used as a service identifier,
        for example.";
   }
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 43]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
   /*
    * Types related to Ethernet Services
@@ -2402,14 +2443,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
       type string;
       description
         "Textual description of a VPN.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 43]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     }
     leaf customer-name {
       type string;
@@ -2425,6 +2458,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       description
         "Container for valid provider profile identifiers.";
       list external-connectivity-identifier {
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 44]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
         if-feature "external-connectivity";
         key "id";
         description
@@ -2458,14 +2499,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
         key "id";
         description
           "List for QoS Profile Identifiers.";
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 44]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
         leaf id {
           type string;
           description
@@ -2481,6 +2514,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
           type string;
           description
             "Identification of the BFD profile to be used.
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 45]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
              This identifier has a local administration meaning.";
         }
       }
@@ -2514,14 +2555,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   grouping status-timestamp {
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 45]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "This grouping defines some operational parameters for the
        service.";
@@ -2537,6 +2570,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       type yang:date-and-time;
       config false;
       description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 46]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
         "Indicates the actual date and time of the service status
          change.";
     }
@@ -2570,14 +2611,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
           "Operational service status.";
         uses status-timestamp;
       }
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 46]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     }
   }
 
@@ -2593,6 +2626,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
         "A choice based on the type of underlay transport
          constraints.";
       case abstract {
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 47]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
         description
           "Indicates that the transport constraint is an abstract
            concept.";
@@ -2626,14 +2667,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
   }
 
   grouping vpn-route-targets {
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 47]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
     description
       "A grouping that specifies Route Target import-export rules
        used in a BGP-enabled VPN.";
@@ -2649,6 +2682,14 @@ Internet-Draft            VPN Common YANG Model               April 2021
       leaf id {
         type int8;
         description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 48]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
           "Identifies each VPN Target.";
       }
       list route-targets {
@@ -2682,62 +2723,21 @@ Internet-Draft            VPN Common YANG Model               April 2021
           "Defines the 'export' policy.";
       }
     }
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 48]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
   }
 
-  grouping rt-rd {
+  grouping route-distinguisher {
     description
-      "Grouping for route target (RT) and route
-       distinguisher (RD).";
+      "Grouping for route distinguisher (RD).";
     choice rd-choice {
       description
         "Route distinguisher choice between several options
-         on providing the route distiniguisher value.";
+         on providing the route distinguisher value.";
       case directly-assigned {
         description
           "Explicitly assign an RD value.";
         leaf rd {
           type rt-types:route-distinguisher;
           description
-            "Explicitly assign an RD value.";
-        }
-      }
-      case pool-assigned {
-        leaf rd-pool-name {
-          type string;
-          description
-            "The server will auto-assign a route distinguisher value
-             and use that value operationally. The assignment will be
-             made from the pool identified by the rd-pool-name.";
-        }
-        leaf rd-from-pool {
-          type rt-types:route-distinguisher;
-          config false;
-          description
-            "The RD assigned from the pool name.";
-        }
-      }
-      case full-autoasigned {
-        leaf auto {
-          type empty;
-          description
-            "Indicates an RD is fully auto assigned.";
-        }
-        leaf rd-auto {
-          type rt-types:route-distinguisher;
-          config false;
-          description
-            "Auto assigned RD.";
-        }
-      }
-      case no-rd {
 
 
 
@@ -2746,6 +2746,124 @@ Barguil, et al.          Expires October 9, 2021               [Page 49]
 Internet-Draft            VPN Common YANG Model               April 2021
 
 
+            "Indicates an RD value that is explicitly
+             assigned.";
+        }
+      }
+      case directly-assigned-suffix {
+        description
+          "Explicitly the value of the Assigned Number subfield
+           of the RD. The Administrator subfield of the RD will
+           be based on other configuration information such as
+           router-id or ASN.";
+        leaf rd-suffix {
+          type uint16;
+          description
+            "Indicates the value of the Assigned Number
+             subfield that is explicitly assigned.";
+        }
+      }
+      case auto-assigned {
+        description
+          "The RD is auto-assigned.";
+        container rd-auto {
+          description
+            "The RD is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode. RD can be
+               automatically assigned either with or without
+               indicating a pool from which the RD should be
+               taken.
+
+               For both cases, the server will auto-assign an RD
+               value 'auto-assigned-rd' and use that value
+               operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The auto-assignment will be made from the pool
+                   identified by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates an RD is fully auto-assigned.";
+              }
+            }
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 50]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
+          }
+          leaf auto-assigned-rd {
+            type rt-types:route-distinguisher;
+            config false;
+            description
+              "The value of the auto-assigned RD.";
+          }
+        }
+      }
+      case auto-assigned-suffix {
+        description
+          "The value of the Assigned Number subfield will
+           be auto-assigned. The Administrator subfield
+           will be based on other configuration information such as
+           router-id or ASN.";
+        container rd-auto-suffix {
+          description
+            "The Assigned Number subfield is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode of the Assigned Number
+               subfield. This number can be automatically assigned
+               either with or without indicating a pool from which
+               the value should be taken.
+
+               For both cases, the server will auto-assign
+               'auto-assigned-rd-suffix' and use that value to build
+               the RD that will be used operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The assignment will be made from the pool identified
+                   by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates the Assigned Number is fully auto assigned.";
+              }
+            }
+          }
+          leaf auto-assigned-rd-suffix {
+            type uint16;
+            config false;
+            description
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 51]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
+
+              "Includes the value of the Assigned Number subfield that is
+               auto-assigned .";
+          }
+        }
+      }
+      case no-rd {
         description
           "Use the empty type to indicate RD has no value and is not to
            be auto-assigned.";
@@ -2755,12 +2873,6 @@ Internet-Draft            VPN Common YANG Model               April 2021
             "No RD is assigned.";
         }
       }
-    }
-    container vpn-targets {
-      description
-        "Set of route targets to match for import and export routes
-         to/from VRF.";
-      uses vpn-route-targets;
     }
   }
 
@@ -2797,7 +2909,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 50]
+Barguil, et al.          Expires October 9, 2021               [Page 52]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -2853,7 +2965,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 51]
+Barguil, et al.          Expires October 9, 2021               [Page 53]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -2909,7 +3021,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 52]
+Barguil, et al.          Expires October 9, 2021               [Page 54]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -2925,7 +3037,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
           }
           choice l4 {
             description
-              "Includes Layer 4 specific information
+              "Includes Layer 4 specific information.
                This version focuses on TCP and UDP.";
             container tcp {
               description
@@ -2965,7 +3077,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 53]
+Barguil, et al.          Expires October 9, 2021               [Page 55]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -3017,17 +3129,17 @@ Internet-Draft            VPN Common YANG Model               April 2021
    were received from (listed alphabetically): Alejandro Aguado, Raul
    Arco, Miguel Cros Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel,
    Roque Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek,
-   and Erez Segev.  Many thanks to them.
+   Erez Segev, and Paul Sherratt.  Many thanks to them.
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 54]
+Barguil, et al.          Expires October 9, 2021               [Page 56]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
 
-   Many thanks to Radek Krejci for the yangdoctors review and Wesley
-   Eddy for the tsvart review.
+   Many thanks to Radek Krejci for the yangdoctors review, Wesley Eddy
+   for the tsvart review, and Ron Bonica for the Rtgdid review.
 
 8.  Contributors
 
@@ -3077,7 +3189,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 55]
+Barguil, et al.          Expires October 9, 2021               [Page 57]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -3133,16 +3245,15 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 56]
+Barguil, et al.          Expires October 9, 2021               [Page 58]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
 
-   [I-D.ietf-teas-ietf-network-slice-definition]
-              Rokui, R., Homma, S., Makhijani, K., Contreras, L., and J.
-              Tantsura, "Definition of IETF Network Slices", draft-ietf-
-              teas-ietf-network-slice-definition-00 (work in progress),
-              January 2021.
+   [I-D.ietf-teas-ietf-network-slice-framework]
+              Gray, E. and J. Drake, "Framework for IETF Network
+              Slices", March 2021, <https://datatracker.ietf.org/doc/
+              draft-ietf-teas-ietf-network-slice-framework/>.
 
    [IEEE802.1ad]
               "Virtual Bridged Local Area Networks Amendment 4: Provider
@@ -3183,21 +3294,17 @@ Internet-Draft            VPN Common YANG Model               April 2021
               DOI 10.17487/RFC2710, October 1999,
               <https://www.rfc-editor.org/info/rfc2710>.
 
-
-
-
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 57]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
    [RFC3209]  Awduche, D., Berger, L., Gan, D., Li, T., Srinivasan, V.,
               and G. Swallow, "RSVP-TE: Extensions to RSVP for LSP
               Tunnels", RFC 3209, DOI 10.17487/RFC3209, December 2001,
               <https://www.rfc-editor.org/info/rfc3209>.
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 59]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
    [RFC3376]  Cain, B., Deering, S., Kouvelas, I., Fenner, B., and A.
               Thyagarajan, "Internet Group Management Protocol, Version
@@ -3239,21 +3346,21 @@ Internet-Draft            VPN Common YANG Model               April 2021
               DOI 10.17487/RFC4664, September 2006,
               <https://www.rfc-editor.org/info/rfc4664>.
 
-
-
-
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 58]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
    [RFC4761]  Kompella, K., Ed. and Y. Rekhter, Ed., "Virtual Private
               LAN Service (VPLS) Using BGP for Auto-Discovery and
               Signaling", RFC 4761, DOI 10.17487/RFC4761, January 2007,
               <https://www.rfc-editor.org/info/rfc4761>.
+
+
+
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 60]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
    [RFC4762]  Lasserre, M., Ed. and V. Kompella, Ed., "Virtual Private
               LAN Service (VPLS) Using Label Distribution Protocol (LDP)
@@ -3298,18 +3405,18 @@ Internet-Draft            VPN Common YANG Model               April 2021
               Ethernet VPN", RFC 7432, DOI 10.17487/RFC7432, February
               2015, <https://www.rfc-editor.org/info/rfc7432>.
 
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 59]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
    [RFC7510]  Xu, X., Sheth, N., Yong, L., Callon, R., and D. Black,
               "Encapsulating MPLS in UDP", RFC 7510,
               DOI 10.17487/RFC7510, April 2015,
               <https://www.rfc-editor.org/info/rfc7510>.
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 61]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
    [RFC7623]  Sajassi, A., Ed., Salam, S., Bitar, N., Isaac, A., and W.
               Henderickx, "Provider Backbone Bridging Combined with
@@ -3351,27 +3458,21 @@ Internet-Draft            VPN Common YANG Model               April 2021
               DOI 10.17487/RFC8365, March 2018,
               <https://www.rfc-editor.org/info/rfc8365>.
 
-
-
-
-
-
-
-Barguil, et al.          Expires October 9, 2021               [Page 60]
-
-Internet-Draft            VPN Common YANG Model               April 2021
-
-
-   [RFC8426]  Sitaraman, H., Ed., Beeram, V., Minei, I., and S.
-              Sivabalan, "Recommendations for RSVP-TE and Segment
-              Routing (SR) Label Switched Path (LSP) Coexistence",
-              RFC 8426, DOI 10.17487/RFC8426, July 2018,
-              <https://www.rfc-editor.org/info/rfc8426>.
-
    [RFC8453]  Ceccarelli, D., Ed. and Y. Lee, Ed., "Framework for
               Abstraction and Control of TE Networks (ACTN)", RFC 8453,
               DOI 10.17487/RFC8453, August 2018,
               <https://www.rfc-editor.org/info/rfc8453>.
+
+
+
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 62]
+
+Internet-Draft            VPN Common YANG Model               April 2021
+
 
    [RFC8466]  Wen, B., Fioccola, G., Ed., Xie, C., and L. Jalil, "A YANG
               Data Model for Layer 2 Virtual Private Network (L2VPN)
@@ -3413,7 +3514,18 @@ Appendix A.  Example of Common Data Nodes in Early L2NM/L3NM Designs
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 61]
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires October 9, 2021               [Page 63]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -3469,7 +3581,7 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 62]
+Barguil, et al.          Expires October 9, 2021               [Page 64]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -3525,7 +3637,7 @@ Authors' Addresses
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 63]
+Barguil, et al.          Expires October 9, 2021               [Page 65]
 
 Internet-Draft            VPN Common YANG Model               April 2021
 
@@ -3581,4 +3693,4 @@ Internet-Draft            VPN Common YANG Model               April 2021
 
 
 
-Barguil, et al.          Expires October 9, 2021               [Page 64]
+Barguil, et al.          Expires October 9, 2021               [Page 66]
