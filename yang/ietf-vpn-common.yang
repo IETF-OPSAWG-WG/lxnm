@@ -60,7 +60,7 @@ module ietf-vpn-common {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-02-22 {
+  revision 2021-04-05 {
     description
       "Initial revision.";
     reference
@@ -992,12 +992,10 @@ module ietf-vpn-common {
   }
 
   identity sr-te {
-    base protocol-type;
+    base sr;
     description
-      "Transport is based on SR-TE.";
-    reference
-      "RFC 8426: Recommendations for RSVP-TE and Segment Routing (SR)
-                 Label Switched Path (LSP) Coexistence";
+      "Transport is based on SR with traffic engineering (TE)
+       enabled.";
   }
 
   identity rsvp-te {
@@ -1687,7 +1685,7 @@ module ietf-vpn-common {
         leaf status {
           type identityref {
             base administrative-status;
-          }        
+          }
           description
             "Administrative service status.";
         }
@@ -1801,49 +1799,118 @@ module ietf-vpn-common {
     }
   }
 
-  grouping rt-rd {
+  grouping route-distinguisher {
     description
-      "Grouping for route target (RT) and route
-       distinguisher (RD).";
+      "Grouping for route distinguisher (RD).";
     choice rd-choice {
       description
         "Route distinguisher choice between several options
-         on providing the route distiniguisher value.";
+         on providing the route distinguisher value.";
       case directly-assigned {
         description
           "Explicitly assign an RD value.";
         leaf rd {
           type rt-types:route-distinguisher;
           description
-            "Explicitly assign an RD value.";
+            "Indicates an RD value that is explicitly
+             assigned.";
         }
       }
-      case pool-assigned {
-        leaf rd-pool-name {
-          type string;
+      case directly-assigned-suffix {
+        description
+          "Explicitly the value of the Assigned Number subfield
+           of the RD. The Administrator subfield of the RD will 
+           be based on other configuration information such as 
+           router-id or ASN.";
+        leaf rd-suffix {
+          type uint16;
           description
-            "The server will auto-assign a route distinguisher value
-             and use that value operationally. The assignment will be
-             made from the pool identified by the rd-pool-name.";
-        }
-        leaf rd-from-pool {
-          type rt-types:route-distinguisher;
-          config false;
-          description
-            "The RD assigned from the pool name.";
+            "Indicates the value of the Assigned Number
+             subfield that is explicitly assigned.";
         }
       }
-      case full-autoasigned {
-        leaf auto {
-          type empty;
+      case auto-assigned {
+        description
+          "The RD is auto-assigned.";
+        container rd-auto {
           description
-            "Indicates an RD is fully auto assigned.";
+            "The RD is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode. RD can be
+               automatically assigned either with or without
+               indicating a pool from which the RD should be 
+               taken. 
+
+               For both cases, the server will auto-assign an RD 
+               value 'auto-assigned-rd' and use that value 
+               operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The auto-assignment will be made from the pool
+                   identified by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates an RD is fully auto-assigned.";
+              }
+            }
+          }
+          leaf auto-assigned-rd {
+            type rt-types:route-distinguisher;
+            config false;
+            description
+              "The value of the auto-assigned RD.";
+          }
         }
-        leaf rd-auto {
-          type rt-types:route-distinguisher;
-          config false;
+      }
+      case auto-assigned-suffix {
+        description
+          "The value of the Assigned Number subfield will
+           be auto-assigned. The Administrator subfield
+           will be based on other configuration information such as 
+           router-id or ASN.";
+        container rd-auto-suffix {
           description
-            "Auto assigned RD.";
+            "The Assigned Number subfield is auto-assigned.";
+          choice auto-mode {
+            description
+              "Indicates the auto-assignment mode of the Assigned Number
+               subfield. This number can be automatically assigned 
+               either with or without indicating a pool from which 
+               the value should be taken. 
+
+               For both cases, the server will auto-assign
+               'auto-assigned-rd-suffix' and use that value to build 
+               the RD that will be used operationally.";
+            case from-pool {
+              leaf rd-pool-name {
+                type string;
+                description
+                  "The assignment will be made from the pool identified
+                   by the rd-pool-name.";
+              }
+            }
+            case full-auto {
+              leaf auto {
+                type empty;
+                description
+                  "Indicates the Assigned Number is fully auto assigned.";
+              }
+            }
+          }
+          leaf auto-assigned-rd-suffix {
+            type uint16;
+            config false;
+            description
+              "Includes the value of the Assigned Number subfield that is 
+               auto-assigned .";
+          }
         }
       }
       case no-rd {
@@ -1996,7 +2063,7 @@ module ietf-vpn-common {
           }
           choice l4 {
             description
-              "Includes Layer 4 specific information
+              "Includes Layer 4 specific information.
                This version focuses on TCP and UDP.";
             container tcp {
               description
