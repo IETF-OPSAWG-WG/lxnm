@@ -141,6 +141,29 @@ module ietf-l2vpn-ntw {
   /* Typedefs */
   /* Identities */
 
+  identity evpn-redundancy-mode {
+    description 
+      "Base identity for EVPN redundancy modes.";
+  }
+
+  identity single-active {
+    base evpn-redundancy-mode;
+    description
+      "Indicates Single-Active redundancy mode for 
+       a given Ethernet Segment (ES).";
+     reference
+       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.1";
+  }
+
+  identity all-active {
+    base evpn-redundancy-mode;
+    description
+      "Indicates All-Active redundancy mode for 
+       a given Ethernet Segment (ES).";
+     reference
+       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.2";
+  }
+
   identity mapping-type {
     base vpn-common:multicast-gp-address-mapping;
     description
@@ -964,28 +987,6 @@ module ietf-l2vpn-ntw {
                         "Unicast management";
                     }
                   }
-                  container ethernet-segments {
-                    description
-                      "Ethernet segment support on the EVPN.";
-                    list ethernet-segment {
-                      key "name";
-                      description
-                        "Ethernet segment support on the EVPN.";
-                      leaf name {
-                        type string;
-                        description
-                          "Ethernet segment name on the EVPN.";
-                      }
-                      leaf ethernet-segment-identifier {
-                        type yang:hex-string {
-                          length "29";
-                        }
-                        description
-                          "10-octet Ethernet Segment Identifier (ESI).";
-                      }
-                    }
-                  }
-                }
               }
               container t-ldp-pwe {
                 when "../type = 'vpn-common:t-ldp'" {
@@ -1140,28 +1141,7 @@ module ietf-l2vpn-ntw {
                     description
                       "Groups the fate sharing group member
                        is belonging to";
-                    leaf fate-sharing-group-size {
-                      type uint16;
-                      description
-                        "Fate sharing group size.";
-                    }
-                    leaf group-color {
-                      type string;
-                      description
-                        "Group color associated with a particular VPN.";
-                    }
-                    leaf ethernet-segment-identifier {
-                      type leafref {
-                        path "/l2vpn-ntw/vpn-services"
-                           + "/vpn-service/vpn-nodes"
-                           + "/vpn-node/signaling-options"
-                           + "/evpn-bgp/common/ethernet-segments"
-                           + "/ethernet-segment/ethernet-segment-identifier";
-                      }
-                      description
-                        "The ESI that is associated with the VPN network access.";
-                    }
-                    list group {
+                  list group {
                       key "group-id";
                       description
                         "List of group-ids.";
@@ -1171,8 +1151,34 @@ module ietf-l2vpn-ntw {
                           "Indicates the Group-id to which the network access
                            belongs to.";
                       }
+                      leaf fate-sharing-group-size {
+                        type uint16;
+                        description
+                          "Fate sharing group size.";
+                      }
+                      leaf group-color {
+                        type string;
+                        description
+                          "Group color associated with a particular VPN.";
+                      }
+                      leaf ethernet-segment-identifier {
+                        type yang:hex-string {
+                          length "29";
+                        }
+                        description
+                          "10-octet Ethernet Segment Identifier (ESI).";
+                      }
+                      leaf redundancy-mode {
+                        type identityref{
+                          base evpn-redundancy-mode;
+                        }
+                        description 
+                          "Indicates the EVPN redundancy mode for
+                           a multihomed CE.";
+                       }
                     }
                   }
+                }
                   container constraints {
                     description
                       "Constraints for placing this site
