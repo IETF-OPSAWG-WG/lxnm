@@ -35,29 +35,41 @@ module: ietf-l3vpn-ntw
            |     +--rw profile-id                 string
            |     +--rw role?                      identityref
            |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
-           |     +--rw (rd-choice)?
-           |     |  +--:(directly-assigned)
-           |     |  |  +--rw rd?                  rt-types:route-distinguisher
-           |     |  +--:(pool-assigned)
-           |     |  |  +--rw rd-pool-name?        string
-           |     |  |  +--ro rd-from-pool?        rt-types:route-distinguisher
-           |     |  +--:(full-autoasigned)
-           |     |  |  +--rw auto?                empty
-           |     |  |  +--ro rd-auto?             rt-types:route-distinguisher
-           |     |  +--:(no-rd)
-           |     |     +--rw no-rd?               empty
-           |     +--rw vpn-targets
-           |     |  +--rw vpn-target* [id]
-           |     |  |  +--rw id                   int8
-           |     |  |  +--rw route-targets* [route-target]
-           |     |  |  |  +--rw route-target    rt-types:route-target
-           |     |  |  +--rw route-target-type    rt-types:route-target-type
-           |     |  +--rw vpn-policies
-           |     |     +--rw import-policy?   string
-           |     |     +--rw export-policy?   string
-           |     +--rw maximum-routes
-           |     |  +--rw selector* [address-family protocol]
-           |     |     +--rw address-family    identityref
+           |     +--rw address-family* [address-family]
+           |     |  +--rw address-family          identityref
+           |     |  +--rw (rd-choice)?
+           |     |  |  +--:(directly-assigned)
+           |     |  |  |  +--rw rd?               rt-types:route-distinguisher
+           |     |  |  +--:(directly-assigned-suffix)
+           |     |  |  |  +--rw rd-suffix?        uint16
+           |     |  |  +--:(auto-assigned)
+           |     |  |  |  +--rw rd-auto
+           |     |  |  |     +--rw (auto-mode)?
+           |     |  |  |     |  +--:(from-pool)
+           |     |  |  |     |  |  +--rw rd-pool-name?   string
+           |     |  |  |     |  +--:(full-auto)
+           |     |  |  |     |     +--rw auto?           empty
+           |     |  |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+           |     |  |  +--:(auto-assigned-suffix)
+           |     |  |  |  +--rw rd-auto-suffix
+           |     |  |  |     +--rw (auto-mode)?
+           |     |  |  |     |  +--:(from-pool)
+           |     |  |  |     |  |  +--rw rd-pool-name?        string
+           |     |  |  |     |  +--:(full-auto)
+           |     |  |  |     |     +--rw auto?                empty
+           |     |  |  |     +--ro auto-assigned-rd-suffix?   uint16
+           |     |  |  +--:(no-rd)
+           |     |  |     +--rw no-rd?            empty
+           |     |  +--rw vpn-targets
+           |     |  |  +--rw vpn-target* [id]
+           |     |  |  |  +--rw id                   int8
+           |     |  |  |  +--rw route-targets* [route-target]
+           |     |  |  |  |  +--rw route-target    rt-types:route-target
+           |     |  |  |  +--rw route-target-type    rt-types:route-target-type
+           |     |  |  +--rw vpn-policies
+           |     |  |     +--rw import-policy?   string
+           |     |  |     +--rw export-policy?   string
+           |     |  +--rw maximum-routes* [protocol]
            |     |     +--rw protocol          identityref
            |     |     +--rw maximum-routes?   uint32
            |     +--rw multicast {vpn-common:multicast}?
@@ -133,8 +145,8 @@ module: ietf-l3vpn-ntw
            |        |        +--ro status?         identityref
            |        |        +--ro last-updated?   yang:date-and-time
            |        +--rw pim {vpn-common:pim}?
-           |           +--rw hello-interval?   uint8
-           |           +--rw dr-priority?      uint16
+           |           +--rw hello-interval?   rt-types:timer-value-seconds16
+           |           +--rw dr-priority?      uint32
            |           +--rw status
            |              +--rw admin-status
            |              |  +--rw status?         identityref
@@ -155,40 +167,53 @@ module: ietf-l3vpn-ntw
            |        +--rw profile-name?   -> /l3vpn-ntw/vpn-profiles/valid-provider-identifiers/external-connectivity-identifier/id
            +--rw vpn-nodes
               +--rw vpn-node* [vpn-node-id]
-                 +--rw vpn-node-id                     union
+                 +--rw vpn-node-id                     vpn-common:vpn-id
                  +--rw description?                    string
                  +--rw ne-id?                          string
                  +--rw local-autonomous-system?        inet:as-number {vpn-common:rtg-bgp}?
-                 +--rw address-family?                 identityref
-                 +--rw router-id?                      inet:ip-address
+                 +--rw router-id?                      rt-types:router-id
                  +--rw active-vpn-instance-profiles
                  |  +--rw vpn-instance-profile* [profile-id]
                  |     +--rw profile-id                 -> /l3vpn-ntw/vpn-services/vpn-service/vpn-instance-profiles/vpn-instance-profile/profile-id
-                 |     +--rw router-id?                 inet:ip-address
+                 |     +--rw router-id* [address-family]
+                 |     |  +--rw address-family    identityref
+                 |     |  +--rw router-id?        inet:ip-address
                  |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
-                 |     +--rw (rd-choice)?
-                 |     |  +--:(directly-assigned)
-                 |     |  |  +--rw rd?                  rt-types:route-distinguisher
-                 |     |  +--:(pool-assigned)
-                 |     |  |  +--rw rd-pool-name?        string
-                 |     |  |  +--ro rd-from-pool?        rt-types:route-distinguisher
-                 |     |  +--:(full-autoasigned)
-                 |     |  |  +--rw auto?                empty
-                 |     |  |  +--ro rd-auto?             rt-types:route-distinguisher
-                 |     |  +--:(no-rd)
-                 |     |     +--rw no-rd?               empty
-                 |     +--rw vpn-targets
-                 |     |  +--rw vpn-target* [id]
-                 |     |  |  +--rw id                   int8
-                 |     |  |  +--rw route-targets* [route-target]
-                 |     |  |  |  +--rw route-target    rt-types:route-target
-                 |     |  |  +--rw route-target-type    rt-types:route-target-type
-                 |     |  +--rw vpn-policies
-                 |     |     +--rw import-policy?   string
-                 |     |     +--rw export-policy?   string
-                 |     +--rw maximum-routes
-                 |     |  +--rw selector* [address-family protocol]
-                 |     |     +--rw address-family    identityref
+                 |     +--rw address-family* [address-family]
+                 |     |  +--rw address-family          identityref
+                 |     |  +--rw (rd-choice)?
+                 |     |  |  +--:(directly-assigned)
+                 |     |  |  |  +--rw rd?               rt-types:route-distinguisher
+                 |     |  |  +--:(directly-assigned-suffix)
+                 |     |  |  |  +--rw rd-suffix?        uint16
+                 |     |  |  +--:(auto-assigned)
+                 |     |  |  |  +--rw rd-auto
+                 |     |  |  |     +--rw (auto-mode)?
+                 |     |  |  |     |  +--:(from-pool)
+                 |     |  |  |     |  |  +--rw rd-pool-name?   string
+                 |     |  |  |     |  +--:(full-auto)
+                 |     |  |  |     |     +--rw auto?           empty
+                 |     |  |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+                 |     |  |  +--:(auto-assigned-suffix)
+                 |     |  |  |  +--rw rd-auto-suffix
+                 |     |  |  |     +--rw (auto-mode)?
+                 |     |  |  |     |  +--:(from-pool)
+                 |     |  |  |     |  |  +--rw rd-pool-name?        string
+                 |     |  |  |     |  +--:(full-auto)
+                 |     |  |  |     |     +--rw auto?                empty
+                 |     |  |  |     +--ro auto-assigned-rd-suffix?   uint16
+                 |     |  |  +--:(no-rd)
+                 |     |  |     +--rw no-rd?            empty
+                 |     |  +--rw vpn-targets
+                 |     |  |  +--rw vpn-target* [id]
+                 |     |  |  |  +--rw id                   int8
+                 |     |  |  |  +--rw route-targets* [route-target]
+                 |     |  |  |  |  +--rw route-target    rt-types:route-target
+                 |     |  |  |  +--rw route-target-type    rt-types:route-target-type
+                 |     |  |  +--rw vpn-policies
+                 |     |  |     +--rw import-policy?   string
+                 |     |  |     +--rw export-policy?   string
+                 |     |  +--rw maximum-routes* [protocol]
                  |     |     +--rw protocol          identityref
                  |     |     +--rw maximum-routes?   uint32
                  |     +--rw multicast {vpn-common:multicast}?
@@ -264,8 +289,8 @@ module: ietf-l3vpn-ntw
                  |        |        +--ro status?         identityref
                  |        |        +--ro last-updated?   yang:date-and-time
                  |        +--rw pim {vpn-common:pim}?
-                 |           +--rw hello-interval?   uint8
-                 |           +--rw dr-priority?      uint16
+                 |           +--rw hello-interval?   rt-types:timer-value-seconds16
+                 |           +--rw dr-priority?      uint32
                  |           +--rw status
                  |              +--rw admin-status
                  |              |  +--rw status?         identityref
@@ -330,50 +355,64 @@ module: ietf-l3vpn-ntw
                        |        +--rw far-end?   union
                        +--rw ip-connection
                        |  +--rw ipv4 {vpn-common:ipv4}?
-                       |  |  +--rw local-address?                           inet:ipv4-prefix
-                       |  |  +--rw address-allocation-type?                 identityref
+                       |  |  +--rw local-address?                                 inet:ipv4-prefix
+                       |  |  +--rw address-allocation-type?                       identityref
                        |  |  +--rw (allocation-type)?
                        |  |     +--:(provider-dhcp)
-                       |  |     |  +--rw dhcp-server-enable?                boolean
-                       |  |     |  +--rw (address-assign)?
-                       |  |     |     +--:(number)
-                       |  |     |     |  +--rw number-of-dynamic-address?   uint16
-                       |  |     |     +--:(explicit)
-                       |  |     |        +--rw customer-addresses
-                       |  |     |           +--rw address-group* [group-id]
-                       |  |     |              +--rw group-id         string
-                       |  |     |              +--rw start-address?   inet:ipv4-address
-                       |  |     |              +--rw end-address?     inet:ipv4-address
+                       |  |     |  +--rw dhcp-service-type?                       enumeration
+                       |  |     |  +--rw (service-type)?
+                       |  |     |     +--:(relay)
+                       |  |     |     |  +--rw server-ip-address*                 inet:ipv4-address
+                       |  |     |     +--:(server)
+                       |  |     |        +--rw (address-assign)?
+                       |  |     |           +--:(number)
+                       |  |     |           |  +--rw number-of-dynamic-address?   uint16
+                       |  |     |           +--:(explicit)
+                       |  |     |              +--rw customer-addresses
+                       |  |     |                 +--rw address-pool* [pool-id]
+                       |  |     |                    +--rw pool-id          string
+                       |  |     |                    +--rw start-address?   inet:ipv4-address
+                       |  |     |                    +--rw end-address?     inet:ipv4-address
                        |  |     +--:(dhcp-relay)
-                       |  |     |  +--rw dhcp-relay-enable?                 boolean
+                       |  |     |  +--rw dhcp-relay-enable?                       boolean
                        |  |     |  +--rw customer-dhcp-servers
                        |  |     |     +--rw server-ip-address*   inet:ipv4-address
                        |  |     +--:(static-addresses)
-                       |  |        +--rw primary-address?                   -> ../address/address-id
+                       |  |        +--rw primary-address?                         -> ../address/address-id
                        |  |        +--rw address* [address-id]
                        |  |           +--rw address-id          string
-                       |  |           +--rw customer-address?   inet:ipv4-address
+                       |  |           +--rw customer-address?   inet:ipv4-prefix
                        |  +--rw ipv6 {vpn-common:ipv6}?
-                       |     +--rw local-address?                           inet:ipv6-prefix
-                       |     +--rw address-allocation-type?                 identityref
+                       |     +--rw local-address?                 inet:ipv6-prefix
+                       |     +--rw address-allocation-type?       identityref
                        |     +--rw (allocation-type)?
-                       |        +--:(provider-dhcp)
-                       |        |  +--rw dhcp-server-enable?                boolean
-                       |        |  +--rw (address-assign)?
-                       |        |     +--:(number)
-                       |        |     |  +--rw number-of-dynamic-address?   uint16
-                       |        |     +--:(explicit)
-                       |        |        +--rw customer-addresses
-                       |        |           +--rw address-group* [group-id]
-                       |        |              +--rw group-id         string
-                       |        |              +--rw start-address?   inet:ipv6-address
-                       |        |              +--rw end-address?     inet:ipv6-address
+                       |        +--:(dynamic)
+                       |        |  +--rw provider-dhcp
+                       |        |  |  +--rw dhcp-service-type?                       enumeration
+                       |        |  |  +--rw (service-type)?
+                       |        |  |     +--:(provider-dhcp-servers)
+                       |        |  |     |  +--rw server-ip-address*                 inet:ipv6-address
+                       |        |  |     +--:(server)
+                       |        |  |        +--rw (address-assign)?
+                       |        |  |           +--:(number)
+                       |        |  |           |  +--rw number-of-dynamic-address?   uint16
+                       |        |  |           +--:(explicit)
+                       |        |  |              +--rw customer-addresses
+                       |        |  |                 +--rw address-pool* [pool-id]
+                       |        |  |                    +--rw pool-id          string
+                       |        |  |                    +--rw start-address?   inet:ipv6-address
+                       |        |  |                    +--rw end-address?     inet:ipv6-address
+                       |        |  +--rw slaac
+                       |        |     +--rw pio-length?          uint8
+                       |        |     +--rw slaac-prefix-pool* [pool-id]
+                       |        |        +--rw pool-id        uint32
+                       |        |        +--rw pool-prefix    inet:ipv6-prefix
                        |        +--:(dhcp-relay)
-                       |        |  +--rw dhcp-relay-enable?                 boolean
+                       |        |  +--rw dhcp-relay-enable?       boolean
                        |        |  +--rw customer-dhcp-servers
                        |        |     +--rw server-ip-address*   inet:ipv6-address
                        |        +--:(static-addresses)
-                       |           +--rw primary-address?                   -> ../address/prefix-id
+                       |           +--rw primary-address?         -> ../address/prefix-id
                        |           +--rw address* [prefix-id]
                        |              +--rw prefix-id          string
                        |              +--rw customer-prefix?   inet:ipv6-prefix
@@ -485,7 +524,7 @@ module: ietf-l3vpn-ntw
                        |     |        +--ro last-updated?   yang:date-and-time
                        |     +--rw isis {vpn-common:rtg-isis}?
                        |     |  +--rw address-family?   identityref
-                       |     |  +--rw area-address      yang:dotted-quad
+                       |     |  +--rw area-address      area-address
                        |     |  +--rw level?            identityref
                        |     |  +--rw metric?           uint16
                        |     |  +--rw mode?             enumeration
@@ -702,9 +741,8 @@ module: ietf-l3vpn-ntw
                              |        +--ro status?         identityref
                              |        +--ro last-updated?   yang:date-and-time
                              +--rw pim {vpn-common:pim}?
-                                +--rw priority?         uint8
-                                +--rw hello-interval?   uint8
-                                +--rw dr-priority?      uint16
+                                +--rw hello-interval?   rt-types:timer-value-seconds16
+                                +--rw dr-priority?      uint32
                                 +--rw status
                                    +--rw admin-status
                                    |  +--rw status?         identityref
