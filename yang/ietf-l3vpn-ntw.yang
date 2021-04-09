@@ -198,27 +198,28 @@ module ietf-l3vpn-ntw {
         "Provider's AS number in case the customer requests BGP
          routing.";
     }
-    uses vpn-common:route-distinguisher;
-    container vpn-targets {
+    list address-family {
+      key "address-family";
       description
-        "Set of route targets to match for import and export routes
-         to/from VRF.";
-      uses vpn-common:vpn-route-targets;
-    }
-    container maximum-routes {
-      description
-        "Defines maximum routes for the VRF.";
-      list selector {
-        key "address-family protocol";
-        description
-          "List of address families.";
-        leaf address-family {
-          type identityref {
-            base vpn-common:address-family;
-          }
-          description
-            "Indicates the address family (IPv4 or IPv6).";
+        "Set of per-address family paramters.";
+      leaf address-family {
+        type identityref {
+          base vpn-common:address-family;
         }
+        description
+          "Indicates the address family (IPv4 or IPv6).";
+      }
+      uses vpn-common:route-distinguisher;
+      container vpn-targets {
+        description
+          "Set of route targets to match for import and export routes
+           to/from VRF.";
+        uses vpn-common:vpn-route-targets;
+      }
+      list maximum-routes {
+        key "protocol";
+        description
+          "Defines maximum routes for the VRF.";
         leaf protocol {
           type identityref {
             base vpn-common:routing-protocol-type;
@@ -659,22 +660,17 @@ module ietf-l3vpn-ntw {
                 "Provider's AS number in case the customer requests BGP
                  routing.";
             }
-            leaf address-family {
-              type identityref {
-                base vpn-common:address-family;
-              }
-              description
-                "The address family used for router-id information.";
-            }
             leaf router-id {
-              type inet:ip-address;
+              type rt-types:router-id;
               description
-                "The router-id information can be an IPv4 or IPv6
-                 address.";
+                "A 32-bit number in the dotted-quad format that is used
+                 to uniquely identify a node within an autonomous
+                 system. This identifier is used for both IPv4 and
+                 IPv6.";
             }
             container active-vpn-instance-profiles {
               description
-                "Container for XXXX profiles.";
+                "Container for active VPN instance profiles.";
               list vpn-instance-profile {
                 key "profile-id";
                 description
@@ -688,11 +684,28 @@ module ietf-l3vpn-ntw {
                   description
                     "Node's Import/Export profile.";
                 }
-                leaf router-id {
-                  type inet:ip-address;
+                list router-id {
+                  key "address-family";
                   description
-                    "The router-id information can be an IPv4 or IPv6
-                     address.";
+                    "Router-id per address family.";
+                  leaf address-family {
+                    type identityref {
+                      base vpn-common:address-family;
+                    }
+                    description
+                      "Indicates the address family (IPv4 or IPv6).";
+                  }
+                  leaf router-id {
+                    type inet:ip-address;
+                    description
+                      "The router-id information can be an IPv4 or IPv6
+                       address. This can be used, for example, to
+                       configure an IPv6 address as a router-id
+                       when such capability is supported by underlay
+                       routers. In such case, the configured value
+                       overrides the generic one defined at the VPN
+                       node level.";
+                  }
                 }
                 uses vpn-instance-profile;
               }
@@ -1201,11 +1214,11 @@ module ietf-l3vpn-ntw {
                              + "cation-type, 'provider-dhcp-slaac')" {
                             description
                               "Only applies when addresses are
-                               allocated by DHCPv6 provided by the 
+                               allocated by DHCPv6 provided by the
                                operator.";
                           }
                           description
-                            "DHCPv6 allocated addresses related 
+                            "DHCPv6 allocated addresses related
                              parameters.";
                           leaf dhcp-service-type {
                             type enumeration {
@@ -1229,7 +1242,7 @@ module ietf-l3vpn-ntw {
                               when "./dhcp-service-type = 'relay'";
                               description
                                 "Case where a local DHCPv6 relay is enabled.
-                                 This list is used if and only if a DHCP relay is 
+                                 This list is used if and only if a DHCP relay is
                                  enabled.";
                               leaf-list server-ip-address {
                                 type inet:ipv6-address;
@@ -1356,7 +1369,7 @@ module ietf-l3vpn-ntw {
                           type boolean;
                           default "true";
                           description
-                            "Controls the activation of the DHCPv6 relay 
+                            "Controls the activation of the DHCPv6 relay
                              function for this access.";
                         }
                         container customer-dhcp-servers {
@@ -1646,7 +1659,7 @@ module ietf-l3vpn-ntw {
                            connection and is used to prevent routing
                            loops.";
                         reference
-                          "RFC 4364: BGP/MPLS IP Virtual Private Networks 
+                          "RFC 4364: BGP/MPLS IP Virtual Private Networks
                                      (VPNs), Section 7";
                       }
                       leaf ipv6-site-of-origin {
@@ -2221,7 +2234,7 @@ module ietf-l3vpn-ntw {
                         description
                           "Enables meticulous mode.";
                         reference
-                          "RFC 5880: Bidirectional Forwarding 
+                          "RFC 5880: Bidirectional Forwarding
                                      Detection (BFD), Section 6.7";
                       }
                     }
