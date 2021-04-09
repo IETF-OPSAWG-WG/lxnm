@@ -521,7 +521,7 @@
       Connectivity Provisioning Profile (CPP) <xref target="RFC7297"></xref>,
       an enhanced VPN (VPN+) service <xref
       target="I-D.ietf-teas-enhanced-vpn"></xref>, an IETF network slice <xref
-      target="I-D.ietf-teas-ietf-network-slice-definition"></xref>, or
+      target="I-D.ietf-teas-ietf-network-slice-framework"></xref>, or
       Abstraction and Control of TE Networks (ACTN) <xref
       target="RFC8453"></xref>.</t>
 
@@ -1399,7 +1399,8 @@
           address assignment modes for customer addresses: provider DHCP, DHCP
           relay, and static addressing. Only one mode is enabled for a given
           service. Note that for the IPv6 cases, SLAAC <xref
-          target="RFC7527"></xref> can be used.</t>
+          target="RFC7527"></xref><xref target="RFC4861"></xref> can be
+          used.</t>
 
           <t><xref target="ip_conn_tree_v4"></xref> shows the structure of the
           dynamic IPv4 address assignment.</t>
@@ -1419,8 +1420,8 @@
 |  |     |     |  +--rw number-of-dynamic-address?   uint16
 |  |     |     +--:(explicit)
 |  |     |        +--rw customer-addresses
-|  |     |           +--rw address-group* [group-id]
-|  |     |              +--rw group-id         string
+|  |     |           +--rw address-pool* [pool-id]
+|  |     |              +--rw pool-id         string
 |  |     |              +--rw start-address?   inet:ipv4-address
 |  |     |              +--rw end-address?     inet:ipv4-address
 |  |     +--:(dhcp-relay)
@@ -1446,17 +1447,24 @@
 |     +--rw local-address?                           inet:ipv6-prefix
 |     +--rw address-allocation-type?                 identityref
 |     +--rw (allocation-type)?
-|        +--:(provider-dhcp)
-|        |  +--rw dhcp-server-enable?                boolean
-|        |  +--rw (address-assign)?
-|        |     +--:(number)
-|        |     |  +--rw number-of-dynamic-address?   uint16
-|        |     +--:(explicit)
-|        |        +--rw customer-addresses
-|        |           +--rw address-group* [group-id]
-|        |              +--rw group-id         string
-|        |              +--rw start-address?   inet:ipv6-address
-|        |              +--rw end-address?     inet:ipv6-address
+|        +--:(dynamic)
+|        |  +--rw provider-dhcp
+|        |  |  +--rw dhcp-server-enable?                boolean
+|        |  |  +--rw (address-assign)?
+|        |  |     +--:(number)
+|        |  |     |  +--rw number-of-dynamic-address?   uint16
+|        |  |     +--:(explicit)
+|        |  |        +--rw customer-addresses
+|        |  |           +--rw address-pool* [pool-id]
+|        |  |              +--rw pool-id          string
+|        |  |              +--rw start-address?   inet:ipv6-address
+|        |  |              +--rw end-address?     inet:ipv6-address
+|        |  +--rw slaac
+|        |     +--rw slaac-enable?        boolean
+|        |     +--rw pio-length?          uint8
+|        |     +--rw slaac-prefix-pool* [pool-id]
+|        |        +--rw pool-id        uint32
+|        |        +--rw pool-prefix    inet:ipv6-prefix
 |        +--:(dhcp-relay)
 |        |  +--rw dhcp-relay-enable?                 boolean
 |        |  +--rw customer-dhcp-servers
@@ -1469,10 +1477,10 @@
 
           <t>In the case of the static addressing (<xref
           target="ip_conn_tree-static"></xref>), the model supports the
-          assignment of several IP addresses in the same 'vpn-network-access'.
-          To identify which of the addresses is the primary address of a
-          connection ,the 'primary-address' reference MUST be set with the
-          corresponding 'address-id'.</t>
+          assignment of several IP addresses/prefixes in the same
+          'vpn-network-access'. To identify which of the addresses is the
+          primary address of a connection ,the 'primary-address' reference
+          MUST be set with the corresponding 'address-id'.</t>
 
           <figure align="center" anchor="ip_conn_tree-static"
                   title="IP Connection Subtree Structure (Static Mode)">
@@ -1486,7 +1494,7 @@
 |  |        +--rw primary-address?        -> ../address/address-id
 |  |        +--rw address* [address-id]
 |  |           +--rw address-id              string
-|  |           +--rw customer-address?     inet:ipv4-address
+|  |           +--rw customer-address?     inet:ipv4-prefix
 |  +--rw ipv6 {vpn-common:ipv6}?
 |     +--rw address-allocation-type?         identityref
 |     +--rw (allocation-type)?
@@ -1496,7 +1504,7 @@
 |           +--rw address* [address-id]
 |              +--rw prefix-id              string
 |              +--rw customer-prefix?     inet:ipv6-prefix
-...                       
+...
 ]]></artwork>
           </figure>
 
@@ -5253,7 +5261,7 @@ module ietf-l3vpn-ntw {
 
       <?rfc include='reference.RFC.7297'?>
 
-      <?rfc include='reference.I-D.ietf-teas-ietf-network-slice-definition'?>
+      <?rfc include='reference.RFC.4861'?>
 
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
@@ -5264,6 +5272,45 @@ module ietf-l3vpn-ntw {
           </author>
 
           <date month="November" year="2020" />
+        </front>
+      </reference>
+
+      <reference anchor="I-D.ietf-teas-ietf-network-slice-framework"
+                 target="https://datatracker.ietf.org/doc/draft-ietf-teas-ietf-network-slice-framework/">
+        <front>
+          <title>Framework for IETF Network Slices</title>
+
+          <author fullname="E. Gray">
+            <organization></organization>
+          </author>
+
+          <author fullname="J. Drake">
+            <organization></organization>
+
+            <address>
+              <postal>
+                <street></street>
+
+                <city></city>
+
+                <region></region>
+
+                <code></code>
+
+                <country></country>
+              </postal>
+
+              <phone></phone>
+
+              <facsimile></facsimile>
+
+              <email></email>
+
+              <uri></uri>
+            </address>
+          </author>
+
+          <date month="March" year="2021" />
         </front>
       </reference>
     </references>

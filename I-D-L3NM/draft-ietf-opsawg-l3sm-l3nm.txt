@@ -256,7 +256,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
    Network orchestrator:  A functional entity that is hierarchically
       intermediate between a service orchestrator and network
-      nontrollers.  A network orchestrator can manage one or several
+      controllers.  A network orchestrator can manage one or several
       network nontrollers.
 
    Network controller:  A functional entity responsible for the control
@@ -437,7 +437,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
    relies upon an L3VPN service.  For example, the customer may supply
    an IP Connectivity Provisioning Profile (CPP) [RFC7297], an enhanced
    VPN (VPN+) service [I-D.ietf-teas-enhanced-vpn], an IETF network
-   slice [I-D.ietf-teas-ietf-network-slice-definition], or Abstraction
+   slice [I-D.ietf-teas-ietf-network-slice-framework], or Abstraction
    and Control of TE Networks (ACTN) [RFC8453].
 
    Note also that both the L3SM and the L3NM may be used in the context
@@ -1475,7 +1475,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
    For both IPv4 and IPv6, the IP connection supports three IP address
    assignment modes for customer addresses: provider DHCP, DHCP relay,
    and static addressing.  Only one mode is enabled for a given service.
-   Note that for the IPv6 cases, SLAAC [RFC7527] can be used.
+   Note that for the IPv6 cases, SLAAC [RFC7527][RFC4861] can be used.
 
    Figure 11 shows the structure of the dynamic IPv4 address assignment.
 
@@ -1492,8 +1492,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
    |  |     |     |  +--rw number-of-dynamic-address?   uint16
    |  |     |     +--:(explicit)
    |  |     |        +--rw customer-addresses
-   |  |     |           +--rw address-group* [group-id]
-   |  |     |              +--rw group-id         string
+   |  |     |           +--rw address-pool* [pool-id]
+   |  |     |              +--rw pool-id         string
    |  |     |              +--rw start-address?   inet:ipv4-address
    |  |     |              +--rw end-address?     inet:ipv4-address
    |  |     +--:(dhcp-relay)
@@ -1524,17 +1524,24 @@ Internet-Draft               L3NM YANG Model                  April 2021
    |     +--rw local-address?                           inet:ipv6-prefix
    |     +--rw address-allocation-type?                 identityref
    |     +--rw (allocation-type)?
-   |        +--:(provider-dhcp)
-   |        |  +--rw dhcp-server-enable?                boolean
-   |        |  +--rw (address-assign)?
-   |        |     +--:(number)
-   |        |     |  +--rw number-of-dynamic-address?   uint16
-   |        |     +--:(explicit)
-   |        |        +--rw customer-addresses
-   |        |           +--rw address-group* [group-id]
-   |        |              +--rw group-id         string
-   |        |              +--rw start-address?   inet:ipv6-address
-   |        |              +--rw end-address?     inet:ipv6-address
+   |        +--:(dynamic)
+   |        |  +--rw provider-dhcp
+   |        |  |  +--rw dhcp-server-enable?                boolean
+   |        |  |  +--rw (address-assign)?
+   |        |  |     +--:(number)
+   |        |  |     |  +--rw number-of-dynamic-address?   uint16
+   |        |  |     +--:(explicit)
+   |        |  |        +--rw customer-addresses
+   |        |  |           +--rw address-pool* [pool-id]
+   |        |  |              +--rw pool-id          string
+   |        |  |              +--rw start-address?   inet:ipv6-address
+   |        |  |              +--rw end-address?     inet:ipv6-address
+   |        |  +--rw slaac
+   |        |     +--rw slaac-enable?        boolean
+   |        |     +--rw pio-length?          uint8
+   |        |     +--rw slaac-prefix-pool* [pool-id]
+   |        |        +--rw pool-id        uint32
+   |        |        +--rw pool-prefix    inet:ipv6-prefix
    |        +--:(dhcp-relay)
    |        |  +--rw dhcp-relay-enable?                 boolean
    |        |  +--rw customer-dhcp-servers
@@ -1546,17 +1553,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
              Figure 12: IP Connection Subtree Structure (IPv6)
 
    In the case of the static addressing (Figure 13), the model supports
-   the assignment of several IP addresses in the same 'vpn-network-
-   access'.  To identify which of the addresses is the primary address
-   of a connection ,the 'primary-address' reference MUST be set with the
-   corresponding 'address-id'.
-
-
-
-
-
-
-
+   the assignment of several IP addresses/prefixes in the same 'vpn-
+   network-access'.  To identify which of the addresses is the primary
+   address of a connection ,the 'primary-address' reference MUST be set
+   with the corresponding 'address-id'.
 
 
 
@@ -1580,7 +1580,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
    |  |        +--rw primary-address?        -> ../address/address-id
    |  |        +--rw address* [address-id]
    |  |           +--rw address-id              string
-   |  |           +--rw customer-address?     inet:ipv4-address
+   |  |           +--rw customer-address?     inet:ipv4-prefix
    |  +--rw ipv6 {vpn-common:ipv6}?
    |     +--rw address-allocation-type?         identityref
    |     +--rw (allocation-type)?
@@ -6094,10 +6094,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Service", draft-ietf-teas-enhanced-vpn-06 (work in
               progress), July 2020.
 
-
-
-
-
+   [I-D.ietf-teas-ietf-network-slice-framework]
+              Gray, E. and J. Drake, "Framework for IETF Network
+              Slices", March 2021, <https://datatracker.ietf.org/doc/
+              draft-ietf-teas-ietf-network-slice-framework/>.
 
 
 
@@ -6105,12 +6105,6 @@ Barguil, et al.          Expires October 6, 2021              [Page 109]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   [I-D.ietf-teas-ietf-network-slice-definition]
-              Rokui, R., Homma, S., Makhijani, K., Contreras, L., and J.
-              Tantsura, "Definition of IETF Network Slices", draft-ietf-
-              teas-ietf-network-slice-definition-00 (work in progress),
-              January 2021.
 
    [PYANG]    "pyang", November 2020,
               <https://github.com/mbj4668/pyang>.
@@ -6141,6 +6135,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC4176, October 2005,
               <https://www.rfc-editor.org/info/rfc4176>.
 
+   [RFC4861]  Narten, T., Nordmark, E., Simpson, W., and H. Soliman,
+              "Neighbor Discovery for IP version 6 (IPv6)", RFC 4861,
+              DOI 10.17487/RFC4861, September 2007,
+              <https://www.rfc-editor.org/info/rfc4861>.
+
    [RFC6037]  Rosen, E., Ed., Cai, Y., Ed., and IJ. Wijnands, "Cisco
               Systems' Solution for Multicast in BGP/MPLS IP VPNs",
               RFC 6037, DOI 10.17487/RFC6037, October 2010,
@@ -6151,9 +6150,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Environment", RFC 7149, DOI 10.17487/RFC7149, March 2014,
               <https://www.rfc-editor.org/info/rfc7149>.
 
-
-
-
+   [RFC7297]  Boucadair, M., Jacquenet, C., and N. Wang, "IP
+              Connectivity Provisioning Profile (CPP)", RFC 7297,
+              DOI 10.17487/RFC7297, July 2014,
+              <https://www.rfc-editor.org/info/rfc7297>.
 
 
 
@@ -6161,11 +6161,6 @@ Barguil, et al.          Expires October 6, 2021              [Page 110]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   [RFC7297]  Boucadair, M., Jacquenet, C., and N. Wang, "IP
-              Connectivity Provisioning Profile (CPP)", RFC 7297,
-              DOI 10.17487/RFC7297, July 2014,
-              <https://www.rfc-editor.org/info/rfc7297>.
 
    [RFC7426]  Haleplidis, E., Ed., Pentikousis, K., Ed., Denazis, S.,
               Hadi Salim, J., Meyer, D., and O. Koufopavlou, "Software-
@@ -6210,6 +6205,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Network Topologies", RFC 8345, DOI 10.17487/RFC8345, March
               2018, <https://www.rfc-editor.org/info/rfc8345>.
 
+   [RFC8349]  Lhotka, L., Lindem, A., and Y. Qu, "A YANG Data Model for
+              Routing Management (NMDA Version)", RFC 8349,
+              DOI 10.17487/RFC8349, March 2018,
+              <https://www.rfc-editor.org/info/rfc8349>.
+
 
 
 
@@ -6217,11 +6217,6 @@ Barguil, et al.          Expires October 6, 2021              [Page 111]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   [RFC8349]  Lhotka, L., Lindem, A., and Y. Qu, "A YANG Data Model for
-              Routing Management (NMDA Version)", RFC 8349,
-              DOI 10.17487/RFC8349, March 2018,
-              <https://www.rfc-editor.org/info/rfc8349>.
 
    [RFC8453]  Ceccarelli, D., Ed. and Y. Lee, Ed., "Framework for
               Abstraction and Control of TE Networks (ACTN)", RFC 8453,
@@ -6255,25 +6250,6 @@ A.1.  4G VPN Provisioning Example
    core platforms.  In this example, a 'vpn-node' is created with two
    'vpn-network-accesses'.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires October 6, 2021              [Page 112]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
          +-------------+                  +------------------+
          |             |                  | PE               |
          |             | 192.0.2.2        |  198.51.100.1    |
@@ -6289,6 +6265,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                           +------------------+
 
                     Figure 30: Mobile Backhaul Example
+
+
+
+
+Barguil, et al.          Expires October 6, 2021              [Page 112]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
    To create a L3VPN service using the L3NM, the following sample steps
    can be followed:
@@ -6317,6 +6301,22 @@ Internet-Draft               L3NM YANG Model                  April 2021
    Second: Create a VPN node as depicted in Figure 32.  In this type of
    service, the VPN node is equivalent to the VRF configured in the
    physical device ('ne-id'=198.51.100.1).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
