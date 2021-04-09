@@ -959,7 +959,7 @@ module ietf-l3vpn-ntw {
                 }
                 container ip-connection {
                   description
-                    "Defines connection parameters.";
+                    "Defines IP connection parameters.";
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
                     description
@@ -967,7 +967,7 @@ module ietf-l3vpn-ntw {
                     leaf local-address {
                       type inet:ipv4-prefix;
                       description
-                        "This address is used at provider side.";
+                        "This address is used at the provider side.";
                     }
                     leaf address-allocation-type {
                       type identityref {
@@ -983,7 +983,8 @@ module ietf-l3vpn-ntw {
                          peer site.
 
                          If there is no value for the address
-                         allocation type, then IPv4 is not enabled.";
+                         allocation type, then IPv4 addressing is not
+                         enabled.";
                     }
                     choice allocation-type {
                       description
@@ -993,72 +994,96 @@ module ietf-l3vpn-ntw {
                            + "allocation-type, 'provider-dhcp')" {
                           description
                             "Only applies when addresses are allocated
-                             by DHCP.";
+                             by DHCP that is operated by the provider.";
                         }
                         description
-                          "DHCP allocated addresses related
-                           parameters.";
-                        leaf dhcp-server-enable {
-                          type boolean;
-                          default "true";
-                          description
-                            "Enables a DHCP service on this access.
-                             The following information are passed to
-                             the provider's DHCP server.";
-                        }
-                        choice address-assign {
-                          default "number";
-                          description
-                            "Choice for how IPv4 addresses are
-                             assigned.";
-                          case number {
-                            leaf number-of-dynamic-address {
-                              type uint16;
-                              default "1";
+                          "DHCP allocated addresses related parameters.";
+                        leaf dhcp-service-type {
+                          type enumeration {
+                            enum server {
                               description
-                                "Specifies the number of IP addresses
-                                 to be assigned to the customer on this
-                                 access.";
+                                "Local DHCP server.";
+                            }
+                            enum relay {
+                              description
+                                "Local DHCP relay. DHCP requests are
+                                 relayed to a provider's server.";
                             }
                           }
-                          case explicit {
-                            container customer-addresses {
+                          description
+                            "Indicates the type of the DHCP service to be
+                             enabled on this access.";
+                        }
+                        choice service-type {
+                          description
+                            "Choice based on the DHCP service type.";
+                          case relay {
+                            when "./dhcp-service-type = 'relay'";
+                            description
+                              "Container for list of provider's DHCP servers.";
+                            leaf-list server-ip-address {
+                              type inet:ipv4-address;
                               description
-                                "Container for customer addresses to be
-                                 allocated using DHCP.";
-                              list address-pool {
-                                key "pool-id";
-                                description
-                                  "Describes IP addresses to be
-                                   allocated by DHCP.
-
-                                   When only start-address or only
-                                   end-address is present, it
-                                   represents a single address.
-
-                                   When both start-address and
-                                   end-address are specified, it
-                                   implies a range inclusive of
-                                   both addresses.  If no address
-                                   is specified, it implies customer
-                                   addresses pool is not supported.";
-                                leaf pool-id {
-                                  type string;
+                                "IPv4 addresses of the provider's DHCP server
+                                 to use by the local DHCP relay.";
+                            }
+                          }
+                          case server {
+                            when "./dhcp-service-type = 'server'";
+                            description
+                              "A choice about how addresses are assigned when
+                               a local DHCP server is enabled.";
+                            choice address-assign {
+                              default "number";
+                              description
+                                "Choice for how IPv4 addresses are assigned.";
+                              case number {
+                                leaf number-of-dynamic-address {
+                                  type uint16;
+                                  default "1";
                                   description
-                                    "A pool identifier for the address range
-                                     from start-address to end-address.";
+                                    "Specifies the number of IP addresses
+                                     to be assigned to the customer on this
+                                     access.";
                                 }
-                                leaf start-address {
-                                  type inet:ipv4-address;
+                              }
+                              case explicit {
+                                container customer-addresses {
                                   description
-                                    "Indicates the first address in the
-                                     pool.";
-                                }
-                                leaf end-address {
-                                  type inet:ipv4-address;
-                                  description
-                                    "Indicates the last address in the
-                                     pool.";
+                                    "Container for customer addresses to be
+                                     allocated using DHCP.";
+                                  list address-pool {
+                                    key "pool-id";
+                                    description
+                                      "Describes IP addresses to be
+                                       allocated by DHCP.
+
+                                       When only start-address or only
+                                       end-address is present, it
+                                       represents a single address.
+
+                                       When both start-address and
+                                       end-address are specified, it implies a
+                                       range inclusive of both addresses.";
+                                    leaf pool-id {
+                                      type string;
+                                      description
+                                        "A pool identifier for the address range
+                                         from start-address to end-address.";
+                                    }
+                                    leaf start-address {
+                                      type inet:ipv4-address;
+                                      description
+                                        "Indicates the first address in the
+                                         pool.";
+                                    }
+                                    leaf end-address {
+                                      type inet:ipv4-address;
+                                      description
+                                        "Indicates the last address in the
+                                         pool.";
+                                    }
+                                  }
                                 }
                               }
                             }
@@ -1070,7 +1095,8 @@ module ietf-l3vpn-ntw {
                            + "-type, 'provider-dhcp-relay')" {
                           description
                             "Only applies when the provider is required
-                             to implement a DHCP relay function.";
+                             to implement a DHCP relay function that will
+                             relay DHCP requests to a customer's DHCP server.";
                         }
                         description
                           "DHCP relay is provided by the operator.";
@@ -1078,16 +1104,16 @@ module ietf-l3vpn-ntw {
                           type boolean;
                           default "true";
                           description
-                            "Enables the DHCP relay function for this
-                             access.";
+                            "Used to controls the DHCP relay function for
+                              this access.";
                         }
                         container customer-dhcp-servers {
                           description
-                            "Container for list of customer's DHCP servers.";
+                            "Container for a list of customer's DHCP servers.";
                           leaf-list server-ip-address {
                             type inet:ipv4-address;
                             description
-                              "An IP address of the customer's DHCP server.";
+                              "IPv4 addresses of the customer's DHCP server.";
                           }
                         }
                       }
@@ -1132,7 +1158,7 @@ module ietf-l3vpn-ntw {
                     leaf local-address {
                       type inet:ipv6-prefix;
                       description
-                        "Address of the provider side.";
+                        "IPv6 address of the provider side.";
                     }
                     leaf address-allocation-type {
                       type identityref {
@@ -1141,8 +1167,8 @@ module ietf-l3vpn-ntw {
                       description
                         "Defines how addresses are allocated.
                          If there is no value for the address
-                         allocation type, then IPv6 is
-                         not enabled.";
+                         allocation type, then IPv6 addressing is
+                         disabled.";
                     }
                     choice allocation-type {
                       description
@@ -1167,70 +1193,98 @@ module ietf-l3vpn-ntw {
                              + "cation-type, 'provider-dhcp-slaac')" {
                             description
                               "Only applies when addresses are
-                               allocated by DHCPv6.";
+                               allocated by DHCPv6 provided by the 
+                               operator.";
                           }
                           description
-                            "DHCPv6 allocated addresses related
+                            "DHCPv6 allocated addresses related 
                              parameters.";
-                          leaf dhcp-server-enable {
-                            type boolean;
-                            default "true";
-                            description
-                              "Enables DHCPv6 service for this access.";
-                          }
-                          choice address-assign {
-                            default "number";
-                            description
-                              "Choice about how to assign IPv6 prefixes.";
-                            case number {
-                              leaf number-of-dynamic-address {
-                                type uint16;
-                                default "1";
+                          leaf dhcp-service-type {
+                            type enumeration {
+                              enum server {
                                 description
-                                  "Describes the number of IPv6 prefixes
-                                   that are allocated to the customer
-                                   on this access.";
+                                  "Local DHCPv6 server.";
+                              }
+                              enum relay {
+                                description
+                                  "DHCPv6 relay.";
                               }
                             }
-                            case explicit {
-                              container customer-addresses {
+                            description
+                              "Indicates the type of the DHCPv6 service to
+                               be enabled on this access.";
+                          }
+                          choice service-type {
+                            description
+                              "Choice based on the DHCPv6 service type.";
+                            case provider-dhcp-servers {
+                              when "./dhcp-service-type = 'relay'";
+                              description
+                                "Case where a local DHCPv6 relay is enabled.
+                                 This list is used if and only if a DHCP relay is 
+                                 enabled.";
+                              leaf-list server-ip-address {
+                                type inet:ipv6-address;
                                 description
-                                  "Container for customer IPv6 addresses
-                                   allocated by DHCPv6.";
-                                list address-pool {
-                                  key "pool-id";
-                                  description
-                                    "Describes IPv6 addresses allocated
-                                     by DHCPv6.
-
-                                     When only start-address or only
-                                     end-address is present, it
-                                     represents a single address.
-
-                                     When both start-address and
-                                     end-address are specified, it
-                                     implies a range inclusive of
-                                     both addresses.
-
-                                     If no address is specified, it
-                                     implies customer addresses group
-                                     is not supported.";
-                                  leaf pool-id {
-                                    type string;
+                                  "IPv6 addresses of the provider's DHCPv6 server.";
+                              }
+                            }
+                            case server {
+                              when "./dhcp-service-type = 'server'";
+                              description
+                                "Case where a local DHCPv6 server is enabled.";
+                              choice address-assign {
+                                default "number";
+                                description
+                                  "Choice about how IPv6 prefixes are assigned
+                                   by the DHCPv6 server.";
+                                case number {
+                                  leaf number-of-dynamic-address {
+                                    type uint16;
+                                    default "1";
                                     description
-                                      "Pool identifier for the address range
-                                       from identified by start-address
-                                       and end-address.";
+                                      "Describes the number of IPv6 prefixes
+                                       that are allocated to the customer
+                                       on this access.";
                                   }
-                                  leaf start-address {
-                                    type inet:ipv6-address;
+                                }
+                                case explicit {
+                                  container customer-addresses {
                                     description
-                                      "Indicates the first address.";
-                                  }
-                                  leaf end-address {
-                                    type inet:ipv6-address;
-                                    description
-                                      "Indicates the last address.";
+                                      "Container for customer IPv6 addresses
+                                       allocated by DHCPv6.";
+                                    list address-pool {
+                                      key "pool-id";
+                                      description
+                                        "Describes IPv6 addresses allocated
+                                         by DHCPv6.
+
+                                         When only start-address or only
+                                         end-address is present, it
+                                         represents a single address.
+
+                                         When both start-address and
+                                         end-address are specified, it
+                                         implies a range inclusive of
+                                         both addresses.";
+                                      leaf pool-id {
+                                        type string;
+                                        description
+                                          "Pool identifier for the address range
+                                           from identified by start-address
+                                           and end-address.";
+                                      }
+                                      leaf start-address {
+                                        type inet:ipv6-address;
+                                        description
+                                          "Indicates the first address.";
+                                      }
+                                      leaf end-address {
+                                        type inet:ipv6-address;
+                                        description
+                                          "Indicates the last address.";
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -1284,29 +1338,28 @@ module ietf-l3vpn-ntw {
                            + "cation-type, 'provider-dhcp-relay')" {
                           description
                             "Only applies when the provider is required
-                             to implement DHCP relay function.";
+                             to implement DHCP relay function that will
+                             relay DHCPv6 requests to a customer's DHCP
+                             server.";
                         }
                         description
-                          "DHCP relay provided by operator.";
+                          "DHCPv6 relay provided by the operator.";
                         leaf dhcp-relay-enable {
                           type boolean;
                           default "true";
                           description
-                            "Enables the DHCP relay function for this
-                             access.";
+                            "Controls the activation of the DHCPv6 relay 
+                             function for this access.";
                         }
                         container customer-dhcp-servers {
                           description
-                            "Container for list of customer DHCP
+                            "Container for a list of customer DHCP
                              servers.";
                           leaf-list server-ip-address {
                             type inet:ipv6-address;
                             description
-                              "This node contains the IP address of
-                               the customer DHCP server.  If the DHCP
-                               relay function is implemented by the
-                               provider, this node contains the
-                               configured value.";
+                              "Contains the IP addresses of the customer
+                               DHCPv6 server.";
                           }
                         }
                       }
