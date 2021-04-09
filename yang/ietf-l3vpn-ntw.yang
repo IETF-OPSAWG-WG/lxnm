@@ -496,7 +496,7 @@ module ietf-l3vpn-ntw {
           type rt-types:timer-value-seconds16;
           default "30";
           description
-            "PIM hello-messages interval. If set to 
+            "PIM hello-messages interval. If set to
              'infinity' or 'not-set', no periodic
              Hello messages are sent.";
           reference
@@ -506,7 +506,7 @@ module ietf-l3vpn-ntw {
         }
         leaf dr-priority {
           type uint32;
-          default 1;
+          default "1";
           description
             "Indicates the preference in the DR election
              process. Numerically larger DR priority allows
@@ -1018,8 +1018,8 @@ module ietf-l3vpn-ntw {
                               description
                                 "Container for customer addresses to be
                                  allocated using DHCP.";
-                              list address-group {
-                                key "group-id";
+                              list address-pool {
+                                key "pool-id";
                                 description
                                   "Describes IP addresses to be
                                    allocated by DHCP.
@@ -1033,24 +1033,24 @@ module ietf-l3vpn-ntw {
                                    implies a range inclusive of
                                    both addresses.  If no address
                                    is specified, it implies customer
-                                   addresses group is not supported.";
-                                leaf group-id {
+                                   addresses pool is not supported.";
+                                leaf pool-id {
                                   type string;
                                   description
-                                    "Group-id for the address range from
-                                     start-address to end-address.";
+                                    "A pool identifier for the address range
+                                     from start-address to end-address.";
                                 }
                                 leaf start-address {
                                   type inet:ipv4-address;
                                   description
-                                    "Indicates the first address in
-                                     the group.";
+                                    "Indicates the first address in the
+                                     pool.";
                                 }
                                 leaf end-address {
                                   type inet:ipv4-address;
                                   description
                                     "Indicates the last address in the
-                                     group.";
+                                     pool.";
                                 }
                               }
                             }
@@ -1062,10 +1062,10 @@ module ietf-l3vpn-ntw {
                            + "-type, 'provider-dhcp-relay')" {
                           description
                             "Only applies when the provider is required
-                             to implement DHCP relay function.";
+                             to implement a DHCP relay function.";
                         }
                         description
-                          "DHCP relay provided by operator.";
+                          "DHCP relay is provided by the operator.";
                         leaf dhcp-relay-enable {
                           type boolean;
                           default "true";
@@ -1075,12 +1075,11 @@ module ietf-l3vpn-ntw {
                         }
                         container customer-dhcp-servers {
                           description
-                            "Container for list of customer
-                             DHCP servers.";
+                            "Container for list of customer's DHCP servers.";
                           leaf-list server-ip-address {
                             type inet:ipv4-address;
                             description
-                              "IP address of customer DHCP server.";
+                              "An IP address of the customer's DHCP server.";
                           }
                         }
                       }
@@ -1092,7 +1091,7 @@ module ietf-l3vpn-ntw {
                              type is static.";
                         }
                         description
-                          "Describes IPv4 addresses used.";
+                          "Lists the IPv4 addresses that are used.";
                         leaf primary-address {
                           type leafref {
                             path "../address/address-id";
@@ -1103,11 +1102,11 @@ module ietf-l3vpn-ntw {
                         list address {
                           key "address-id";
                           description
-                            "Describes IPv4 addresses used.";
+                            "Lists the IPv4 addresses that are used.";
                           leaf address-id {
                             type string;
                             description
-                              "Used static IPv4 address.";
+                              "An identifier of static IPv4 address.";
                           }
                           leaf customer-address {
                             type inet:ipv4-address;
@@ -1139,81 +1138,141 @@ module ietf-l3vpn-ntw {
                     }
                     choice allocation-type {
                       description
-                        "IPv6 allocation type.";
-                      case provider-dhcp {
+                        "A choice based on the IPv6 allocation type.";
+                      case dynamic {
                         when "derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp') "
                            + "or derived-from-or-self(./address-allo"
-                           + "cation-type, 'provider-dhcp-slaac')" {
+                           + "cation-type, 'provider-dhcp-slaac')"
+                           + "or derived-from-or-self(./address-allo"
+                           + "cation-type, 'slaac')" {
                           description
-                            "Only applies when addresses are
-                             allocated by DHCPv6.";
+                            "Only applies when addresses are allocated
+                             by DHCPv6 and/SLAAC.";
                         }
                         description
-                          "DHCPv6 allocated addresses related
-                           parameters.";
-                        leaf dhcp-server-enable {
-                          type boolean;
-                          default "true";
-                          description
-                            "Enables DHCPv6 service for this access.";
-                        }
-                        choice address-assign {
-                          default "number";
-                          description
-                            "Choice for the way to assign IPv6
-                             prefixes.";
-                          case number {
-                            leaf number-of-dynamic-address {
-                              type uint16;
-                              default "1";
-                              description
-                                "Describes the number of IPv6 prefixes
-                                 that are allocated to the customer
-                                 on this access.";
-                            }
+                          "DHCPv6 and/or SLAAC.";
+                        container provider-dhcp {
+                          when "derived-from-or-self(./address-allo"
+                             + "cation-type, 'provider-dhcp') "
+                             + "or derived-from-or-self(./address-allo"
+                             + "cation-type, 'provider-dhcp-slaac')" {
+                            description
+                              "Only applies when addresses are
+                               allocated by DHCPv6.";
                           }
-                          case explicit {
-                            container customer-addresses {
-                              description
-                                "Container for customer IPv6 addresses
-                                 allocated by DHCPv6.";
-                              list address-group {
-                                key "group-id";
+                          description
+                            "DHCPv6 allocated addresses related
+                             parameters.";
+                          leaf dhcp-server-enable {
+                            type boolean;
+                            default "true";
+                            description
+                              "Enables DHCPv6 service for this access.";
+                          }
+                          choice address-assign {
+                            default "number";
+                            description
+                              "Choice about how to assign IPv6 prefixes.";
+                            case number {
+                              leaf number-of-dynamic-address {
+                                type uint16;
+                                default "1";
                                 description
-                                  "Describes IPv6 addresses allocated
-                                   by DHCPv6.
-
-                                   When only start-address or only
-                                   end-address is present, it
-                                   represents a single address.
-
-                                   When both start-address and
-                                   end-address are specified, it
-                                   implies a range inclusive of
-                                   both addresses.
-
-                                   If no address is specified, it
-                                   implies customer addresses group
-                                   is not supported.";
-                                leaf group-id {
-                                  type string;
+                                  "Describes the number of IPv6 prefixes
+                                   that are allocated to the customer
+                                   on this access.";
+                              }
+                            }
+                            case explicit {
+                              container customer-addresses {
+                                description
+                                  "Container for customer IPv6 addresses
+                                   allocated by DHCPv6.";
+                                list address-pool {
+                                  key "pool-id";
                                   description
-                                    "Group-id for the address range
-                                     from identified by start-address
-                                     and end-address.";
-                                }
-                                leaf start-address {
-                                  type inet:ipv6-address;
-                                  description
-                                    "Indicates the first address.";
-                                }
-                                leaf end-address {
-                                  type inet:ipv6-address;
-                                  description
-                                    "Indicates the last address.";
+                                    "Describes IPv6 addresses allocated
+                                     by DHCPv6.
+
+                                     When only start-address or only
+                                     end-address is present, it
+                                     represents a single address.
+
+                                     When both start-address and
+                                     end-address are specified, it
+                                     implies a range inclusive of
+                                     both addresses.
+
+                                     If no address is specified, it
+                                     implies customer addresses group
+                                     is not supported.";
+                                  leaf pool-id {
+                                    type string;
+                                    description
+                                      "Pool identifier for the address range
+                                       from identified by start-address
+                                       and end-address.";
+                                  }
+                                  leaf start-address {
+                                    type inet:ipv6-address;
+                                    description
+                                      "Indicates the first address.";
+                                  }
+                                  leaf end-address {
+                                    type inet:ipv6-address;
+                                    description
+                                      "Indicates the last address.";
+                                  }
                                 }
                               }
+                            }
+                          }
+                        }
+                        container slaac {
+                          when "derived-from-or-self(./address-allo"
+                             + "cation-type, 'provider-dhcp-slaac') "
+                             + "or derived-from-or-self(./address-allo"
+                             + "cation-type, 'slaac')" {
+                            description
+                              "Only applies when SLAAC is used.";
+                          }
+                          description
+                            "SLAAC-related parameters.";
+                          leaf slaac-enable {
+                            type boolean;
+                            default "true";
+                            description
+                              "Enables SLAAC for this access.";
+                          }
+                          leaf pio-length {
+                            type uint8;
+                            default "64";
+                            description
+                              "Indicates the length of the prefix that
+                               will be used.";
+                            reference
+                              "RFC 4861: Neighbor Discovery for IP version 6
+                                         (IPv6), Section 4.6.2";
+                          }
+                          list slaac-prefix-pool {
+                            key "pool-id";
+                            description
+                              "Indicates the list of prefixes that will
+                               be used for the customer.";
+                            leaf pool-id {
+                              type uint32;
+                              description
+                                "Unique identifier for the SLAAC pool.";
+                            }
+                            leaf pool-prefix {
+                              type inet:ipv6-prefix;
+                              mandatory true;
+                              description
+                                "An IPv6 prefix.";
+                              reference
+                                "RFC 4861: Neighbor Discovery for IP version 6
+                                          (IPv6), Section 4.6.2";
                             }
                           }
                         }
@@ -2498,24 +2557,24 @@ module ietf-l3vpn-ntw {
                         type rt-types:timer-value-seconds16;
                         default "30";
                         description
-                          "PIM hello-messages interval. If set to 
+                          "PIM hello-messages interval. If set to
                            'infinity' or 'not-set', no periodic
                            Hello messages are sent.";
                         reference
                           "RFC 7761: Protocol Independent Multicast - Sparse
-                                     Mode (PIM-SM): Protocol Specification 
-                                     (Revised), Section 4.11";                          
+                                     Mode (PIM-SM): Protocol Specification
+                                     (Revised), Section 4.11";
                       }
                       leaf dr-priority {
                         type uint32;
-                        default 1;
+                        default "1";
                         description
                           "Indicates the preference in the DR election
                            process. Numerically larger DR priority allows
                            a node to be elected as a DR.";
                         reference
                           "RFC 7761: Protocol Independent Multicast - Sparse
-                                     Mode (PIM-SM): Protocol Specification 
+                                     Mode (PIM-SM): Protocol Specification
                                      (Revised), Section 4.3.2";
                       }
                       uses vpn-common:service-status;
