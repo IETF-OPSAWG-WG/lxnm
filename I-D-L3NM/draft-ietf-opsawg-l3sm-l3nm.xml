@@ -537,7 +537,7 @@
       IETF network slice <xref
       target="I-D.ietf-teas-ietf-network-slice-framework"></xref>, or
       Abstraction and Control of TE Networks (ACTN) <xref
-      target="RFC8453"></xref>. </t>
+      target="RFC8453"></xref>.</t>
 
       <t>Note also that both the L3SM and the L3NM may be used in the context
       of the ACTN architecture. <xref target="l3sm_actn"></xref> shows the
@@ -1026,47 +1026,58 @@
           </list></t>
 
         <t><figure align="center" anchor="ie"
-            title="Subtree Structure of Import/Export Profiles">
+            title="Subtree Structure of VPN Instance Profiles">
             <artwork align="center"><![CDATA[  +--rw l3vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                  vpn-common:vpn-id
-           +  ...
-           +--rw ie-profiles
-           |  +--rw ie-profile* [ie-profile-id]
-           |     +--rw ie-profile-id         string
-           |     +--rw (rd-choice)?
-           |     |  +--:(directly-assigned)
-           |     |  |  +--rw rd?
-           |     |  |          rt-types:route-distinguisher
-           |     |  +--:(pool-assigned)
-           |     |  |  +--rw rd-pool-name?   string
-           |     |  |  +--ro rd-from-pool?
-           |     |  |          rt-types:route-distinguisher
-           |     |  +--:(full-autoasigned)
-           |     |  |  +--rw auto?           empty
-           |     |  |  +--ro rd-auto?
-           |     |  |          rt-types:route-distinguisher
-           |     |  +--:(no-rd)
-           |     |     +--rw no-rd?          empty
-           |     +--rw vpn-targets
-           |        +--rw vpn-target* [id]
-           |        |  +--rw id                   int8
-           |        |  +--rw route-targets* [route-target]
-           |        |  |  +--rw route-target    rt-types:route-target
-           |        |  +--rw route-target-type
-           |        |          rt-types:route-target-type
-           |        +--rw vpn-policies
-           |           +--rw import-policy?   string
-           |           +--rw export-policy?   string
-           +--rw vpn-nodes
-              +--rw vpn-node* [ne-id]
-                 +--rw ne-id                      string
-                 ...
-                 +--rw node-ie-profile?           leafref
-                 ...
+           +--rw vpn-id                   vpn-common:vpn-id
+           ...
+           +--rw vpn-instance-profiles
+           |  +--rw vpn-instance-profile* [profile-id]
+           |     +--rw profile-id                 string
+           |     +--rw role?                      identityref
+           |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
+           |     +--rw address-family* [address-family]
+           |     |  +--rw address-family          identityref
+           |     |  +--rw (rd-choice)?
+           |     |  |  +--:(directly-assigned)
+           |     |  |  |  +--rw rd?               rt-types:route-distinguisher
+           |     |  |  +--:(directly-assigned-suffix)
+           |     |  |  |  +--rw rd-suffix?        uint16
+           |     |  |  +--:(auto-assigned)
+           |     |  |  |  +--rw rd-auto
+           |     |  |  |     +--rw (auto-mode)?
+           |     |  |  |     |  +--:(from-pool)
+           |     |  |  |     |  |  +--rw rd-pool-name?   string
+           |     |  |  |     |  +--:(full-auto)
+           |     |  |  |     |     +--rw auto?           empty
+           |     |  |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+           |     |  |  +--:(auto-assigned-suffix)
+           |     |  |  |  +--rw rd-auto-suffix
+           |     |  |  |     +--rw (auto-mode)?
+           |     |  |  |     |  +--:(from-pool)
+           |     |  |  |     |  |  +--rw rd-pool-name?        string
+           |     |  |  |     |  +--:(full-auto)
+           |     |  |  |     |     +--rw auto?                empty
+           |     |  |  |     +--ro auto-assigned-rd-suffix?   uint16
+           |     |  |  +--:(no-rd)
+           |     |  |     +--rw no-rd?            empty
+           |     |  +--rw vpn-targets
+           |     |  |  +--rw vpn-target* [id]
+           |     |  |  |  +--rw id                   int8
+           |     |  |  |  +--rw route-targets* [route-target]
+           |     |  |  |  |  +--rw route-target    rt-types:route-target
+           |     |  |  |  +--rw route-target-type    rt-types:route-target-type
+           |     |  |  +--rw vpn-policies
+           |     |  |     +--rw import-policy?   string
+           |     |  |     +--rw export-policy?   string
+           |     |  +--rw maximum-routes* [protocol]
+           |     |     +--rw protocol          identityref
+           |     |     +--rw maximum-routes?   uint32
+           |     +--rw multicast {vpn-common:multicast}?
+           |        ...
 ]]></artwork>
           </figure></t>
 
@@ -1108,12 +1119,35 @@
                  +--rw router-id?                 rt-types:router-id
                  +--rw active-vpn-instance-profiles
                  |  +--rw vpn-instance-profile* [profile-id]
-                 |  ...
+                 |     +--rw profile-id                 leafref
+                 |     +--rw router-id* [address-family]
+                 |     |  +--rw address-family    identityref
+                 |     |  +--rw router-id?        inet:ip-address
+                 |     +--rw local-autonomous-system?   inet:as-number
+                 |     |     {vpn-common:rtg-bgp}?
+                 |     +--rw address-family* [address-family]
+                 |     |  +--rw address-family          identityref
+                 |     |  +--rw (rd-choice)?
+                 |     |  |  ...
+                 |     |  +--rw vpn-targets
+                 |     |  |  ...
+                 |     |  +--rw maximum-routes* [protocol]
+                 |     |     ...
+                 |     +--rw multicast {vpn-common:multicast}?
+                 |        ...
+                 +--rw msdp {msdp}?
+                 |  +--rw peer?            inet:ip-address
+                 |  +--rw local-address?   inet:ip-address
+                 |  +--rw status
+                 |     +--rw admin-status
+                 |     |  +--rw status?         identityref
+                 |     |  +--rw last-updated?   yang:date-and-time
+                 |     +--ro oper-status
+                 |        +--ro status?         identityref
+                 |        +--ro last-updated?   yang:date-and-time
                  +--rw groups
                  |  +--rw group* [group-id]
                  |     +--rw group-id    string
-                 +--rw multicast {vpn-common:multicast}?
-                 |  ...
                  +--rw status
                  |  +--rw admin-status
                  |  |  +--rw status?         identityref
@@ -1182,6 +1216,8 @@
                 <t hangText="'multicast':">Enables multicast traffic in the
                 VPN. Refer to <xref target="mc"></xref>.</t>
               </list></t>
+
+            <t hangText="'msdp':">xxxxx</t>
 
             <t hangText="'groups':">Lists the groups to which a VPN node
             belongs to <xref target="I-D.ietf-opsawg-vpn-common"></xref>. The
@@ -1348,7 +1384,8 @@
 +--rw connection
 |  +--rw encapsulation-type?   identityref
 |  +--rw logical-interface
-|  |  +--rw peer-reference?   uint32
+|  |  +--rw local-reference?   vpn-common:vpn-id
+|  |  +--rw peer-reference?    vpn-common:vpn-id
 |  +--rw tagged-interface
 |  |  +--rw type?                identityref
 |  |  +--rw dot1q-vlan-tagged {vpn-common:dot1q}?
@@ -1408,13 +1445,18 @@
 
           <t>For both IPv4 and IPv6, the IP connection supports three IP
           address assignment modes for customer addresses: provider DHCP, DHCP
-          relay, and static addressing. Only one mode is enabled for a given
-          service. Note that for the IPv6 cases, SLAAC <xref
-          target="RFC7527"></xref><xref target="RFC4861"></xref> can be
-          used.</t>
+          relay, and static addressing. Note that for the IPv6 case, SLAAC
+          <xref target="RFC7527"></xref><xref target="RFC4861"></xref> can be
+          used. For both IPv4 and IPv6, 'address-allocation-type' is used to
+          indicate the IP address allocation mode to activate for a given VPN
+          network access. </t>
+
+          <t>When 'address-allocation-type' is set to 'provider-dhcp', DHCP
+          assignments can be made locally or by an external DHCP server. Such
+          as behavior is controlled by setting 'dhcp-service-type'. </t>
 
           <t><xref target="ip_conn_tree_v4"></xref> shows the structure of the
-          dynamic IPv4 address assignment.</t>
+          dynamic IPv4 address assignment (i.e., by means of DHCP). </t>
 
           <t><figure align="center" anchor="ip_conn_tree_v4"
               title="IP Connection Subtree Structure (IPv4)">
@@ -1425,18 +1467,21 @@
 |  |  +--rw address-allocation-type?                 identityref
 |  |  +--rw (allocation-type)?
 |  |     +--:(provider-dhcp)
-|  |     |  +--rw dhcp-server-enable?                boolean
-|  |     |  +--rw (address-assign)?
-|  |     |     +--:(number)
-|  |     |     |  +--rw number-of-dynamic-address?   uint16
-|  |     |     +--:(explicit)
-|  |     |        +--rw customer-addresses
-|  |     |           +--rw address-pool* [pool-id]
-|  |     |              +--rw pool-id         string
-|  |     |              +--rw start-address?   inet:ipv4-address
-|  |     |              +--rw end-address?     inet:ipv4-address
+|  |     |  +--rw dhcp-service-type?                       enumeration
+|  |     |  +--rw (service-type)?
+|  |     |     +--:(relay)
+|  |     |     |  +--rw server-ip-address*                 inet:ipv4-address
+|  |     |     +--:(server)
+|  |     |        +--rw (address-assign)?
+|  |     |           +--:(number)
+|  |     |           |  +--rw number-of-dynamic-address?   uint16
+|  |     |           +--:(explicit)
+|  |     |              +--rw customer-addresses
+|  |     |                 +--rw address-pool* [pool-id]
+|  |     |                    +--rw pool-id          string
+|  |     |                    +--rw start-address?   inet:ipv4-address
+|  |     |                    +--rw end-address?     inet:ipv4-address
 |  |     +--:(dhcp-relay)
-|  |     |  +--rw dhcp-relay-enable?                 boolean
 |  |     |  +--rw customer-dhcp-servers
 |  |     |     +--rw server-ip-address*   inet:ipv4-address
 |  |     +--:(static-addresses)
@@ -1446,7 +1491,7 @@
             </figure></t>
 
           <t><xref target="ip_conn_tree_v6"></xref> shows the structure of the
-          dynamic IPv6 address assignment.</t>
+          dynamic IPv6 address assignment (i.e., DHCPv6 and/or SLAAC).</t>
 
           <t><figure align="center" anchor="ip_conn_tree_v6"
               title="IP Connection Subtree Structure (IPv6)">
@@ -1460,23 +1505,26 @@
 |     +--rw (allocation-type)?
 |        +--:(dynamic)
 |        |  +--rw provider-dhcp
-|        |  |  +--rw dhcp-server-enable?                boolean
-|        |  |  +--rw (address-assign)?
-|        |  |     +--:(number)
-|        |  |     |  +--rw number-of-dynamic-address?   uint16
-|        |  |     +--:(explicit)
-|        |  |        +--rw customer-addresses
-|        |  |           +--rw address-pool* [pool-id]
-|        |  |              +--rw pool-id          string
-|        |  |              +--rw start-address?   inet:ipv6-address
-|        |  |              +--rw end-address?     inet:ipv6-address
+|        |  |  +--rw dhcp-service-type?                       enumeration
+|        |  |  +--rw (service-type)?
+|        |  |     +--:(provider-dhcp-servers)
+|        |  |     |  +--rw server-ip-address*                 inet:ipv6-address
+|        |  |     +--:(server)
+|        |  |        +--rw (address-assign)?
+|        |  |           +--:(number)
+|        |  |           |  +--rw number-of-dynamic-address?   uint16
+|        |  |           +--:(explicit)
+|        |  |              +--rw customer-addresses
+|        |  |                 +--rw address-pool* [pool-id]
+|        |  |                    +--rw pool-id          string
+|        |  |                    +--rw start-address?   inet:ipv6-address
+|        |  |                    +--rw end-address?     inet:ipv6-address
 |        |  +--rw slaac
 |        |     +--rw pio-length?          uint8
 |        |     +--rw slaac-prefix-pool* [pool-id]
 |        |        +--rw pool-id        uint32
 |        |        +--rw pool-prefix    inet:ipv6-prefix
 |        +--:(dhcp-relay)
-|        |  +--rw dhcp-relay-enable?                 boolean
 |        |  +--rw customer-dhcp-servers
 |        |     +--rw server-ip-address*   inet:ipv6-address
 |        +--:(static-addresses)
