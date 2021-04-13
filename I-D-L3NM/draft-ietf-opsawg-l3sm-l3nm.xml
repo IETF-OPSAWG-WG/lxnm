@@ -5678,11 +5678,12 @@ Content-Type: application/yang-data+json
             ]]></artwork>
         </figure>
 
-        <t>To configure a Multicast L3VPN service using the L3NM model the
-        procedure and the JSON with the data structure is the following:</t>
+        <t>An example is provided below to ilustrate how to configure a
+        multicast L3VPN service using the L3NM.</t>
 
-        <t>First, the multicast service is created (see the excerpt of the
-        request message body shown in <xref target="service-mc2"></xref>)</t>
+        <t>First, the multicast service is created together with a generic VPN
+        instance profile (see the excerpt of the request message body shown in
+        <xref target="service-mc2"></xref>)</t>
 
         <figure align="center" anchor="service-mc2"
                 title=" Create Multicast VPN Service (Excerpt of the Message Request Body)">
@@ -5693,7 +5694,39 @@ Content-Type: application/yang-data+json
         "vpn-id": "Multicast-IPTV",
         "customer-name": "310",
         "vpn-service-topology": "vpn-common:hub-spoke",
-        "description": "Multicast IPTV VPN service"
+        "description": "Multicast IPTV VPN service",
+        "vpn-instance-profiles": {
+          "vpn-instance-profile": [
+            {
+              "profile-id": "multicast",
+              "role": "ietf-vpn-common:hub-role",
+              "local-autonomous-system": 3816,
+              "multicast": {
+                "rp": {
+                  "rp-group-mappings": {
+                    "rp-group-mapping": [
+                      {
+                        "id": "1",
+                        "rp-address": "203.0.113.17",
+                        "groups": {
+                          "group": [
+                            {
+                              "id": "1",
+                              "group-address": "239.130.0.0/15"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "rp-discovery": {
+                    "rp-discovery-type": "vpn-common:static-rp"
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     ]
   }
@@ -5714,42 +5747,23 @@ Content-Type: application/yang-data+json
       "vpn-node-id": "500003105",
       "description": "VRF-IPTV-MULTICAST",
       "ne-id": "198.51.100.10",
-      "node-role": "vpn-common:hub-role",
-      "local-autonomous-system": "3816",
-      "address-family": "vpn-common:ipv4",
       "router-id": "198.51.100.10",
-      "rd": "3816:31050202",
-      "multicast": {
-        "status": {
-          "admin-status": {
-            "status": "vpn-common:administrative-state-up"
-          }
-        },
-        "rp": {
-          "rp-group-mappings": {
-            "rp-group-mapping": [
+      "active-vpn-instance-profiles": {
+        "vpn-instance-profile": [
+          {
+            "profile-id": "multicast",
+            "address-family": [
               {
-                "id": "1",
-                "rp-address": "203.0.113.17",
-                "groups": {
-                  "group": [
-                    {
-                      "id": "1",
-                      "group-address": "239.130.0.0/15"
-                    }
-                  ]
-                }
+                "address-family": "vpn-common:ipv4",
+                "rd": "3816:31050202"
               }
             ]
-          },
-          "rp-discovery": {
-            "rp-discovery-type": "vpn-common:static-rp"
           }
-        }
+        ]
       }
     }
   ]
-}         ]]></artwork>
+}     ]]></artwork>
         </figure>
 
         <t>Finally, create the VPN network access with multicast enabled (see
@@ -5758,56 +5772,57 @@ Content-Type: application/yang-data+json
 
         <figure align="center" anchor="service-mc4"
                 title="Create VPN Network Access (Excerpt of the Message Request Body)">
-          <artwork align="center"><![CDATA[ 
-{
+          <artwork align="center"><![CDATA[{
   "ietf-l3vpn-ntw:vpn-network-access": {
     "vpn-network-access-id": "1/1/1",
     "description": "Connected_to_source",
     "status": {
       "admin-status": {
         "status": "vpn-common:administrative-state-up"
-    },
-    "vpn-network-access-type": "vpn-common:point-to-point",
-    "ip-connection": {
-      "ipv4": {
-        "local-address": "203.0.113.1/32",
-        "address-allocation-type": "static-address",
-        "static-addresses": {
-          "primary-address": "1",
-          "address": [
-            {
-              "address-id": "1",
-              "customer-address": "203.0.113.2"
-            }
-          ]
-        }
-      }
-    },
-    "routing-protocols": {
-      "routing-protocol": [
-        {
-          "id": "1",
-          "type": "vpn-common:bgp",
-          "bgp": {
-            "description": "Connected to CE"
-            "local-autonomous-system": "3816",
-            "peer-autonomous-system": "6500",
-            "address-family": "vpn-common:ipv4",
-            "neighbor": "203.0.113.2",
+      },
+      "vpn-network-access-type": "vpn-common:point-to-point",
+      "vpn-instance-profile": "multicast",
+      "ip-connection": {
+        "ipv4": {
+          "provider-address": "203.0.113.1",
+          "prefix-length": 32,
+          "address-allocation-type": "static-address",
+          "static-addresses": {
+            "primary-address": "1",
+            "address": [
+              {
+                "address-id": "1",
+                "customer-address": "203.0.113.2"
+              }
+            ]
           }
         }
-      ]
-    },
-    "service": {
-      "multicast": {
-        "multicast-site-type": "source-only",
-        "address-family": "vpn-common:ipv4",
-        "protocol-type": "router",
-        "pim": {
-          "hello-interval": 30,
-          "status": {
-            "admin-status": {
-              "status": "vpn-common:administrative-state-up"
+      },
+      "routing-protocols": {
+        "routing-protocol": [
+          {
+            "id": "1",
+            "type": "vpn-common:bgp",
+            "bgp": {
+              "description": "Connected to CE",
+              "peer-autonomous-system": "6500",
+              "address-family": "vpn-common:ipv4",
+              "neighbor": "203.0.113.2"
+            }
+          }
+        ]
+      },
+      "service": {
+        "multicast": {
+          "multicast-site-type": "source-only",
+          "address-family": "vpn-common:ipv4",
+          "protocol-type": "router",
+          "pim": {
+            "hello-interval": 30,
+            "status": {
+              "admin-status": {
+                "status": "vpn-common:administrative-state-up"
+              }
             }
           }
         }

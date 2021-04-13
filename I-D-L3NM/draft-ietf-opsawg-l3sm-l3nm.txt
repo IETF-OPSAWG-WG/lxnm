@@ -130,11 +130,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
    Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 123
      B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 123
      B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 123
-     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 124
-     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 124
+     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 123
+     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 123
    Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 124
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 124
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 125
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 124
 
 1.  Introduction
 
@@ -6650,12 +6650,12 @@ A.2.  Multicast VPN Provisioning Example
 
                 Figure 37: Multicast L3VPN Service Example
 
-   To configure a Multicast L3VPN service using the L3NM model the
-   procedure and the JSON with the data structure is the following:
+   An example is provided below to ilustrate how to configure a
+   multicast L3VPN service using the L3NM.
 
-   First, the multicast service is created (see the excerpt of the
-   request message body shown in Figure 38)
-
+   First, the multicast service is created together with a generic VPN
+   instance profile (see the excerpt of the request message body shown
+   in Figure 38)
 
 
 
@@ -6666,53 +6666,53 @@ Barguil, et al.         Expires October 11, 2021              [Page 119]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-          {
-            "ietf-l3vpn-ntw:vpn-services": {
-              "vpn-service": [
-                {
-                  "vpn-id": "Multicast-IPTV",
-                  "customer-name": "310",
-                  "vpn-service-topology": "vpn-common:hub-spoke",
-                  "description": "Multicast IPTV VPN service"
-                }
-              ]
+      {
+        "ietf-l3vpn-ntw:vpn-services": {
+          "vpn-service": [
+            {
+              "vpn-id": "Multicast-IPTV",
+              "customer-name": "310",
+              "vpn-service-topology": "vpn-common:hub-spoke",
+              "description": "Multicast IPTV VPN service",
+              "vpn-instance-profiles": {
+                "vpn-instance-profile": [
+                  {
+                    "profile-id": "multicast",
+                    "role": "ietf-vpn-common:hub-role",
+                    "local-autonomous-system": 3816,
+                    "multicast": {
+                      "rp": {
+                        "rp-group-mappings": {
+                          "rp-group-mapping": [
+                            {
+                              "id": "1",
+                              "rp-address": "203.0.113.17",
+                              "groups": {
+                                "group": [
+                                  {
+                                    "id": "1",
+                                    "group-address": "239.130.0.0/15"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        "rp-discovery": {
+                          "rp-discovery-type": "vpn-common:static-rp"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
             }
-          }
+          ]
+        }
+      }
 
       Figure 38: Create Multicast VPN Service (Excerpt of the Message
                                Request Body)
-
-   Then, the VPN nodes are created (see the excerpt of the request
-   message body shown in Figure 39).  In this example, the VPN node will
-   represent VRF configured in the physical device.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6722,54 +6722,54 @@ Barguil, et al.         Expires October 11, 2021              [Page 120]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-        {
-          "ietf-l3vpn-ntw:vpn-node": [
-            {
-              "vpn-node-id": "500003105",
-              "description": "VRF-IPTV-MULTICAST",
-              "ne-id": "198.51.100.10",
-              "node-role": "vpn-common:hub-role",
-              "local-autonomous-system": "3816",
-              "address-family": "vpn-common:ipv4",
-              "router-id": "198.51.100.10",
-              "rd": "3816:31050202",
-              "multicast": {
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:administrative-state-up"
-                  }
-                },
-                "rp": {
-                  "rp-group-mappings": {
-                    "rp-group-mapping": [
-                      {
-                        "id": "1",
-                        "rp-address": "203.0.113.17",
-                        "groups": {
-                          "group": [
-                            {
-                              "id": "1",
-                              "group-address": "239.130.0.0/15"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  "rp-discovery": {
-                    "rp-discovery-type": "vpn-common:static-rp"
-                  }
-                }
-              }
-            }
-          ]
-        }
+   Then, the VPN nodes are created (see the excerpt of the request
+   message body shown in Figure 39).  In this example, the VPN node will
+   represent VRF configured in the physical device.
+
+           {
+             "ietf-l3vpn-ntw:vpn-node": [
+               {
+                 "vpn-node-id": "500003105",
+                 "description": "VRF-IPTV-MULTICAST",
+                 "ne-id": "198.51.100.10",
+                 "router-id": "198.51.100.10",
+                 "active-vpn-instance-profiles": {
+                   "vpn-instance-profile": [
+                     {
+                       "profile-id": "multicast",
+                       "address-family": [
+                         {
+                           "address-family": "vpn-common:ipv4",
+                           "rd": "3816:31050202"
+                         }
+                       ]
+                     }
+                   ]
+                 }
+               }
+             ]
+           }
 
    Figure 39: Create Multicast VPN Node (Excerpt of the Message Request
                                    Body)
 
    Finally, create the VPN network access with multicast enabled (see
    the excerpt of the request message body shown in Figure 40).
+
+      {
+        "ietf-l3vpn-ntw:vpn-network-access": {
+          "vpn-network-access-id": "1/1/1",
+          "description": "Connected_to_source",
+          "status": {
+            "admin-status": {
+              "status": "vpn-common:administrative-state-up"
+            },
+            "vpn-network-access-type": "vpn-common:point-to-point",
+            "vpn-instance-profile": "multicast",
+            "ip-connection": {
+              "ipv4": {
+                "provider-address": "203.0.113.1",
+                "prefix-length": 32,
 
 
 
@@ -6778,54 +6778,54 @@ Barguil, et al.         Expires October 11, 2021              [Page 121]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-       {
-         "ietf-l3vpn-ntw:vpn-network-access": {
-           "vpn-network-access-id": "1/1/1",
-           "description": "Connected_to_source",
-           "status": {
-             "admin-status": {
-               "status": "vpn-common:administrative-state-up"
-           },
-           "vpn-network-access-type": "vpn-common:point-to-point",
-           "ip-connection": {
-             "ipv4": {
-               "local-address": "203.0.113.1/32",
-               "address-allocation-type": "static-address",
-               "static-addresses": {
-                 "primary-address": "1",
-                 "address": [
-                   {
-                     "address-id": "1",
-                     "customer-address": "203.0.113.2"
-                   }
-                 ]
-               }
-             }
-           },
-           "routing-protocols": {
-             "routing-protocol": [
-               {
-                 "id": "1",
-                 "type": "vpn-common:bgp",
-                 "bgp": {
-                   "description": "Connected to CE"
-                   "local-autonomous-system": "3816",
-                   "peer-autonomous-system": "6500",
-                   "address-family": "vpn-common:ipv4",
-                   "neighbor": "203.0.113.2",
-                 }
-               }
-             ]
-           },
-           "service": {
-             "multicast": {
-               "multicast-site-type": "source-only",
-               "address-family": "vpn-common:ipv4",
-               "protocol-type": "router",
-               "pim": {
-                 "hello-interval": 30,
-                 "status": {
-                   "admin-status": {
+                "address-allocation-type": "static-address",
+                "static-addresses": {
+                  "primary-address": "1",
+                  "address": [
+                    {
+                      "address-id": "1",
+                      "customer-address": "203.0.113.2"
+                    }
+                  ]
+                }
+              }
+            },
+            "routing-protocols": {
+              "routing-protocol": [
+                {
+                  "id": "1",
+                  "type": "vpn-common:bgp",
+                  "bgp": {
+                    "description": "Connected to CE",
+                    "peer-autonomous-system": "6500",
+                    "address-family": "vpn-common:ipv4",
+                    "neighbor": "203.0.113.2"
+                  }
+                }
+              ]
+            },
+            "service": {
+              "multicast": {
+                "multicast-site-type": "source-only",
+                "address-family": "vpn-common:ipv4",
+                "protocol-type": "router",
+                "pim": {
+                  "hello-interval": 30,
+                  "status": {
+                    "admin-status": {
+                      "status": "vpn-common:administrative-state-up"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+   Figure 40: Create VPN Network Access (Excerpt of the Message Request
+                                   Body)
+
 
 
 
@@ -6833,18 +6833,6 @@ Barguil, et al.         Expires October 11, 2021              [Page 122]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-                     "status": "vpn-common:administrative-state-up"
-                   }
-                 }
-               }
-             }
-           }
-         }
-       }
-
-   Figure 40: Create VPN Network Access (Excerpt of the Message Request
-                                   Body)
 
 Appendix B.  Implementation Status
 
@@ -6881,15 +6869,6 @@ B.2.  Huawei Implementation
    Details can be found at: https://github.com/IETF-OPSAWG-
    WG/l3nm/blob/master/Implementattion/Huawei.txt
 
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 123]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
 B.3.  Infinera Implementation
 
    Details can be found at: https://github.com/IETF-OPSAWG-
@@ -6899,6 +6878,17 @@ B.4.  Ribbon-ECI Implementation
 
    Details can be found at: https://github.com/IETF-OPSAWG-
    WG/l3nm/blob/master/Implementattion/Ribbon-ECI.txt
+
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 123]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
 Acknowledgements
 
@@ -6939,13 +6929,6 @@ Contributors
    ECI Telecom
    Email: erez.segev@ecitele.com>
 
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 124]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
 Authors' Addresses
 
    Samier Barguil
@@ -6954,6 +6937,13 @@ Authors' Addresses
    ES
 
    Email: samier.barguilgiraldo.ext@telefonica.com
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 124]
+
+Internet-Draft               L3NM YANG Model                  April 2021
 
 
    Oscar Gonzalez de Dios (editor)
@@ -6985,6 +6975,16 @@ Authors' Addresses
    ES
 
    Email: alejandro.aguado_martin@nokia.com
+
+
+
+
+
+
+
+
+
+
 
 
 
