@@ -2117,6 +2117,22 @@ module ietf-l3vpn-ntw {
                       if-feature "vpn-common:rtg-rip";
                       description
                         "Configuration specific to RIP routing.";
+                      leaf rip-version {
+                        type enumeration {
+                          enum version1 {
+                            description
+                              "Configures an vpn-network-access 
+                              to send only RIPv1 packets.";
+                          }
+                          enum version2 {
+                            description
+                              "Configures an vpn-network-access 
+                              to send only RIPv2 packets.";
+                          }
+                        }
+                        description
+                          "Indicates the RIP version.";
+                      }
                       leaf address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -2125,6 +2141,64 @@ module ietf-l3vpn-ntw {
                           "Indicates whether IPv4, IPv6, or both
                            address families are to be activated.";
                       }
+                      container timers {
+                        leaf update {
+                          type uint32 {
+                            range "0 | 3..65535";
+                          }
+                          units "seconds";
+                          description
+                            "Indicates the RIP update time.
+                             The amount of time for which 
+                             routing updates are sent.";
+                        }
+                        leaf timeout  {
+                          type uint32 {
+                            range "0 | 3..65535";
+                          }
+                          units "seconds";
+                          description
+                            "Indicates the RIP timeout.";
+                        }
+                        leaf flush {
+                          type uint32 {
+                            range "0 | 3..65535";
+                          }
+                          units "seconds";
+                          description
+                            "Indicates the RIP  flush timer
+                             The amount of time (in seconds) 
+                             that must pass before a route 
+                             is removed from the routing table.";
+                        }
+                        description
+                          "Indicates the RIP timers.";
+                      }
+                      leaf-list neighbor {
+                        type inet:ip-address;
+                        description
+                          "Indicates the IP address of the peer.";
+                      }
+                      uses vpn-common:service-status;
+                    }
+                    container ntp {
+                      description
+                          "Only applies when protocol is NTP.";
+                       leaf ntp-broadcast {
+                        type enumeration {
+                          enum client {
+                            description
+                              "Configures a server-side NTP broadcasts.";
+                          }
+                          enum server {
+                            description
+                              "Configures an NTP broadcast client on 
+                              the vpn-network-access.";
+                          }
+                        description
+                          "Enable NTP broadcast in the vpn-network-access.";
+                      }
+                    }   
                       uses vpn-common:service-status;
                     }
                     container vrrp {
