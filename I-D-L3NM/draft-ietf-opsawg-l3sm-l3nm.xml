@@ -1024,34 +1024,32 @@
            |     +--rw profile-id                 string
            |     +--rw role?                      identityref
            |     +--rw local-autonomous-system?   inet:as-number 
-           |            {vpn-common:rtg-bgp}?
+           |     |      {vpn-common:rtg-bgp}?
+           |     +--rw (rd-choice)?
+           |     |  +--:(directly-assigned)
+           |     |  |  +--rw rd?                  rt-types:route-distinguisher
+           |     |  +--:(directly-assigned-suffix)
+           |     |  |  +--rw rd-suffix?           uint16
+           |     |  +--:(auto-assigned)
+           |     |  |  +--rw rd-auto
+           |     |  |     +--rw (auto-mode)?
+           |     |  |     |  +--:(from-pool)
+           |     |  |     |  |  +--rw rd-pool-name?   string
+           |     |  |     |  +--:(full-auto)
+           |     |  |     |     +--rw auto?           empty
+           |     |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+           |     |  +--:(auto-assigned-suffix)
+           |     |  |  +--rw rd-auto-suffix
+           |     |  |     +--rw (auto-mode)?
+           |     |  |     |  +--:(from-pool)
+           |     |  |     |  |  +--rw rd-pool-name?        string
+           |     |  |     |  +--:(full-auto)
+           |     |  |     |     +--rw auto?                empty
+           |     |  |     +--ro auto-assigned-rd-suffix?   uint16
+           |     |  +--:(no-rd)
+           |     |     +--rw no-rd?               empty
            |     +--rw address-family* [address-family]
            |     |  +--rw address-family          identityref
-           |     |  +--rw (rd-choice)?
-           |     |  |  +--:(directly-assigned)
-           |     |  |  |  +--rw rd?               
-           |     |  |  |     rt-types:route-distinguisher
-           |     |  |  +--:(directly-assigned-suffix)
-           |     |  |  |  +--rw rd-suffix?        uint16
-           |     |  |  +--:(auto-assigned)
-           |     |  |  |  +--rw rd-auto
-           |     |  |  |     +--rw (auto-mode)?
-           |     |  |  |     |  +--:(from-pool)
-           |     |  |  |     |  |  +--rw rd-pool-name?   string
-           |     |  |  |     |  +--:(full-auto)
-           |     |  |  |     |     +--rw auto?           empty
-           |     |  |  |     +--ro auto-assigned-rd?     
-           |     |  |  |            rt-types:route-distinguisher
-           |     |  |  +--:(auto-assigned-suffix)
-           |     |  |  |  +--rw rd-auto-suffix
-           |     |  |  |     +--rw (auto-mode)?
-           |     |  |  |     |  +--:(from-pool)
-           |     |  |  |     |  |  +--rw rd-pool-name?        string
-           |     |  |  |     |  +--:(full-auto)
-           |     |  |  |     |     +--rw auto?                empty
-           |     |  |  |     +--ro auto-assigned-rd-suffix?   uint16
-           |     |  |  +--:(no-rd)
-           |     |  |     +--rw no-rd?            empty
            |     |  +--rw vpn-targets
            |     |  |  +--rw vpn-target* [id]
            |     |  |  |  +--rw id                   int8
@@ -1085,38 +1083,36 @@
             <t hangText="'local-autonomous-system':">Indicates the Autonomous
             System Number (ASN) that is configured for the VPN node.</t>
 
+            <t hangText="'rd':">As defined in <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref>, these RD assignment
+            modes are supported: direct assignment, automatic assignment from
+            a given pool, automatic assignment, and no assignment. For
+            illustration purposes, the following modes can be used in the
+            deployment cases: <list style="hanging">
+                <t hangText="'directly-assigned':">The VPN service provider
+                (service orchestrator) assigns explicitly RDs. This case will
+                fit with a brownfield scenario where some existing services
+                need to be updated by the VPN service provider.</t>
+
+                <t hangText="'full-auto':">The network controller auto-assigns
+                RDs. This can apply for the deployment of new services.</t>
+
+                <t hangText="'no-rd':">The VPN service provider (service
+                orchestrator) explicitly wants no RD to be assigned. This case
+                can be used for CE testing within the network or for
+                troubleshooting proposes.</t>
+              </list>Also, the module accommodates deployments where only the
+            Assigned Number subfield of RDs (Section 4.2 of <xref
+            target="RFC4364"></xref>) is assigned from a pool while the
+            Administrator subfield is set to, e.g., the router-id that is
+            assigned to a VPN node. The module supports these modes for
+            managing the Assigned Number subfield: explicit assignment,
+            auto-assignment from a pool, and full auto-assignment.</t>
+
             <t hangText="'address-family':">Includes a set of per-address
             family data nodes:<list style="hanging">
                 <t hangText="'address-family':">Identifies the address family.
                 It can be set to IPv4, IPv6, or dual-stack.</t>
-
-                <t hangText="'rd':">As defined in <xref
-                target="I-D.ietf-opsawg-vpn-common"></xref>, these RD
-                assignment modes are supported: direct assignment, automatic
-                assignment from a given pool, automatic assignment, and no
-                assignment. For illustration purposes, the following modes can
-                be used in the deployment cases: <list style="hanging">
-                    <t hangText="'directly-assigned':">The VPN service
-                    provider (service orchestrator) assigns explicitly RDs.
-                    This case will fit with a brownfield scenario where some
-                    existing services need to be updated by the VPN service
-                    provider.</t>
-
-                    <t hangText="'full-auto':">The network controller
-                    auto-assigns RDs. This can apply for the deployment of new
-                    services.</t>
-
-                    <t hangText="'no-rd':">The VPN service provider (service
-                    orchestrator) explicitly wants no RD to be assigned. This
-                    case can be used for CE testing within the network or for
-                    troubleshooting proposes.</t>
-                  </list>Also, the module accommodates deployments where only
-                the Assigned Number subfield of RDs (Section 4.2 of <xref
-                target="RFC4364"></xref>) is assigned from a pool while the
-                Administrator subfield is set to, e.g., the router-id that is
-                assigned to a VPN node. The module supports these modes for
-                managing the Assigned Number subfield: explicit assignment,
-                auto-assignment from a pool, and full auto-assignment. </t>
 
                 <t hangText="'vpn-targets':">Specifies RT import/export rules
                 for the VPN service (Section 4.3 of <xref
@@ -1169,9 +1165,10 @@
                  |     |  +--rw router-id?        inet:ip-address
                  |     +--rw local-autonomous-system?   inet:as-number
                  |     |     {vpn-common:rtg-bgp}?
+                 |     +--rw (rd-choice)?
+                 |     |  ....
                  |     +--rw address-family* [address-family]
                  |     |  +--rw address-family          identityref
-                 |     |  +--rw (rd-choice)?
                  |     |  |  ...
                  |     |  +--rw vpn-targets
                  |     |  |  ...
@@ -1600,7 +1597,7 @@
 |           +--rw primary-address?     -> ../address/address-id
 |           +--rw address* [address-id]
 |              +--rw address-id              string
-|              +--rw customer-prefix?     inet:ipv6-address
+|              +--rw customer-address?     inet:ipv6-address
 ...
 ]]></artwork>
           </figure>
@@ -5754,12 +5751,7 @@ Content-Type: application/yang-data+json
         "vpn-instance-profile": [
           {
             "profile-id": "multicast",
-            "address-family": [
-              {
-                "address-family": "vpn-common:ipv4",
-                "rd": "3816:31050202"
-              }
-            ]
+            "rd": "3816:31050202"
           }
         ]
       }
