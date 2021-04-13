@@ -245,6 +245,9 @@
           <t>reference: RFC XXXX</t>
         </list></t>
 
+      <t>Please update "RFC UUUU" to the RFC number to be assigned to <xref
+      target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
+
       <t>Also, please update the "revision" date of the YANG module.</t>
     </note>
   </front>
@@ -363,7 +366,7 @@
           <t hangText="Network orchestrator:">A functional entity that is
           hierarchically intermediate between a service orchestrator and
           network controllers. A network orchestrator can manage one or
-          several network nontrollers.</t>
+          several network controllers.</t>
 
           <t hangText="Network controller:">A functional entity responsible
           for the control and management of the service provider network.</t>
@@ -418,7 +421,7 @@
 
           <t hangText="CE">Customer Edge</t>
 
-          <t hangText="IGMP">nternet Group Management Protocol</t>
+          <t hangText="IGMP">Internet Group Management Protocol</t>
 
           <t hangText="L3VPN">Layer 3 Virtual Private Network</t>
 
@@ -529,7 +532,7 @@
       </figure>
 
       <t>The customer may use a variety of means to request a service that may
-      trigger the instantiation of a L3NM. The customer may use the L3SM or
+      trigger the instantiation of an L3NM. The customer may use the L3SM or
       more abstract models to request a service that relies upon an L3VPN
       service. For example, the customer may supply an IP Connectivity
       Provisioning Profile (CPP) <xref target="RFC7297"></xref>, an enhanced
@@ -995,35 +998,17 @@
       </section>
 
       <section anchor="ie_profiles" title="VPN Instance Profiles">
-        <t>&lt;&lt;&lt;To be update to describe how data is
-        factorized&gt;&gt;&gt;</t>
+        <t>VPN instance profiles are meant to factorize data nodes that are
+        used at many levels of the model. Generic VPN instance profiles are
+        defined at the VPN service level and then called at the VPN node and
+        VPN network access levels. Each VPN instance profile is identified by
+        'profile-id'. This identifier is then referenced for one or multiple
+        VPN nodes (<xref target="vpn_node"></xref>) so that the controller can
+        identify generic resources (e.g., RTs and RDs) to be configured for a
+        given VRF. </t>
 
-        <t>The import and export profiles construct contains a list with
-        information related with route targets and distinguishers (RTs and
-        RDs), grouped and identified by 'ie-profile-id'. The identifier is
-        then referenced in one or multiple 'vpn-nodes' (<xref
-        target="vpn_node"></xref>) so that the controller can identify RTs and
-        RDs to be configured for a given VRF. The subtree of 'ie-profiles' is
-        shown in <xref target="ie"></xref>.</t>
-
-        <t>The following modes are supported: <list style="hanging">
-            <t hangText="'full-autoasigned':">The network controller
-            auto-assigns logical resources (RTs, RDs). This can apply for the
-            deployment of new services.</t>
-
-            <t hangText="'rd-from-pool':">A variant of the previous one is to
-            indicate a pool from where the RD values can be auto-assigned.</t>
-
-            <t hangText="'directly-assigned':">The VPN service provider
-            (service orchestrator) assigns explicitly the RTs and RDs. This
-            case will fit with a brownfield scenario where some existing
-            services need to be updated by the VPN service provider.</t>
-
-            <t hangText="'no-rd':">The VPN service provider (service
-            orchestrator) explicitly wants no RT/RD to be assigned. This case
-            can be used for CE testing within the network or for
-            troubleshooting proposes.</t>
-          </list></t>
+        <t>The subtree of 'vpn-instance-profile' is shown in <xref
+        target="ie"></xref>.</t>
 
         <t><figure align="center" anchor="ie"
             title="Subtree Structure of VPN Instance Profiles">
@@ -1038,12 +1023,14 @@
            |  +--rw vpn-instance-profile* [profile-id]
            |     +--rw profile-id                 string
            |     +--rw role?                      identityref
-           |     +--rw local-autonomous-system?   inet:as-number {vpn-common:rtg-bgp}?
+           |     +--rw local-autonomous-system?   inet:as-number 
+           |            {vpn-common:rtg-bgp}?
            |     +--rw address-family* [address-family]
            |     |  +--rw address-family          identityref
            |     |  +--rw (rd-choice)?
            |     |  |  +--:(directly-assigned)
-           |     |  |  |  +--rw rd?               rt-types:route-distinguisher
+           |     |  |  |  +--rw rd?               
+           |     |  |  |     rt-types:route-distinguisher
            |     |  |  +--:(directly-assigned-suffix)
            |     |  |  |  +--rw rd-suffix?        uint16
            |     |  |  +--:(auto-assigned)
@@ -1053,7 +1040,8 @@
            |     |  |  |     |  |  +--rw rd-pool-name?   string
            |     |  |  |     |  +--:(full-auto)
            |     |  |  |     |     +--rw auto?           empty
-           |     |  |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+           |     |  |  |     +--ro auto-assigned-rd?     
+           |     |  |  |            rt-types:route-distinguisher
            |     |  |  +--:(auto-assigned-suffix)
            |     |  |  |  +--rw rd-auto-suffix
            |     |  |  |     +--rw (auto-mode)?
@@ -1068,8 +1056,10 @@
            |     |  |  +--rw vpn-target* [id]
            |     |  |  |  +--rw id                   int8
            |     |  |  |  +--rw route-targets* [route-target]
-           |     |  |  |  |  +--rw route-target    rt-types:route-target
-           |     |  |  |  +--rw route-target-type    rt-types:route-target-type
+           |     |  |  |  |  +--rw route-target    
+           |     |  |  |  |       rt-types:route-target
+           |     |  |  |  +--rw route-target-type    
+           |     |  |  |          rt-types:route-target-type
            |     |  |  +--rw vpn-policies
            |     |  |     +--rw import-policy?   string
            |     |  |     +--rw export-policy?   string
@@ -1081,11 +1071,66 @@
 ]]></artwork>
           </figure></t>
 
-        <t></t>
+        <t>The description of the listed data nodes is as follows: </t>
 
-        <t></t>
+        <t><list style="hanging">
+            <t hangText="'profile-id':">Is used to uniquely identify a VPN
+            instance profile.</t>
 
-        <t></t>
+            <t hangText="'role':">Indicates the role of the VPN instance
+            profile in the VPN. Role values are defined in <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref> (e.g.,
+            any-to-any-role, spoke-role, hub-role).</t>
+
+            <t hangText="'local-autonomous-system':">Indicates the Autonomous
+            System Number (ASN) that is configured for the VPN node.</t>
+
+            <t hangText="'address-family':">Includes a set of per-address
+            family data nodes:<list style="hanging">
+                <t hangText="'address-family':">Identifies the address family.
+                It can be set to IPv4, IPv6, or dual-stack.</t>
+
+                <t hangText="'rd':">As defined in <xref
+                target="I-D.ietf-opsawg-vpn-common"></xref>, these RD
+                assignment modes are supported: direct assignment, automatic
+                assignment from a given pool, automatic assignment, and no
+                assignment. For illustration purposes, the following modes can
+                be used in the deployment cases: <list style="hanging">
+                    <t hangText="'directly-assigned':">The VPN service
+                    provider (service orchestrator) assigns explicitly RDs.
+                    This case will fit with a brownfield scenario where some
+                    existing services need to be updated by the VPN service
+                    provider.</t>
+
+                    <t hangText="'full-auto':">The network controller
+                    auto-assigns RDs. This can apply for the deployment of new
+                    services.</t>
+
+                    <t hangText="'no-rd':">The VPN service provider (service
+                    orchestrator) explicitly wants no RD to be assigned. This
+                    case can be used for CE testing within the network or for
+                    troubleshooting proposes.</t>
+                  </list>Also, the module accommodates deployments where only
+                the Assigned Number subfield of RDs (Section 4.2 of <xref
+                target="RFC4364"></xref>) is assigned from a pool while the
+                Administrator subfield is set to, e.g., the router-id that is
+                assigned to a VPN node. The module supports these modes for
+                managing the Assigned Number subfield: explicit assignment,
+                auto-assignment from a pool, and full auto-assignment. </t>
+
+                <t hangText="'vpn-targets':">Specifies RT import/export rules
+                for the VPN service (Section 4.3 of <xref
+                target="RFC4364"></xref>).</t>
+
+                <t hangText="'maximum-routes':">Indicates the maximum prefixes
+                that the VPN node can accept for a given routing protocol. If
+                'protocol' is set to 'any', this means that the maximum value
+                applies to each active routing protocol.</t>
+              </list></t>
+
+            <t hangText="'multicast':">Enables multicast traffic in the VPN
+            server. Refer to <xref target="mc"></xref>.</t>
+          </list></t>
 
         <t></t>
       </section>
@@ -1113,7 +1158,6 @@
                  +--rw vpn-node-id                vpn-common:vpn-id
                  +--rw description?               string
                  +--rw ne-id?                     string
-                 +--rw node-role?                 identityref
                  +--rw local-autonomous-system?   inet:as-number
                  |       {vpn-common:rtg-bgp}?
                  +--rw router-id?                 rt-types:router-id
@@ -1165,59 +1209,38 @@
             <t hangText="'vpn-node-id':">Is an identifier that uniquely
             identifies a node that enables VPN network access.</t>
 
-            <t hangText="'description':">Providers a textual description of
-            the VPN node.</t>
+            <t hangText="'description':">Provides a textual description of the
+            VPN node.</t>
 
             <t hangText="'ne-id':">Includes a unique identifier of the network
             element where the VPN node is deployed.</t>
-
-            <t hangText="'node-role':">Indicates the role of the VPN node in
-            the VPN. Roles values are defined in <xref
-            target="I-D.ietf-opsawg-vpn-common"></xref> (e.g.,
-            any-to-any-role, spoke-role, hub-role).</t>
 
             <t hangText="'local-autonomous-system':">Indicates the BGP
             Autonomous System Number (ASN) that is configured for the VPN
             node.</t>
 
-            <t hangText="'address-family':">Is used to identify the address
-            family used for the Router ID. It can be set to IPv4 or IPv6.</t>
-
             <t hangText="'router-id':">Indicates a unique Router ID
-            information. It can be either an IPv4 IPv6 address as a function
-            of the setting of 'address-family'.</t>
+            information. </t>
 
-            <t hangText="'active-vpn-instance-profiles':">ccccccccc<list
-                style="hanging">
-                <t></t>
+            <t hangText="'active-vpn-instance-profiles':">Lists the set of
+            active VPN instance profiles for this VPN node. Concretely, one or
+            more VPN instance profiles that are defined at the VPN service
+            level can be enabled at the VPN node level; each of these profiles
+            is uniquely identified by means of 'profile-id'. The structure of
+            'active-vpn-instance-profiles' is the same as the one discussed in
+            <xref target="ie_profiles"></xref> with the exception of
+            'router-id'. Values defined in 'active-vpn-instance-profiles'
+            overrides the ones defined in the VPN node and/or VPN service
+            levels. </t>
 
-                <t hangText="'rd':">If the logical resources are managed
-                outside the network controller, the model allows to explicitly
-                indicate the logical resources such as RTs and RDs. <vspace
-                blankLines="1" />As defined in <xref
-                target="I-D.ietf-opsawg-vpn-common"></xref> and recalled in
-                <xref target="ie_profiles"></xref>, RDs can be explicitly
-                configured or automatically assigned. RD auto- assignment can
-                also constrained by indicating an RD pool name ('rd-
-                pool-name').</t>
-
-                <t hangText="'vpn-targets':">Specifies RT import/export rules
-                for the VPN service.</t>
-
-                <t hangText="'node-ie-profile':">Refer to <xref
-                target="ie_profiles"></xref>.</t>
-
-                <t hangText="'maximum-routes':">Indicates the maximum prefixes
-                that the VPN node can accept for a given address family and
-                routing protocol. If 'protocol' is set to 'any', this means
-                that the maximum value applies to each active routing
-                protocol.</t>
-
-                <t hangText="'multicast':">Enables multicast traffic in the
-                VPN. Refer to <xref target="mc"></xref>.</t>
-              </list></t>
-
-            <t hangText="'msdp':">xxxxx</t>
+            <t hangText="'msdp':">For redundancy purposes, Multicast Source
+            Discovery Protocol (MSDP) <xref target="RFC3618"></xref> may be
+            enabled and used to share the state about sources between multiple
+            rendez-vous points (RPs). The purpose of MSDP in this context is
+            to enhance the robustness of the multicast service. MSDP may be
+            configured on non-RP routers, which is useful in a domain that
+            does not support multicast sources, but does support multicast
+            transit.</t>
 
             <t hangText="'groups':">Lists the groups to which a VPN node
             belongs to <xref target="I-D.ietf-opsawg-vpn-common"></xref>. The
@@ -1321,7 +1344,13 @@
                 target="loopback"></xref>.</t>
               </list></t>
 
-            <t hangText="'vpn-instance-profile':">xxxxx.</t>
+            <t hangText="'vpn-instance-profile':">Provides a pointer to an
+            active VPN instance profile at the VPN node level. Referencing an
+            active VPN instance profile implies that all associated data nodes
+            will be inherited by the VPN network access. However, some of the
+            inherited data nodes (e.g., multicast) can be refined at the VPN
+            network access level. In such case, refined values take precedence
+            over inherited ones. </t>
 
             <t hangText="'status':">Indicates both operational and
             administrative status of a VPN network access.</t>
@@ -1341,7 +1370,7 @@
             target="rtg"></xref>.</t>
 
             <t hangText="'oam':">Specifies the Operations, Administration, and
-            Maintenance (OAM) mechanisms used for a VPN network accesss. See
+            Maintenance (OAM) mechanisms used for a VPN network access. See
             <xref target="sec-oam"></xref>.</t>
 
             <t hangText="'security':">Specifies the authentication and the
@@ -1449,38 +1478,43 @@
           <xref target="RFC7527"></xref><xref target="RFC4861"></xref> can be
           used. For both IPv4 and IPv6, 'address-allocation-type' is used to
           indicate the IP address allocation mode to activate for a given VPN
-          network access. </t>
+          network access.</t>
 
           <t>When 'address-allocation-type' is set to 'provider-dhcp', DHCP
           assignments can be made locally or by an external DHCP server. Such
-          as behavior is controlled by setting 'dhcp-service-type'. </t>
+          as behavior is controlled by setting 'dhcp-service-type'.</t>
 
           <t><xref target="ip_conn_tree_v4"></xref> shows the structure of the
-          dynamic IPv4 address assignment (i.e., by means of DHCP). </t>
+          dynamic IPv4 address assignment (i.e., by means of DHCP).</t>
 
           <t><figure align="center" anchor="ip_conn_tree_v4"
               title="IP Connection Subtree Structure (IPv4)">
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
 |  +--rw ipv4 {vpn-common:ipv4}?
-|  |  +--rw local-address?                           inet:ipv4-prefix
-|  |  +--rw address-allocation-type?                 identityref
+|  |  +--rw local-address?             inet:ipv4-address
+|  |  +--rw prefix-length?             uint8
+|  |  +--rw address-allocation-type?   identityref
 |  |  +--rw (allocation-type)?
 |  |     +--:(provider-dhcp)
-|  |     |  +--rw dhcp-service-type?                       enumeration
+|  |     |  +--rw dhcp-service-type?   enumeration
 |  |     |  +--rw (service-type)?
 |  |     |     +--:(relay)
-|  |     |     |  +--rw server-ip-address*                 inet:ipv4-address
+|  |     |     |  +--rw server-ip-address*  
+|  |     |     |          inet:ipv4-address
 |  |     |     +--:(server)
 |  |     |        +--rw (address-assign)?
 |  |     |           +--:(number)
-|  |     |           |  +--rw number-of-dynamic-address?   uint16
+|  |     |           |  +--rw number-of-dynamic-address?   
+|  |     |           |           uint16
 |  |     |           +--:(explicit)
 |  |     |              +--rw customer-addresses
 |  |     |                 +--rw address-pool* [pool-id]
 |  |     |                    +--rw pool-id          string
-|  |     |                    +--rw start-address?   inet:ipv4-address
-|  |     |                    +--rw end-address?     inet:ipv4-address
+|  |     |                    +--rw start-address?   
+|  |     |                    |           inet:ipv4-address
+|  |     |                    +--rw end-address?     
+|  |     |                                inet:ipv4-address
 |  |     +--:(dhcp-relay)
 |  |     |  +--rw customer-dhcp-servers
 |  |     |     +--rw server-ip-address*   inet:ipv4-address
@@ -1500,25 +1534,30 @@
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
-|     +--rw local-address?                           inet:ipv6-prefix
-|     +--rw address-allocation-type?                 identityref
+|     +--rw local-address?                 inet:ipv6-address
+|     +--rw prefix-length?                 uint8
+|     +--rw address-allocation-type?       identityref
 |     +--rw (allocation-type)?
 |        +--:(dynamic)
 |        |  +--rw provider-dhcp
-|        |  |  +--rw dhcp-service-type?                       enumeration
+|        |  |  +--rw dhcp-service-type?         enumeration
 |        |  |  +--rw (service-type)?
 |        |  |     +--:(provider-dhcp-servers)
-|        |  |     |  +--rw server-ip-address*                 inet:ipv6-address
+|        |  |     |  +--rw server-ip-address*    
+|        |  |     |                       inet:ipv6-address
 |        |  |     +--:(server)
 |        |  |        +--rw (address-assign)?
 |        |  |           +--:(number)
-|        |  |           |  +--rw number-of-dynamic-address?   uint16
+|        |  |           |  +--rw number-of-dynamic-address?
+|        |  |           |                            uint16
 |        |  |           +--:(explicit)
 |        |  |              +--rw customer-addresses
 |        |  |                 +--rw address-pool* [pool-id]
-|        |  |                    +--rw pool-id          string
-|        |  |                    +--rw start-address?   inet:ipv6-address
-|        |  |                    +--rw end-address?     inet:ipv6-address
+|        |  |                    +--rw pool-id       string
+|        |  |                    +--rw start-address?
+|        |  |                    |        inet:ipv6-address
+|        |  |                    +--rw end-address?    
+|        |  |                              inet:ipv6-address
 |        |  +--rw slaac
 |        |     +--rw pio-length?          uint8
 |        |     +--rw slaac-prefix-pool* [pool-id]
@@ -1542,7 +1581,7 @@
 
           <figure align="center" anchor="ip_conn_tree-static"
                   title="IP Connection Subtree Structure (Static Mode)">
-            <artwork align="left"><![CDATA[...
+            <artwork align="center"><![CDATA[...
 +--rw ip-connection
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  +--rw address-allocation-type?         identityref
@@ -1551,17 +1590,17 @@
 |  |     +--:(static-addresses)
 |  |        +--rw primary-address?        -> ../address/address-id
 |  |        +--rw address* [address-id]
-|  |           +--rw address-id              string
-|  |           +--rw customer-address?     inet:ipv4-prefix
+|  |           +--rw address-id          string
+|  |           +--rw customer-address?   inet:ipv4-address
 |  +--rw ipv6 {vpn-common:ipv6}?
 |     +--rw address-allocation-type?         identityref
 |     +--rw (allocation-type)?
 |        ...
 |        +--:(static-addresses)
-|           +--rw primary-address?     -> ../address/prefix-id
+|           +--rw primary-address?     -> ../address/address-id
 |           +--rw address* [address-id]
-|              +--rw prefix-id              string
-|              +--rw customer-prefix?     inet:ipv6-prefix
+|              +--rw address-id              string
+|              +--rw customer-prefix?     inet:ipv6-address
 ...
 ]]></artwork>
           </figure>
@@ -2216,7 +2255,7 @@
                 </figure>QoS classification can be based on many criteria such
               as: <list style="hanging">
                   <t hangText="Layer 3:">As shown in <xref
-                  target="services-l4"></xref>, classification can be based on
+                  target="services-l3"></xref>, classification can be based on
                   any IP header field or a combination thereof. Both IPv4 and
                   IPv6 are supported. <figure align="center"
                       anchor="services-l3" title="QoS Subtree Structure (L3)">
@@ -2267,11 +2306,18 @@
 ]]></artwork>
                     </figure></t>
 
-                  <t hangText="Layer 4:">As shown in <xref
-                  target="services-l4"></xref>, TCP or UDP-related match
-                  crietria can be specified in the L3NM. <figure
-                      align="center" anchor="services-l4"
-                      title="QoS Subtree Structure (L4)">
+                  <t hangText="Layer 4:">As discussed in <xref
+                  target="I-D.ietf-opsawg-vpn-common"></xref>, any layer 4
+                  protocol can be indicated in the 'protocol' data node under
+                  'l3' (<xref target="services-l3"></xref>), but only TCP and
+                  UDP specific match criteria are elaborated in this version
+                  as these protocols are widely used in the context of VPN
+                  services. Augmentations can be considered in the future to
+                  add other Layer 4 specific data nodes, if needed.<vspace
+                  blankLines="1" />TCP or UDP-related match crietria can be
+                  specified in the L3NM as shown in <xref
+                  target="services-l4"></xref>.<figure align="center"
+                      anchor="services-l4" title="QoS Subtree Structure (L4)">
                       <artwork align="center"><![CDATA[+--rw qos {vpn-common:qos}?
 |  +--rw qos-classification-policy
 |  |  +--rw rule* [id]
@@ -2370,17 +2416,28 @@
       <section anchor="mc" title="Multicast">
         <t>Multicast may be enabled for a particular VPN at the VPN node and
         VPN network access levels (see <xref target="all-multicast"></xref>).
-        Some data nodes (e.g., max-groups) can be controlled at the VPN node
-        level or at the VPN network access.</t>
+        Some data nodes (e.g., max-groups) can be controlled at various
+        levels: VPN service, VPN node level or VPN network access.</t>
 
         <t><figure align="center" anchor="all-multicast"
             title="Overall Multicast Subtree Structure">
-            <artwork align="center"><![CDATA[           ...
+            <artwork align="center"><![CDATA[     ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           ...
+           +--rw vpn-instance-profiles
+           |  +--rw vpn-instance-profile* [profile-id]
+           |     ....
+           |     +--rw multicast {vpn-common:multicast}?
+           |        ...
            +--rw vpn-nodes
               +--rw vpn-node* [vpn-node-id]
                  ...
-                 +--rw multicast {vpn-common:multicast}?
-                 |  ...
+                 +--rw active-vpn-instance-profiles
+                 |  +--rw vpn-instance-profile* [profile-id]
+                 |     ...
+                 |     +--rw multicast {vpn-common:multicast}?
+                 |        ...
                  +--rw vpn-network-accesses
                     +--rw vpn-network-access* [id]
                        ...
@@ -2389,13 +2446,99 @@
                           +--rw multicast {vpn-common:multicast}?
                              ...
 ]]></artwork>
-          </figure>Multicast-related data nodes at the VPN node level are
-        shown in <xref target="mcast-vpaccess"></xref>. Disabling multicast at
-        the VPN node level will have the effect of disabling it also at the
-        VPN network access level. For IGMP, MLD, and PIM, data nodes that are
-        defined at the VPN node level are applicable to all VPN network
-        accesses whose corresponding nodes are not provided at the VPN network
-        access level.</t>
+          </figure>Multicast-related data nodes at the VPN instance profile
+        level has the structure that is shown in <xref
+        target="mcast-vpaccess"></xref>. <figure align="center"
+            anchor="mcast-vpn-profile"
+            title="Multicast Subtree Structure (VPN Instance Profile Level)">
+            <artwork align="center"><![CDATA[     ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           ...
+           +--rw vpn-instance-profiles
+           |  +--rw vpn-instance-profile* [profile-id]
+           |     ....
+           |     +--rw multicast {vpn-common:multicast}?
+           |        +--rw tree-flavor*   identityref
+           |        +--rw rp
+           |        |  +--rw rp-group-mappings
+           |        |  |  +--rw rp-group-mapping* [id]
+           |        |  |     +--rw id                  uint16
+           |        |  |     +--rw provider-managed
+           |        |  |     |  +--rw enabled?                    boolean
+           |        |  |     |  +--rw rp-redundancy?              boolean
+           |        |  |     |  +--rw optimal-traffic-delivery?   boolean
+           |        |  |     |  +--rw anycast
+           |        |  |     |     +--rw local-address?    inet:ip-address
+           |        |  |     |     +--rw rp-set-address*   inet:ip-address
+           |        |  |     +--rw rp-address          inet:ip-address
+           |        |  |     +--rw groups
+           |        |  |        +--rw group* [id]
+           |        |  |           +--rw id                     uint16
+           |        |  |           +--rw (group-format)
+           |        |  |              +--:(group-prefix)
+           |        |  |              |  +--rw group-address?   inet:ip-prefix
+           |        |  |              +--:(startend)
+           |        |  |                 +--rw group-start?     inet:ip-address
+           |        |  |                 +--rw group-end?       inet:ip-address
+           |        |  +--rw rp-discovery
+           |        |     +--rw rp-discovery-type?   identityref
+           |        |     +--rw bsr-candidates
+           |        |        +--rw bsr-candidate-address*   inet:ip-address
+           |        +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
+           |        |  +--rw static-group* [group-addr]
+           |        |  |  +--rw group-addr     
+           |        |  |  |              rt-types:ipv4-multicast-group-address
+           |        |  |  +--rw source-addr?   
+           |        |  |                 rt-types:ipv4-multicast-source-address
+           |        |  +--rw max-groups?     uint32
+           |        |  +--rw max-entries?    uint32
+           |        |  +--rw version?        identityref
+           |        +--rw mld {vpn-common:mld and vpn-common:ipv6}?
+           |        |  +--rw static-group* [group-addr]
+           |        |  |  +--rw group-addr     
+           |        |  |  |               rt-types:ipv6-multicast-group-address
+           |        |  |  +--rw source-addr? 
+           |        |  |                 rt-types:ipv6-multicast-source-address
+           |        |  +--rw max-groups?     uint32
+           |        |  +--rw max-entries?    uint32
+           |        |  +--rw version?        identityref
+           |        +--rw pim {vpn-common:pim}?
+           |           +--rw hello-interval?   rt-types:timer-value-seconds16
+           |           +--rw dr-priority?      uint32
+           ...
+]]></artwork>
+          </figure></t>
+
+        <t>The model supports a single type of tree: Any-Source Multicast
+        (ASM), Source-Specific Multicast (SSM), or bidirectional.</t>
+
+        <t>When ASM is used, the model supports the configuration of
+        rendez-vous points (RPs). RP discovery may be 'static', 'bsr-rp', or
+        'auto-rp'. When set to 'static', RP to multicast grouping mapping MUST
+        be configured as part of the 'rp-group-mappings' container. The RP MAY
+        be a provider node or a customer node. When the RP is a customer node,
+        the RP address must be configured using the 'rp-address' leaf
+        otherwise no RP address is needed.</t>
+
+        <t>The model supports RP redundancy through the 'rp-redundancy' leaf.
+        How the redundancy is achieved is out of scope and is up to the
+        implementation.</t>
+
+        <t>When a particular VPN using ASM requires a more optimal traffic
+        delivery, 'optimal-traffic-delivery' can be set. When set to 'true',
+        the implementation must use any mechanism to provide a more optimal
+        traffic delivery for the customer. For example, anycast is one of the
+        mechanisms to enhance RPs redundancy, resilience against failures, and
+        to recover from failures quickly.</t>
+
+        <t>The same structure as the one depicted in <xref
+        target="mcast-vpaccess"></xref> is used when configuring
+        multicast-related parameters at the VPN node level. When defined at
+        the VPN node level (<xref target="mcast-vpn"></xref>), IGMP, MLD, and
+        PIM parameters are applicable to all VPN network accesses of that VPN
+        node unless corresponding nodes are refined at the VPN network access
+        level.</t>
 
         <t><figure align="center" anchor="mcast-vpn"
             title="Multicast Subtree Structure (VPN Node Level)">
@@ -2403,101 +2546,27 @@
 +--rw vpn-nodes
    +--rw vpn-node* [vpn-node-id]
       ...
-      +--rw multicast {vpn-common:multicast}?
-      |  +--rw status
-      |  |  +--rw admin-status
-      |  |  |  +--rw status?         identityref
-      |  |  |  +--rw last-updated?   yang:date-and-time
-      |  |  +--ro oper-status
-      |  |     +--ro status?         identityref
-      |  |     +--ro last-updated?   yang:date-and-time
-      |  +--rw tree-flavor*   identityref
-      |  +--rw rp
-      |  |  +--rw rp-group-mappings
-      |  |  |  +--rw rp-group-mapping* [id]
-      |  |  |     +--rw id                  uint16
-      |  |  |     +--rw provider-managed
-      |  |  |     |  +--rw enabled?                    boolean
-      |  |  |     |  +--rw rp-redundancy?              boolean
-      |  |  |     |  +--rw optimal-traffic-delivery?   boolean
-      |  |  |     |  +--rw anycast
-      |  |  |     |     +--rw local-address?    inet:ip-address
-      |  |  |     |     +--rw rp-set-address*   inet:ip-address
-      |  |  |     +--rw rp-address          inet:ip-address
-      |  |  |     +--rw groups
-      |  |  |        +--rw group* [id]
-      |  |  |           +--rw id                     uint16
-      |  |  |           +--rw (group-format)
-      |  |  |              +--:(group-prefix)
-      |  |  |              |  +--rw group-address?   inet:ip-prefix
-      |  |  |              +--:(startend)
-      |  |  |                 +--rw group-start?     inet:ip-address
-      |  |  |                 +--rw group-end?       inet:ip-address
-      |  |  +--rw rp-discovery
-      |  |     +--rw rp-discovery-type?   identityref
-      |  |     +--rw bsr-candidates
-      |  |        +--rw bsr-candidate-address*   inet:ip-address
-      |  +--rw msdp {msdp}?
-      |  |  +--rw peer?            inet:ip-address
-      |  |  +--rw local-address?   inet:ip-address
-      |  |  +--rw status
-      |  |     +--rw admin-status
-      |  |     |  +--rw status?         identityref
-      |  |     |  +--rw last-updated?   yang:date-and-time
-      |  |     +--ro oper-status
-      |  |        +--ro status?         identityref
-      |  |        +--ro last-updated?   yang:date-and-time
-      |  +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
-      |  |  +--rw static-group* [group-addr]
-      |  |  |  +--rw group-addr     
-      |  |  |        rt-types:ipv4-multicast-group-address
-      |  |  |  +--rw source-addr?       
-      |  |  |        rt-types:ipv4-multicast-source-address
-      |  |  +--rw max-groups?     uint32
-      |  |  +--rw max-entries?    uint32
-      |  |  +--rw version?        identityref
-      |  |  +--rw status
-      |  |     +--rw admin-status
-      |  |     |  +--rw status?         identityref
-      |  |     |  +--rw last-updated?   yang:date-and-time
-      |  |     +--ro oper-status
-      |  |        +--ro status?         identityref
-      |  |        +--ro last-updated?   yang:date-and-time
-      |  +--rw mld {vpn-common:mld and vpn-common:ipv6}?
-      |  |  +--rw static-group* [group-addr]
-      |  |  |  +--rw group-addr         
-      |  |  |        rt-types:ipv6-multicast-group-address
-      |  |  |  +--rw source-addr?       
-      |  |  |        rt-types:ipv6-multicast-source-address
-      |  |  +--rw max-groups?     uint32
-      |  |  +--rw max-entries?    uint32
-      |  |  +--rw version?        identityref
-      |  |  +--rw status
-      |  |     +--rw admin-status
-      |  |     |  +--rw status?         identityref
-      |  |     |  +--rw last-updated?   yang:date-and-time
-      |  |     +--ro oper-status
-      |  |        +--ro status?         identityref
-      |  |        +--ro last-updated?   yang:date-and-time
-      |  +--rw pim {vpn-common:pim}?
-      |     +--rw hello-interval?   rt-types:timer-value-seconds16
-      |     +--rw dr-priority?      uint32
-      |     +--rw status
-      |        +--rw admin-status
-      |        |  +--rw status?         identityref
-      |        |  +--rw last-updated?   yang:date-and-time
-      |        +--ro oper-status
-      |           +--ro status?         identityref
-      |           +--ro last-updated?   yang:date-and-time
-                 ...
+      +--rw active-vpn-instance-profiles
+      |  +--rw vpn-instance-profile* [profile-id]
+      |     ...
+      |     +--rw multicast {vpn-common:multicast}?
+      |        +--rw tree-flavor*   identityref
+      |        +--rw rp
+      |        |  ...
+      |        +--rw igmp {vpn-common:igmp and vpn-common:ipv4}?
+      |        |  ...
+      |        +--rw mld {vpn-common:mld and vpn-common:ipv6}?
+      |        |  ...
+      |        +--rw pim {vpn-common:pim}?
+      |           ...
 ]]></artwork>
           </figure></t>
 
         <t>Multicast-related data nodes at the VPN network access level are
-        shown in <xref target="mcast-vpaccess"></xref>. Except for the
-        'status' node, the value configured at the VPN network access level
-        overrides the value configured for the corresponding data node at the
-        VPN node level.<figure align="center" anchor="mcast-vpaccess"
+        shown in <xref target="mcast-vpaccess"></xref>. The values configured
+        at the VPN network access level override the values configured for the
+        corresponding data nodes in other levels.<figure align="center"
+            anchor="mcast-vpaccess"
             title="Multicast Subtree Structure (VPN Network Access Level)">
             <artwork align="center"><![CDATA[...
 +--rw vpn-network-accesses
@@ -2556,36 +2625,6 @@
                      +--ro last-updated?   yang:date-and-time
 ]]></artwork>
           </figure></t>
-
-        <t>The model supports a single type of tree: Any-Source Multicast
-        (ASM), Source-Specific Multicast (SSM), or bidirectional.</t>
-
-        <t>When ASM is used, the model supports the configuration of
-        rendez-vous points (RPs). RP discovery may be 'static', 'bsr-rp', or
-        'auto-rp'. When set to 'static', RP to multicast grouping mapping MUST
-        be configured as part of the 'rp-group-mappings' container. The RP MAY
-        be a provider node or a customer node. When the RP is a customer node,
-        the RP address must be configured using the 'rp-address' leaf
-        otherwise no RP address is needed.</t>
-
-        <t>The model supports RP redundancy through the 'rp-redundancy' leaf.
-        How the redundancy is achieved is out of scope and is up to the
-        implementation.</t>
-
-        <t>When a particular VPN using ASM requires a more optimal traffic
-        delivery, 'optimal-traffic-delivery' can be set. When set to 'true',
-        the implementation must use any mechanism to provide a more optimal
-        traffic delivery for the customer. For example, anycast is one of the
-        mechanisms to enhance RPs redundancy, resilience against failures, and
-        to recover from failures quickly.</t>
-
-        <t>For redundancy purposes, Multicast Source Discovery Protocol (MSDP)
-        <xref target="RFC3618"></xref> may be enabled and used to share the
-        state about sources between multiple RPs. The purpose of MSDP in this
-        context is to enhance the robustness of the multicast service. MSDP
-        may be configured on non-RP routers, which is useful in a domain that
-        does not support multicast sources, but does support multicast
-        transit.</t>
       </section>
     </section>
 
