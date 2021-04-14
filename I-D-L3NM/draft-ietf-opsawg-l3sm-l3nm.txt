@@ -124,19 +124,19 @@ Internet-Draft               L3NM YANG Model                  April 2021
    11. References  . . . . . . . . . . . . . . . . . . . . . . . . . 108
      11.1.  Normative References . . . . . . . . . . . . . . . . . . 108
      11.2.  Informative References . . . . . . . . . . . . . . . . . 111
-   Appendix A.  L3VPN Examples . . . . . . . . . . . . . . . . . . . 114
-     A.1.  VPN Instance Profile  . . . . . . . . . . . . . . . . . . 114
-     A.2.  4G VPN Provisioning Example . . . . . . . . . . . . . . . 114
-     A.3.  Create Loopback Interfaces  . . . . . . . . . . . . . . . 118
-     A.4.  Multicast VPN Provisioning Example  . . . . . . . . . . . 119
-   Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 122
-     B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 123
-     B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 123
-     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 123
-     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 123
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 123
-   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 124
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 124
+   Appendix A.  L3VPN Examples . . . . . . . . . . . . . . . . . . . 115
+     A.1.  VPN Instance Profile  . . . . . . . . . . . . . . . . . . 115
+     A.2.  4G VPN Provisioning Example . . . . . . . . . . . . . . . 115
+     A.3.  Create Loopback Interfaces  . . . . . . . . . . . . . . . 119
+     A.4.  Multicast VPN Provisioning Example  . . . . . . . . . . . 120
+   Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 123
+     B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 124
+     B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 124
+     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 124
+     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 124
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 124
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 125
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 125
 
 1.  Introduction
 
@@ -1193,10 +1193,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
    'ne-id':  Includes a unique identifier of the network element where
       the VPN node is deployed.
 
-   'local-autonomous-system':  Indicates the BGP Autonomous System
-      Number (ASN) that is configured for the VPN node.
+   'local-autonomous-system':  Indicates the ASN that is configured for
+      the VPN node.
 
-   'router-id':  Indicates a unique Router ID information.
+   'router-id':  Indicates a 32-bit number that is used to uniquely
+      identify a router within an Autonomous System.
 
    'active-vpn-instance-profiles':  Lists the set of active VPN instance
       profiles for this VPN node.  Concretely, one or more VPN instance
@@ -1204,9 +1205,13 @@ Internet-Draft               L3NM YANG Model                  April 2021
       at the VPN node level; each of these profiles is uniquely
       identified by means of 'profile-id'.  The structure of 'active-
       vpn-instance-profiles' is the same as the one discussed in
-      Section 7.4 with the exception of 'router-id'.  Values defined in
-      'active-vpn-instance-profiles' overrides the ones defined in the
-      VPN node and/or VPN service levels.
+      Section 7.4 with the exception of 'router-id'.  Indeed, Router IDs
+      can be configured per address family.  This capability can be
+      used, for example, to configure an IPv6 address as a Router ID
+      when such capability is supported by involved routers.
+
+      Values defined in 'active-vpn-instance-profiles' overrides the
+      ones defined in the VPN node and/or VPN service levels.
 
    'msdp':  For redundancy purposes, Multicast Source Discovery Protocol
       (MSDP) [RFC3618] may be enabled and used to share the state about
@@ -1221,11 +1226,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
       associate, e.g., redundancy or protection constraints with VPN
       nodes.
 
-   'status':  Tracks the status of a node involved in a VPN service.
-      Both operational and administrative status are maintained.  A
-      mismatch between the administrative status vs. the operational
-      status can be used as a trigger to detect anomalies.
-
 
 
 
@@ -1233,6 +1233,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 22]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   'status':  Tracks the status of a node involved in a VPN service.
+      Both operational and administrative status are maintained.  A
+      mismatch between the administrative status vs. the operational
+      status can be used as a trigger to detect anomalies.
 
    'vpn-network-accesses':  Represents the point to which sites are
       connected.
@@ -1252,11 +1257,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
    The 'vpn-network-access' includes a set of data nodes that describe
    the access information for the traffic that belongs to a particular
    L3VPN (Figure 8).
-
-
-
-
-
 
 
 
@@ -1421,7 +1421,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
    the L3NM, it is assumed that the bearer has been allocated by the
    service provider at the service orchestration stage.  The bearer is
    associated to a network element and a port.  Hence, a bearer is just
-   a bearer-reference to allow the translation between a service request
+   a bearer-reference to allow the association between a service request
    (e.g., L3SM) and L3NM.
 
    As shown in Figure 9, the 'connection' container defines protocols
@@ -1925,6 +1925,9 @@ Internet-Draft               L3NM YANG Model                  April 2021
       'address-family':  Indicates the address-family of the peer.  It
          can be set to IPv4, IPv6, or dual-stack.
 
+      'local-address':  Specifies an address or a reference to an
+         interface to use when establishing the BGP transport session.
+
       'neighbor':  Can indicate two neighbors (each for a given address-
          family) or one neighbor (if 'address-family' attribute is set
          to dual-stack).  A list of IP address(es) of the BGP neighbors
@@ -1938,12 +1941,27 @@ Internet-Draft               L3NM YANG Model                  April 2021
          specified in the AS_PATH BGP attribute with the ASN identified
          in the 'local-autonomous-system' attribute.
 
+      'allow-own-as':  Is used in some topologies (e.g., hub-and-spoke)
+         to allow the provider's ASN to be included in the AS_PATH BGP
+         attribute received from a CE.  Loops are prevented by setting
+         'allow-own-as' to a maximum number of provider's ASN
+         occurrences.  This parameter is set by default to '0' (that is,
+         reject any AS_PATH attribute that includes the provider's ASN).
+
       'default-route':  Controls whether default routes can be
          advertised to the peer.
 
       'site-of-origin':  Is meant to uniquely identify the set of routes
          learned from a site via a particular CE/PE connection and is
          used to prevent routing loops (Section 7 of [RFC4364]).  The
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 35]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
          Site of Origin attribute is encoded as a Route Origin Extended
          Community.
 
@@ -1953,14 +1971,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
       'bgp-max-prefix':  Controls the behavior when a prefix maximum is
          reached.
-
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 35]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
          'max-prefix':  Indicates the maximum number of BGP prefixes
             allowed in the BGP session.  If such limit is reached, the
@@ -1989,35 +1999,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
       'status':  Indicates the status of the BGP routing instance.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 36]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
   ...
   +--rw routing-protocols
   |  +--rw routing-protocol* [id]
@@ -2027,9 +2008,19 @@ Internet-Draft               L3NM YANG Model                  April 2021
   |     |  +--rw local-autonomous-system?   inet:as-number
   |     |  +--rw peer-autonomous-system     inet:as-number
   |     |  +--rw address-family?            identityref
+  |     |  +--rw local-address?             union
   |     |  +--rw neighbor*                  inet:ip-address
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 36]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
   |     |  +--rw multihop?                  uint8
   |     |  +--rw as-override?               boolean
+  |     |  +--rw allow-own-as?              uint8
   |     |  +--rw default-route?             boolean
   |     |  +--rw site-of-origin?            rt-types:route-origin
   |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
@@ -2067,19 +2058,21 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
                  Figure 16: BGP Routing Subtree Structure
 
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 37]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
    OSPF:  OSPF can be configured to run as a routing protocol on the
       'vpn-network-access' [RFC4577][RFC6565].  The following data nodes
       are captured in Figure 17:
 
       'address-family':  Indicates whether IPv4, IPv6, or both address
          families are to be activated.
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 37]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
          When only the IPv4 address-family is requested, it will be up
          to the implementation to decide whether OSPFv2 [RFC2328] or
@@ -2102,6 +2095,13 @@ Internet-Draft               L3NM YANG Model                  April 2021
          OSPFv2 [RFC5709] [RFC7474] and OSPFv3 [RFC7166].
 
       'status':  Indicates the status of the OSPF routing instance.
+
+
+
+
+
+
+
 
 
 
@@ -2227,11 +2227,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
                 Figure 18: IS-IS Routing Subtree Structure
 
-   RIP:  The module covers only a list of address-family and status as
-      shown in Figure 19.  The meaning of these data nodes is similar to
-      the other routing protocols.
-
-
+   RIP:  The model allows the user to configure RIP to run on the 'vpn-
+      network-access' interface [RFC2453][RFC2080].The module covers
+      only a list of address-family and status as shown in Figure 19.
+      The meaning of these data nodes is similar to the other routing
+      protocols.
 
 
 
@@ -3007,8 +3007,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 8.  L3NM YANG Module
 
-   This module uses types defined in [RFC6991] and groupings defined in
-   [RFC8519], [RFC8177], and [RFC8294].
+   This module uses types defined in [RFC6991] and [RFC8343].  It also
+   used groupings defined in [RFC8519], [RFC8177], and [RFC8294].
 
 <CODE BEGINS>  file "ietf-l3vpn-ntw@2021-02-19.yang"
 module ietf-l3vpn-ntw {
@@ -6025,6 +6025,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
               2/3 VPN Common YANG Model", draft-ietf-opsawg-vpn-
               common-03 (work in progress), January 2021.
 
+   [RFC2080]  Malkin, G. and R. Minnear, "RIPng for IPv6", RFC 2080,
+              DOI 10.17487/RFC2080, January 1997,
+              <https://www.rfc-editor.org/info/rfc2080>.
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -6034,6 +6038,18 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC2328, April 1998,
               <https://www.rfc-editor.org/info/rfc2328>.
 
+   [RFC2453]  Malkin, G., "RIP Version 2", STD 56, RFC 2453,
+              DOI 10.17487/RFC2453, November 1998,
+              <https://www.rfc-editor.org/info/rfc2453>.
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 108]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC3688]  Mealling, M., "The IETF XML Registry", BCP 81, RFC 3688,
               DOI 10.17487/RFC3688, January 2004,
               <https://www.rfc-editor.org/info/rfc3688>.
@@ -6042,13 +6058,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Border Gateway Protocol 4 (BGP-4)", RFC 4271,
               DOI 10.17487/RFC4271, January 2006,
               <https://www.rfc-editor.org/info/rfc4271>.
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 108]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    [RFC4364]  Rosen, E. and Y. Rekhter, "BGP/MPLS IP Virtual Private
               Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
@@ -6089,6 +6098,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Authentication Option", RFC 5925, DOI 10.17487/RFC5925,
               June 2010, <https://www.rfc-editor.org/info/rfc5925>.
 
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 109]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
               the Network Configuration Protocol (NETCONF)", RFC 6020,
               DOI 10.17487/RFC6020, October 2010,
@@ -6098,13 +6115,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               and A. Bierman, Ed., "Network Configuration Protocol
               (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
               <https://www.rfc-editor.org/info/rfc6241>.
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 109]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
               Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
@@ -6142,6 +6152,16 @@ Internet-Draft               L3NM YANG Model                  April 2021
               RFC 7950, DOI 10.17487/RFC7950, August 2016,
               <https://www.rfc-editor.org/info/rfc7950>.
 
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 110]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
               Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
               <https://www.rfc-editor.org/info/rfc8040>.
@@ -6155,13 +6175,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC8177, June 2017,
               <https://www.rfc-editor.org/info/rfc8177>.
 
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 110]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
    [RFC8294]  Liu, X., Qu, Y., Lindem, A., Hopps, C., and L. Berger,
               "Common YANG Data Types for the Routing Area", RFC 8294,
               DOI 10.17487/RFC8294, December 2017,
@@ -6171,6 +6184,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Access Control Model", STD 91, RFC 8341,
               DOI 10.17487/RFC8341, March 2018,
               <https://www.rfc-editor.org/info/rfc8341>.
+
+   [RFC8343]  Bjorklund, M., "A YANG Data Model for Interface
+              Management", RFC 8343, DOI 10.17487/RFC8343, March 2018,
+              <https://www.rfc-editor.org/info/rfc8343>.
 
    [RFC8466]  Wen, B., Fioccola, G., Ed., Xie, C., and L. Jalil, "A YANG
               Data Model for Layer 2 Virtual Private Network (L2VPN)
@@ -6188,6 +6205,18 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Even, R., Bo, W., Wu, Q., and Y. Cheng, "YANG Data Model
               for Composed VPN Service Delivery", draft-evenwu-opsawg-
               yang-composed-vpn-03 (work in progress), March 2019.
+
+
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 111]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
    [I-D.ietf-bess-evpn-prefix-advertisement]
               Rabadan, J., Henderickx, W., Drake, J., Lin, W., and A.
@@ -6210,13 +6239,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Choudhary, A., Jethanandani, M., Strahle, N., Aries, E.,
               and I. Chen, "YANG Model for QoS", draft-ietf-rtgwg-qos-
               model-02 (work in progress), July 2020.
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 111]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    [I-D.ietf-teas-enhanced-vpn]
               Dong, J., Bryant, S., Li, Z., Miyasaka, T., and Y. Lee, "A
@@ -6242,6 +6264,16 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Model", RFC 3644, DOI 10.17487/RFC3644, November 2003,
               <https://www.rfc-editor.org/info/rfc3644>.
 
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 112]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC4026]  Andersson, L. and T. Madsen, "Provider Provisioned Virtual
               Private Network (VPN) Terminology", RFC 4026,
               DOI 10.17487/RFC4026, March 2005,
@@ -6262,17 +6294,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               "Neighbor Discovery for IP version 6 (IPv6)", RFC 4861,
               DOI 10.17487/RFC4861, September 2007,
               <https://www.rfc-editor.org/info/rfc4861>.
-
-
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 112]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    [RFC6037]  Rosen, E., Ed., Cai, Y., Ed., and IJ. Wijnands, "Cisco
               Systems' Solution for Multicast in BGP/MPLS IP VPNs",
@@ -6300,6 +6321,15 @@ Internet-Draft               L3NM YANG Model                  April 2021
               RFC 7527, DOI 10.17487/RFC7527, April 2015,
               <https://www.rfc-editor.org/info/rfc7527>.
 
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 113]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
               Code: The Implementation Status Section", BCP 205,
               RFC 7942, DOI 10.17487/RFC7942, July 2016,
@@ -6321,14 +6351,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
    [RFC8340]  Bjorklund, M. and L. Berger, Ed., "YANG Tree Diagrams",
               BCP 215, RFC 8340, DOI 10.17487/RFC8340, March 2018,
               <https://www.rfc-editor.org/info/rfc8340>.
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 113]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    [RFC8342]  Bjorklund, M., Schoenwaelder, J., Shafer, P., Watsen, K.,
               and R. Wilton, "Network Management Datastore Architecture
@@ -6356,6 +6378,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
               (NPT)", RFC 8512, DOI 10.17487/RFC8512, January 2019,
               <https://www.rfc-editor.org/info/rfc8512>.
 
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 114]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    [RFC8969]  Wu, Q., Ed., Boucadair, M., Ed., Lopez, D., Xie, C., and
               L. Geng, "A Framework for Automating Service and Network
               Management with YANG", RFC 8969, DOI 10.17487/RFC8969,
@@ -6378,14 +6408,6 @@ A.2.  4G VPN Provisioning Example
    directly connected to the access routers of the mobile backhaul and
    their logical interfaces (one or many according to the Service type)
    are configured in a VPN that transports the packets to the mobile
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 114]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
    core platforms.  In this example, a 'vpn-node' is created with two
    'vpn-network-accesses'.
 
@@ -6409,6 +6431,16 @@ Internet-Draft               L3NM YANG Model                  April 2021
    can be followed:
 
    First: Create the 4G VPN service (Figure 32).
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 115]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
         POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
         Host: example.com
@@ -6437,7 +6469,31 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 115]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 116]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6493,7 +6549,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 116]
+Barguil, et al.         Expires October 11, 2021              [Page 117]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6549,7 +6605,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 117]
+Barguil, et al.         Expires October 11, 2021              [Page 118]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6605,7 +6661,7 @@ A.3.  Create Loopback Interfaces
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 118]
+Barguil, et al.         Expires October 11, 2021              [Page 119]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6661,7 +6717,7 @@ A.4.  Multicast VPN Provisioning Example
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 119]
+Barguil, et al.         Expires October 11, 2021              [Page 120]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6717,7 +6773,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 120]
+Barguil, et al.         Expires October 11, 2021              [Page 121]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6773,7 +6829,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 121]
+Barguil, et al.         Expires October 11, 2021              [Page 122]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6829,7 +6885,7 @@ Appendix B.  Implementation Status
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 122]
+Barguil, et al.         Expires October 11, 2021              [Page 123]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6885,7 +6941,7 @@ Acknowledgements
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 123]
+Barguil, et al.         Expires October 11, 2021              [Page 124]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6941,7 +6997,7 @@ Authors' Addresses
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 124]
+Barguil, et al.         Expires October 11, 2021              [Page 125]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -6997,4 +7053,4 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 125]
+Barguil, et al.         Expires October 11, 2021              [Page 126]

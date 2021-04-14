@@ -1005,7 +1005,7 @@
         'profile-id'. This identifier is then referenced for one or multiple
         VPN nodes (<xref target="vpn_node"></xref>) so that the controller can
         identify generic resources (e.g., RTs and RDs) to be configured for a
-        given VRF. </t>
+        given VRF.</t>
 
         <t>The subtree of 'vpn-instance-profile' is shown in <xref
         target="ie"></xref>.</t>
@@ -1069,7 +1069,7 @@
 ]]></artwork>
           </figure></t>
 
-        <t>The description of the listed data nodes is as follows: </t>
+        <t>The description of the listed data nodes is as follows:</t>
 
         <t><list style="hanging">
             <t hangText="'profile-id':">Is used to uniquely identify a VPN
@@ -1213,12 +1213,11 @@
             <t hangText="'ne-id':">Includes a unique identifier of the network
             element where the VPN node is deployed.</t>
 
-            <t hangText="'local-autonomous-system':">Indicates the BGP
-            Autonomous System Number (ASN) that is configured for the VPN
-            node.</t>
+            <t hangText="'local-autonomous-system':">Indicates the ASN that is
+            configured for the VPN node.</t>
 
-            <t hangText="'router-id':">Indicates a unique Router ID
-            information. </t>
+            <t hangText="'router-id':">Indicates a 32-bit number that is used
+            to uniquely identify a router within an Autonomous System.</t>
 
             <t hangText="'active-vpn-instance-profiles':">Lists the set of
             active VPN instance profiles for this VPN node. Concretely, one or
@@ -1227,9 +1226,12 @@
             is uniquely identified by means of 'profile-id'. The structure of
             'active-vpn-instance-profiles' is the same as the one discussed in
             <xref target="ie_profiles"></xref> with the exception of
-            'router-id'. Values defined in 'active-vpn-instance-profiles'
-            overrides the ones defined in the VPN node and/or VPN service
-            levels. </t>
+            'router-id'. Indeed, Router IDs can be configured per address
+            family. This capability can be used, for example, to configure an
+            IPv6 address as a Router ID when such capability is supported by
+            involved routers. <vspace blankLines="1" />Values defined in
+            'active-vpn-instance-profiles' overrides the ones defined in the
+            VPN node and/or VPN service levels.</t>
 
             <t hangText="'msdp':">For redundancy purposes, Multicast Source
             Discovery Protocol (MSDP) <xref target="RFC3618"></xref> may be
@@ -1348,7 +1350,7 @@
             will be inherited by the VPN network access. However, some of the
             inherited data nodes (e.g., multicast) can be refined at the VPN
             network access level. In such case, refined values take precedence
-            over inherited ones. </t>
+            over inherited ones.</t>
 
             <t hangText="'status':">Indicates both operational and
             administrative status of a VPN network access.</t>
@@ -1398,7 +1400,7 @@
           that the bearer has been allocated by the service provider at the
           service orchestration stage. The bearer is associated to a network
           element and a port. Hence, a bearer is just a bearer-reference to
-          allow the translation between a service request (e.g., L3SM) and
+          allow the association between a service request (e.g., L3SM) and
           L3NM.</t>
 
           <t>As shown in <xref target="bearerethencap_tree"></xref>, the
@@ -1777,6 +1779,10 @@
                   <t hangText="'address-family':">Indicates the address-family
                   of the peer. It can be set to IPv4, IPv6, or dual-stack.</t>
 
+                  <t hangText="'local-address':">Specifies an address or a
+                  reference to an interface to use when establishing the BGP
+                  transport session. </t>
+
                   <t hangText="'neighbor':">Can indicate two neighbors (each
                   for a given address-family) or one neighbor (if
                   'address-family' attribute is set to dual-stack). A list of
@@ -1791,6 +1797,14 @@
                   ASN of the customer specified in the AS_PATH BGP attribute
                   with the ASN identified in the 'local-autonomous-system'
                   attribute.</t>
+
+                  <t hangText="'allow-own-as':">Is used in some topologies
+                  (e.g., hub-and-spoke) to allow the provider's ASN to be
+                  included in the AS_PATH BGP attribute received from a CE.
+                  Loops are prevented by setting 'allow-own-as' to a maximum
+                  number of provider's ASN occurrences. This parameter is set
+                  by default to '0' (that is, reject any AS_PATH attribute
+                  that includes the provider's ASN).</t>
 
                   <t hangText="'default-route':">Controls whether default
                   routes can be advertised to the peer.</t>
@@ -1853,9 +1867,11 @@
 |     |  +--rw local-autonomous-system?   inet:as-number
 |     |  +--rw peer-autonomous-system     inet:as-number
 |     |  +--rw address-family?            identityref
+|     |  +--rw local-address?             union
 |     |  +--rw neighbor*                  inet:ip-address
 |     |  +--rw multihop?                  uint8
 |     |  +--rw as-override?               boolean
+|     |  +--rw allow-own-as?              uint8
 |     |  +--rw default-route?             boolean
 |     |  +--rw site-of-origin?            rt-types:route-origin
 |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
@@ -2024,10 +2040,12 @@
 ]]></artwork>
                 </figure></t>
 
-              <t hangText="RIP:">The module covers only a list of
-              address-family and status as shown in <xref
-              target="rip"></xref>. The meaning of these data nodes is similar
-              to the other routing protocols.<figure align="center"
+              <t hangText="RIP:">The model allows the user to configure RIP to
+              run on the 'vpn-network-access' interface <xref
+              target="RFC2453"></xref><xref target="RFC2080"></xref>.The
+              module covers only a list of address-family and status as shown
+              in <xref target="rip"></xref>. The meaning of these data nodes
+              is similar to the other routing protocols.<figure align="center"
                   anchor="rip" title="RIP Subtree Structure">
                   <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
@@ -2628,8 +2646,9 @@
 
     <section anchor="YANG_module" title="L3NM YANG Module">
       <t>This module uses types defined in <xref target="RFC6991"></xref> and
-      groupings defined in <xref target="RFC8519"></xref>, <xref
-      target="RFC8177"></xref>, and <xref target="RFC8294"></xref>.</t>
+      <xref target="RFC8343"></xref>. It also used groupings defined in <xref
+      target="RFC8519"></xref>, <xref target="RFC8177"></xref>, and <xref
+      target="RFC8294"></xref>.</t>
 
       <figure align="center">
         <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-02-19.yang"
@@ -5298,6 +5317,12 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.4271'?>
 
       <?rfc include='reference.RFC.5880'?>
+
+      <?rfc include='reference.RFC.2453'?>
+
+      <?rfc include='reference.RFC.2080'?>
+
+      <?rfc include='reference.RFC.8343'?>
     </references>
 
     <references title="Informative References">
