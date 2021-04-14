@@ -1213,162 +1213,107 @@ module ietf-l3vpn-ntw {
                     choice allocation-type {
                       description
                         "A choice based on the IPv6 allocation type.";
-                      case dynamic {
+                      container provider-dhcp {
                         when "derived-from-or-self(./address-allo"
                            + "cation-type, 'provider-dhcp') "
                            + "or derived-from-or-self(./address-allo"
-                           + "cation-type, 'provider-dhcp-slaac')"
-                           + "or derived-from-or-self(./address-allo"
-                           + "cation-type, 'slaac')" {
+                           + "cation-type, 'provider-dhcp-slaac')" {
                           description
-                            "Only applies when addresses are allocated
-                             by DHCPv6 and/SLAAC.";
+                            "Only applies when addresses are
+                             allocated by DHCPv6 provided by the
+                             operator.";
                         }
                         description
-                          "DHCPv6 and/or SLAAC.";
-                        container provider-dhcp {
-                          when "derived-from-or-self(./address-allo"
-                             + "cation-type, 'provider-dhcp') "
-                             + "or derived-from-or-self(./address-allo"
-                             + "cation-type, 'provider-dhcp-slaac')" {
-                            description
-                              "Only applies when addresses are
-                               allocated by DHCPv6 provided by the
-                               operator.";
+                          "DHCPv6 allocated addresses related
+                           parameters.";
+                        leaf dhcp-service-type {
+                          type enumeration {
+                            enum server {
+                              description
+                                "Local DHCPv6 server.";
+                            }
+                            enum relay {
+                              description
+                                "DHCPv6 relay.";
+                            }
                           }
                           description
-                            "DHCPv6 allocated addresses related
-                             parameters.";
-                          leaf dhcp-service-type {
-                            type enumeration {
-                              enum server {
-                                description
-                                  "Local DHCPv6 server.";
-                              }
-                              enum relay {
-                                description
-                                  "DHCPv6 relay.";
-                              }
-                            }
+                            "Indicates the type of the DHCPv6 service to
+                             be enabled on this access.";
+                        }
+                        choice service-type {
+                          description
+                            "Choice based on the DHCPv6 service type.";
+                          case provider-dhcp-servers {
+                            when "./dhcp-service-type = 'relay'";
                             description
-                              "Indicates the type of the DHCPv6 service to
-                               be enabled on this access.";
+                              "Case where a local DHCPv6 relay is enabled.
+                               This list is used if and only if a DHCP relay is
+                               enabled.";
+                            leaf-list server-ip-address {
+                              type inet:ipv6-address;
+                              description
+                                "IPv6 addresses of the provider's DHCPv6 server.";
+                            }
                           }
-                          choice service-type {
+                          case server {
+                            when "./dhcp-service-type = 'server'";
                             description
-                              "Choice based on the DHCPv6 service type.";
-                            case provider-dhcp-servers {
-                              when "./dhcp-service-type = 'relay'";
+                              "Case where a local DHCPv6 server is enabled.";
+                            choice address-assign {
+                              default "number";
                               description
-                                "Case where a local DHCPv6 relay is enabled.
-                                 This list is used if and only if a DHCP relay is
-                                 enabled.";
-                              leaf-list server-ip-address {
-                                type inet:ipv6-address;
-                                description
-                                  "IPv6 addresses of the provider's DHCPv6 server.";
-                              }
-                            }
-                            case server {
-                              when "./dhcp-service-type = 'server'";
-                              description
-                                "Case where a local DHCPv6 server is enabled.";
-                              choice address-assign {
-                                default "number";
-                                description
-                                  "Choice about how IPv6 prefixes are assigned
-                                   by the DHCPv6 server.";
-                                case number {
-                                  leaf number-of-dynamic-address {
-                                    type uint16;
-                                    default "1";
-                                    description
-                                      "Describes the number of IPv6 prefixes
-                                       that are allocated to the customer
-                                       on this access.";
-                                  }
+                                "Choice about how IPv6 prefixes are assigned
+                                 by the DHCPv6 server.";
+                              case number {
+                                leaf number-of-dynamic-address {
+                                  type uint16;
+                                  default "1";
+                                  description
+                                    "Describes the number of IPv6 prefixes
+                                     that are allocated to the customer
+                                     on this access.";
                                 }
-                                case explicit {
-                                  container customer-addresses {
+                              }
+                              case explicit {
+                                container customer-addresses {
+                                  description
+                                    "Container for customer IPv6 addresses
+                                     allocated by DHCPv6.";
+                                  list address-pool {
+                                    key "pool-id";
                                     description
-                                      "Container for customer IPv6 addresses
-                                       allocated by DHCPv6.";
-                                    list address-pool {
-                                      key "pool-id";
+                                      "Describes IPv6 addresses allocated
+                                       by DHCPv6.
+
+                                       When only start-address or only
+                                       end-address is present, it
+                                       represents a single address.
+
+                                       When both start-address and
+                                       end-address are specified, it
+                                       implies a range inclusive of
+                                       both addresses.";
+                                    leaf pool-id {
+                                      type string;
                                       description
-                                        "Describes IPv6 addresses allocated
-                                         by DHCPv6.
-
-                                         When only start-address or only
-                                         end-address is present, it
-                                         represents a single address.
-
-                                         When both start-address and
-                                         end-address are specified, it
-                                         implies a range inclusive of
-                                         both addresses.";
-                                      leaf pool-id {
-                                        type string;
-                                        description
-                                          "Pool identifier for the address range
-                                           from identified by start-address
-                                           and end-address.";
-                                      }
-                                      leaf start-address {
-                                        type inet:ipv6-address;
-                                        description
-                                          "Indicates the first address.";
-                                      }
-                                      leaf end-address {
-                                        type inet:ipv6-address;
-                                        description
-                                          "Indicates the last address.";
-                                      }
+                                        "Pool identifier for the address range
+                                         from identified by start-address
+                                         and end-address.";
+                                    }
+                                    leaf start-address {
+                                      type inet:ipv6-address;
+                                      description
+                                        "Indicates the first address.";
+                                    }
+                                    leaf end-address {
+                                      type inet:ipv6-address;
+                                      description
+                                        "Indicates the last address.";
                                     }
                                   }
                                 }
                               }
-                            }
-                          }
-                        }
-                        container slaac {
-                          when "derived-from-or-self(./address-allo"
-                             + "cation-type, 'provider-dhcp-slaac') "
-                             + "or derived-from-or-self(./address-allo"
-                             + "cation-type, 'slaac')" {
-                            description
-                              "Only applies when SLAAC is used.";
-                          }
-                          description
-                            "SLAAC-related parameters.";
-                          leaf pio-length {
-                            type uint8;
-                            default "64";
-                            description
-                              "Indicates the length of the prefix that
-                               will be used.";
-                            reference
-                              "RFC 4861: Neighbor Discovery for IP version 6
-                                         (IPv6), Section 4.6.2";
-                          }
-                          list slaac-prefix-pool {
-                            key "pool-id";
-                            description
-                              "Indicates the list of prefixes that will
-                               be used for the customer.";
-                            leaf pool-id {
-                              type uint32;
-                              description
-                                "Unique identifier for the SLAAC pool.";
-                            }
-                            leaf pool-prefix {
-                              type inet:ipv6-prefix;
-                              mandatory true;
-                              description
-                                "An IPv6 prefix.";
-                              reference
-                                "RFC 4861: Neighbor Discovery for IP version 6
-                                          (IPv6), Section 4.6.2";
                             }
                           }
                         }
