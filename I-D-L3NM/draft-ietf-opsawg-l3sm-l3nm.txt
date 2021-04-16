@@ -1948,12 +1948,12 @@ Internet-Draft               L3NM YANG Model                  April 2021
          occurrences.  This parameter is set by default to '0' (that is,
          reject any AS_PATH attribute that includes the provider's ASN).
 
-      'default-route':  Controls whether default routes can be
-         advertised to the peer.
+      'prepend-global-as':  When distinct ASNs are configured in at the
+         VPN node and network access levels, this parameter controls
+         whether the ASN provided at the VPN node level is prepended to
+         the AS_PATH attribute.
 
-      'site-of-origin':  Is meant to uniquely identify the set of routes
-         learned from a site via a particular CE/PE connection and is
-         used to prevent routing loops (Section 7 of [RFC4364]).  The
+
 
 
 
@@ -1962,6 +1962,12 @@ Barguil, et al.         Expires October 11, 2021               [Page 35]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+      'default-route':  Controls whether default routes can be
+         advertised to the peer.
+
+      'site-of-origin':  Is meant to uniquely identify the set of routes
+         learned from a site via a particular CE/PE connection and is
+         used to prevent routing loops (Section 7 of [RFC4364]).  The
          Site of Origin attribute is encoded as a Route Origin Extended
          Community.
 
@@ -2004,12 +2010,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
   ...
   +--rw routing-protocols
-  |  +--rw routing-protocol* [id]
-  |     ...
-  |     +--rw bgp {vpn-common:rtg-bgp}?
-  |     |  +--rw description?               string
-  |     |  +--rw local-autonomous-system?   inet:as-number
-  |     |  +--rw peer-autonomous-system     inet:as-number
 
 
 
@@ -2018,12 +2018,19 @@ Barguil, et al.         Expires October 11, 2021               [Page 36]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+  |  +--rw routing-protocol* [id]
+  |     ...
+  |     +--rw bgp {vpn-common:rtg-bgp}?
+  |     |  +--rw description?               string
+  |     |  +--rw local-autonomous-system?   inet:as-number
+  |     |  +--rw peer-autonomous-system     inet:as-number
   |     |  +--rw address-family?            identityref
   |     |  +--rw local-address?             union
   |     |  +--rw neighbor*                  inet:ip-address
   |     |  +--rw multihop?                  uint8
   |     |  +--rw as-override?               boolean
   |     |  +--rw allow-own-as?              uint8
+  |     |  +--rw prepend-global-as?         boolean
   |     |  +--rw default-route?             boolean
   |     |  +--rw site-of-origin?            rt-types:route-origin
   |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
@@ -2059,13 +2066,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
   |     |     |  +--rw last-updated?   yang:date-and-time
   |     |     +--ro oper-status
   |     |        +--ro status?         identityref
-  |     |        +--ro last-updated?   yang:date-and-time
-  ...
-
-                 Figure 16: BGP Routing Subtree Structure
-
-
-
 
 
 
@@ -2073,6 +2073,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 37]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+  |     |        +--ro last-updated?   yang:date-and-time
+  ...
+
+                 Figure 16: BGP Routing Subtree Structure
 
    OSPF:  OSPF can be configured to run as a routing protocol on the
       'vpn-network-access' [RFC4577][RFC6565].  The following data nodes
@@ -2102,11 +2107,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
          OSPFv2 [RFC5709] [RFC7474] and OSPFv3 [RFC7166].
 
       'status':  Indicates the status of the OSPF routing instance.
-
-
-
-
-
 
 
 
