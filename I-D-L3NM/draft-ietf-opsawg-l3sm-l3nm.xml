@@ -496,33 +496,33 @@
               title="L3NM Reference Architecture">
         <artwork align="center"><![CDATA[                                  +---------------+
                                   |   Customer    |
-                                  +---------------+
+                                  +-------+-------+
                   Customer Service Model  |
                       e.g., l3vpn-svc     |
-                                  +---------------+
+                                  +-------+-------+
                                   |    Service    |
                                   | Orchestration |
-                                  +---------------+
+                                  +-------+-------+
                      Network Model        |
                        l3vpn-ntw          |
-                                  +---------------+
+                                  +-------+-------+
                                   |   Network     |
                                   | Orchestration |
-                                  +---------------+
+                                  +-------+-------+
             Network Configuration Model   |
                               +-----------+-----------+
                               |                       |
-                     +---------------+       +---------------+
+                     +--------+------+       +--------+------+
                      |    Domain     |       |     Domain    |
                      | Orchestration |       | Orchestration |
-                     +---------------+       +---------------+
+                     +---+-----------+       +--------+------+
           Device         |        |                   |
           Configuration  |        |                   |
           Model          |        |                   |
-                    +---------+   |                   |
+                    +----+----+   |                   |
                     | Config  |   |                   |
                     | Manager |   |                   |
-                    +---------+   |                   |
+                    +----+----+   |                   |
                          |        |                   |
                          | NETCONF/CLI..................
                          |        |                   |
@@ -1105,7 +1105,7 @@
               </list>Also, the module accommodates deployments where only the
             Assigned Number subfield of RDs (Section 4.2 of <xref
             target="RFC4364"></xref>) is assigned from a pool while the
-            Administrator subfield is set to, e.g., the router-id that is
+            Administrator subfield is set to, e.g., the Router ID that is
             assigned to a VPN node. The module supports these modes for
             managing the Assigned Number subfield: explicit assignment,
             auto-assignment from a pool, and full auto-assignment.</t>
@@ -1232,7 +1232,7 @@
             IPv6 address as a Router ID when such capability is supported by
             involved routers. <vspace blankLines="1" />Values defined in
             'active-vpn-instance-profiles' overrides the ones defined in the
-            VPN node and/or VPN service levels.</t>
+            VPN service level.</t>
 
             <t hangText="'msdp':">For redundancy purposes, Multicast Source
             Discovery Protocol (MSDP) <xref target="RFC3618"></xref> may be
@@ -1325,7 +1325,7 @@
             type of network interface to be deployed in the devices. The
             available options are: <list style="hanging">
                 <t hangText="Point-to-Point:">Represents a direct connection
-                between the end-points. It implies that the controller must
+                between the endpoints. It implies that the controller must
                 keep the association between a logical or physical interface
                 on the device with the 'id' of the 'vpn-network-access'.</t>
 
@@ -1361,14 +1361,12 @@
             VPN Network access is coming. See <xref
             target="connection"></xref>.</t>
 
-            <t hangText="'ip-connection':">Contains the IP addressing
-            information of a VPN network access. See <xref
-            target="ip_conn"></xref>.</t>
+            <t hangText="'ip-connection':">Contains Layer 3 connectivity
+            information of a VPN network access (e.g., IP addressing). See
+            <xref target="ip_conn"></xref>.</t>
 
-            <t hangText="'routing-protocols':">Represents and groups the set
-            of Layer 2 connectivity from where the traffic of the L3VPN in a
-            particular VPN Network access is coming. See <xref
-            target="rtg"></xref>.</t>
+            <t hangText="'routing-protocols':">Includes the CE-PE rouing
+            configuration information. See <xref target="rtg"></xref>.</t>
 
             <t hangText="'oam':">Specifies the Operations, Administration, and
             Maintenance (OAM) mechanisms used for a VPN network access. See
@@ -1449,12 +1447,13 @@
           <t></t>
         </section>
 
-        <section anchor="ip_conn" title="IP Connections">
-          <t>This container is used to group the IP addressing information of
-          a VPN network access. The allocated address represents the PE
-          interface address configuration. As shown in <xref
-          target="ip_conn_tree"></xref>, this container can include IPv4,
-          IPv6, or both if dual-stack is enabled.</t>
+        <section anchor="ip_conn" title="IP Connection">
+          <t>This container is used to group Layer 3 connectivity information,
+          particularly the IP addressing information, of a VPN network access.
+          The allocated address represents the PE interface address
+          configuration. As shown in <xref target="ip_conn_tree"></xref>, this
+          container can include IPv4, IPv6, or both if dual-stack is
+          enabled.</t>
 
           <t><figure align="center" anchor="ip_conn_tree"
               title="IP Connection Subtree Structure">
@@ -1768,9 +1767,9 @@
                   <t hangText="'description':">Includes a description of the
                   BGP session.</t>
 
-                  <t hangText="'local-autonomous-system':">Is set to the AS
-                  Number (ASN) to override a customer ASN if such feature is
-                  requested by the customer.</t>
+                  <t hangText="'local-autonomous-system':">Indicates a local
+                  AS Number (ASN) if a distinct ASN than the one configured at
+                  the VPN node level is needed.</t>
 
                   <t hangText="'peer-autonomous-system':">Conveys the
                   customer's ASN.</t>
@@ -1808,7 +1807,7 @@
                   <t hangText="'prepend-global-as':">When distinct ASNs are
                   configured in the VPN node and network access levels, this
                   parameter controls whether the ASN provided at the VPN node
-                  level is prepended to the AS_PATH attribute. </t>
+                  level is prepended to the AS_PATH attribute.</t>
 
                   <t hangText="'default-route':">Controls whether default
                   routes can be advertised to the peer.</t>
@@ -1921,16 +1920,15 @@
                 </figure></t>
 
               <t hangText="OSPF:">OSPF can be configured to run as a routing
-              protocol on the 'vpn-network-access' <xref
-              target="RFC4577"></xref><xref target="RFC6565"></xref>. The
-              following data nodes are captured in <xref
-              target="routing-ospf"></xref>:<list style="hanging">
+              protocol on the 'vpn-network-access'. The following data nodes
+              are captured in <xref target="routing-ospf"></xref>:<list
+                  style="hanging">
                   <t hangText="'address-family':">Indicates whether IPv4,
                   IPv6, or both address families are to be activated. <vspace
                   blankLines="1" />When only the IPv4 address-family is
                   requested, it will be up to the implementation to decide
-                  whether OSPFv2 <xref target="RFC2328"></xref> or OSPFv3
-                  <xref target="RFC5340"></xref> is used.</t>
+                  whether OSPFv2 <xref target="RFC4577"></xref> or OSPFv3
+                  <xref target="RFC6565"></xref> is used.</t>
 
                   <t hangText="'area-id':">Indicates the OSPF Area ID.</t>
 
@@ -1940,7 +1938,8 @@
                   <t hangText="'sham-links':">Is used to create OSPF sham
                   links between two VPN network accesses sharing the same area
                   and having a backdoor link (Section 4.2.7 of <xref
-                  target="RFC4577"></xref>).</t>
+                  target="RFC4577"></xref> and Section 5 of <xref
+                  target="RFC6565"></xref>).</t>
 
                   <t hangText="'max-lsa':">Sets the maximum number of LSAs
                   that the OSPF instance will accept.</t>
@@ -2250,8 +2249,8 @@
         </section>
 
         <section anchor="svc" title="Services">
-          <t>The 'services' container specifies the service parameters to
-          apply for a given VPN network access (<xref
+          <t>The 'service' container specifies the service parameters to apply
+          for a given VPN network access (<xref
           target="services"></xref>).</t>
 
           <t><figure align="center" anchor="services"
@@ -2553,8 +2552,8 @@
       |        |  |              +--:(group-prefix)
       |        |  |              |  +--rw group-address?  inet:ip-prefix
       |        |  |              +--:(startend)
-      |        |  |                 +--rw group-start?    inet:ip-address
-      |        |  |                 +--rw group-end?      inet:ip-address
+      |        |  |                 +--rw group-start?   inet:ip-address
+      |        |  |                 +--rw group-end?     inet:ip-address
       |        |  +--rw rp-discovery
       |        |     +--rw rp-discovery-type?   identityref
       |        |     +--rw bsr-candidates
@@ -2573,7 +2572,7 @@
       |        |  |  +--rw group-addr     
       |        |  |  |             rt-types:ipv6-multicast-group-address
       |        |  |  +--rw source-addr? 
-      |        |  |                rt-types:ipv6-multicast-source-address
+      |        |  |               rt-types:ipv6-multicast-source-address
       |        |  +--rw max-groups?     uint32
       |        |  +--rw max-entries?    uint32
       |        |  +--rw version?        identityref
@@ -2609,10 +2608,14 @@
         <t>The same structure as the one depicted in <xref
         target="mcast-vpaccess"></xref> is used when configuring
         multicast-related parameters at the VPN node level. When defined at
-        the VPN node level (<xref target="mcast-vpn"></xref>), IGMP, MLD, and
-        PIM parameters are applicable to all VPN network accesses of that VPN
-        node unless corresponding nodes are refined at the VPN network access
-        level.</t>
+        the VPN node level (<xref target="mcast-vpn"></xref>), Internet Group
+        Management Protocol (IGMP) <xref target="RFC1112"></xref><xref
+        target="RFC2236"></xref><xref target="RFC3376"></xref>, Multicast
+        Listener Discovery (MLD) <xref target="RFC2710"></xref><xref
+        target="RFC3810"></xref>, and Protocol Independent Multicast (PIM)
+        <xref target="RFC7761"></xref> parameters are applicable to all VPN
+        network accesses of that VPN node unless corresponding nodes are
+        refined at the VPN network access level.</t>
 
         <t><figure align="center" anchor="mcast-vpn"
             title="Multicast Subtree Structure (VPN Node Level)">
@@ -3721,7 +3724,8 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message "SLAAC is only applicable to IPv6.";
+                        error-message 
+                          "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated to the
@@ -4625,6 +4629,14 @@ module ietf-l3vpn-ntw {
                         mandatory true;
                         description
                           "Area ID.";
+                        reference
+                          "RFC 4577: OSPF as the Provider/Customer
+                                     Edge Protocol for BGP/MPLS IP
+                                     Virtual Private Networks
+                                     (VPNs), Section 4.2.3
+                           RFC 6565: OSPFv3 as a Provider Edge to
+                                     Customer Edge (PE-CE) Routing
+                                     Protocol, Section 4.2";
                       }
                       leaf metric {
                         type uint16;
@@ -4638,6 +4650,14 @@ module ietf-l3vpn-ntw {
                         if-feature "vpn-common:rtg-ospf-sham-link";
                         description
                           "List of sham links.";
+                        reference
+                          "RFC 4577: OSPF as the Provider/Customer
+                                     Edge Protocol for BGP/MPLS IP
+                                     Virtual Private Networks
+                                     (VPNs), Section 4.2.7
+                           RFC 6565: OSPFv3 as a Provider Edge to
+                                     Customer Edge (PE-CE) Routing
+                                     Protocol, Section 5";
                         list sham-link {
                           key "target-site";
                           description
@@ -4656,6 +4676,14 @@ module ietf-l3vpn-ntw {
                                the routing state calculation and path
                                selection.  The default value is set
                                to 1.";
+                            reference
+                              "RFC 4577: OSPF as the Provider/Customer
+                                         Edge Protocol for BGP/MPLS IP
+                                         Virtual Private Networks
+                                         (VPNs), Section 4.2.7.3
+                               RFC 6565: OSPFv3 as a Provider Edge to
+                                         Customer Edge (PE-CE) Routing
+                                         Protocol, Section 5.2";
                           }
                         }
                       }
@@ -4695,7 +4723,7 @@ module ietf-l3vpn-ntw {
                               leaf key-id {
                                 type uint32;
                                 description
-                                  "Key Identifier";
+                                  "Key identifier.";
                               }
                               leaf key {
                                 type string;
@@ -4716,6 +4744,10 @@ module ietf-l3vpn-ntw {
                                 type string;
                                 description
                                   "Indicates the name of the SA.";
+                                reference
+                                  "RFC 4552: Authentication
+                                             /Confidentiality for 
+                                             OSPFv3";
                               }
                             }
                           }
@@ -4967,6 +4999,9 @@ module ietf-l3vpn-ntw {
                       if-feature "vpn-common:rtg-vrrp";
                       description
                         "Configuration specific to VRRP.";
+                      reference
+                        "RFC 5798: Virtual Router Redundancy Protocol
+                                   (VRRP) Version 3 for IPv4 and IPv6";
                       leaf address-family {
                         type identityref {
                           base vpn-common:address-family;
@@ -5694,6 +5729,18 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.2080'?>
 
       <?rfc include='reference.RFC.8343'?>
+
+      <?rfc include='reference.RFC.1112'?>
+
+      <?rfc include='reference.RFC.2236'?>
+
+      <?rfc include='reference.RFC.3376'?>
+
+      <?rfc include='reference.RFC.2710'?>
+
+      <?rfc include='reference.RFC.3810'?>
+
+      <?rfc include='reference.RFC.7761'?>
     </references>
 
     <references title="Informative References">
