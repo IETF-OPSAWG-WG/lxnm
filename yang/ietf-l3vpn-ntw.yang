@@ -753,13 +753,27 @@ module ietf-l3vpn-ntw {
                   description
                     "An identifier of an active VPN instance profile.";
                 }
+                leaf bearer-reference {
+                    if-feature "vpn-common:bearer-reference";
+                    type string;
+                    description
+                      "This is an internal reference for the service
+                      provider.";
+                  }
                 uses vpn-common:service-status;
                 container connection {
                   description
                     "Encapsulation types.";
-                  leaf encapsulation-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
+                  leaf connection-type {
+                    type enumaration {
+                        enum LOCAL {
+                          description
+                            "evpn bgp-instance is operationally up";
+                        }
+                        enum REMOTE {
+                          description
+                            "evpn bgp-instance is operationally down";
+                        }
                     }
                     default "vpn-common:untagged-int";
                     description
@@ -836,17 +850,10 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container transport {
+                  container remote-endpoints {
                     description
                       "Defines physical properties of a site
                        attachment.";
-                    leaf bearer-reference {
-                      if-feature "vpn-common:bearer-reference";
-                      type string;
-                      description
-                        "This is an internal reference for the service
-                         provider.";
-                    }
                     container pseudowire {
                       description
                         "Pseudowire termination parameters";
@@ -885,13 +892,10 @@ module ietf-l3vpn-ntw {
                           "SDP/Far End/LDP neighbour reference.";
                       }
                     }
-                      container vxlan {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:vxlan')" {
+                    container vxlan {
                         description
                           "Only applies when the type of the
                            tagged interface is 'vxlan'.";
-                      }
                       if-feature "vpn-common:vxlan";
                       description
                         "QinQ.";
