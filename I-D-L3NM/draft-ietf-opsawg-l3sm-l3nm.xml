@@ -1129,8 +1129,7 @@
             service. Refer to <xref target="mc"></xref>.</t>
           </list></t>
 
-        <t>An example to illustrate how VPN instance profiles is used is
-        discussed in <xref target="profile"></xref>.</t>
+        <t></t>
       </section>
 
       <section anchor="vpn_node" title="VPN Nodes">
@@ -1323,23 +1322,23 @@
 
             <t hangText="'vpn-network-access-type':">Is used to select the
             type of network interface to be deployed in the devices. The
-            available options are: <list style="hanging">
-                <t hangText="Point-to-Point:">Represents a direct connection
+            available defined values are: <list style="hanging">
+                <t hangText="'point-to-point':">Represents a direct connection
                 between the endpoints. It implies that the controller must
                 keep the association between a logical or physical interface
                 on the device with the 'id' of the 'vpn-network-access'.</t>
 
-                <t hangText="Multipoint:">Represents a broadcast connection
-                between the end-points. It implies that the controller must
+                <t hangText="'multipoint':">Represents a broadcast connection
+                between the endpoints. It implies that the controller must
                 keep the association between a logical or physical interface
                 on the device with the 'id' of the 'vpn-network-access'.</t>
 
-                <t hangText="Pseudowire:">Represents a connection coming from
-                an L2VPN service. It implies that the controller must keep the
+                <t hangText="'irb':">Represents a connection coming from an
+                L2VPN service. It implies that the controller must keep the
                 relationship between the logical tunnels or bridges on the
                 devices with the 'id' of the' vpn-network-access'.</t>
 
-                <t hangText="Loopback:">Represents the creation of a logical
+                <t hangText="'loopback':">Represents the creation of a logical
                 interface on a device. An example to illustrate how a loopback
                 interface can be created using the L3NM is provided in <xref
                 target="loop"></xref>.</t>
@@ -1387,8 +1386,8 @@
           <t>The definition of an L3VPN is commonly specified not only at the
           IP layer, but also requires to provide parameters at the Ethernet
           layer, such as specifying an encapsulation type (e.g., VLAN, QinQ,
-          QinAny, VxLAN, etc.). The L3NM uses the 'connection' container to
-          specify such parameters.</t>
+          etc.). The L3NM uses the 'connection' container to specify such
+          parameters.</t>
 
           <t>A site, as per <xref target="RFC4176"></xref> represents a VPN
           customer's location that is connected to the service provider
@@ -1398,49 +1397,61 @@
           the layer two connections with the site. In the L3NM, it is assumed
           that the bearer has been allocated by the service provider at the
           service orchestration stage. The bearer is associated to a network
-          element and a port. Hence, a bearer is just a bearer-reference to
+          element and a port. Hence, a bearer is just a 'bearer-reference' to
           allow the association between a service request (e.g., L3SM) and
           L3NM.</t>
 
           <t>As shown in <xref target="bearerethencap_tree"></xref>, the
           'connection' container defines protocols and parameters to enable
-          connectivity at Layer 2.</t>
+          connectivity at Layer 2. 'encapsulation' specifies the layer 2
+          encapsulation to use. If a layer 2 tunnel is needed to terminate the
+          service, 'l2-tunnel-service' is used to specify the required
+          parameters to set such service (e.g., VPLS, VXLAN). An identity,
+          called 'l2-tunnel-type', is defined for layer 2 tunnel
+          selection.</t>
+
+          <t>To accommodate implementations that require internal bridging, a
+          local bridge reference can be specified in 'local-bridge-reference'.
+          Such a reference may be a local bridge domain.</t>
+
+          <t>From a network model, it is expected that 'port-id' at the
+          'vpn-network-access' level is sufficient to identify the interface
+          to which the L3VPN service will be attached. However, specific layer
+          2 sub-interfaces may be required to be configured in some
+          implementations/deployments. Such a layer 2 specific interface can
+          be included in 'l2-termination-point'.</t>
 
           <figure align="center" anchor="bearerethencap_tree"
                   title="Connection Subtree Structure">
             <artwork align="center"><![CDATA[...
 +--rw connection
-|  +--rw encapsulation-type?   identityref
-|  +--rw logical-interface
-|  |  +--rw local-reference?   vpn-common:vpn-id
-|  |  +--rw peer-reference?    vpn-common:vpn-id
-|  +--rw tagged-interface
-|  |  +--rw type?                identityref
-|  |  +--rw dot1q-vlan-tagged {vpn-common:dot1q}?
+|  +--rw l2-termination-point?     vpn-common:vpn-id
+|  +--rw local-bridge-reference?   vpn-common:vpn-id
+|  +--rw encapsulation
+|  |  +--rw type?              identityref
+|  |  +--rw dot1q {vpn-common:dot1q}?
 |  |  |  +--rw tag-type?   identityref
 |  |  |  +--rw cvlan-id?   uint16
 |  |  +--rw priority-tagged
 |  |  |  +--rw tag-type?   identityref
 |  |  +--rw qinq {vpn-common:qinq}?
-|  |  |  +--rw tag-type?   identityref
-|  |  |  +--rw svlan-id    uint16
-|  |  |  +--rw cvlan-id    uint16
-|  |  +--rw qinany {vpn-common:qinany}?
-|  |  |  +--rw tag-type?   identityref
-|  |  |  +--rw svlan-id    uint16
+|  |     +--rw tag-type?   identityref
+|  |     +--rw svlan-id    uint16
+|  |     +--rw cvlan-id    uint16
+|  +--rw l2-tunnel-service
+|  |  +--rw type?         identityref
+|  |  +--rw pseudowire
+|  |  |  +--rw vcid?      uint32
+|  |  |  +--rw far-end?   union
+|  |  +--rw vpls
+|  |  |  +--rw vcid?      union
+|  |  |  +--rw far-end?   union
 |  |  +--rw vxlan {vpn-common:vxlan}?
-|  |     +--rw vni-id       uint32
-|  |     +--rw peer-mode?   identityref
+|  |     +--rw vni-id             uint32
+|  |     +--rw peer-mode?         identityref
 |  |     +--rw peer-ip-address*   inet:ip-address
-|  +--rw bearer
-|     +--rw bearer-reference?   string
-|     |       {vpn-common:bearer-reference}?
-|     +--rw pseudowire
-|     |  +--rw vcid?      uint32
-|     |  +--rw far-end?   union
-|     +--rw vpls
-|        +--rw vcid?      union
-|        +--rw far-end?   union
+|  +--rw bearer-reference?         string 
+           {vpn-common:bearer-reference}?
 ...               ]]></artwork>
           </figure>
 
@@ -1451,9 +1462,15 @@
           <t>This container is used to group Layer 3 connectivity information,
           particularly the IP addressing information, of a VPN network access.
           The allocated address represents the PE interface address
-          configuration. As shown in <xref target="ip_conn_tree"></xref>, this
-          container can include IPv4, IPv6, or both if dual-stack is
-          enabled.</t>
+          configuration. Note that a distinct layer 3 interface than the one
+          indicated under the 'connection' container may be needed to
+          terminate the layer 3 service. The identifier of such interface is
+          included in 'l3-termination-point'. For example, this data node can
+          be used to carry the identifier of a bridge domain Interface. </t>
+
+          <t>As shown in <xref target="ip_conn_tree"></xref>, the
+          'ip-connection' container can include IPv4, IPv6, or both if
+          dual-stack is enabled.</t>
 
           <t><figure align="center" anchor="ip_conn_tree"
               title="IP Connection Subtree Structure">
@@ -1462,6 +1479,7 @@
    +--rw vpn-network-access* [id]
       ...
       +--rw ip-connection
+      |  +--rw l3-termination-point?     vpn-common:vpn-id
       |  +--rw ipv4 {vpn-common:ipv4}?
       |  |  ...
       |  +--rw ipv6 {vpn-common:ipv6}?
@@ -1489,6 +1507,7 @@
               title="IP Connection Subtree Structure (IPv4)">
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
+|  +--rw l3-termination-point?     vpn-common:vpn-id
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  +--rw local-address?             inet:ipv4-address
 |  |  +--rw prefix-length?             uint8
@@ -1535,6 +1554,7 @@
               title="IP Connection Subtree Structure (IPv6)">
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
+|  +--rw l3-termination-point?     vpn-common:vpn-id
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
@@ -1581,6 +1601,7 @@
                   title="IP Connection Subtree Structure (Static Mode)">
             <artwork align="center"><![CDATA[...
 +--rw ip-connection
+|  +--rw l3-termination-point?     vpn-common:vpn-id
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  +--rw address-allocation-type?         identityref
 |  |  +--rw (allocation-type)?
@@ -2709,7 +2730,7 @@
       target="RFC8294"></xref>.</t>
 
       <figure align="center">
-        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-04-15.yang"
+        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-04-21.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -2780,7 +2801,7 @@ module ietf-l3vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-04-15 {
+  revision 2021-04-21 {
     description
       "Initial revision.";
     reference
@@ -2879,6 +2900,32 @@ module ietf-l3vpn-ntw {
     description
       "Treat traffic towards addresses within the specified next-hop
        prefix as though they are connected to a local link.";
+  }
+
+  identity l2-tunnel-type {
+    description
+      "Base identity for layer-2 tunnel selection under the VPN
+       network access.";
+  }
+
+  identity pseudowire {
+    base l2-tunnel-type;
+    description
+      "Pseudowire tunnel termination in the VPN network access.";
+  }
+
+  identity vpls {
+    base l2-tunnel-type;
+    description
+      "Virtual Private LAN Service (VPLS) tunnel termination in
+       the VPN network access.";
+  }
+
+  identity vxlan {
+    base l2-tunnel-type;
+    description
+      "Virtual eXtensible Local Area Network (VXLAN) tunnel
+       termination in the VPN network access.";
   }
 
   /* Typedefs */
@@ -3469,36 +3516,29 @@ module ietf-l3vpn-ntw {
                 container connection {
                   description
                     "Encapsulation types.";
-                  leaf encapsulation-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
-                    }
-                    default "vpn-common:untagged-int";
+                  leaf l2-termination-point {
+                    type vpn-common:vpn-id;
                     description
-                      "Encapsulation type. By default, the encapsulation
-                       type is set to 'untagged'.";
+                      "Specifies a reference to a local layer 2
+                       termination point such a layer 2 sub-interface.";
                   }
-                  container logical-interface {
+                  leaf local-bridge-reference {
+                    type vpn-common:vpn-id;
                     description
-                      "Reference of a logical interface
-                       type.";
-                    leaf local-reference {
-                      type vpn-common:vpn-id;
-                      description
-                        "Specifies a reference to a local Layer-2
-                         termination point such as a bridge domain
-                         interface.";
-                    }
-                    leaf peer-reference {
-                      type vpn-common:vpn-id;
-                      description
-                        "Specifies the associated logical peer
-                         interface.";
-                    }
+                      "Specifies a local bridge reference to
+                       accommodate, for example, implementations
+                       that require internal bridging.
+                       A reference may be a local bridge domain.";
                   }
-                  container tagged-interface {
+                  leaf peer-reference {
+                    type vpn-common:vpn-id;
                     description
-                      "Container for tagged interfaces.";
+                      "Specifies the associated logical peer
+                       interface.";
+                  }
+                  container encapsulation {
+                    description
+                      "Container for layer 2 encapsulation.";
                     leaf type {
                       type identityref {
                         base vpn-common:encapsulation-type;
@@ -3508,7 +3548,7 @@ module ietf-l3vpn-ntw {
                         "Tagged interface type. By default, the type of
                          the tagged interface is 'priority-tagged'.";
                     }
-                    container dot1q-vlan-tagged {
+                    container dot1q {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:dot1q')" {
                         description
@@ -3584,42 +3624,64 @@ module ietf-l3vpn-ntw {
                           "CVLAN identifier.";
                       }
                     }
-                    container qinany {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:qinany')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'qinany'.";
+                  }
+                  container l2-tunnel-service {
+                    description
+                      "Defines a layer 2 tunnel termination.
+                       It is only applicable when a tunnel is
+                       required. The supported values are:
+                       pseudowire, VPLS and, VXLAN. Other
+                       values may defined, if needed.";
+                    leaf type {
+                      type identityref {
+                        base l2-tunnel-type;
                       }
-                      if-feature "vpn-common:qinany";
                       description
-                        "Container for QinAny.";
-                      leaf tag-type {
-                        type identityref {
-                          base vpn-common:tag-type;
-                        }
-                        default "vpn-common:s-vlan";
+                        "Selects the tunnel termiantion option for
+                         each vpn-network-access.";
+                    }
+                    container pseudowire {
+                      description
+                        "Includes pseudowire termination parameters.";
+                      leaf vcid {
+                        type uint32;
                         description
-                          "Tag type. By default, the tag type is
-                           's-vlan'.";
+                          "Indicates a PW or VC identifier.";
                       }
-                      leaf svlan-id {
-                        type uint16;
-                        mandatory true;
+                      leaf far-end {
+                        type union {
+                          type uint32;
+                          type inet:ip-address;
+                        }
                         description
-                          "Service VLAN ID.";
+                          "SDP/Far End/LDP neighbour reference.";
+                      }
+                    }
+                    container vpls {
+                      description
+                        "VPLS termination parameters.";
+                      leaf vcid {
+                        type union {
+                          type uint32;
+                          type string;
+                        }
+                        description
+                          "VCID identifier, IRB/RVPPLs interface
+                           supported using string format.";
+                      }
+                      leaf far-end {
+                        type union {
+                          type uint32;
+                          type inet:ip-address;
+                        }
+                        description
+                          "SDP/Far End/LDP neighbour reference.";
                       }
                     }
                     container vxlan {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:vxlan')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'vxlan'.";
-                      }
                       if-feature "vpn-common:vxlan";
                       description
-                        "QinQ.";
+                        "VXLAN termination parameters.";
                       leaf vni-id {
                         type uint32;
                         mandatory true;
@@ -3642,60 +3704,24 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container bearer {
+                  leaf bearer-reference {
+                    if-feature "vpn-common:bearer-reference";
+                    type string;
                     description
-                      "Defines physical properties of a site
-                       attachment.";
-                    leaf bearer-reference {
-                      if-feature "vpn-common:bearer-reference";
-                      type string;
-                      description
-                        "This is an internal reference for the service
-                         provider.";
-                    }
-                    container pseudowire {
-                      description
-                        "Pseudowire termination parameters";
-                      leaf vcid {
-                        type uint32;
-                        description
-                          "Indicates a PW or VC identifier.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
-                    container vpls {
-                      description
-                        "Pseudowire termination parameters.";
-                      leaf vcid {
-                        type union {
-                          type uint32;
-                          type string;
-                        }
-                        description
-                          "VCID identifier, IRB/RVPPLs interface
-                           supported using string format.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
+                      "This is an internal reference for the service
+                       provider.";
                   }
                 }
                 container ip-connection {
                   description
                     "Defines IP connection parameters.";
+                  leaf l3-termination-point {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a reference to a local layer 3
+                       termination point such as a bridge domain
+                       interface.";
+                  }
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
                     description
@@ -4743,7 +4769,7 @@ module ietf-l3vpn-ntw {
                                   "Indicates the name of the SA.";
                                 reference
                                   "RFC 4552: Authentication
-                                             /Confidentiality for 
+                                             /Confidentiality for
                                              OSPFv3";
                               }
                             }
@@ -5810,320 +5836,6 @@ module ietf-l3vpn-ntw {
     <section anchor="examples" title="L3VPN Examples">
       <t></t>
 
-      <section anchor="profile" title="VPN Instance Profile">
-        <t>&lt;&lt;&lt;&lt;To be updated+add some
-        description&gt;&gt;&gt;&gt;</t>
-
-        <t><figure>
-            <artwork><![CDATA[{
-  "ietf-l3vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "sample-vpn",
-        "vpn-service-topology": "vpn-common:hub-spoke",
-        "vpn-instance-profiles": {
-          "vpn-instance-profile": [
-            {
-              "profile-id": "HUB",
-              "role": "vpn-common:hub-role",
-              "local-autonomous-system": 64510,
-              "rd-suffix": "0:0:1001",
-              "address-family": [
-                {
-                  "address-family": "vpn-common:dual-stack",
-                  "vpn-targets": {
-                    "vpn-target": [
-                      {
-                        "id": 1,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1001"
-                          },
-                          {
-                            "route-target": "0:64512:1001"
-                          }
-                        ],
-                        "route-target-type": "both"
-                      },
-                      {
-                        "id": 2,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1002"
-                          }
-                        ],
-                        "route-target-type": "import"
-                      }
-                    ]
-                  },
-                  "maximum-routes": [
-                    {
-                      "protocol": "vpn-common:any",
-                      "maximum-routes": 100
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "profile-id": "SPOKE",
-              "role": "vpn-common:spoke-role",
-              "local-autonomous-system": 64510,
-              "rd": "0:64510:1002",
-              "address-family": [
-                {
-                  "address-family": "vpn-common:dual-stack",
-                  "vpn-targets": {
-                    "vpn-target": [
-                      {
-                        "id": 1,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1001"
-                          },
-                          {
-                            "route-target": "0:64512:1001"
-                          }
-                        ],
-                        "route-target-type": "import"
-                      },
-                      {
-                        "id": 2,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1002"
-                          },
-                          {
-                            "route-target": "0:64512:1002"
-                          }
-                        ],
-                        "route-target-type": "both"
-                      }
-                    ]
-                  },
-                  "maximum-routes": [
-                    {
-                      "protocol": "vpn-common:any",
-                      "maximum-routes": 1000
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "vpn-nodes": {
-          "vpn-node": [
-            {
-              "vpn-node-id": "PE1",
-              "ne-id": "pe1",
-              "router-id": "198.51.100.1",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "HUB",
-                    "rd": "1:198.51.100.1:1001",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-                        "maximum-routes": [
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 10
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "profile-id": "SPOKE"
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "HUB",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1001:100::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1001:100::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  },
-                  {
-                    "id": "xe-0/0/0.10001",
-                    "vpn-instance-profile": "SPOKE",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10001"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1002:100::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1002:100::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "vpn-node-id": "PE2",
-              "ne-id": "pe2",
-              "router-id": "198.51.100.2",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "HUB",
-                    "rd": "1:198.51.100.2:1001"
-                  },
-                  {
-                    "profile-id": "SPOKE",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-                        "maximum-routes": [
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 100
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "HUB",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1001:200::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "prefix-id": "1",
-                            "customer-prefix": "2001:db8:1001:200::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "vpn-node-id": "PE3",
-              "ne-id": "pe3",
-              "router-id": "198.51.100.3",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "SPOKE",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-                        "maximum-routes": [
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 500
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "SPOKE",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1002:200::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1002:200::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-}]]></artwork>
-          </figure></t>
-      </section>
-
       <section anchor="mbh-vpn" title="4G VPN Provisioning Example">
         <t>L3VPNs are widely used to deploy 3G/4G, fixed, and enterprise
         services mainly because several traffic discrimination policies can be
@@ -6156,8 +5868,8 @@ module ietf-l3vpn-ntw {
      ]]></artwork>
         </figure>
 
-        <t>To create a L3VPN service using the L3NM, the following sample
-        steps can be followed:</t>
+        <t>To create a L3VPN service using the L3NM, the following steps can
+        be followed.</t>
 
         <t>First: Create the 4G VPN service (<xref
         target="service-mbh2"></xref>).</t>
@@ -6175,7 +5887,32 @@ Content-Type: application/yang-data+json
         "vpn-id": "4G",
         "customer-name": "mycustomer",
         "vpn-service-topology": "custom",
-        "description": "VPN to deploy 4G services"
+        "description": "VPN to deploy 4G services",
+        "vpn-instance-profiles": {
+          "vpn-instance-profile": [
+            {
+              "profile-id": "simple-profile",
+              "local-autonomous-system": 65550,
+              "rd": "0:65550:1",
+              "address-family": [
+                {
+                  "address-family": "vpn-common:dual-stack",
+                  "vpn-targets": {
+                    "vpn-target": [
+                      {
+                        "id": "1",
+                        "route-targets": [
+                          "0:65550:1"
+                        ],
+                        "route-target-type": "both"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
       }
     ]
   }
@@ -6200,23 +5937,17 @@ Content-Type: application/yang-data+json
       {
         "vpn-node-id": "44",
         "ne-id": "198.51.100.1",
-        "local-autonomous-system": "65550",
-        "rd": "0:65550:1",
-        "vpn-targets": {
-          "vpn-target": [
+        "active-vpn-instance-profiles": {
+          "vpn-instance-profile": [
             {
-              "id": "1",
-              "route-targets": [
-                "0:65550:1"
-              ],
-              "route-target-type": "both"
+              "profile-id": "simple-profile"
             }
           ]
         }
       }
     ]
   }
-}  ]]></artwork>
+}]]></artwork>
         </figure>
 
         <t>Finally, two VPN network accesses are created using the same
@@ -6241,10 +5972,11 @@ content-type: application/yang-data+json
           "status": "vpn-common:administrative-state-up"
         },
         "vpn-network-access-type": "vpn-common:point-to-point",
+        "vpn-instance-profile": "simple-profile",
         "ip-connection": {
           "ipv4": {
             "local-address": "192.0.2.1",
-            "prefix-length": 31,
+            "prefix-length": 30,
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
@@ -6273,10 +6005,11 @@ content-type: application/yang-data+json
         "admin-status": {
           "status": "vpn-common:administrative-state-up"
         },
+        "vpn-instance-profile": "simple-profile",
         "ip-connection": {
           "ipv4": {
             "local-address": "192.0.2.1",
-            "prefix-length": 31,
+            "prefix-length": 30,
             "address-allocation-type": "static-address",
             "static-addresses": {
               "primary-address": "1",
@@ -6458,7 +6191,7 @@ content-type: application/yang-data+json
       "ip-connection": {
         "ipv4": {
           "local-address": "203.0.113.1",
-          "prefix-length": 31,
+          "prefix-length": 30,
           "address-allocation-type": "static-address",
           "static-addresses": {
             "primary-address": "1",
@@ -6486,6 +6219,9 @@ content-type: application/yang-data+json
         ]
       },
       "service": {
+        "input-bandwidth": "100000000",
+        "output-bandwidth": "100000000",
+        "mtu": 1500,
         "multicast": {
           "multicast-site-type": "source-only",
           "address-family": "vpn-common:ipv4",

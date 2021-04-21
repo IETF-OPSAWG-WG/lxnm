@@ -125,18 +125,17 @@ Internet-Draft               L3NM YANG Model                  April 2021
      11.1.  Normative References . . . . . . . . . . . . . . . . . . 116
      11.2.  Informative References . . . . . . . . . . . . . . . . . 120
    Appendix A.  L3VPN Examples . . . . . . . . . . . . . . . . . . . 123
-     A.1.  VPN Instance Profile  . . . . . . . . . . . . . . . . . . 123
-     A.2.  4G VPN Provisioning Example . . . . . . . . . . . . . . . 130
-     A.3.  Create Loopback Interfaces  . . . . . . . . . . . . . . . 134
-     A.4.  Multicast VPN Provisioning Example  . . . . . . . . . . . 135
-   Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 138
-     B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 139
-     B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 139
-     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 139
-     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 139
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 139
-   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 140
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 140
+     A.1.  4G VPN Provisioning Example . . . . . . . . . . . . . . . 123
+     A.2.  Create Loopback Interfaces  . . . . . . . . . . . . . . . 128
+     A.3.  Multicast VPN Provisioning Example  . . . . . . . . . . . 128
+   Appendix B.  Implementation Status  . . . . . . . . . . . . . . . 133
+     B.1.  Nokia Implementation  . . . . . . . . . . . . . . . . . . 133
+     B.2.  Huawei Implementation . . . . . . . . . . . . . . . . . . 133
+     B.3.  Infinera Implementation . . . . . . . . . . . . . . . . . 133
+     B.4.  Ribbon-ECI Implementation . . . . . . . . . . . . . . . . 133
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 134
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 134
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 134
 
 1.  Introduction
 
@@ -161,7 +160,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
    This document uses the common VPN YANG module defined in
    [I-D.ietf-opsawg-vpn-common].
 
-
+   This document does not obsolete [RFC8299].  These two modules are
+   used for similar objectives but with different scopes and views.
 
 
 
@@ -169,9 +169,6 @@ Barguil, et al.         Expires October 11, 2021                [Page 3]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   This document does not obsolete [RFC8299].  These two modules are
-   used for similar objectives but with different scopes and views.
 
    The L3NM YANG module is initially built with a prune and extend
    approach, taking as a starting points the YANG module described in
@@ -219,15 +216,15 @@ Internet-Draft               L3NM YANG Model                  April 2021
    of [RFC6241], [RFC7950], [RFC8299], [RFC8309], and [RFC8453] and uses
    the terminology defined in those documents.
 
+   This document uses the term "network model" defined in Section 2.1 of
+   [RFC8969].
+
 
 
 Barguil, et al.         Expires October 11, 2021                [Page 4]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   This document uses the term "network model" defined in Section 2.1 of
-   [RFC8969].
 
    The meaning of the symbols in the tree diagrams is defined in
    [RFC8340].
@@ -274,6 +271,9 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
    VPN network access:  An abstraction that represents the network
       interfaces that are associated to a given VPN node.  Traffic
+      coming from the VPN network access belongs to the VPN.  The
+      attachment circuits (bearers) between CEs and PEs are terminated
+
 
 
 
@@ -282,8 +282,6 @@ Barguil, et al.         Expires October 11, 2021                [Page 5]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-      coming from the VPN network access belongs to the VPN.  The
-      attachment circuits (bearers) between CEs and PEs are terminated
       in the VPN network access.  A reference to the bearer is
       maintained to allow keeping the link between L3SM and L3NM.
 
@@ -330,6 +328,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
    RP      Rendez-vous Point
    RT      Route Target
    SA      Security Association
+   SSM     Source-Specific Multicast
+   VPN     Virtual Private Network
 
 
 
@@ -338,8 +338,6 @@ Barguil, et al.         Expires October 11, 2021                [Page 6]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-   SSM     Source-Specific Multicast
-   VPN     Virtual Private Network
    VRF     Virtual Routing and Forwarding
 
 4.  L3NM Reference Architecture
@@ -368,6 +366,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
    network configuration model, and the device configuration model.  In
    that context, the "Domain Orchestration" and "Config Manager" roles
    may be performed by "Controllers".
+
+
 
 
 
@@ -1094,9 +1094,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
    'multicast':  Enables multicast traffic in the VPN service.  Refer to
       Section 7.7.
 
-   An example to illustrate how VPN instance profiles is used is
-   discussed in Appendix A.1.
-
 7.5.  VPN Nodes
 
    The 'vpn-node' is an abstraction that represents a set of common
@@ -1114,6 +1111,9 @@ Internet-Draft               L3NM YANG Model                  April 2021
        +--rw vpn-services
           +--rw vpn-service* [vpn-id]
              ...
+             +--rw vpn-nodes
+                +--rw vpn-node* [vpn-node-id]
+                   +--rw vpn-node-id                vpn-common:vpn-id
 
 
 
@@ -1122,9 +1122,6 @@ Barguil, et al.         Expires October 11, 2021               [Page 20]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-             +--rw vpn-nodes
-                +--rw vpn-node* [vpn-node-id]
-                   +--rw vpn-node-id                vpn-common:vpn-id
                    +--rw description?               string
                    +--rw ne-id?                     string
                    +--rw local-autonomous-system?   inet:as-number
@@ -1170,6 +1167,9 @@ Internet-Draft               L3NM YANG Model                  April 2021
                    |     +--ro status?         identityref
                    |     +--ro last-updated?   yang:date-and-time
                    +--rw vpn-network-accesses
+                      ...
+
+                   Figure 7: VPN Node Subtree Structure
 
 
 
@@ -1177,10 +1177,6 @@ Barguil, et al.         Expires October 11, 2021               [Page 21]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-                      ...
-
-                   Figure 7: VPN Node Subtree Structure
 
    In reference to the subtree shown in Figure 7, the description of VPN
    node data nodes is as follows:
@@ -1226,6 +1222,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
       associate, e.g., redundancy or protection constraints with VPN
       nodes.
 
+   'status':  Tracks the status of a node involved in a VPN service.
+      Both operational and administrative status are maintained.  A
+      mismatch between the administrative status vs. the operational
+      status can be used as a trigger to detect anomalies.
 
 
 
@@ -1233,11 +1233,6 @@ Barguil, et al.         Expires October 11, 2021               [Page 22]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
-
-   'status':  Tracks the status of a node involved in a VPN service.
-      Both operational and administrative status are maintained.  A
-      mismatch between the administrative status vs. the operational
-      status can be used as a trigger to detect anomalies.
 
    'vpn-network-accesses':  Represents the point to which sites are
       connected.
@@ -1257,6 +1252,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
    The 'vpn-network-access' includes a set of data nodes that describe
    the access information for the traffic that belongs to a particular
    L3VPN (Figure 8).
+
+
+
+
+
 
 
 
@@ -1335,8 +1335,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
       access.
 
    'vpn-network-access-type':  Is used to select the type of network
-      interface to be deployed in the devices.  The available options
-      are:
+      interface to be deployed in the devices.  The available defined
+      values are:
 
 
 
@@ -1346,24 +1346,24 @@ Barguil, et al.         Expires October 11, 2021               [Page 24]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-      Point-to-Point:  Represents a direct connection between the
+      'point-to-point':  Represents a direct connection between the
          endpoints.  It implies that the controller must keep the
          association between a logical or physical interface on the
          device with the 'id' of the 'vpn-network-access'.
 
-      Multipoint:  Represents a broadcast connection between the end-
-         points.  It implies that the controller must keep the
+      'multipoint':  Represents a broadcast connection between the
+         endpoints.  It implies that the controller must keep the
          association between a logical or physical interface on the
          device with the 'id' of the 'vpn-network-access'.
 
-      Pseudowire:  Represents a connection coming from an L2VPN service.
-         It implies that the controller must keep the relationship
-         between the logical tunnels or bridges on the devices with the
-         'id' of the' vpn-network-access'.
+      'irb':  Represents a connection coming from an L2VPN service.  It
+         implies that the controller must keep the relationship between
+         the logical tunnels or bridges on the devices with the 'id' of
+         the' vpn-network-access'.
 
-      Loopback:  Represents the creation of a logical interface on a
+      'loopback':  Represents the creation of a logical interface on a
          device.  An example to illustrate how a loopback interface can
-         be created using the L3NM is provided in Appendix A.3.
+         be created using the L3NM is provided in Appendix A.2.
 
    'vpn-instance-profile':  Provides a pointer to an active VPN instance
       profile at the VPN node level.  Referencing an active VPN instance
@@ -1409,9 +1409,8 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
    The definition of an L3VPN is commonly specified not only at the IP
    layer, but also requires to provide parameters at the Ethernet layer,
-   such as specifying an encapsulation type (e.g., VLAN, QinQ, QinAny,
-   VxLAN, etc.).  The L3NM uses the 'connection' container to specify
-   such parameters.
+   such as specifying an encapsulation type (e.g., VLAN, QinQ, etc.).
+   The L3NM uses the 'connection' container to specify such parameters.
 
    A site, as per [RFC4176] represents a VPN customer's location that is
    connected to the service provider network via a CE-PE link, which can
@@ -1421,26 +1420,27 @@ Internet-Draft               L3NM YANG Model                  April 2021
    the L3NM, it is assumed that the bearer has been allocated by the
    service provider at the service orchestration stage.  The bearer is
    associated to a network element and a port.  Hence, a bearer is just
-   a bearer-reference to allow the association between a service request
-   (e.g., L3SM) and L3NM.
+   a 'bearer-reference' to allow the association between a service
+   request (e.g., L3SM) and L3NM.
 
    As shown in Figure 9, the 'connection' container defines protocols
-   and parameters to enable connectivity at Layer 2.
+   and parameters to enable connectivity at Layer 2. 'encapsulation'
+   specifies the layer 2 encapsulation to use.  If a layer 2 tunnel is
+   needed to terminate the service, 'l2-tunnel-service' is used to
+   specify the required parameters to set such service (e.g., VPLS,
+   VXLAN).  An identity, called 'l2-tunnel-type', is defined for layer 2
+   tunnel selection.
 
+   To accommodate implementations that require internal bridging, a
+   local bridge reference can be specified in 'local-bridge-reference'.
+   Such a reference may be a local bridge domain.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+   From a network model, it is expected that 'port-id' at the 'vpn-
+   network-access' level is sufficient to identify the interface to
+   which the L3VPN service will be attached.  However, specific layer 2
+   sub-interfaces may be required to be configured in some
+   implementations/deployments.  Such a layer 2 specific interface can
+   be included in 'l2-termination-point'.
 
 
 
@@ -1458,40 +1458,36 @@ Barguil, et al.         Expires October 11, 2021               [Page 26]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-             ...
-             +--rw connection
-             |  +--rw encapsulation-type?   identityref
-             |  +--rw logical-interface
-             |  |  +--rw local-reference?   vpn-common:vpn-id
-             |  |  +--rw peer-reference?    vpn-common:vpn-id
-             |  +--rw tagged-interface
-             |  |  +--rw type?                identityref
-             |  |  +--rw dot1q-vlan-tagged {vpn-common:dot1q}?
-             |  |  |  +--rw tag-type?   identityref
-             |  |  |  +--rw cvlan-id?   uint16
-             |  |  +--rw priority-tagged
-             |  |  |  +--rw tag-type?   identityref
-             |  |  +--rw qinq {vpn-common:qinq}?
-             |  |  |  +--rw tag-type?   identityref
-             |  |  |  +--rw svlan-id    uint16
-             |  |  |  +--rw cvlan-id    uint16
-             |  |  +--rw qinany {vpn-common:qinany}?
-             |  |  |  +--rw tag-type?   identityref
-             |  |  |  +--rw svlan-id    uint16
-             |  |  +--rw vxlan {vpn-common:vxlan}?
-             |  |     +--rw vni-id       uint32
-             |  |     +--rw peer-mode?   identityref
-             |  |     +--rw peer-ip-address*   inet:ip-address
-             |  +--rw bearer
-             |     +--rw bearer-reference?   string
-             |     |       {vpn-common:bearer-reference}?
-             |     +--rw pseudowire
-             |     |  +--rw vcid?      uint32
-             |     |  +--rw far-end?   union
-             |     +--rw vpls
-             |        +--rw vcid?      union
-             |        +--rw far-end?   union
-             ...
+           ...
+           +--rw connection
+           |  +--rw l2-termination-point?     vpn-common:vpn-id
+           |  +--rw local-bridge-reference?   vpn-common:vpn-id
+           |  +--rw encapsulation
+           |  |  +--rw type?              identityref
+           |  |  +--rw dot1q {vpn-common:dot1q}?
+           |  |  |  +--rw tag-type?   identityref
+           |  |  |  +--rw cvlan-id?   uint16
+           |  |  +--rw priority-tagged
+           |  |  |  +--rw tag-type?   identityref
+           |  |  +--rw qinq {vpn-common:qinq}?
+           |  |     +--rw tag-type?   identityref
+           |  |     +--rw svlan-id    uint16
+           |  |     +--rw cvlan-id    uint16
+           |  +--rw l2-tunnel-service
+           |  |  +--rw type?         identityref
+           |  |  +--rw pseudowire
+           |  |  |  +--rw vcid?      uint32
+           |  |  |  +--rw far-end?   union
+           |  |  +--rw vpls
+           |  |  |  +--rw vcid?      union
+           |  |  |  +--rw far-end?   union
+           |  |  +--rw vxlan {vpn-common:vxlan}?
+           |  |     +--rw vni-id             uint32
+           |  |     +--rw peer-mode?         identityref
+           |  |     +--rw peer-ip-address*   inet:ip-address
+           |  +--rw bearer-reference?         string
+                      {vpn-common:bearer-reference}?
+           ...
 
                   Figure 9: Connection Subtree Structure
 
@@ -1500,10 +1496,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
    This container is used to group Layer 3 connectivity information,
    particularly the IP addressing information, of a VPN network access.
    The allocated address represents the PE interface address
-   configuration.  As shown in Figure 10, this container can include
+   configuration.  Note that a distinct layer 3 interface than the one
+   indicated under the 'connection' container may be needed to terminate
+   the layer 3 service.  The identifier of such interface is included in
+   'l3-termination-point'.  For example, this data node can be used to
+   carry the identifier of a bridge domain Interface.
+
+   As shown in Figure 10, the 'ip-connection' container can include
    IPv4, IPv6, or both if dual-stack is enabled.
-
-
 
 
 
@@ -1514,16 +1514,17 @@ Barguil, et al.         Expires October 11, 2021               [Page 27]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-                  ...
-                  +--rw vpn-network-accesses
-                     +--rw vpn-network-access* [id]
-                        ...
-                        +--rw ip-connection
-                        |  +--rw ipv4 {vpn-common:ipv4}?
-                        |  |  ...
-                        |  +--rw ipv6 {vpn-common:ipv6}?
-                        |     ...
-                        ...
+        ...
+        +--rw vpn-network-accesses
+           +--rw vpn-network-access* [id]
+              ...
+              +--rw ip-connection
+              |  +--rw l3-termination-point?     vpn-common:vpn-id
+              |  +--rw ipv4 {vpn-common:ipv4}?
+              |  |  ...
+              |  +--rw ipv6 {vpn-common:ipv6}?
+              |     ...
+              ...
 
 
                 Figure 10: IP Connection Subtree Structure
@@ -1564,7 +1565,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-
 Barguil, et al.         Expires October 11, 2021               [Page 28]
 
 Internet-Draft               L3NM YANG Model                  April 2021
@@ -1572,6 +1572,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
         ...
         +--rw ip-connection
+        |  +--rw l3-termination-point?     vpn-common:vpn-id
         |  +--rw ipv4 {vpn-common:ipv4}?
         |  |  +--rw local-address?             inet:ipv4-address
         |  |  +--rw prefix-length?             uint8
@@ -1620,7 +1621,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-
 Barguil, et al.         Expires October 11, 2021               [Page 29]
 
 Internet-Draft               L3NM YANG Model                  April 2021
@@ -1628,6 +1628,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
        ...
        +--rw ip-connection
+       |  +--rw l3-termination-point?     vpn-common:vpn-id
        |  +--rw ipv4 {vpn-common:ipv4}?
        |  |  ...
        |  +--rw ipv6 {vpn-common:ipv6}?
@@ -1676,7 +1677,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-
 Barguil, et al.         Expires October 11, 2021               [Page 30]
 
 Internet-Draft               L3NM YANG Model                  April 2021
@@ -1684,6 +1684,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
     ...
     +--rw ip-connection
+    |  +--rw l3-termination-point?     vpn-common:vpn-id
     |  +--rw ipv4 {vpn-common:ipv4}?
     |  |  +--rw address-allocation-type?         identityref
     |  |  +--rw (allocation-type)?
@@ -1715,7 +1716,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
    of the same routing protocol have to be configured on the same link.
 
    The subtree of the 'routing-protocols' is shown in Figure 14.
-
 
 
 
@@ -3066,7 +3066,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
    This module uses types defined in [RFC6991] and [RFC8343].  It also
    uses groupings defined in [RFC8519], [RFC8177], and [RFC8294].
 
-<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-04-15.yang"
+<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-04-21.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -3153,7 +3153,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-04-15 {
+  revision 2021-04-21 {
     description
       "Initial revision.";
     reference
@@ -3270,7 +3270,41 @@ Internet-Draft               L3NM YANG Model                  April 2021
        prefix as though they are connected to a local link.";
   }
 
+  identity l2-tunnel-type {
+    description
+      "Base identity for layer-2 tunnel selection under the VPN
+       network access.";
+  }
+
+  identity pseudowire {
+    base l2-tunnel-type;
+    description
+      "Pseudowire tunnel termination in the VPN network access.";
+  }
+
+  identity vpls {
+    base l2-tunnel-type;
+    description
+      "Virtual Private LAN Service (VPLS) tunnel termination in
+       the VPN network access.";
+  }
+
+  identity vxlan {
+    base l2-tunnel-type;
+    description
+      "Virtual eXtensible Local Area Network (VXLAN) tunnel
+       termination in the VPN network access.";
+  }
+
   /* Typedefs */
+
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 59]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
   typedef predefined-next-hop {
     type identityref {
@@ -3298,14 +3332,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
        level and then called at the VPN node and VPN network
        access levels.";
     leaf local-autonomous-system {
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 59]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
       if-feature "vpn-common:rtg-bgp";
       type inet:as-number;
       description
@@ -3328,6 +3354,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
         description
           "Set of route targets to match for import and export routes
            to/from VRF.";
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 60]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
         uses vpn-common:vpn-route-targets;
       }
       list maximum-routes {
@@ -3354,14 +3388,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
     container multicast {
       if-feature "vpn-common:multicast";
       description
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 60]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
         "Global multicast parameters.";
       leaf-list tree-flavor {
         type identityref {
@@ -3384,6 +3410,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
               type uint16;
               description
                 "Unique identifier for the mapping.";
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 61]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
             }
             container provider-managed {
               description
@@ -3410,14 +3444,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                   "If true, the SP must ensure that
                    traffic uses an optimal path.  An SP may
                    use Anycast RP or RP-tree-to-SPT
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 61]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                    switchover architectures.";
               }
               container anycast {
@@ -3440,6 +3466,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                 leaf-list rp-set-address {
                   type inet:ip-address;
                   description
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 62]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                     "Address other RP routers that share the
                      same RP IP address.";
                 }
@@ -3466,14 +3500,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                   "List of multicast groups.";
                 leaf id {
                   type uint16;
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 62]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                   description
                     "Identifier for the group.";
                 }
@@ -3496,6 +3522,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                          the multicast group address range.";
                     }
                     leaf group-end {
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 63]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                       type inet:ip-address;
                       description
                         "The last multicast group address in
@@ -3522,14 +3556,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
             when "derived-from-or-self(../rp-discovery-type, "
                + "'vpn-common:bsr-rp')" {
               description
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 63]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                 "Only applicable if discovery type is BSR-RP.";
             }
             description
@@ -3552,6 +3578,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
           key "group-addr";
           description
             "Multicast static source/group associated to the
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 64]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
              IGMP session";
           leaf group-addr {
             type rt-types:ipv4-multicast-group-address;
@@ -3578,14 +3612,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
           type identityref {
             base vpn-common:igmp-version;
           }
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 64]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
           default "vpn-common:igmpv2";
           description
             "Version of the IGMP.";
@@ -3608,6 +3634,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
             type rt-types:ipv6-multicast-group-address;
             description
               "Multicast group IPv6 addresss.";
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 65]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
           }
           leaf source-addr {
             type rt-types:ipv6-multicast-source-address;
@@ -3634,14 +3668,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
             "Version of the MLD protocol.";
           reference
             "RFC 2710: Multicast Listener Discovery (MLD) for IPv6
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 65]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
              RFC 3810: Multicast Listener Discovery Version 2 (MLDv2)
                        for IPv6";
         }
@@ -3664,6 +3690,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
         }
         leaf dr-priority {
           type uint32;
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 66]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
           default "1";
           description
             "Indicates the preference in the DR election
@@ -3690,14 +3724,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
          service.";
       uses vpn-common:vpn-profile-cfg;
     }
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 66]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
     container vpn-services {
       description
         "Top-level container for the VPN services.";
@@ -3720,6 +3746,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
           description
             "Indicates the service type.";
         }
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 67]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
         leaf vpn-service-topology {
           type identityref {
             base vpn-common:vpn-topology;
@@ -3746,14 +3780,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                 base vpn-common:role;
               }
               default "vpn-common:any-to-any-role";
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 67]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
               description
                 "Role of the VPN node in the IP VPN.";
             }
@@ -3776,6 +3802,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
               leaf profile-name {
                 type leafref {
                   path "/l3vpn-ntw/vpn-profiles"
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 68]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                      + "/valid-provider-identifiers"
                      + "/external-connectivity-identifier/id";
                 }
@@ -3802,14 +3836,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               type string;
               description
                 "Textual description of the VPN node.";
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 68]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
             }
             leaf ne-id {
               type string;
@@ -3832,6 +3858,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                  system. This identifier is used for both IPv4 and
                  IPv6.";
             }
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 69]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
             container active-vpn-instance-profiles {
               description
                 "Container for active VPN instance profiles.";
@@ -3858,14 +3892,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     description
                       "Indicates the address family (IPv4 or IPv6).";
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 69]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                   }
                   leaf router-id {
                     type inet:ip-address;
@@ -3888,6 +3914,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                 "Includes MSDP-related parameters.";
               leaf peer {
                 type inet:ip-address;
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 70]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                 description
                   "Indicates the IP address of the MSDP peer.";
               }
@@ -3914,14 +3948,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                   description
                     "Identifier for the network access.";
                 }
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 70]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                 leaf port-id {
                   type vpn-common:vpn-id;
                   description
@@ -3944,6 +3970,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                 leaf vpn-instance-profile {
                   type leafref {
                     path "/l3vpn-ntw/vpn-services/vpn-service/vpn-nodes"
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 71]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                        + "/vpn-node/active-vpn-instance-profiles"
                        + "/vpn-instance-profile/profile-id";
                   }
@@ -3954,44 +3988,29 @@ Internet-Draft               L3NM YANG Model                  April 2021
                 container connection {
                   description
                     "Encapsulation types.";
-                  leaf encapsulation-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
-                    }
-                    default "vpn-common:untagged-int";
+                  leaf l2-termination-point {
+                    type vpn-common:vpn-id;
                     description
-                      "Encapsulation type. By default, the encapsulation
-                       type is set to 'untagged'.";
+                      "Specifies a reference to a local layer 2
+                       termination point such a layer 2 sub-interface.";
                   }
-                  container logical-interface {
+                  leaf local-bridge-reference {
+                    type vpn-common:vpn-id;
                     description
-                      "Reference of a logical interface
-                       type.";
-                    leaf local-reference {
-                      type vpn-common:vpn-id;
-                      description
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 71]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                        "Specifies a reference to a local Layer-2
-                         termination point such as a bridge domain
-                         interface.";
-                    }
-                    leaf peer-reference {
-                      type vpn-common:vpn-id;
-                      description
-                        "Specifies the associated logical peer
-                         interface.";
-                    }
+                      "Specifies a local bridge reference to
+                       accommodate, for example, implementations
+                       that require internal bridging.
+                       A reference may be a local bridge domain.";
                   }
-                  container tagged-interface {
+                  leaf peer-reference {
+                    type vpn-common:vpn-id;
                     description
-                      "Container for tagged interfaces.";
+                      "Specifies the associated logical peer
+                       interface.";
+                  }
+                  container encapsulation {
+                    description
+                      "Container for layer 2 encapsulation.";
                     leaf type {
                       type identityref {
                         base vpn-common:encapsulation-type;
@@ -4001,12 +4020,20 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         "Tagged interface type. By default, the type of
                          the tagged interface is 'priority-tagged'.";
                     }
-                    container dot1q-vlan-tagged {
+                    container dot1q {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:dot1q')" {
                         description
                           "Only applies when the type of the
                            tagged interface is 'dot1q'.";
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 72]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                       }
                       if-feature "vpn-common:dot1q";
                       description
@@ -4026,14 +4053,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                           "VLAN identifier.";
                       }
                     }
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 72]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                     container priority-tagged {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:priority-tagged')" {
@@ -4063,6 +4082,14 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       if-feature "vpn-common:qinq";
                       description
                         "QinQ.";
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 73]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                       leaf tag-type {
                         type identityref {
                           base vpn-common:tag-type;
@@ -4082,62 +4109,35 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         type uint16;
                         mandatory true;
                         description
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 73]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                           "CVLAN identifier.";
                       }
                     }
-                    container qinany {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:qinany')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'qinany'.";
+                  }
+                  container l2-tunnel-service {
+                    description
+                      "Defines a layer 2 tunnel termination.
+                       It is only applicable when a tunnel is
+                       required. The supported values are:
+                       pseudowire, VPLS and, VXLAN. Other
+                       values may defined, if needed.";
+                    leaf type {
+                      type identityref {
+                        base l2-tunnel-type;
                       }
-                      if-feature "vpn-common:qinany";
                       description
-                        "Container for QinAny.";
-                      leaf tag-type {
-                        type identityref {
-                          base vpn-common:tag-type;
-                        }
-                        default "vpn-common:s-vlan";
-                        description
-                          "Tag type. By default, the tag type is
-                           's-vlan'.";
-                      }
-                      leaf svlan-id {
-                        type uint16;
-                        mandatory true;
-                        description
-                          "Service VLAN ID.";
-                      }
+                        "Selects the tunnel termiantion option for
+                         each vpn-network-access.";
                     }
-                    container vxlan {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:vxlan')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'vxlan'.";
-                      }
-                      if-feature "vpn-common:vxlan";
+                    container pseudowire {
                       description
-                        "QinQ.";
-                      leaf vni-id {
+                        "Includes pseudowire termination parameters.";
+                      leaf vcid {
                         type uint32;
-                        mandatory true;
                         description
-                          "VXLAN Network Identifier (VNI).";
+                          "Indicates a PW or VC identifier.";
                       }
-                      leaf peer-mode {
-                        type identityref {
-                          base vpn-common:vxlan-peer-mode;
+                      leaf far-end {
+                        type union {
 
 
 
@@ -4146,40 +4146,6 @@ Barguil, et al.         Expires October 11, 2021               [Page 74]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-                        }
-                        default "vpn-common:static-mode";
-                        description
-                          "Specifies the VXLAN access mode. By default,
-                           the peer mode is set to 'static-mode'.";
-                      }
-                      leaf-list peer-ip-address {
-                        type inet:ip-address;
-                        description
-                          "List of peer's IP addresses.";
-                      }
-                    }
-                  }
-                  container bearer {
-                    description
-                      "Defines physical properties of a site
-                       attachment.";
-                    leaf bearer-reference {
-                      if-feature "vpn-common:bearer-reference";
-                      type string;
-                      description
-                        "This is an internal reference for the service
-                         provider.";
-                    }
-                    container pseudowire {
-                      description
-                        "Pseudowire termination parameters";
-                      leaf vcid {
-                        type uint32;
-                        description
-                          "Indicates a PW or VC identifier.";
-                      }
-                      leaf far-end {
-                        type union {
                           type uint32;
                           type inet:ip-address;
                         }
@@ -4189,19 +4155,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     container vpls {
                       description
-                        "Pseudowire termination parameters.";
+                        "VPLS termination parameters.";
                       leaf vcid {
                         type union {
                           type uint32;
                           type string;
-
-
-
-Barguil, et al.         Expires October 11, 2021               [Page 75]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                         }
                         description
                           "VCID identifier, IRB/RVPPLs interface
@@ -4216,11 +4174,58 @@ Internet-Draft               L3NM YANG Model                  April 2021
                           "SDP/Far End/LDP neighbour reference.";
                       }
                     }
+                    container vxlan {
+                      if-feature "vpn-common:vxlan";
+                      description
+                        "VXLAN termination parameters.";
+                      leaf vni-id {
+                        type uint32;
+                        mandatory true;
+                        description
+                          "VXLAN Network Identifier (VNI).";
+                      }
+                      leaf peer-mode {
+                        type identityref {
+                          base vpn-common:vxlan-peer-mode;
+                        }
+                        default "vpn-common:static-mode";
+                        description
+                          "Specifies the VXLAN access mode. By default,
+                           the peer mode is set to 'static-mode'.";
+                      }
+                      leaf-list peer-ip-address {
+
+
+
+Barguil, et al.         Expires October 11, 2021               [Page 75]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
+                        type inet:ip-address;
+                        description
+                          "List of peer's IP addresses.";
+                      }
+                    }
+                  }
+                  leaf bearer-reference {
+                    if-feature "vpn-common:bearer-reference";
+                    type string;
+                    description
+                      "This is an internal reference for the service
+                       provider.";
                   }
                 }
                 container ip-connection {
                   description
                     "Defines IP connection parameters.";
+                  leaf l3-termination-point {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a reference to a local layer 3
+                       termination point such as a bridge domain
+                       interface.";
+                  }
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
                     description
@@ -4245,11 +4250,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       }
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
-                         + " 'provider-dhcp-slaac'))" {
-                        error-message
-                          "SLAAC is only applicable to IPv6.";
-                      }
-                      description
 
 
 
@@ -4258,6 +4258,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 76]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                         + " 'provider-dhcp-slaac'))" {
+                        error-message
+                          "SLAAC is only applicable to IPv6.";
+                      }
+                      description
                         "Defines how addresses are allocated to the
                          peer site.
 
@@ -4301,11 +4306,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                             when "./dhcp-service-type = 'relay'";
                             description
                               "Container for list of provider's DHCP
-                               servers.";
-                            leaf-list server-ip-address {
-                              type inet:ipv4-address;
-                              description
-                                "IPv4 addresses of the provider's DHCP
 
 
 
@@ -4314,6 +4314,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 77]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                               servers.";
+                            leaf-list server-ip-address {
+                              type inet:ipv4-address;
+                              description
+                                "IPv4 addresses of the provider's DHCP
                                  server to use by the local DHCP
                                  relay.";
                             }
@@ -4357,11 +4362,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                        When both start-address and
                                        end-address are specified, it
                                        implies a range inclusive of both
-                                       addresses.";
-                                    leaf pool-id {
-                                      type string;
-                                      description
-                                        "A pool identifier for the
 
 
 
@@ -4370,6 +4370,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 78]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                       addresses.";
+                                    leaf pool-id {
+                                      type string;
+                                      description
+                                        "A pool identifier for the
                                          address range from start-
                                          address to end-address.";
                                     }
@@ -4413,11 +4418,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                               "IPv4 addresses of the customer's DHCP
                                server.";
                           }
-                        }
-                      }
-                      case static-addresses {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'static-address')" {
 
 
 
@@ -4426,6 +4426,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 79]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                        }
+                      }
+                      case static-addresses {
+                        when "derived-from-or-self(./address-allocation"
+                           + "-type, 'static-address')" {
                           description
                             "Only applies when address allocation
                              type is static.";
@@ -4469,11 +4474,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     leaf prefix-length {
                       type uint8 {
-                        range "0..128";
-                      }
-                      description
-                        "Subnet prefix length expressed in bits.
-                         It is applied to both local and customer
 
 
 
@@ -4482,6 +4482,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 80]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                        range "0..128";
+                      }
+                      description
+                        "Subnet prefix length expressed in bits.
+                         It is applied to both local and customer
                          addresses.";
                     }
                     leaf address-allocation-type {
@@ -4525,11 +4530,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                             "Indicates the type of the DHCPv6 service to
                              be enabled on this access.";
                         }
-                        choice service-type {
-                          description
-                            "Choice based on the DHCPv6 service type.";
-                          case provider-dhcp-servers {
-                            when "./dhcp-service-type = 'relay'";
 
 
 
@@ -4538,6 +4538,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 81]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                        choice service-type {
+                          description
+                            "Choice based on the DHCPv6 service type.";
+                          case provider-dhcp-servers {
+                            when "./dhcp-service-type = 'relay'";
                             description
                               "Case where a local DHCPv6 relay is
                                enabled. This list is used if and only
@@ -4581,11 +4586,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                        allocated by DHCPv6.
 
                                        When only start-address or only
-                                       end-address is present, it
-                                       represents a single address.
-
-                                       When both start-address and
-                                       end-address are specified, it
 
 
 
@@ -4594,6 +4594,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 82]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                       end-address is present, it
+                                       represents a single address.
+
+                                       When both start-address and
+                                       end-address are specified, it
                                        implies a range inclusive of
                                        both addresses.";
                                     leaf pool-id {
@@ -4637,11 +4642,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                              servers.";
                           leaf-list server-ip-address {
                             type inet:ipv6-address;
-                            description
-                              "Contains the IP addresses of the customer
-                               DHCPv6 server.";
-                          }
-                        }
 
 
 
@@ -4650,6 +4650,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 83]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                            description
+                              "Contains the IP addresses of the customer
+                               DHCPv6 server.";
+                          }
+                        }
                       }
                       case static-addresses {
                         when "derived-from-or-self(./address-allocation"
@@ -4693,11 +4698,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                   list routing-protocol {
                     key "id";
                     description
-                      "List of routing protocols used on
-                       the CE/PE link.  This list can be augmented.";
-                    leaf id {
-                      type string;
-                      description
 
 
 
@@ -4706,6 +4706,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 84]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                      "List of routing protocols used on
+                       the CE/PE link.  This list can be augmented.";
+                    leaf id {
+                      type string;
+                      description
                         "Unique identifier for routing protocol.";
                     }
                     leaf type {
@@ -4749,11 +4754,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                           "LAN prefixes from the customer.";
                         list ipv4-lan-prefixes {
                           if-feature "vpn-common:ipv4";
-                          key "lan next-hop";
-                          description
-                            "List of LAN prefixes for the site.";
-                          leaf lan {
-                            type inet:ipv4-prefix;
 
 
 
@@ -4762,6 +4762,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 85]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          key "lan next-hop";
+                          description
+                            "List of LAN prefixes for the site.";
+                          leaf lan {
+                            type inet:ipv4-prefix;
                             description
                               "LAN prefixes.";
                           }
@@ -4805,11 +4810,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         }
                         list ipv6-lan-prefixes {
                           if-feature "vpn-common:ipv6";
-                          key "lan next-hop";
-                          description
-                            "List of LAN prefixes for the site.";
-                          leaf lan {
-                            type inet:ipv6-prefix;
 
 
 
@@ -4818,6 +4818,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 86]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          key "lan next-hop";
+                          description
+                            "List of LAN prefixes for the site.";
+                          leaf lan {
+                            type inet:ipv6-prefix;
                             description
                               "LAN prefixes.";
                           }
@@ -4861,11 +4866,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         }
                       }
                     }
-                    container bgp {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:bgp')" {
-                        description
-                          "Only applies when protocol is BGP.";
 
 
 
@@ -4874,6 +4874,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 87]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                    container bgp {
+                      when "derived-from-or-self(../type, "
+                         + "'vpn-common:bgp')" {
+                        description
+                          "Only applies when protocol is BGP.";
                       }
                       if-feature "vpn-common:rtg-bgp";
                       description
@@ -4917,11 +4922,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                           type if:interface-ref;
                         }
                         description
-                          "Set the local IP address to use for the BGP
-                           transport session. This may be expressed as
-                           either an IP address or a reference to an
-                           interface.";
-                      }
 
 
 
@@ -4930,6 +4930,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 88]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          "Set the local IP address to use for the BGP
+                           transport session. This may be expressed as
+                           either an IP address or a reference to an
+                           interface.";
+                      }
                       leaf-list neighbor {
                         type inet:ip-address;
                         description
@@ -4973,11 +4978,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                            'true', this parameter prevents that
                            the ASN provided at the VPN node
                            level is also prepended to the BGP
-                           route updates for this access.";
-                      }
-                      leaf default-route {
-                        type boolean;
-                        default "false";
 
 
 
@@ -4986,6 +4986,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 89]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                           route updates for this access.";
+                      }
+                      leaf default-route {
+                        type boolean;
+                        default "false";
                         description
                           "Defines whether default routes can be
                            advertised to its peer. If set, the
@@ -5029,11 +5034,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         key "address-family";
                         description
                           "Indicates the per-AF policy to follow
-                           for connected routes.";
-                        leaf address-family {
-                          type identityref {
-                            base vpn-common:address-family;
-                          }
 
 
 
@@ -5042,6 +5042,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 90]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                           for connected routes.";
+                        leaf address-family {
+                          type identityref {
+                            base vpn-common:address-family;
+                          }
                           description
                             "Indicates the address family.";
                         }
@@ -5085,11 +5090,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                              notification will be triggered.";
                         }
                         leaf violate-action {
-                          type enumeration {
-                            enum warning {
-                              description
-                                "Only a warning message is sent to
-                                 the peer when the limit is
 
 
 
@@ -5098,6 +5098,11 @@ Barguil, et al.         Expires October 11, 2021               [Page 91]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          type enumeration {
+                            enum warning {
+                              description
+                                "Only a warning message is sent to
+                                 the peer when the limit is
                                  exceeded.";
                             }
                             enum discard-extra-paths {
@@ -5142,11 +5147,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                              If set to '0', it indicates KEEPALIVE
                              messages are disabled.
 
-                             It is suggested that the maximum time
-                             between  KEEPALIVEmessages would be
-                             one third of the Hold Time interval.";
-                          reference
-
 
 
 Barguil, et al.         Expires October 11, 2021               [Page 92]
@@ -5154,6 +5154,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 92]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                             It is suggested that the maximum time
+                             between  KEEPALIVEmessages would be
+                             one third of the Hold Time interval.";
+                          reference
                             "RFC 4271: A Border Gateway Protocol 4
                                        (BGP-4), Section 4.4";
                         }
@@ -5198,10 +5202,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                             case tcp-ao {
                               description
                                 "Uses TCP-Authentication Option
-                                 (TCP-AO).";
-                              reference
-                                "RFC 5925: The TCP Authentication
-                                           Option.";
 
 
 
@@ -5210,6 +5210,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 93]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                 (TCP-AO).";
+                              reference
+                                "RFC 5925: The TCP Authentication
+                                           Option.";
                               leaf enable-tcp-ao {
                                 type boolean;
                                 description
@@ -5254,10 +5258,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                   base key-chain:crypto-algorithm;
                                 }
                                 description
-                                  "Indicates the cryptographic algorithm
-                                   associated with the key.";
-                              }
-                            }
 
 
 
@@ -5266,6 +5266,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 94]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                  "Indicates the cryptographic algorithm
+                                   associated with the key.";
+                              }
+                            }
                             case ipsec {
                               description
                                 "Specifies a reference to an IKE
@@ -5310,10 +5314,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                      (VPNs), Section 4.2.3
                            RFC 6565: OSPFv3 as a Provider Edge to
                                      Customer Edge (PE-CE) Routing
-                                     Protocol, Section 4.2";
-                      }
-                      leaf metric {
-                        type uint16;
 
 
 
@@ -5322,6 +5322,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 95]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                     Protocol, Section 4.2";
+                      }
+                      leaf metric {
+                        type uint16;
                         default "1";
                         description
                           "Metric of the PE-CE link. It is used
@@ -5366,10 +5370,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                RFC 6565: OSPFv3 as a Provider Edge to
                                          Customer Edge (PE-CE) Routing
                                          Protocol, Section 5.2";
-                          }
-                        }
-                      }
-                      leaf max-lsa {
 
 
 
@@ -5378,6 +5378,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 96]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          }
+                        }
+                      }
+                      leaf max-lsa {
                         type uint32 {
                           range "1..4294967294";
                         }
@@ -5422,10 +5426,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                               }
                               leaf crypto-algorithm {
                                 type identityref {
-                                  base key-chain:crypto-algorithm;
-                                }
-                                description
-                                  "Indicates the cryptographic algorithm
 
 
 
@@ -5434,6 +5434,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 97]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                  base key-chain:crypto-algorithm;
+                                }
+                                description
+                                  "Indicates the cryptographic algorithm
                                    associated with the key.";
                               }
                             }
@@ -5478,10 +5482,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       }
                       leaf level {
                         type identityref {
-                          base vpn-common:isis-level;
-                        }
-                        description
-                          "Can be level1, level2, or level1-2.";
 
 
 
@@ -5490,6 +5490,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 98]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          base vpn-common:isis-level;
+                        }
+                        description
+                          "Can be level1, level2, or level1-2.";
                       }
                       leaf metric {
                         type uint16;
@@ -5534,10 +5538,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                              and a PE.";
                           choice option {
                             description
-                              "Options for IS-IS authentication.";
-                            case auth-key-chain {
-                              leaf key-chain {
-                                type key-chain:key-chain-ref;
 
 
 
@@ -5546,6 +5546,10 @@ Barguil, et al.         Expires October 11, 2021               [Page 99]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                              "Options for IS-IS authentication.";
+                            case auth-key-chain {
+                              leaf key-chain {
+                                type key-chain:key-chain-ref;
                                 description
                                   "key-chain name.";
                               }
@@ -5590,10 +5594,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         type identityref {
                           base vpn-common:address-family;
                         }
-                        description
-                          "Indicates whether IPv4, IPv6, or both
-                           address families are to be activated.";
-                      }
 
 
 
@@ -5602,6 +5602,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 100]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                        description
+                          "Indicates whether IPv4, IPv6, or both
+                           address families are to be activated.";
+                      }
                       container timers {
                         description
                           "Indicates the RIP timers.";
@@ -5646,10 +5650,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                             range "1..32767";
                           }
                           units "seconds";
-                          default "180";
-                          description
-                            "Indicates the RIP  flush timer. That is,
-                             the amount of time that must elapse before
 
 
 
@@ -5658,6 +5658,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 101]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          default "180";
+                          description
+                            "Indicates the RIP  flush timer. That is,
+                             the amount of time that must elapse before
                              a route is removed from the routing
                              table.";
                         }
@@ -5702,10 +5706,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                                   "RIP authentication key.";
                               }
                               leaf crypto-algorithm {
-                                type identityref {
-                                  base key-chain:crypto-algorithm;
-                                }
-                                description
 
 
 
@@ -5714,6 +5714,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 102]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                                type identityref {
+                                  base key-chain:crypto-algorithm;
+                                }
+                                description
                                   "Indicates the cryptographic algorithm
                                    associated with the key.";
                               }
@@ -5758,10 +5762,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       leaf priority {
                         type uint8 {
                           range "1..254";
-                        }
-                        default "100";
-                        description
-                          "Sets the local priority of the VRRP
 
 
 
@@ -5770,6 +5770,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 103]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                        }
+                        default "100";
+                        description
+                          "Sets the local priority of the VRRP
                            speaker.";
                       }
                       leaf ping-reply {
@@ -5814,10 +5818,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                              customer to use this function,
                              the fixed-value will not be set.";
                         }
-                      }
-                      case profile {
-                        description
-                          "Well-known SP profile.";
 
 
 
@@ -5826,6 +5826,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 104]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                      }
+                      case profile {
+                        description
+                          "Well-known SP profile.";
                         leaf profile-name {
                           type leafref {
                             path "/l3vpn-ntw/vpn-profiles"
@@ -5870,10 +5874,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     if-feature "vpn-common:encryption";
                     description
                       "Container for CE-PE security encryption.";
-                    leaf enabled {
-                      type boolean;
-                      default "false";
-                      description
 
 
 
@@ -5882,6 +5882,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 105]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                    leaf enabled {
+                      type boolean;
+                      default "false";
+                      description
                         "If true, traffic encryption on the
                          connection is required. It is
                          disabled, otherwise.";
@@ -5926,10 +5930,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                           type leafref {
                             path "/l3vpn-ntw/vpn-profiles"
                                + "/valid-provider-identifiers"
-                               + "/encryption-profile-identifier/id";
-                          }
-                          description
-                            "Name of the service provider's profile
 
 
 
@@ -5938,6 +5938,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 106]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                               + "/encryption-profile-identifier/id";
+                          }
+                          description
+                            "Name of the service provider's profile
                              to be applied.";
                         }
                       }
@@ -5982,10 +5986,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       "MTU at service level.  If the service is IP,
                        it refers to the IP MTU.  If CsC is enabled,
                        the requested MTU will refer
-                       to the MPLS MTU and not to the IP MTU.";
-                  }
-                  container qos {
-                    if-feature "vpn-common:qos";
 
 
 
@@ -5994,6 +5994,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 107]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                       to the MPLS MTU and not to the IP MTU.";
+                  }
+                  container qos {
+                    if-feature "vpn-common:qos";
                     description
                       "QoS configuration.";
                     container qos-classification-policy {
@@ -6038,10 +6042,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                             fraction-digits 5;
                             range "0..100";
                           }
-                          units "percent";
-                          description
-                            "Specifies whether/how to rate-limit the
-                             outbound traffic matching this QoS policy.
 
 
 
@@ -6050,6 +6050,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 108]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                          units "percent";
+                          description
+                            "Specifies whether/how to rate-limit the
+                             outbound traffic matching this QoS policy.
                              It is expressed as a percent of the value
                              that is indicated in 'output-bandwidth'.";
                         }
@@ -6094,10 +6098,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                        customer builds an MPLSservice using an
                        IP VPN to carry its traffic).";
                     leaf signalling-type {
-                      type enumeration {
-                        enum ldp {
-                          description
-                            "Use LDP as the signalling protocol
 
 
 
@@ -6106,6 +6106,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 109]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                      type enumeration {
+                        enum ldp {
+                          description
+                            "Use LDP as the signalling protocol
                              between the PE and the CE.  In this
                              case, an IGP routing protocol must
                              also be activated.";
@@ -6150,10 +6154,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                       default "source-receiver";
                       description
                         "Type of multicast site.";
-                    }
-                    leaf address-family {
-                      type identityref {
-                        base vpn-common:address-family;
 
 
 
@@ -6162,6 +6162,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 110]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                    }
+                    leaf address-family {
+                      type identityref {
+                        base vpn-common:address-family;
                       }
                       description
                         "Indicates the address family.";
@@ -6206,10 +6210,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     container igmp {
                       when "../protocol-type = 'host' and "
-                         + "../address-family = 'vpn-common:ipv4' or "
-                         + "'vpn-common:dual-stack'";
-                      if-feature "vpn-common:igmp";
-                      description
 
 
 
@@ -6218,6 +6218,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 111]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                         + "../address-family = 'vpn-common:ipv4' or "
+                         + "'vpn-common:dual-stack'";
+                      if-feature "vpn-common:igmp";
+                      description
                         "Includes IGMP-related parameters.";
                       list static-group {
                         key "group-addr";
@@ -6262,10 +6266,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     container mld {
                       when "../protocol-type = 'host' and "
-                         + "../address-family = 'vpn-common:ipv6' or "
-                         + "'vpn-common:dual-stack'";
-                      if-feature "vpn-common:mld";
-                      description
 
 
 
@@ -6274,6 +6274,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 112]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                         + "../address-family = 'vpn-common:ipv6' or "
+                         + "'vpn-common:dual-stack'";
+                      if-feature "vpn-common:mld";
+                      description
                         "Includes MLD-related parameters.";
                       list static-group {
                         key "group-addr";
@@ -6318,10 +6322,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     }
                     container pim {
                       when "../protocol-type = 'router'";
-                      if-feature "vpn-common:pim";
-                      description
-                        "Only applies when protocol type is PIM.";
-                      leaf hello-interval {
 
 
 
@@ -6330,6 +6330,10 @@ Barguil, et al.         Expires October 11, 2021              [Page 113]
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
+                      if-feature "vpn-common:pim";
+                      description
+                        "Only applies when protocol type is PIM.";
+                      leaf hello-interval {
                         type rt-types:timer-value-seconds16;
                         default "30";
                         description
@@ -6374,10 +6378,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
    The YANG module specified in this document defines schema for data
    that is designed to be accessed via network management protocols such
    as NETCONF [RFC6241] or RESTCONF [RFC8040] . The lowest NETCONF layer
-   is the secure transport layer, and the mandatory-to-implement secure
-   transport is Secure Shell (SSH) [RFC6242].  The lowest RESTCONF layer
-   is HTTPS, and the mandatory-to-implement secure transport is TLS
-   [RFC8466].
 
 
 
@@ -6385,6 +6385,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 114]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   is the secure transport layer, and the mandatory-to-implement secure
+   transport is Secure Shell (SSH) [RFC6242].  The lowest RESTCONF layer
+   is HTTPS, and the mandatory-to-implement secure transport is TLS
+   [RFC8466].
 
    The Network Configuration Access Control Model (NACM) [RFC8341]
    provides the means to restrict access for particular NETCONF or
@@ -6428,11 +6433,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
       Disclosing such information may be considered as a violation of
       the customer-provider trust relationship.
 
-   The following summarizes the foreseen risks of using the "ietf-l3vpn-
-   ntw" module can be classified into:
-
-   o  Malicious clients attempting to delete or modify VPN services.
-
 
 
 
@@ -6441,6 +6441,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 115]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   The following summarizes the foreseen risks of using the "ietf-l3vpn-
+   ntw" module can be classified into:
+
+   o  Malicious clients attempting to delete or modify VPN services.
 
    o  Unauthorized clients attempting to create/modify/delete a VPN
       service.
@@ -6484,11 +6489,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC2080, January 1997,
               <https://www.rfc-editor.org/info/rfc2080>.
 
-   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997,
-              <https://www.rfc-editor.org/info/rfc2119>.
-
 
 
 
@@ -6497,6 +6497,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 116]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
 
    [RFC2236]  Fenner, W., "Internet Group Management Protocol, Version
               2", RFC 2236, DOI 10.17487/RFC2236, November 1997,
@@ -6542,17 +6547,17 @@ Internet-Draft               L3NM YANG Model                  April 2021
               for OSPFv3", RFC 4552, DOI 10.17487/RFC4552, June 2006,
               <https://www.rfc-editor.org/info/rfc4552>.
 
-   [RFC4577]  Rosen, E., Psenak, P., and P. Pillay-Esnault, "OSPF as the
-              Provider/Customer Edge Protocol for BGP/MPLS IP Virtual
-              Private Networks (VPNs)", RFC 4577, DOI 10.17487/RFC4577,
-              June 2006, <https://www.rfc-editor.org/info/rfc4577>.
-
 
 
 Barguil, et al.         Expires October 11, 2021              [Page 117]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC4577]  Rosen, E., Psenak, P., and P. Pillay-Esnault, "OSPF as the
+              Provider/Customer Edge Protocol for BGP/MPLS IP Virtual
+              Private Networks (VPNs)", RFC 4577, DOI 10.17487/RFC4577,
+              June 2006, <https://www.rfc-editor.org/info/rfc4577>.
 
    [RFC5340]  Coltun, R., Ferguson, D., Moy, J., and A. Lindem, "OSPF
               for IPv6", RFC 5340, DOI 10.17487/RFC5340, July 2008,
@@ -6598,17 +6603,17 @@ Internet-Draft               L3NM YANG Model                  April 2021
               BGP IP VPNs", RFC 6513, DOI 10.17487/RFC6513, February
               2012, <https://www.rfc-editor.org/info/rfc6513>.
 
-   [RFC6514]  Aggarwal, R., Rosen, E., Morin, T., and Y. Rekhter, "BGP
-              Encodings and Procedures for Multicast in MPLS/BGP IP
-              VPNs", RFC 6514, DOI 10.17487/RFC6514, February 2012,
-              <https://www.rfc-editor.org/info/rfc6514>.
-
 
 
 Barguil, et al.         Expires October 11, 2021              [Page 118]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC6514]  Aggarwal, R., Rosen, E., Morin, T., and Y. Rekhter, "BGP
+              Encodings and Procedures for Multicast in MPLS/BGP IP
+              VPNs", RFC 6514, DOI 10.17487/RFC6514, February 2012,
+              <https://www.rfc-editor.org/info/rfc6514>.
 
    [RFC6565]  Pillay-Esnault, P., Moyer, P., Doyle, J., Ertekin, E., and
               M. Lundberg, "OSPFv3 as a Provider Edge to Customer Edge
@@ -6652,11 +6657,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC8177, June 2017,
               <https://www.rfc-editor.org/info/rfc8177>.
 
-   [RFC8294]  Liu, X., Qu, Y., Lindem, A., Hopps, C., and L. Berger,
-              "Common YANG Data Types for the Routing Area", RFC 8294,
-              DOI 10.17487/RFC8294, December 2017,
-              <https://www.rfc-editor.org/info/rfc8294>.
-
 
 
 
@@ -6665,6 +6665,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 119]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC8294]  Liu, X., Qu, Y., Lindem, A., Hopps, C., and L. Berger,
+              "Common YANG Data Types for the Routing Area", RFC 8294,
+              DOI 10.17487/RFC8294, December 2017,
+              <https://www.rfc-editor.org/info/rfc8294>.
 
    [RFC8341]  Bierman, A. and M. Bjorklund, "Network Configuration
               Access Control Model", STD 91, RFC 8341,
@@ -6709,11 +6714,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               Multicast (PIM)", draft-ietf-pim-yang-17 (work in
               progress), May 2018.
 
-   [I-D.ietf-rtgwg-qos-model]
-              Choudhary, A., Jethanandani, M., Strahle, N., Aries, E.,
-              and I. Chen, "YANG Model for QoS", draft-ietf-rtgwg-qos-
-              model-02 (work in progress), July 2020.
-
 
 
 
@@ -6721,6 +6721,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 120]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [I-D.ietf-rtgwg-qos-model]
+              Choudhary, A., Jethanandani, M., Strahle, N., Aries, E.,
+              and I. Chen, "YANG Model for QoS", draft-ietf-rtgwg-qos-
+              model-02 (work in progress), July 2020.
 
    [I-D.ietf-teas-enhanced-vpn]
               Dong, J., Bryant, S., Li, Z., Miyasaka, T., and Y. Lee, "A
@@ -6763,11 +6768,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               DOI 10.17487/RFC4176, October 2005,
               <https://www.rfc-editor.org/info/rfc4176>.
 
-   [RFC4862]  Thomson, S., Narten, T., and T. Jinmei, "IPv6 Stateless
-              Address Autoconfiguration", RFC 4862,
-              DOI 10.17487/RFC4862, September 2007,
-              <https://www.rfc-editor.org/info/rfc4862>.
-
 
 
 
@@ -6777,6 +6777,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 121]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC4862]  Thomson, S., Narten, T., and T. Jinmei, "IPv6 Stateless
+              Address Autoconfiguration", RFC 4862,
+              DOI 10.17487/RFC4862, September 2007,
+              <https://www.rfc-editor.org/info/rfc4862>.
 
    [RFC6037]  Rosen, E., Ed., Cai, Y., Ed., and IJ. Wijnands, "Cisco
               Systems' Solution for Multicast in BGP/MPLS IP VPNs",
@@ -6821,11 +6826,6 @@ Internet-Draft               L3NM YANG Model                  April 2021
               BCP 215, RFC 8340, DOI 10.17487/RFC8340, March 2018,
               <https://www.rfc-editor.org/info/rfc8340>.
 
-   [RFC8342]  Bjorklund, M., Schoenwaelder, J., Shafer, P., Watsen, K.,
-              and R. Wilton, "Network Management Datastore Architecture
-              (NMDA)", RFC 8342, DOI 10.17487/RFC8342, March 2018,
-              <https://www.rfc-editor.org/info/rfc8342>.
-
 
 
 
@@ -6833,6 +6833,11 @@ Barguil, et al.         Expires October 11, 2021              [Page 122]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
+
+   [RFC8342]  Bjorklund, M., Schoenwaelder, J., Shafer, P., Watsen, K.,
+              and R. Wilton, "Network Management Datastore Architecture
+              (NMDA)", RFC 8342, DOI 10.17487/RFC8342, March 2018,
+              <https://www.rfc-editor.org/info/rfc8342>.
 
    [RFC8345]  Clemm, A., Medved, J., Varga, R., Bahadur, N.,
               Ananthakrishnan, H., and X. Liu, "A YANG Data Model for
@@ -6862,374 +6867,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 Appendix A.  L3VPN Examples
 
-A.1.  VPN Instance Profile
-
-   <<<<To be updated+add some description>>>>
-
-{
-  "ietf-l3vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "sample-vpn",
-        "vpn-service-topology": "vpn-common:hub-spoke",
-        "vpn-instance-profiles": {
-          "vpn-instance-profile": [
-            {
-              "profile-id": "HUB",
-              "role": "vpn-common:hub-role",
-              "local-autonomous-system": 64510,
-              "rd-suffix": "0:0:1001",
-              "address-family": [
-                {
-                  "address-family": "vpn-common:dual-stack",
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 123]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                  "vpn-targets": {
-                    "vpn-target": [
-                      {
-                        "id": 1,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1001"
-                          },
-                          {
-                            "route-target": "0:64512:1001"
-                          }
-                        ],
-                        "route-target-type": "both"
-                      },
-                      {
-                        "id": 2,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1002"
-                          }
-                        ],
-                        "route-target-type": "import"
-                      }
-                    ]
-                  },
-                  "maximum-routes": [
-                    {
-                      "protocol": "vpn-common:any",
-                      "maximum-routes": 100
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "profile-id": "SPOKE",
-              "role": "vpn-common:spoke-role",
-              "local-autonomous-system": 64510,
-              "rd": "0:64510:1002",
-              "address-family": [
-                {
-                  "address-family": "vpn-common:dual-stack",
-                  "vpn-targets": {
-                    "vpn-target": [
-                      {
-                        "id": 1,
-                        "route-targets": [
-                          {
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 124]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                            "route-target": "0:64510:1001"
-                          },
-                          {
-                            "route-target": "0:64512:1001"
-                          }
-                        ],
-                        "route-target-type": "import"
-                      },
-                      {
-                        "id": 2,
-                        "route-targets": [
-                          {
-                            "route-target": "0:64510:1002"
-                          },
-                          {
-                            "route-target": "0:64512:1002"
-                          }
-                        ],
-                        "route-target-type": "both"
-                      }
-                    ]
-                  },
-                  "maximum-routes": [
-                    {
-                      "protocol": "vpn-common:any",
-                      "maximum-routes": 1000
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        "vpn-nodes": {
-          "vpn-node": [
-            {
-              "vpn-node-id": "PE1",
-              "ne-id": "pe1",
-              "router-id": "198.51.100.1",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "HUB",
-                    "rd": "1:198.51.100.1:1001",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-                        "maximum-routes": [
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 125]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 10
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "profile-id": "SPOKE"
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "HUB",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1001:100::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1001:100::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  },
-                  {
-                    "id": "xe-0/0/0.10001",
-                    "vpn-instance-profile": "SPOKE",
-                    "connection": {
-                      "logical-interface": {
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 126]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                        "peer-reference": "10001"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1002:100::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1002:100::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "vpn-node-id": "PE2",
-              "ne-id": "pe2",
-              "router-id": "198.51.100.2",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "HUB",
-                    "rd": "1:198.51.100.2:1001"
-                  },
-                  {
-                    "profile-id": "SPOKE",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-                        "maximum-routes": [
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 100
-                          }
-                        ]
-                      }
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 127]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                    ]
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "HUB",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1001:200::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "prefix-id": "1",
-                            "customer-prefix": "2001:db8:1001:200::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "vpn-node-id": "PE3",
-              "ne-id": "pe3",
-              "router-id": "198.51.100.3",
-              "active-vpn-instance-profiles": {
-                "vpn-instance-profile": [
-                  {
-                    "profile-id": "SPOKE",
-                    "address-family": [
-                      {
-                        "address-family": "vpn-common:dual-stack",
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 128]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-                        "maximum-routes": [
-                          {
-                            "protocol": "vpn-common:any",
-                            "maximum-routes": 500
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              "vpn-network-accesses": {
-                "vpn-network-access": [
-                  {
-                    "id": "xe-0/0/0.10000",
-                    "vpn-instance-profile": "SPOKE",
-                    "connection": {
-                      "logical-interface": {
-                        "peer-reference": "10000"
-                      }
-                    },
-                    "ip-connection": {
-                      "ipv6": {
-                        "local-address": "2001:db8:1002:200::1",
-                        "prefix-length": 127,
-                        "address-allocation-type": "ietf-l3vpn-ntw:static-address",
-                        "primary-address": "1",
-                        "address": [
-                          {
-                            "address-id": "1",
-                            "customer-address": "2001:db8:1002:200::"
-                          }
-                        ]
-                      }
-                    },
-                    "service": {
-                      "input-bandwidth": "100000000",
-                      "output-bandwidth": "100000000",
-                      "mtu": 1500
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 129]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-  }
-}
-
-A.2.  4G VPN Provisioning Example
+A.1.  4G VPN Provisioning Example
 
    L3VPNs are widely used to deploy 3G/4G, fixed, and enterprise
    services mainly because several traffic discrimination policies can
@@ -7242,6 +6880,15 @@ A.2.  4G VPN Provisioning Example
    are configured in a VPN that transports the packets to the mobile
    core platforms.  In this example, a 'vpn-node' is created with two
    'vpn-network-accesses'.
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 123]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
 
          +-------------+                  +------------------+
          |             |                  | PE               |
@@ -7259,8 +6906,8 @@ A.2.  4G VPN Provisioning Example
 
                     Figure 31: Mobile Backhaul Example
 
-   To create a L3VPN service using the L3NM, the following sample steps
-   can be followed:
+   To create a L3VPN service using the L3NM, the following steps can be
+   followed.
 
    First: Create the 4G VPN service (Figure 32).
 
@@ -7277,27 +6924,69 @@ A.2.  4G VPN Provisioning Example
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 130]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 124]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-        POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
-        Host: example.com
-        Content-Type: application/yang-data+json
+       POST: /restconf/data/ietf-l3vpn-ntw:l3vpn-ntw/vpn-services
+       Host: example.com
+       Content-Type: application/yang-data+json
 
-        {
-          "ietf-l3vpn-ntw:vpn-services": {
-            "vpn-service": [
-              {
-                "vpn-id": "4G",
-                "customer-name": "mycustomer",
-                "vpn-service-topology": "custom",
-                "description": "VPN to deploy 4G services"
-              }
-            ]
-          }
-        }
+       {
+         "ietf-l3vpn-ntw:vpn-services": {
+           "vpn-service": [
+             {
+               "vpn-id": "4G",
+               "customer-name": "mycustomer",
+               "vpn-service-topology": "custom",
+               "description": "VPN to deploy 4G services",
+               "vpn-instance-profiles": {
+                 "vpn-instance-profile": [
+                   {
+                     "profile-id": "simple-profile",
+                     "local-autonomous-system": 65550,
+                     "rd": "0:65550:1",
+                     "address-family": [
+                       {
+                         "address-family": "vpn-common:dual-stack",
+                         "vpn-targets": {
+                           "vpn-target": [
+                             {
+                               "id": "1",
+                               "route-targets": [
+                                 "0:65550:1"
+                               ],
+                               "route-target-type": "both"
+                             }
+                           ]
+                         }
+                       }
+                     ]
+                   }
+                 ]
+               }
+             }
+           ]
+         }
+       }
 
                        Figure 32: Create VPN Service
 
@@ -7308,32 +6997,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 131]
+Barguil, et al.         Expires October 11, 2021              [Page 125]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -7349,16 +7013,10 @@ Internet-Draft               L3NM YANG Model                  April 2021
                     {
                       "vpn-node-id": "44",
                       "ne-id": "198.51.100.1",
-                      "local-autonomous-system": "65550",
-                      "rd": "0:65550:1",
-                      "vpn-targets": {
-                        "vpn-target": [
+                      "active-vpn-instance-profiles": {
+                        "vpn-instance-profile": [
                           {
-                            "id": "1",
-                            "route-targets": [
-                              "0:65550:1"
-                            ],
-                            "route-target-type": "both"
+                            "profile-id": "simple-profile"
                           }
                         ]
                       }
@@ -7386,21 +7044,22 @@ Internet-Draft               L3NM YANG Model                  April 2021
               "port-id": "1/1/1",
               "description": "Interface SYNC to eNODE-B",
               "admin-status": {
+                "status": "vpn-common:administrative-state-up"
+              },
+              "vpn-network-access-type": "vpn-common:point-to-point",
+              "vpn-instance-profile": "simple-profile",
+              "ip-connection": {
+                "ipv4": {
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 132]
+Barguil, et al.         Expires October 11, 2021              [Page 126]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
 
-                "status": "vpn-common:administrative-state-up"
-              },
-              "vpn-network-access-type": "vpn-common:point-to-point",
-              "ip-connection": {
-                "ipv4": {
                   "local-address": "192.0.2.1",
-                  "prefix-length": 31,
+                  "prefix-length": 30,
                   "address-allocation-type": "static-address",
                   "static-addresses": {
                     "primary-address": "1",
@@ -7429,10 +7088,11 @@ Internet-Draft               L3NM YANG Model                  April 2021
               "admin-status": {
                 "status": "vpn-common:administrative-state-up"
               },
+              "vpn-instance-profile": "simple-profile",
               "ip-connection": {
                 "ipv4": {
                   "local-address": "192.0.2.1",
-                  "prefix-length": 31,
+                  "prefix-length": 30,
                   "address-allocation-type": "static-address",
                   "static-addresses": {
                     "primary-address": "1",
@@ -7442,18 +7102,18 @@ Internet-Draft               L3NM YANG Model                  April 2021
                         "customer-address": "192.0.2.2"
                       }
                     ]
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 133]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
                   }
                 }
               },
               "routing-protocols": {
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 127]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
                 "routing-protocol": [
                   {
                     "id": "1",
@@ -7468,7 +7128,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
                    Figure 34: Create VPN Network Access
 
-A.3.  Create Loopback Interfaces
+A.2.  Create Loopback Interfaces
 
    An example of creating a loopback interface is depicted in Figure 35.
 
@@ -7496,22 +7156,20 @@ A.3.  Create Loopback Interfaces
 
            Figure 35: Create a Loopback Interface (Message Body)
 
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 134]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
-A.4.  Multicast VPN Provisioning Example
+A.3.  Multicast VPN Provisioning Example
 
    IPTV is mainly distributed through multicast over the LANs.  In the
    following example, PIM-SM is enabled and functional between the PE
    and the CE.  The PE receives multicast traffic from a CE that is
    directly connected to the multicast source.  The signaling between PE
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 128]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    and CE is achieved using BGP.  Also, RP is statically configured for
    a multicast group.
 
@@ -7557,7 +7215,13 @@ A.4.  Multicast VPN Provisioning Example
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 135]
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 129]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -7613,7 +7277,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 136]
+Barguil, et al.         Expires October 11, 2021              [Page 130]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -7660,7 +7324,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
          "ip-connection": {
            "ipv4": {
              "local-address": "203.0.113.1",
-             "prefix-length": 31,
+             "prefix-length": 30,
              "address-allocation-type": "static-address",
              "static-addresses": {
                "primary-address": "1",
@@ -7669,7 +7333,7 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-Barguil, et al.         Expires October 11, 2021              [Page 137]
+Barguil, et al.         Expires October 11, 2021              [Page 131]
 
 Internet-Draft               L3NM YANG Model                  April 2021
 
@@ -7696,6 +7360,9 @@ Internet-Draft               L3NM YANG Model                  April 2021
            ]
          },
          "service": {
+           "input-bandwidth": "100000000",
+           "output-bandwidth": "100000000",
+           "mtu": 1500,
            "multicast": {
              "multicast-site-type": "source-only",
              "address-family": "vpn-common:ipv4",
@@ -7717,19 +7384,21 @@ Internet-Draft               L3NM YANG Model                  April 2021
    Figure 39: Create VPN Network Access (Excerpt of the Message Request
                                    Body)
 
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 132]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
 Appendix B.  Implementation Status
 
    This section records the status of known implementations of the YANG
    module defined by this specification at the time of posting of this
    document and is based on a proposal described in [RFC7942].  The
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 138]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
-
    description of implementations in this section is intended to assist
    the IETF in its decision processes in progressing drafts to RFCs.
    Please note that the listing of any individual implementation here
@@ -7770,6 +7439,17 @@ B.4.  Ribbon-ECI Implementation
    Details can be found at: https://github.com/IETF-OPSAWG-
    WG/l3nm/blob/master/Implementattion/Ribbon-ECI.txt
 
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 133]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
 Acknowledgements
 
    During the discussions of this work, helpful comments, suggestions,
@@ -7778,13 +7458,6 @@ Acknowledgements
    Gagliano, Christian Jacquenet, Kireeti Kompella, and Julian Lucek.
    Many thanks to them.  Thanks to Philip Eardly for the review of an
    early version of the document.
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 139]
-
-Internet-Draft               L3NM YANG Model                  April 2021
-
 
    Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
    contributed to early version of the individual submission.
@@ -7822,24 +7495,23 @@ Contributors
 
 Authors' Addresses
 
+
+
+
+
+
+
+Barguil, et al.         Expires October 11, 2021              [Page 134]
+
+Internet-Draft               L3NM YANG Model                  April 2021
+
+
    Samier Barguil
    Telefonica
    Madrid
    ES
 
    Email: samier.barguilgiraldo.ext@telefonica.com
-
-
-
-
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 140]
-
-Internet-Draft               L3NM YANG Model                  April 2021
 
 
    Oscar Gonzalez de Dios (editor)
@@ -7885,12 +7557,4 @@ Internet-Draft               L3NM YANG Model                  April 2021
 
 
 
-
-
-
-
-
-
-
-
-Barguil, et al.         Expires October 11, 2021              [Page 141]
+Barguil, et al.         Expires October 11, 2021              [Page 135]
