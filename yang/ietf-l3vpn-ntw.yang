@@ -87,6 +87,30 @@ module ietf-l3vpn-ntw {
 
   /* Identities */
 
+  identity l2-tunnel-type {
+    description
+    "Base identity for layer-2 tunnel selection under the VPN Network Access.";
+  }
+
+
+  identity pseudowire {
+    base l2-tunnel-type;
+    description
+    "Pseudowire tunnel termination in the VPN Network Access.";
+  }
+
+  identity vpls {
+    base l2-tunnel-type;
+    description
+    "VPLS tunnel termination in the VPN Network Access.";
+  }
+
+  identity vxlan {
+    base l2-tunnel-type;
+    description
+    "VXLAN tunnel termination in the VPN Network Access.";
+  }
+
   identity address-allocation-type {
     description
       "Base identity for address allocation type in the
@@ -757,14 +781,18 @@ module ietf-l3vpn-ntw {
                 container connection {
                   description
                     "Encapsulation types.";
-                  leaf encapsulation-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
+                  leaf l2-termination-point {
+                      type vpn-common:vpn-id;
+                      description
+                        "todo";
                     }
-                    default "vpn-common:untagged-int";
+                  leaf local-bridge-reference {
+                    type vpn-common:vpn-id;
                     description
-                      "Encapsulation type. By default, the encapsulation
-                       type is set to 'untagged'.";
+                      "Specifies a local bridge reference to
+                       accommodate, for example, implementations
+                       that require internal bridging.
+                       A reference may be a local bridge domain.";
                   }
                   leaf local-bridge-reference {
                     type vpn-common:vpn-id;
@@ -792,7 +820,7 @@ module ietf-l3vpn-ntw {
                          interface.";
                     }
                   }
-                  container tagged-interface {
+                  container encapsulation {
                     description
                       "Container for tagged interfaces.";
                     leaf type {
@@ -804,7 +832,7 @@ module ietf-l3vpn-ntw {
                         "Tagged interface type. By default, the type of
                          the tagged interface is 'priority-tagged'.";
                     }
-                    container dot1q-vlan-tagged {
+                    container dot1q {
                       when "derived-from-or-self(../type, "
                          + "'vpn-common:dot1q')" {
                         description
@@ -827,25 +855,6 @@ module ietf-l3vpn-ntw {
                         type uint16;
                         description
                           "VLAN identifier.";
-                      }
-                    }
-                    container priority-tagged {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:priority-tagged')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'priority-tagged'.";
-                      }
-                      description
-                        "Priority tagged.";
-                      leaf tag-type {
-                        type identityref {
-                          base vpn-common:tag-type;
-                        }
-                        default "vpn-common:c-vlan";
-                        description
-                          "Tag type. By default, the tag type is
-                           'c-vlan'.";
                       }
                     }
                     container qinq {
@@ -880,74 +889,21 @@ module ietf-l3vpn-ntw {
                           "CVLAN identifier.";
                       }
                     }
-                    container qinany {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:qinany')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'qinany'.";
-                      }
-                      if-feature "vpn-common:qinany";
-                      description
-                        "Container for QinAny.";
-                      leaf tag-type {
-                        type identityref {
-                          base vpn-common:tag-type;
-                        }
-                        default "vpn-common:s-vlan";
-                        description
-                          "Tag type. By default, the tag type is
-                           's-vlan'.";
-                      }
-                      leaf svlan-id {
-                        type uint16;
-                        mandatory true;
-                        description
-                          "Service VLAN ID.";
-                      }
-                    }
-                    container vxlan {
-                      when "derived-from-or-self(../type, "
-                         + "'vpn-common:vxlan')" {
-                        description
-                          "Only applies when the type of the
-                           tagged interface is 'vxlan'.";
-                      }
-                      if-feature "vpn-common:vxlan";
-                      description
-                        "QinQ.";
-                      leaf vni-id {
-                        type uint32;
-                        mandatory true;
-                        description
-                          "VXLAN Network Identifier (VNI).";
-                      }
-                      leaf peer-mode {
-                        type identityref {
-                          base vpn-common:vxlan-peer-mode;
-                        }
-                        default "vpn-common:static-mode";
-                        description
-                          "Specifies the VXLAN access mode. By default,
-                           the peer mode is set to 'static-mode'.";
-                      }
-                      leaf-list peer-ip-address {
-                        type inet:ip-address;
-                        description
-                          "List of peer's IP addresses.";
-                      }
-                    }
                   }
-                  container bearer {
+                  container l2-tunnel-service {
                     description
-                      "Defines physical properties of a site
-                       attachment.";
-                    leaf bearer-reference {
-                      if-feature "vpn-common:bearer-reference";
-                      type string;
+                      "Defines a remote tunnel termination.
+                      This container is only present when the 
+                      termination point is done via tunnel. The 
+                      possible values can be extended in the future;
+                      the supported values are: Pseudowire, VPLs and 
+                      VXLAN.";
+                    leaf type {
+                      type identityref {
+                        base l2-tunnel-type;
+                      }
                       description
-                        "This is an internal reference for the service
-                         provider.";
+                        "Select the tunnel termiantion options foreach vpn-network-access.";
                     }
                     container pseudowire {
                       description
@@ -987,11 +943,49 @@ module ietf-l3vpn-ntw {
                           "SDP/Far End/LDP neighbour reference.";
                       }
                     }
+                    container vxlan {
+                        description
+                          "Only applies when the type of the
+                           tagged interface is 'vxlan'.";
+                      if-feature "vpn-common:vxlan";
+                      leaf vni-id {
+                        type uint32;
+                        mandatory true;
+                        description
+                          "VXLAN Network Identifier (VNI).";
+                      }
+                      leaf peer-mode {
+                        type identityref {
+                          base vpn-common:vxlan-peer-mode;
+                        }
+                        default "vpn-common:static-mode";
+                        description
+                          "Specifies the VXLAN access mode. By default,
+                           the peer mode is set to 'static-mode'.";
+                      }
+                      leaf-list peer-ip-address {
+                        type inet:ip-address;
+                        description
+                          "List of peer's IP addresses.";
+                      }
+                    }
+                    leaf bearer-reference {
+                      if-feature "vpn-common:bearer-reference";
+                      type string;
+                      description
+                        "This is an internal reference for the service
+                        provider.";
+                    }
                   }
                 }
                 container ip-connection {
                   description
                     "Defines IP connection parameters.";
+                  leaf l3-termination-point {
+                      type vpn-common:vpn-id;
+                      description
+                      "todo";
+                    }
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
                     description
