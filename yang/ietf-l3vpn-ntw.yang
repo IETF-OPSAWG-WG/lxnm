@@ -87,6 +87,30 @@ module ietf-l3vpn-ntw {
 
   /* Identities */
 
+  identity l2-tunnel-type {
+    description
+    "Base identity for layer-2 tunnel selection under the VPN Network Access.";
+  }
+
+
+  identity pseudowire {
+    base l2-tunnel-type;
+    description
+    "Pseudowire tunnel termination in the VPN Network Access.";
+  }
+
+  identity vpls {
+    base l2-tunnel-type;
+    description
+    "VPLS tunnel termination in the VPN Network Access.";
+  }
+
+  identity vxlan {
+    base l2-tunnel-type;
+    description
+    "VXLAN tunnel termination in the VPN Network Access.";
+  }
+
   identity address-allocation-type {
     description
       "Base identity for address allocation type in the
@@ -753,32 +777,15 @@ module ietf-l3vpn-ntw {
                   description
                     "An identifier of an active VPN instance profile.";
                 }
-                leaf bearer-reference {
-                    if-feature "vpn-common:bearer-reference";
-                    type string;
-                    description
-                      "This is an internal reference for the service
-                      provider.";
-                  }
                 uses vpn-common:service-status;
                 container connection {
                   description
                     "Encapsulation types.";
-                  leaf connection-type {
-                    type enumeration {
-                        enum LOCAL {
-                          description
-                            "Local termination of the VPN network access.";
-                        }
-                        enum REMOTE {
-                          description
-                            "Remote termination of the VPN network access.";
-                        }
+                  leaf l2-termination-point {
+                      type vpn-common:vpn-id;
+                      description
+                        "todo";
                     }
-                    description
-                      "Encapsulation type. By default, the encapsulation
-                       type is set to 'untagged'.";
-                  }
                   leaf local-bridge-reference {
                     type vpn-common:vpn-id;
                     description
@@ -875,10 +882,21 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container remote-endpoints {
+                  container l2-tunnel-service {
                     description
-                      "Defines physical properties of a site
-                       attachment.";
+                      "Defines a remote tunnel termination.
+                      This container is only present when the 
+                      termination point is done via tunnel. The 
+                      possible values can be extended in the future;
+                      the supported values are: Pseudowire, VPLs and 
+                      VXLAN.";
+                    leaf type {
+                      type identityref {
+                        base l2-tunnel-type;
+                      }
+                      description
+                        "Select the tunnel termiantion options foreach vpn-network-access.";
+                    }
                     container pseudowire {
                       description
                         "Pseudowire termination parameters";
@@ -922,8 +940,6 @@ module ietf-l3vpn-ntw {
                           "Only applies when the type of the
                            tagged interface is 'vxlan'.";
                       if-feature "vpn-common:vxlan";
-                      description
-                        "VxLAN.";
                       leaf vni-id {
                         type uint32;
                         mandatory true;
@@ -945,11 +961,23 @@ module ietf-l3vpn-ntw {
                           "List of peer's IP addresses.";
                       }
                     }
+                    leaf bearer-reference {
+                      if-feature "vpn-common:bearer-reference";
+                      type string;
+                      description
+                        "This is an internal reference for the service
+                        provider.";
+                    }
                   }
                 }
                 container ip-connection {
                   description
                     "Defines IP connection parameters.";
+                  leaf l3-termination-point {
+                      type vpn-common:vpn-id;
+                      description
+                      "todo";
+                    }
                   container ipv4 {
                     if-feature "vpn-common:ipv4";
                     description
