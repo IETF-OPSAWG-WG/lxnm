@@ -874,82 +874,97 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container l2-tunnel-service {
+                  choice l2-service {
                     description
-                      "Defines a layer 2 tunnel termination.
-                       It is only applicable when a tunnel is
-                       required. The supported values are:
-                       pseudowire, VPLS and, VXLAN. Other
-                       values may defined, if needed.";
-                    leaf type {
-                      type identityref {
-                        base l2-tunnel-type;
-                      }
+                      "The layer 2 connectivity service can be 
+                       provided by indicating a pointer to an L2VPN or
+                       by specifying a layer 2 tunnel service.";
+                    container l2-tunnel-service {
                       description
-                        "Selects the tunnel termiantion option for
-                         each vpn-network-access.";
-                    }
-                    container pseudowire {
-                      description
-                        "Includes pseudowire termination parameters.";
-                      leaf vcid {
-                        type uint32;
-                        description
-                          "Indicates a PW or VC identifier.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
-                    container vpls {
-                      description
-                        "VPLS termination parameters.";
-                      leaf vcid {
-                        type union {
-                          type uint32;
-                          type string;
-                        }
-                        description
-                          "VCID identifier, IRB/RVPPLs interface
-                           supported using string format.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
-                    container vxlan {
-                      if-feature "vpn-common:vxlan";
-                      description
-                        "VXLAN termination parameters.";
-                      leaf vni-id {
-                        type uint32;
-                        mandatory true;
-                        description
-                          "VXLAN Network Identifier (VNI).";
-                      }
-                      leaf peer-mode {
+                        "Defines a layer 2 tunnel termination.
+                         It is only applicable when a tunnel is
+                         required. The supported values are:
+                         pseudowire, VPLS and, VXLAN. Other
+                         values may defined, if needed.";
+                      leaf type {
                         type identityref {
-                          base vpn-common:vxlan-peer-mode;
+                          base l2-tunnel-type;
                         }
-                        default "vpn-common:static-mode";
                         description
-                          "Specifies the VXLAN access mode. By default,
-                           the peer mode is set to 'static-mode'.";
+                          "Selects the tunnel termiantion option for
+                           each vpn-network-access.";
                       }
-                      leaf-list peer-ip-address {
-                        type inet:ip-address;
+                      container pseudowire {
                         description
-                          "List of peer's IP addresses.";
+                          "Includes pseudowire termination parameters.";
+                        leaf vcid {
+                          type uint32;
+                          description
+                            "Indicates a PW or VC identifier.";
+                        }
+                        leaf far-end {
+                          type union {
+                            type uint32;
+                            type inet:ip-address;
+                          }
+                          description
+                            "SDP/Far End/LDP neighbour reference.";
+                        }
+                      }
+                      container vpls {
+                        description
+                          "VPLS termination parameters.";
+                        leaf vcid {
+                          type union {
+                            type uint32;
+                            type string;
+                          }
+                          description
+                            "VCID identifier, IRB/RVPPLs interface
+                             supported using string format.";
+                        }
+                        leaf far-end {
+                          type union {
+                            type uint32;
+                            type inet:ip-address;
+                          }
+                          description
+                            "SDP/Far End/LDP neighbour reference.";
+                        }
+                      }
+                      container vxlan {
+                        if-feature "vpn-common:vxlan";
+                        description
+                          "VXLAN termination parameters.";
+                        leaf vni-id {
+                          type uint32;
+                          mandatory true;
+                          description
+                            "VXLAN Network Identifier (VNI).";
+                        }
+                        leaf peer-mode {
+                          type identityref {
+                            base vpn-common:vxlan-peer-mode;
+                          }
+                          default "vpn-common:static-mode";
+                          description
+                            "Specifies the VXLAN access mode. By default,
+                             the peer mode is set to 'static-mode'.";
+                        }
+                        leaf-list peer-ip-address {
+                          type inet:ip-address;
+                          description
+                            "List of peer's IP addresses.";
+                        }
+                      }
+                    }
+                    case l2vpn {
+                      leaf l2vpn-id {
+                        type vpn-common:vpn-id;
+                        description
+                          "Indicates the L2VPN service associated with an
+                           Integrated Routing and Bridging (IRB)
+                           interface.";
                       }
                     }
                   }
@@ -966,13 +981,6 @@ module ietf-l3vpn-ntw {
                        accommodate, for example, implementations
                        that require internal bridging.
                        A reference may be a local bridge domain.";
-                  }
-                  leaf l2vpn-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "Indicates the L2VPN service associated with an
-                       Integrated Routing and Bridging (IRB)
-                       interface.";
                   }
                   leaf bearer-reference {
                     if-feature "vpn-common:bearer-reference";
@@ -1017,8 +1025,7 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message 
-                          "SLAAC is only applicable to IPv6.";
+                        error-message "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated to the
@@ -2628,12 +2635,12 @@ module ietf-l3vpn-ntw {
                   container ntp {
                     description
                       "Time synchronization may be needed in some
-                       VPNs such as infrastructure and Management 
+                       VPNs such as infrastructure and Management
                        VPNs. This container includes parameters to
                        enable NTP service.";
                     reference
-                      "RFC 5905: Network Time Protocol Version 4: 
-                                 Protocol  and Algorithms 
+                      "RFC 5905: Network Time Protocol Version 4:
+                                 Protocol  and Algorithms
                                  Specification";
                     leaf broadcast {
                       type enumeration {
@@ -2649,7 +2656,7 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       description
-                        "Indicates NTP broadcast mode to use for the 
+                        "Indicates NTP broadcast mode to use for the
                          VPN network access.";
                     }
                     container auth-profile {
@@ -2658,7 +2665,7 @@ module ietf-l3vpn-ntw {
                       leaf profile-id {
                         type string;
                         description
-                          "A pointer to a local authentication 
+                          "A pointer to a local authentication
                            profile on the VPN node is provided.";
                       }
                     }
