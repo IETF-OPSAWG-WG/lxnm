@@ -1324,22 +1324,21 @@
             type of network interface to be deployed in the devices. The
             available defined values are: <list style="hanging">
                 <t hangText="'point-to-point':">Represents a direct connection
-                between the endpoints. It implies that the controller must
-                keep the association between a logical or physical interface
-                on the device with the 'id' of the 'vpn-network-access'.</t>
+                between the endpoints. The controller must keep the
+                association between a logical or physical interface on the
+                device with the 'id' of the 'vpn-network-access'.</t>
 
                 <t hangText="'multipoint':">Represents a broadcast connection
-                between the endpoints. It implies that the controller must
-                keep the association between a logical or physical interface
-                on the device with the 'id' of the 'vpn-network-access'.</t>
+                between the endpoints. The controller must keep the
+                association between a logical or physical interface on the
+                device with the 'id' of the 'vpn-network-access'.</t>
 
                 <t hangText="'irb':">Represents a connection coming from an
                 L2VPN service. An identifier of such service ('l2vpn-id') may
                 be included in the 'connection' container as depicted in <xref
-                target="bearerethencap_tree"></xref>. It implies that the
-                controller must keep the relationship between the logical
-                tunnels or bridges on the devices with the 'id' of the'
-                vpn-network-access'.</t>
+                target="bearerethencap_tree"></xref>. The controller must keep
+                the relationship between the logical tunnels or bridges on the
+                devices with the 'id' of the' vpn-network-access'.</t>
 
                 <t hangText="'loopback':">Represents the creation of a logical
                 interface on a device. An example to illustrate how a loopback
@@ -5845,7 +5844,7 @@ module ietf-l3vpn-ntw {
         <t>As it is shown in the <xref target="vpn-service-mbh"></xref>,
         typically, an eNodeB (CE) is directly connected to the access routers
         of the mobile backhaul and their logical interfaces (one or many
-        according to the Service type) are configured in a VPN that transports
+        according to the service type) are configured in a VPN that transports
         the packets to the mobile core platforms. In this example, a
         'vpn-node' is created with two 'vpn-network-accesses'.</t>
 
@@ -5854,11 +5853,11 @@ module ietf-l3vpn-ntw {
           <artwork align="left"><![CDATA[                   
       +-------------+                  +------------------+    
       |             |                  | PE               |
-      |             | 192.0.2.2        |  198.51.100.1    |
+      |             |                  |  198.51.100.1    |
       |   eNodeB    |>--------/------->|...........       | 
-      |             |          Vlan 1  |          |       |
+      |             |          vlan 1  |          |       |
       |             |>--------/------->|......    |       |
-      |             |          Vlan 2  |     |    |       |
+      |             |          vlan 2  |     |    |       |
       |             | Direct           |  +-------------+ |
       +-------------+ Routing          |  | vpn-node-id | |
                                        |  | 44          | | 
@@ -5965,14 +5964,24 @@ content-type: application/yang-data+json
   "ietf-l3vpn-ntw:vpn-network-accesses": {
     "vpn-network-access": [
       {
-        "vpn-network-access-id": "1/1/1.1",
+        "id": "1/1/1.1",
         "port-id": "1/1/1",
         "description": "Interface SYNC to eNODE-B",
-        "admin-status": {
-          "status": "vpn-common:administrative-state-up"
-        },
         "vpn-network-access-type": "vpn-common:point-to-point",
         "vpn-instance-profile": "simple-profile",
+        "status": {
+          "admin-status": {
+            "status": "vpn-common:administrative-state-up"
+          }
+        },
+        "connection": {
+          "encapsulation": {
+            "type": "dot1q",
+            "dot1q": {
+              "cvlan-id": 1
+            }
+          }
+        },
         "ip-connection": {
           "ipv4": {
             "local-address": "192.0.2.1",
@@ -5987,6 +5996,18 @@ content-type: application/yang-data+json
                 }
               ]
             }
+          },
+          "ipv6": {
+            "local-address": "2001:db8::1",
+            "prefix-length": 64,
+            "address-allocation-type": "ietf-l3vpn-ntw:static-address",
+            "primary-address": "1",
+            "address": [
+              {
+                "address-id": "1",
+                "customer-address": "2001:db8::2"
+              }
+            ]
           }
         },
         "routing-protocols": {
@@ -5999,13 +6020,24 @@ content-type: application/yang-data+json
         }
       },
       {
-        "vpn-network-access-id": "1/1/1.2",
+        "id": "1/1/1.2",
         "port-id": "1/1/1",
         "description": "Interface DATA to eNODE-B",
-        "admin-status": {
-          "status": "vpn-common:administrative-state-up"
-        },
+        "vpn-network-access-type": "vpn-common:point-to-point",
         "vpn-instance-profile": "simple-profile",
+        "status": {
+          "admin-status": {
+            "status": "vpn-common:administrative-state-up"
+          }
+        },
+        "connection": {
+          "encapsulation": {
+            "type": "dot1q",
+            "dot1q": {
+              "cvlan-id": 2
+            }
+          }
+        },
         "ip-connection": {
           "ipv4": {
             "local-address": "192.0.2.1",
@@ -6020,6 +6052,18 @@ content-type: application/yang-data+json
                 }
               ]
             }
+          },
+          "ipv6": {
+            "local-address": "2001:db8::1",
+            "prefix-length": 64,
+            "address-allocation-type": "ietf-l3vpn-ntw:static-address",
+            "primary-address": "1",
+            "address": [
+              {
+                "address-id": "1",
+                "customer-address": "2001:db8::2"
+              }
+            ]
           }
         },
         "routing-protocols": {
@@ -6033,7 +6077,7 @@ content-type: application/yang-data+json
       }
     ]
   }
-}    ]]></artwork>
+}]]></artwork>
         </figure>
 
         <t></t>
@@ -6049,23 +6093,25 @@ content-type: application/yang-data+json
   "ietf-l3vpn-ntw:vpn-network-accesses": {
     "vpn-network-access": [
       {
-        "vpn-network-access-id": "Loopback1",
+        "id": "vpn-access-loopback",
         "port-id": "Loopback1",
         "description": "An example of loopback interface.",
-        "admin-status": {
-          "status": "vpn-common:administrative-state-up"
-        },
         "vpn-network-access-type": "vpn-common:loopback",
+        "status": {
+          "admin-status": {
+            "status": "vpn-common:administrative-state-up"
+          }
+        },
         "ip-connection": {
           "ipv6": {
-            "local-address": "2001:db8::1",
+            "local-address": "2001:db8::4",
             "prefix-length": 128
           }
         }
-      }      
+      }
     ]
   }
-}   ]]></artwork>
+}  ]]></artwork>
         </figure>
       </section>
 
@@ -6103,9 +6149,9 @@ content-type: application/yang-data+json
     "vpn-service": [
       {
         "vpn-id": "Multicast-IPTV",
+        "vpn-description": "Multicast IPTV VPN service",
         "customer-name": "a-name",
         "vpn-service-topology": "vpn-common:hub-spoke",
-        "description": "Multicast IPTV VPN service",
         "vpn-instance-profiles": {
           "vpn-instance-profile": [
             {
@@ -6169,7 +6215,7 @@ content-type: application/yang-data+json
       }
     }
   ]
-}     ]]></artwork>
+}]]></artwork>
         </figure>
 
         <t>Finally, create the VPN network access with multicast enabled (see
@@ -6180,14 +6226,14 @@ content-type: application/yang-data+json
                 title="Create VPN Network Access (Excerpt of the Message Request Body)">
           <artwork align="left"><![CDATA[{
   "ietf-l3vpn-ntw:vpn-network-access": {
-    "vpn-network-access-id": "1/1/1",
+    "id": "1/1/1",
     "description": "Connected-to-source",
+    "vpn-network-access-type": "vpn-common:point-to-point",
+    "vpn-instance-profile": "multicast",
     "status": {
       "admin-status": {
         "status": "vpn-common:administrative-state-up"
       },
-      "vpn-network-access-type": "vpn-common:point-to-point",
-      "vpn-instance-profile": "multicast",
       "ip-connection": {
         "ipv4": {
           "local-address": "203.0.113.1",
@@ -6223,7 +6269,7 @@ content-type: application/yang-data+json
         "output-bandwidth": "100000000",
         "mtu": 1500,
         "multicast": {
-          "multicast-site-type": "source-only",
+          "access-type": "source-only",
           "address-family": "vpn-common:ipv4",
           "protocol-type": "router",
           "pim": {
