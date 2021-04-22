@@ -1386,11 +1386,38 @@
         <t></t>
 
         <section anchor="connection" title="Connection">
-          <t>The definition of an L3VPN is commonly specified not only at the
-          IP layer, but also requires to provide parameters at the Ethernet
-          layer, such as specifying an encapsulation type (e.g., VLAN, QinQ,
-          etc.). The L3NM uses the 'connection' container to specify such
-          parameters.</t>
+          <t>The 'connection' container represents the layer 2 connectivity to
+          the L3VPN for a particular VPN network access. As shown in the tree
+          depicted in <xref target="bearerethencap_tree"></xref>, the
+          'connection' container defines protocols and parameters to enable
+          such connectivity at layer 2. </t>
+
+          <t>The traffic can enter the VPN with or without encapsulation
+          (e.g., VLAN, QinQ). The 'encapsulation' container specifies the
+          layer 2 encapsulation to use (if any) and allows to configure the
+          relevant tags. </t>
+
+          <t>The interface that is attached to the L3VPN is identified by the
+          'port-id' at the 'vpn-network-access' level. From a network model
+          perspective, it is expected that the 'port-id' is sufficient to
+          identify the interface. However, specific layer 2 sub-interfaces may
+          be required to be configured in some implementations/deployments.
+          Such a layer 2 specific interface can be included in
+          'l2-termination-point'. </t>
+
+          <t>If a layer 2 tunnel is needed to terminate the service in the
+          CE-PE connection, the 'l2-tunnel-service' container is used to
+          specify the required parameters to set such tunneling service (e.g.,
+          VPLS, VXLAN). An identity, called 'l2-tunnel-type', is defined for
+          layer 2 tunnel selection. </t>
+
+          <t>To accommodate implementations that require internal bridging, a
+          local bridge reference can be specified in 'local-bridge-reference'.
+          Such a reference may be a local bridge domain. </t>
+
+          <t>As discussed in <xref target="sna"></xref>, 'l2vpn-id' is used to
+          identify the L2VPN service that is associated with an IRB interface.
+          </t>
 
           <t>A site, as per <xref target="RFC4176"></xref> represents a VPN
           customer's location that is connected to the service provider
@@ -1404,33 +1431,10 @@
           allow the association between a service request (e.g., L3SM) and
           L3NM.</t>
 
-          <t>As shown in <xref target="bearerethencap_tree"></xref>, the
-          'connection' container defines protocols and parameters to enable
-          connectivity at Layer 2. 'encapsulation' specifies the layer 2
-          encapsulation to use. If a layer 2 tunnel is needed to terminate the
-          service, 'l2-tunnel-service' is used to specify the required
-          parameters to set such service (e.g., VPLS, VXLAN). An identity,
-          called 'l2-tunnel-type', is defined for layer 2 tunnel
-          selection.</t>
-
-          <t>To accommodate implementations that require internal bridging, a
-          local bridge reference can be specified in 'local-bridge-reference'.
-          Such a reference may be a local bridge domain.</t>
-
-          <t>From a network model, it is expected that 'port-id' at the
-          'vpn-network-access' level is sufficient to identify the interface
-          to which the L3VPN service will be attached. However, specific layer
-          2 sub-interfaces may be required to be configured in some
-          implementations/deployments. Such a layer 2 specific interface can
-          be included in 'l2-termination-point'.</t>
-
-          <figure align="center" anchor="bearerethencap_tree"
-                  title="Connection Subtree Structure">
-            <artwork align="center"><![CDATA[...
+          <t><figure align="center" anchor="bearerethencap_tree"
+              title="Connection Subtree Structure">
+              <artwork align="center"><![CDATA[...
 +--rw connection
-|  +--rw l2-termination-point?     vpn-common:vpn-id
-|  +--rw local-bridge-reference?   vpn-common:vpn-id
-|  +--rw l2vpn-id?                 vpn-common:vpn-id
 |  +--rw encapsulation
 |  |  +--rw type?              identityref
 |  |  +--rw dot1q {vpn-common:dot1q}?
@@ -1454,12 +1458,13 @@
 |  |     +--rw vni-id             uint32
 |  |     +--rw peer-mode?         identityref
 |  |     +--rw peer-ip-address*   inet:ip-address
+|  +--rw l2-termination-point?     vpn-common:vpn-id
+|  +--rw local-bridge-reference?   vpn-common:vpn-id
+|  +--rw l2vpn-id?                 vpn-common:vpn-id
 |  +--rw bearer-reference?         string 
            {vpn-common:bearer-reference}?
 ...               ]]></artwork>
-          </figure>
-
-          <t></t>
+            </figure></t>
         </section>
 
         <section anchor="ip_conn" title="IP Connection">
@@ -2290,6 +2295,17 @@
          +--rw carrierscarrier
          |       {vpn-common:carrierscarrier}?
          |  +--rw signalling-type?   enumeration
+         +--rw ntp
+         |  +--rw broadcast?      enumeration
+         |  +--rw auth-profile
+         |  |  +--rw profile-id?   string
+         |  +--rw status
+         |     +--rw admin-status
+         |     |  +--rw status?         identityref
+         |     |  +--rw last-updated?   yang:date-and-time
+         |     +--ro oper-status
+         |        +--ro status?         identityref
+         |        +--ro last-updated?   yang:date-and-time
          +--rw multicast {vpn-common:multicast}?
             ...                   
 ]]></artwork>
@@ -2498,6 +2514,11 @@
               <t hangText="'carrierscarrier':">Groups a set of parameters that
               are used when CsC is enabled such the use of BGP for signalling
               purposes <xref target="RFC8277"></xref>.</t>
+
+              <t hangText="'ntp':">Time synchronization may be needed in some
+              VPNs such as infrastructure and management VPNs. This container
+              is used to enable the NTP service <xref
+              target="RFC5905"></xref>.</t>
 
               <t hangText="'multicast':">Specifies the multicast mode and
               other data nodes such as the address-family. Refer to <xref
@@ -3519,30 +3540,9 @@ module ietf-l3vpn-ntw {
                 uses vpn-common:service-status;
                 container connection {
                   description
-                    "Defines layer 2 protocols and parameters that are 
+                    "Defines layer 2 protocols and parameters that are
                      required to enable connectivity between the PE
                      and the CE.";
-                  leaf l2-termination-point {
-                    type vpn-common:vpn-id;
-                    description
-                      "Specifies a reference to a local layer 2
-                       termination point such a layer 2 sub-interface.";
-                  }
-                  leaf local-bridge-reference {
-                    type vpn-common:vpn-id;
-                    description
-                      "Specifies a local bridge reference to
-                       accommodate, for example, implementations
-                       that require internal bridging.
-                       A reference may be a local bridge domain.";
-                  }
-                  leaf l2vpn-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "Indicates the L2VPN service associated with an
-                       Integrated Routing and Bridging (IRB) 
-                       interface.";
-                  }
                   container encapsulation {
                     description
                       "Container for layer 2 encapsulation.";
@@ -3710,6 +3710,27 @@ module ietf-l3vpn-ntw {
                           "List of peer's IP addresses.";
                       }
                     }
+                  }
+                  leaf l2-termination-point {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a reference to a local layer 2
+                       termination point such a layer 2 sub-interface.";
+                  }
+                  leaf local-bridge-reference {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a local bridge reference to
+                       accommodate, for example, implementations
+                       that require internal bridging.
+                       A reference may be a local bridge domain.";
+                  }
+                  leaf l2vpn-id {
+                    type vpn-common:vpn-id;
+                    description
+                      "Indicates the L2VPN service associated with an
+                       Integrated Routing and Bridging (IRB)
+                       interface.";
                   }
                   leaf bearer-reference {
                     if-feature "vpn-common:bearer-reference";
@@ -5362,6 +5383,43 @@ module ietf-l3vpn-ntw {
                         "MPLS signalling type.";
                     }
                   }
+                  container ntp {
+                    description
+                      "Time synchronization may be needed in some
+                       VPNs such as infrastructure and Management 
+                       VPNs. This container includes parameters to
+                       enable NTP service.";
+                    reference
+                      "RFC 5905: Network Time Protocol Version 4: 
+                                 Protocol  and Algorithms 
+                                 Specification";
+                    leaf broadcast {
+                      type enumeration {
+                        enum client {
+                          description
+                            "The VPN node will listen to NTP broadcast
+                             messages on this VPN network access.";
+                        }
+                        enum server {
+                          description
+                            "The VPN node will behave as a broadcast
+                             server.";
+                        }
+                      }
+                      description
+                        "Indicates NTP broadcast mode to use for the 
+                         VPN network access.";
+                    }
+                    container auth-profile {
+                      leaf profile-id {
+                        type string;
+                        description
+                          "A pointer to a local authentication 
+                           profile on the VPN node is provided.";
+                      }
+                    }
+                    uses vpn-common:service-status;
+                  }
                   container multicast {
                     if-feature "vpn-common:multicast";
                     description
@@ -5757,6 +5815,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.7761'?>
 
       <?rfc include='reference.RFC.8446'?>
+
+      <?rfc include='reference.RFC.5905'?>
     </references>
 
     <references title="Informative References">
