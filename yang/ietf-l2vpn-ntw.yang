@@ -643,6 +643,95 @@ module ietf-l2vpn-ntw {
     }
   }
 
+  ///
+
+  grouping global-parameters-profile {
+    description
+      "Container for per-service paramters.";
+    leaf svc-mtu {
+      type uint32;
+      description
+        "SVC MTU, it is also known as the maximum transmission unit
+         or maximum frame size,When a frame is larger than the MTU,
+         it is broken down, or fragmented, into smaller pieces by the
+         network protocol to accommodate the MTU of the network";
+    }
+    leaf ce-vlan-preservation {
+      type boolean;
+      description
+        "Preserve the CE-VLAN ID from ingress to egress,i.e.,
+         CE-VLAN tag of the egress frame are identical to
+         those of the ingress frame that yielded this egress
+         service frame. If All-to-One bundling within a site
+         is Enabled, then preservation applies to all Ingress
+         service frames. If All-to-One bundling is Disabled,
+         then preservation applies to tagged Ingress service
+         frames having CE-VLAN ID 1 through 4094.";
+    }
+    leaf ce-vlan-cos-perservation {
+      type boolean;
+      description
+        "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
+         of the egress frame are identical to those of the ingress
+         frame that yielded this egress service frame.";
+    }
+    leaf control-word-negotiation {
+      type boolean;
+      description
+        "Controls whether Control-word negotiation is enabled
+         (if set to true) or not (if set to false).";
+      reference
+        "Section 7 of RFC8077";
+    }
+    container mac-addr-limit {
+      description
+        "Container of MAC-Addr limit configuration.";
+      leaf mac-num-limit {
+        type uint16;
+        description
+          "Maximum number of MAC addresses learned from
+           the customer for a single service instance.";
+      }
+      leaf time-interval {
+        type uint32;
+        units "milliseconds";
+        description
+          "The aging time of the mac address.";
+      }
+      leaf action {
+        type identityref {
+          base mac-action;
+        }
+        description
+          "Specifies the action when the upper limit is
+           exceeded: drop the packet, flood the
+           packet, or simply send a warning log message.";
+      }
+    }
+    container multicast-like {
+      if-feature "vpn-common:multicast";
+      description
+        "Multicast like container";
+      leaf enabled {
+        type boolean;
+        default "false";
+        description
+          "Enables multicast.";
+      }
+      container customer-tree-flavors {
+        description
+          "Type of trees used by customer.";
+        leaf-list tree-flavor {
+          type identityref {
+            base vpn-common:multicast-tree-type;
+          }
+          description
+            "Type of tree to be used.";
+        }
+      }
+    }
+  }
+
   /* Main L2NM Container */
 
   container l2vpn-ntw {
@@ -682,57 +771,27 @@ module ietf-l2vpn-ntw {
             "Defining service topology, such as
              any-to-any, hub-spoke, etc.";
         }
-        container global-parameters {
+        container global-parameters-profiles {
           description
-            "Container for per-service paramters.";
-          leaf svc-mtu {
-            type uint32;
+            "Container for a list of VPN instance profiles.";
+          list global-parameters-profile {
+            key "profile-id";
             description
-              "SVC MTU, it is also known as the maximum transmission unit
-               or maximum frame size,When a frame is larger than the MTU,
-               it is broken down, or fragmented, into smaller pieces by the
-               network protocol to accommodate the MTU of the network";
-          }
-          leaf ce-vlan-preservation {
-            type boolean;
-            description
-              "Preserve the CE-VLAN ID from ingress to egress,i.e.,
-               CE-VLAN tag of the egress frame are identical to
-               those of the ingress frame that yielded this egress
-               service frame. If All-to-One bundling within a site
-               is Enabled, then preservation applies to all Ingress
-               service frames. If All-to-One bundling is Disabled,
-               then preservation applies to tagged Ingress service
-               frames having CE-VLAN ID 1 through 4094.";
-          }
-          leaf ce-vlan-cos-perservation {
-            type boolean;
-            description
-              "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
-               of the egress frame are identical to those of the ingress
-               frame that yielded this egress service frame.";
-          }
-          container multicast-like {
-            if-feature "vpn-common:multicast";
-            description
-              "Multicast like container";
-            leaf enabled {
-              type boolean;
-              default "false";
+              "List of XXX.";
+            leaf profile-id {
+              type string;
               description
-                "Enables multicast.";
+                "profile identifier.";
             }
-            container customer-tree-flavors {
-              description
-                "Type of trees used by customer.";
-              leaf-list tree-flavor {
-                type identityref {
-                  base vpn-common:multicast-tree-type;
-                }
-                description
-                  "Type of tree to be used.";
+            leaf role {
+              type identityref {
+                base vpn-common:role;
               }
+              default "vpn-common:any-to-any-role";
+              description
+                "Role of the VPN node in the VPN.";
             }
+            uses global-parameters-profile;
           }
         }
         container extranet-vpns {
@@ -782,50 +841,28 @@ module ietf-l2vpn-ntw {
               description
                 "Textual description of a VPN node.";
             }
-            leaf node-role {
-              type identityref {
-                base vpn-common:role;
-              }
-              default "vpn-common:any-to-any-role";
-              description
-                "Role of the vpn-node in the IP VPN.";
-            }
             leaf ne-id {
               type string;
               description
                 "NE IP address";
             }
-            leaf control-word-negotiation {
-              type boolean;
+            container active-global-parameters-profiles {
               description
-                "Controls whether Control-word negotiation is enabled
-                 (if set to true) or not (if set to false).";
-              reference
-                "Section 7 of RFC8077";
-            }
-            container mac-addr-limit {
-              description
-                "Container of MAC-Addr limit configuration.";
-              leaf mac-num-limit {
-                type uint16;
+                "Container for a list of VPN instance profiles.";
+              list global-parameters-profile {
+                key "profile-id";
                 description
-                  "Maximum number of MAC addresses learned from
-                   the customer for a single service instance.";
-              }
-              leaf time-interval {
-                type uint32;
-                units "milliseconds";
-                description
-                  "The aging time of the mac address.";
-              }
-              leaf action {
-                type identityref {
-                  base mac-action;
+                  "List of XXX.";
+                leaf profile-id {
+                  type leafref {
+                    path "/l2vpn-ntw/vpn-services/vpn-service"
+                       + "/global-parameters-profiles"
+                       + "/global-parameters-profile/profile-id";
+                  }
+                  description
+                    "XXXX.";
                 }
-                description
-                  "Specifies the action when the upper limit is
-                   exceeded: drop the packet, flood the
-                   packet, or simply send a warning log message.";
+                uses global-parameters-profile;
               }
             }
             uses vpn-common:service-status;
@@ -1140,6 +1177,15 @@ module ietf-l2vpn-ntw {
                   type vpn-common:vpn-id;
                   description
                     "NE Port-id";
+                }
+                leaf global-parameters-profile {
+                  type leafref {
+                    path "/l2vpn-ntw/vpn-services/vpn-service/vpn-nodes"
+                       + "/vpn-node/active-global-parameters-profiles"
+                       + "/global-parameters-profile/profile-id";
+                  }
+                  description
+                    "An identifier of an active VPN instance profile.";
                 }
                 uses vpn-common:service-status;
                 container connection {
