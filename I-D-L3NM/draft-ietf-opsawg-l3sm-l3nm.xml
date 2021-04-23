@@ -539,7 +539,7 @@
       Provisioning Profile (CPP) <xref target="RFC7297"></xref>, an enhanced
       VPN (VPN+) service <xref target="I-D.ietf-teas-enhanced-vpn"></xref>, or
       an IETF network slice service <xref
-      target="I-D.ietf-teas-ietf-network-slices"></xref>. </t>
+      target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
 
       <t>Note also that both the L3SM and the L3NM may be used in the context
       of the Abstraction and Control of TE Networks (ACTN) <xref
@@ -1390,12 +1390,12 @@
           the L3VPN for a particular VPN network access. As shown in the tree
           depicted in <xref target="bearerethencap_tree"></xref>, the
           'connection' container defines protocols and parameters to enable
-          such connectivity at layer 2. </t>
+          such connectivity at layer 2.</t>
 
           <t>The traffic can enter the VPN with or without encapsulation
           (e.g., VLAN, QinQ). The 'encapsulation' container specifies the
           layer 2 encapsulation to use (if any) and allows to configure the
-          relevant tags. </t>
+          relevant tags.</t>
 
           <t>The interface that is attached to the L3VPN is identified by the
           'port-id' at the 'vpn-network-access' level. From a network model
@@ -1403,21 +1403,21 @@
           identify the interface. However, specific layer 2 sub-interfaces may
           be required to be configured in some implementations/deployments.
           Such a layer 2 specific interface can be included in
-          'l2-termination-point'. </t>
+          'l2-termination-point'.</t>
 
           <t>If a layer 2 tunnel is needed to terminate the service in the
           CE-PE connection, the 'l2-tunnel-service' container is used to
           specify the required parameters to set such tunneling service (e.g.,
           VPLS, VXLAN). An identity, called 'l2-tunnel-type', is defined for
-          layer 2 tunnel selection. </t>
+          layer 2 tunnel selection.</t>
+
+          <t>As discussed in <xref target="sna"></xref>, 'l2vpn-id' is used to
+          identify the L2VPN service that is associated with an IRB
+          interface.</t>
 
           <t>To accommodate implementations that require internal bridging, a
           local bridge reference can be specified in 'local-bridge-reference'.
-          Such a reference may be a local bridge domain. </t>
-
-          <t>As discussed in <xref target="sna"></xref>, 'l2vpn-id' is used to
-          identify the L2VPN service that is associated with an IRB interface.
-          </t>
+          Such a reference may be a local bridge domain.</t>
 
           <t>A site, as per <xref target="RFC4176"></xref> represents a VPN
           customer's location that is connected to the service provider
@@ -1446,24 +1446,28 @@
 |  |     +--rw tag-type?   identityref
 |  |     +--rw svlan-id    uint16
 |  |     +--rw cvlan-id    uint16
-|  +--rw l2-tunnel-service
-|  |  +--rw type?         identityref
-|  |  +--rw pseudowire
-|  |  |  +--rw vcid?      uint32
-|  |  |  +--rw far-end?   union
-|  |  +--rw vpls
-|  |  |  +--rw vcid?      union
-|  |  |  +--rw far-end?   union
-|  |  +--rw vxlan {vpn-common:vxlan}?
-|  |     +--rw vni-id             uint32
-|  |     +--rw peer-mode?         identityref
-|  |     +--rw peer-ip-address*   inet:ip-address
-|  +--rw l2-termination-point?     vpn-common:vpn-id
-|  +--rw local-bridge-reference?   vpn-common:vpn-id
-|  +--rw l2vpn-id?                 vpn-common:vpn-id
+|  +--rw (l2-service)?
+|  |  +--:(l2-tunnel-service)
+|  |  |  +--rw l2-tunnel-service
+|  |  |     +--rw type?         identityref
+|  |  |     +--rw pseudowire
+|  |  |     |  +--rw vcid?      uint32
+|  |  |     |  +--rw far-end?   union
+|  |  |     +--rw vpls
+|  |  |     |  +--rw vcid?      uint32
+|  |  |     |  +--rw far-end*   union
+|  |  |     +--rw vxlan {vpn-common:vxlan}?
+|  |  |        +--rw vni-id             uint32
+|  |  |        +--rw peer-mode?         identityref
+|  |  |        +--rw peer-ip-address*   inet:ip-address
+|  |  +--:(l2vpn)
+|  |     +--rw l2vpn-id?            vpn-common:vpn-id
+|  +--rw l2-termination-point?      vpn-common:vpn-id
+|  +--rw local-bridge-reference?    vpn-common:vpn-id
 |  +--rw bearer-reference?         string 
            {vpn-common:bearer-reference}?
-...               ]]></artwork>
+...
+]]></artwork>
             </figure></t>
         </section>
 
@@ -3632,82 +3636,93 @@ module ietf-l3vpn-ntw {
                       }
                     }
                   }
-                  container l2-tunnel-service {
+                  choice l2-service {
                     description
-                      "Defines a layer 2 tunnel termination.
-                       It is only applicable when a tunnel is
-                       required. The supported values are:
-                       pseudowire, VPLS and, VXLAN. Other
-                       values may defined, if needed.";
-                    leaf type {
-                      type identityref {
-                        base l2-tunnel-type;
-                      }
+                      "The layer 2 connectivity service can be 
+                       provided by indicating a pointer to an L2VPN or
+                       by specifying a layer 2 tunnel service.";
+                    container l2-tunnel-service {
                       description
-                        "Selects the tunnel termiantion option for
-                         each vpn-network-access.";
-                    }
-                    container pseudowire {
-                      description
-                        "Includes pseudowire termination parameters.";
-                      leaf vcid {
-                        type uint32;
-                        description
-                          "Indicates a PW or VC identifier.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
-                    container vpls {
-                      description
-                        "VPLS termination parameters.";
-                      leaf vcid {
-                        type union {
-                          type uint32;
-                          type string;
-                        }
-                        description
-                          "VCID identifier, IRB/RVPPLs interface
-                           supported using string format.";
-                      }
-                      leaf far-end {
-                        type union {
-                          type uint32;
-                          type inet:ip-address;
-                        }
-                        description
-                          "SDP/Far End/LDP neighbour reference.";
-                      }
-                    }
-                    container vxlan {
-                      if-feature "vpn-common:vxlan";
-                      description
-                        "VXLAN termination parameters.";
-                      leaf vni-id {
-                        type uint32;
-                        mandatory true;
-                        description
-                          "VXLAN Network Identifier (VNI).";
-                      }
-                      leaf peer-mode {
+                        "Defines a layer 2 tunnel termination.
+                         It is only applicable when a tunnel is
+                         required. The supported values are:
+                         pseudowire, VPLS and, VXLAN. Other
+                         values may defined, if needed.";
+                      leaf type {
                         type identityref {
-                          base vpn-common:vxlan-peer-mode;
+                          base l2-tunnel-type;
                         }
-                        default "vpn-common:static-mode";
                         description
-                          "Specifies the VXLAN access mode. By default,
-                           the peer mode is set to 'static-mode'.";
+                          "Selects the tunnel termiantion option for
+                           each vpn-network-access.";
                       }
-                      leaf-list peer-ip-address {
-                        type inet:ip-address;
+                      container pseudowire {
                         description
-                          "List of peer's IP addresses.";
+                          "Includes pseudowire termination parameters.";
+                        leaf vcid {
+                          type uint32;
+                          description
+                            "Indicates a PW or VC identifier.";
+                        }
+                        leaf far-end {
+                          type union {
+                            type uint32;
+                            type inet:ip-address;
+                          }
+                          description
+                            "Neighbor reference.";
+                        }
+                      }
+                      container vpls {
+                        description
+                          "VPLS termination parameters.";
+                        leaf vcid {
+                          type uint32;
+                          description
+                            "VCID identifier.";
+                        }
+                        leaf-list far-end {
+                          type union {
+                            type uint32;
+                            type inet:ip-address;
+                          }
+                          description
+                            "Neighbor reference.";
+                        }
+                      }
+                      container vxlan {
+                        if-feature "vpn-common:vxlan";
+                        description
+                          "VXLAN termination parameters.";
+                        leaf vni-id {
+                          type uint32;
+                          mandatory true;
+                          description
+                            "VXLAN Network Identifier (VNI).";
+                        }
+                        leaf peer-mode {
+                          type identityref {
+                            base vpn-common:vxlan-peer-mode;
+                          }
+                          default "vpn-common:static-mode";
+                          description
+                            "Specifies the VXLAN access mode. By default,
+                             the peer mode is set to 'static-mode'.";
+                        }
+                        leaf-list peer-ip-address {
+                          type inet:ip-address;
+                          description
+                            "List of peer's IP addresses.";
+                        }
+                      }
+                    }
+                    case l2vpn {
+                      leaf l2vpn-id {
+                        type vpn-common:vpn-id;
+                        description
+                          "Indicates the L2VPN service associated with an
+                           Integrated Routing and Bridging (IRB)
+                           interface.";
                       }
                     }
                   }
@@ -3724,13 +3739,6 @@ module ietf-l3vpn-ntw {
                        accommodate, for example, implementations
                        that require internal bridging.
                        A reference may be a local bridge domain.";
-                  }
-                  leaf l2vpn-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "Indicates the L2VPN service associated with an
-                       Integrated Routing and Bridging (IRB)
-                       interface.";
                   }
                   leaf bearer-reference {
                     if-feature "vpn-common:bearer-reference";
@@ -3775,8 +3783,7 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message 
-                          "SLAAC is only applicable to IPv6.";
+                        error-message "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated to the
@@ -4512,7 +4519,7 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           description
-                            "BGP neighbour max-prefix violate
+                            "BGP neighbor max-prefix violate
                              action";
                         }
                         leaf restart-interval {
@@ -5386,12 +5393,12 @@ module ietf-l3vpn-ntw {
                   container ntp {
                     description
                       "Time synchronization may be needed in some
-                       VPNs such as infrastructure and Management 
+                       VPNs such as infrastructure and Management
                        VPNs. This container includes parameters to
                        enable NTP service.";
                     reference
-                      "RFC 5905: Network Time Protocol Version 4: 
-                                 Protocol  and Algorithms 
+                      "RFC 5905: Network Time Protocol Version 4:
+                                 Protocol  and Algorithms
                                  Specification";
                     leaf broadcast {
                       type enumeration {
@@ -5407,7 +5414,7 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       description
-                        "Indicates NTP broadcast mode to use for the 
+                        "Indicates NTP broadcast mode to use for the
                          VPN network access.";
                     }
                     container auth-profile {
@@ -5416,7 +5423,7 @@ module ietf-l3vpn-ntw {
                       leaf profile-id {
                         type string;
                         description
-                          "A pointer to a local authentication 
+                          "A pointer to a local authentication
                            profile on the VPN node is provided.";
                       }
                     }
