@@ -142,26 +142,26 @@ module ietf-l2vpn-ntw {
   /* Identities */
 
   identity evpn-redundancy-mode {
-    description 
+    description
       "Base identity for EVPN redundancy modes.";
   }
 
   identity single-active {
     base evpn-redundancy-mode;
     description
-      "Indicates Single-Active redundancy mode for 
+      "Indicates Single-Active redundancy mode for
        a given Ethernet Segment (ES).";
-     reference
-       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.1";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.1";
   }
 
   identity all-active {
     base evpn-redundancy-mode;
     description
-      "Indicates All-Active redundancy mode for 
+      "Indicates All-Active redundancy mode for
        a given Ethernet Segment (ES).";
-     reference
-       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.2";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.2";
   }
 
   identity mapping-type {
@@ -660,7 +660,6 @@ module ietf-l2vpn-ntw {
         key "vpn-id";
         description
           "Container of port configurations";
-        uses vpn-common:service-status;
         uses vpn-common:vpn-description;
         leaf service-vpn-id {
           type vpn-common:vpn-id;
@@ -683,25 +682,56 @@ module ietf-l2vpn-ntw {
             "Defining service topology, such as
              any-to-any, hub-spoke, etc.";
         }
-        container multicast-like {
-          if-feature "vpn-common:multicast";
+        container global-parameters {
           description
-            "Multicast like container";
-          leaf enabled {
-            type boolean;
-            default "false";
+            "Container for per-service paramters.";
+          leaf svc-mtu {
+            type uint32;
             description
-              "Enables multicast.";
+              "SVC MTU, it is also known as the maximum transmission unit
+               or maximum frame size,When a frame is larger than the MTU,
+               it is broken down, or fragmented, into smaller pieces by the
+               network protocol to accommodate the MTU of the network";
           }
-          container customer-tree-flavors {
+          leaf ce-vlan-preservation {
+            type boolean;
             description
-              "Type of trees used by customer.";
-            leaf-list tree-flavor {
-              type identityref {
-                base vpn-common:multicast-tree-type;
-              }
+              "Preserve the CE-VLAN ID from ingress to egress,i.e.,
+               CE-VLAN tag of the egress frame are identical to
+               those of the ingress frame that yielded this egress
+               service frame. If All-to-One bundling within a site
+               is Enabled, then preservation applies to all Ingress
+               service frames. If All-to-One bundling is Disabled,
+               then preservation applies to tagged Ingress service
+               frames having CE-VLAN ID 1 through 4094.";
+          }
+          leaf ce-vlan-cos-perservation {
+            type boolean;
+            description
+              "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
+               of the egress frame are identical to those of the ingress
+               frame that yielded this egress service frame.";
+          }
+          container multicast-like {
+            if-feature "vpn-common:multicast";
+            description
+              "Multicast like container";
+            leaf enabled {
+              type boolean;
+              default "false";
               description
-                "Type of tree to be used.";
+                "Enables multicast.";
+            }
+            container customer-tree-flavors {
+              description
+                "Type of trees used by customer.";
+              leaf-list tree-flavor {
+                type identityref {
+                  base vpn-common:multicast-tree-type;
+                }
+                description
+                  "Type of tree to be used.";
+              }
             }
           }
         }
@@ -729,38 +759,12 @@ module ietf-l2vpn-ntw {
             }
           }
         }
-        leaf svc-mtu {
-          type uint32;
-          description
-            "SVC MTU, it is also known as the maximum transmission unit
-             or maximum frame size,When a frame is larger than the MTU,
-             it is broken down, or fragmented, into smaller pieces by the
-             network protocol to accommodate the MTU of the network";
-        }
-        leaf ce-vlan-preservation {
-          type boolean;
-          description
-            "Preserve the CE-VLAN ID from ingress to egress,i.e.,
-             CE-VLAN tag of the egress frame are identical to
-             those of the ingress frame that yielded this egress
-             service frame. If All-to-One bundling within a site
-             is Enabled, then preservation applies to all Ingress
-             service frames. If All-to-One bundling is Disabled,
-             then preservation applies to tagged Ingress service
-             frames having CE-VLAN ID 1 through 4094.";
-        }
-        leaf ce-vlan-cos-perservation {
-          type boolean;
-          description
-            "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
-             of the egress frame are identical to those of the ingress
-             frame that yielded this egress service frame.";
-        }
         container underlay-transport {
           description
             "Container for underlay transport.";
           uses vpn-common:underlay-transport;
         }
+        uses vpn-common:service-status;
         container vpn-nodes {
           description
             "Set fo VPN nodes that are involved in the L2NM.";
@@ -905,7 +909,7 @@ module ietf-l2vpn-ntw {
                 container common {
                   description
                     "MAC address managment attributes in the
-                    EVPN configuration";
+                     EVPN configuration";
                   leaf mac-learning-mode {
                     type identityref {
                       base mac-learning-mode;
@@ -986,130 +990,131 @@ module ietf-l2vpn-ntw {
                     }
                   }
                   container PBB {
-                      description 
-                        "PBB parameters container";
-                      reference 
-                        "IEEE 802.1ah Provider Backbone Bridge";
+                    description
+                      "PBB parameters container";
+                    reference
+                      "IEEE 802.1ah Provider Backbone Bridge";
                     leaf backbone-src-mac {
                       type yang:mac-address;
-                      description 
-                      "backbone-src-mac";
+                      description
+                        "backbone-src-mac";
                     }
                   }
-              }
-              container t-ldp-pwe {
-                when "../type = 'vpn-common:t-ldp'" {
-                  description
-                    "Only applies when vpn signaling type is Target LDP.";
                 }
-                description
-                  "Container of T-LDP PWE configurations";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type";
-                }
-                leaf pwe-encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "PWE encapsulation type.";
-                }
-                leaf pwe-mtu {
-                  type uint16;
-                  description
-                    "Allow MTU mismatch: TO BE CHECKED";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
+                container t-ldp-pwe {
+                  when "../type = 'vpn-common:t-ldp'" {
                     description
-                      "Indicates the peer's IP address.";
+                      "Only applies when vpn signaling type is Target LDP.";
                   }
-                  leaf vc-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-type {
+                  description
+                    "Container of T-LDP PWE configurations";
+                  leaf type {
                     type identityref {
-                      base vpn-common:vpn-topology;
+                      base t-ldp-pwe-type;
                     }
                     description
-                      "PW topology type.";
+                      "T-LDP PWE type";
                   }
-                  leaf pw-priority {
-                    type uint32;
+                  leaf pwe-encapsulation-type {
+                    type identityref {
+                      base vpn-common:encapsulation-type;
+                    }
                     description
-                      "Defines the priority for the PW.
-                       The higher the pw-priority value,
-                       the higher the preference of the PW will be.";
+                      "PWE encapsulation type.";
+                  }
+                  leaf pwe-mtu {
+                    type uint16;
+                    description
+                      "Allow MTU mismatch: TO BE CHECKED";
+                  }
+                  list ac-pw-list {
+                    key "peer-addr vc-id";
+                    description
+                      "List of AC and PW bindings.";
+                    leaf peer-addr {
+                      type inet:ip-address;
+                      description
+                        "Indicates the peer's IP address.";
+                    }
+                    leaf vc-id {
+                      type vpn-common:vpn-id;
+                      description
+                        "VC lable used to identify PW.";
+                    }
+                    leaf pw-type {
+                      type identityref {
+                        base vpn-common:vpn-topology;
+                      }
+                      description
+                        "PW topology type.";
+                    }
+                    leaf pw-priority {
+                      type uint32;
+                      description
+                        "Defines the priority for the PW.
+                         The higher the pw-priority value,
+                         the higher the preference of the PW will be.";
+                    }
+                  }
+                  container qinq {
+                    when "../type = 'vpn-common:h-vpls'" {
+                      description
+                        "Only applies when t-ldp pwe type is h-vpls.";
+                    }
+                    description
+                      "Container for QinQ";
+                    leaf s-tag {
+                      type uint32;
+                      description
+                        "S-TAG";
+                    }
+                    leaf c-tag {
+                      type uint32;
+                      description
+                        "C-TAG";
+                    }
                   }
                 }
-                container qinq {
-                  when "../type = 'vpn-common:h-vpls'" {
+                container l2tp-pwe {
+                  when "../type = 'vpn-common:l2tp'" {
                     description
-                      "Only applies when t-ldp pwe type is h-vpls.";
+                      "Applies when VPN signaling type is L2TP protocol.";
                   }
                   description
-                    "Container for QinQ";
-                  leaf s-tag {
-                    type uint32;
+                    "Container for l2tp pw";
+                  leaf type {
+                    type identityref {
+                      base t-ldp-pwe-type;
+                    }
                     description
-                      "S-TAG";
+                      "T-LDP PWE type.";
                   }
-                  leaf c-tag {
-                    type uint32;
+                  leaf encapsulation-type {
+                    type identityref {
+                      base vpn-common:encapsulation-type;
+                    }
                     description
-                      "C-TAG";
+                      "Encapsulation type.";
                   }
-                }
-              }
-              container l2tp-pwe {
-                when "../type = 'vpn-common:l2tp'" {
-                  description
-                    "Applies when VPN signaling type is L2TP protocol.";
-                }
-                description
-                  "Container for l2tp pw";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type.";
-                }
-                leaf encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "Encapsulation type.";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
+                  list ac-pw-list {
+                    key "peer-addr vc-id";
                     description
-                      "Indicates the peer's IP address.";
-                  }
-                  leaf vc-id {
-                    type string;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-priority {
-                    type uint32;
-                    description
-                      "PW priority.";
+                      "List of AC and PW bindings.";
+                    leaf peer-addr {
+                      type inet:ip-address;
+                      description
+                        "Indicates the peer's IP address.";
+                    }
+                    leaf vc-id {
+                      type string;
+                      description
+                        "VC lable used to identify PW.";
+                    }
+                    leaf pw-priority {
+                      type uint32;
+                      description
+                        "PW priority.";
+                    }
                   }
                 }
               }
@@ -1132,126 +1137,11 @@ module ietf-l2vpn-ntw {
                     "String to describe the element.";
                 }
                 leaf port-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "NE Port-id";
-                }
-                leaf mtu {
-                  type uint32;
+                  type vpn-common:vpn-id;
                   description
-                    "MTU, it is also known as the maximum
-                     transmission unit or maximum frame size. When a
-                     frame is larger than the MTU, it is broken down,
-                     or fragmented, into smaller pieces by the
-                     network protocol to accommodate the MTU of the
-                     network";
+                    "NE Port-id";
                 }
                 uses vpn-common:service-status;
-                container access-diversity {
-                  if-feature "vpn-common:placement-diversity";
-                  description
-                    "Diversity parameters.";
-                  container groups {
-                    description
-                      "Groups the fate sharing group member
-                       is belonging to";
-                  list group {
-                      key "group-id";
-                      description
-                        "List of group-ids.";
-                      leaf group-id {
-                        type string;
-                        description
-                          "Indicates the Group-id to which the network access
-                           belongs to.";
-                      }
-                      leaf fate-sharing-group-size {
-                        type uint16;
-                        description
-                          "Fate sharing group size.";
-                      }
-                      leaf group-color {
-                        type string;
-                        description
-                          "Group color associated with a particular VPN.";
-                      }
-                      leaf ethernet-segment-identifier {
-                        type yang:hex-string {
-                          length "29";
-                        }
-                        description
-                          "10-octet Ethernet Segment Identifier (ESI).";
-                      }
-                      leaf esi-redundancy-mode {
-                        type identityref{
-                          base evpn-redundancy-mode;
-                        }
-                        description 
-                          "Indicates the EVPN redundancy mode for
-                           a multihomed CE.";
-                       }
-                    }
-                  }
-                }
-                  container constraints {
-                    description
-                      "Constraints for placing this site
-                       network access.";
-                    list constraint {
-                      key "constraint-type";
-                      description
-                        "List of constraints.";
-                      leaf constraint-type {
-                        type identityref {
-                          base vpn-common:placement-diversity;
-                        }
-                        description
-                          "Diversity constraint type.";
-                      }
-                      container target {
-                        description
-                          "The constraint will apply against
-                           this list of groups.";
-                        choice target-flavor {
-                          description
-                            "Choice for the group definition.";
-                          case id {
-                            list group {
-                              key "group-id";
-                              description
-                                "List of groups";
-                              leaf group-id {
-                                type string;
-                                description
-                                  "The constraint will apply
-                                   against this particular
-                                   group-id.";
-                              }
-                            }
-                          }
-                          case all-accesses {
-                            leaf all-other-accesses {
-                              type empty;
-                              description
-                                "The constraint will apply
-                                 against all other site network
-                                 access of this site.";
-                            }
-                          }
-                          case all-groups {
-                            leaf all-other-groups {
-                              type empty;
-                              description
-                                "The constraint will apply
-                                 against all other groups the
-                                 customer is managing.";
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
                 container connection {
                   description
                     "Container for bearer";
@@ -1340,8 +1230,8 @@ module ietf-l2vpn-ntw {
                       }
                       leaf-list peer-list {
                         type inet:ip-address;
-                          description
-                            "Peer IP address.";
+                        description
+                          "Peer IP address.";
                       }
                     }
                   }
@@ -1533,40 +1423,202 @@ module ietf-l2vpn-ntw {
                     }
                   }
                 }
-                container availability {
+                container TO-SIMPLFY-diversity-redundancy-TO-SIMPLFY {
                   description
-                    "Container of availability optional configurations";
-                  leaf access-priority {
-                    type uint32;
+                    "placeholder. TO BE FURTHER WORKED OUT.";
+                  container access-diversity {
+                    if-feature "vpn-common:placement-diversity";
                     description
-                      "Access priority";
-                  }
-                  choice redundancy-mode {
-                    description
-                      "Redundancy mode choice";
-                    case single-active {
+                      "Diversity parameters.";
+                    container groups {
                       description
-                        "Single active case";
-                      leaf single-active {
-                        type boolean;
+                        "Groups the fate sharing group member
+                         is belonging to";
+                      list group {
+                        key "group-id";
                         description
-                          "Single active";
+                          "List of group-ids.";
+                        leaf group-id {
+                          type string;
+                          description
+                            "Indicates the Group-id to which the network access
+                             belongs to.";
+                        }
+                        leaf fate-sharing-group-size {
+                          type uint16;
+                          description
+                            "Fate sharing group size.";
+                        }
+                        leaf group-color {
+                          type string;
+                          description
+                            "Group color associated with a particular VPN.";
+                        }
+                        leaf ethernet-segment-identifier {
+                          type yang:hex-string {
+                            length "29";
+                          }
+                          description
+                            "10-octet Ethernet Segment Identifier (ESI).";
+                        }
+                        leaf esi-redundancy-mode {
+                          type identityref {
+                            base evpn-redundancy-mode;
+                          }
+                          description
+                            "Indicates the EVPN redundancy mode for
+                             a multihomed CE.";
+                        }
                       }
                     }
-                    case all-active {
+                  }
+                  container constraints {
+                    description
+                      "Constraints for placing this site
+                       network access.";
+                    list constraint {
+                      key "constraint-type";
                       description
-                        "All active case";
-                      leaf all-active {
-                        type boolean;
+                        "List of constraints.";
+                      leaf constraint-type {
+                        type identityref {
+                          base vpn-common:placement-diversity;
+                        }
                         description
-                          "All active";
+                          "Diversity constraint type.";
+                      }
+                      container target {
+                        description
+                          "The constraint will apply against
+                           this list of groups.";
+                        choice target-flavor {
+                          description
+                            "Choice for the group definition.";
+                          case id {
+                            list group {
+                              key "group-id";
+                              description
+                                "List of groups";
+                              leaf group-id {
+                                type string;
+                                description
+                                  "The constraint will apply
+                                   against this particular
+                                   group-id.";
+                              }
+                            }
+                          }
+                          case all-accesses {
+                            leaf all-other-accesses {
+                              type empty;
+                              description
+                                "The constraint will apply
+                                 against all other site network
+                                 access of this site.";
+                            }
+                          }
+                          case all-groups {
+                            leaf all-other-groups {
+                              type empty;
+                              description
+                                "The constraint will apply
+                                 against all other groups the
+                                 customer is managing.";
+                            }
+                          }
+                        }
                       }
                     }
                   }
+                  container availability {
+                    description
+                      "Container of availability optional configurations";
+                    leaf access-priority {
+                      type uint32;
+                      description
+                        "Access priority";
+                    }
+                    choice redundancy-mode {
+                      description
+                        "Redundancy mode choice";
+                      case single-active {
+                        description
+                          "Single active case";
+                        leaf single-active {
+                          type boolean;
+                          description
+                            "Single active";
+                        }
+                      }
+                      case all-active {
+                        description
+                          "All active case";
+                        leaf all-active {
+                          type boolean;
+                          description
+                            "All active";
+                        }
+                      }
+                    }
+                  }
+                  container precedence {
+                    description
+                      "Transport netowrk precedence selector
+                       Primary or Secondary tunnel.";
+                    leaf precedence {
+                      type identityref {
+                        base precedence-type;
+                      }
+                      description
+                        "Defining service redundancy in transport
+                         network.";
+                    }
+                  }
+                }
+                container ethernet-service-oam {
+                  description
+                    "Container for Ethernet service OAM.";
+                  leaf md-name {
+                    type string;
+                    description
+                      "Maintenance domain name";
+                  }
+                  leaf md-level {
+                    type uint8;
+                    description
+                      "Maintenance domain level";
+                  }
+                  container cfm-802.1-ag {
+                    description
+                      "Container of 802.1ag CFM configurations.";
+                    list n2-uni-c {
+                      key "maid";
+                      description
+                        "List of UNI-N to UNI-C";
+                      uses cfm-802-grouping;
+                    }
+                    list n2-uni-n {
+                      key "maid";
+                      description
+                        "List of UNI-N to UNI-N";
+                      uses cfm-802-grouping;
+                    }
+                  }
+                  uses y-1731;
                 }
                 container service {
                   description
                     "Container for service";
+                  leaf mtu {
+                    type uint32;
+                    description
+                      "MTU, it is also known as the maximum
+                       transmission unit or maximum frame size. When a
+                       frame is larger than the MTU, it is broken down,
+                       or fragmented, into smaller pieces by the
+                       network protocol to accommodate the MTU of the
+                       network";
+                  }
                   container svc-input-bandwidth {
                     if-feature "vpn-common:input-bw";
                     description
@@ -1741,163 +1793,123 @@ module ietf-l2vpn-ntw {
                       }
                     }
                   }
-                  container precedence {
+                  container mac-policies {
                     description
-                      "Transport netowrk precedence selector
-                       Primary or Secondary tunnel.";
-                    leaf precedence {
-                      type identityref {
-                        base precedence-type;
-                      }
+                      "Container for MAC-related policies.";
+                    container access-control-list {
                       description
-                        "Defining service redundancy in transport
-                         network.";
+                        "Container for access control List.";
+                      list mac {
+                        key "mac-address";
+                        description
+                          "List for MAC.";
+                        leaf mac-address {
+                          type yang:mac-address;
+                          description
+                            "MAC address.";
+                        }
+                      }
+                    }
+                    container mac-loop-prevention {
+                      description
+                        "Container of MAC loop prevention.";
+                      leaf frequency {
+                        type uint32;
+                        description
+                          "Frequency";
+                      }
+                      leaf protection-type {
+                        type identityref {
+                          base loop-prevention-type;
+                        }
+                        description
+                          "Protection type";
+                      }
+                      leaf number-retries {
+                        type uint32;
+                        description
+                          "Number of retries";
+                      }
+                    }
+                    container mac-addr-limit {
+                      description
+                        "Container of MAC-Addr limit configurations";
+                      leaf mac-num-limit {
+                        type uint16;
+                        description
+                          "maximum number of MAC addresses learned from
+                           the subscriber for a single service instance.";
+                      }
+                      leaf time-interval {
+                        type uint32;
+                        units "milliseconds";
+                        description
+                          "The aging time of the mac address.";
+                      }
+                      leaf action {
+                        type identityref {
+                          base mac-action;
+                        }
+                        description
+                          "specify the action when the upper limit is
+                           exceeded: drop the packet, flood the
+                           packet, or simply send a warning log message.";
+                      }
                     }
                   }
-                }
-                container broadcast-unknown-unicast-multicast {
-                  description
-                    "Container of broadcast, unknown unicast, and multicast
-                     configurations";
-                  leaf multicast-site-type {
-                    type enumeration {
-                      enum receiver-only {
-                        description
-                          "The site only has receivers.";
-                      }
-                      enum source-only {
-                        description
-                          "The site only has sources.";
-                      }
-                      enum source-receiver {
-                        description
-                          "The site has both sources and receivers.";
-                      }
-                    }
-                    default "source-receiver";
+                  container broadcast-unknown-unicast-multicast {
                     description
-                      "Type of multicast site.";
-                  }
-                  list multicast-gp-address-mapping {
-                    key "id";
-                    description
-                      "List of Port to group mappings.";
-                    leaf id {
-                      type uint16;
+                      "Container of broadcast, unknown unicast, and multicast
+                       configurations";
+                    leaf multicast-site-type {
+                      type enumeration {
+                        enum receiver-only {
+                          description
+                            "The site only has receivers.";
+                        }
+                        enum source-only {
+                          description
+                            "The site only has sources.";
+                        }
+                        enum source-receiver {
+                          description
+                            "The site has both sources and receivers.";
+                        }
+                      }
+                      default "source-receiver";
                       description
-                        "Unique identifier for the mapping.";
+                        "Type of multicast site.";
                     }
-                    leaf vlan-id {
+                    list multicast-gp-address-mapping {
+                      key "id";
+                      description
+                        "List of Port to group mappings.";
+                      leaf id {
+                        type uint16;
+                        description
+                          "Unique identifier for the mapping.";
+                      }
+                      leaf vlan-id {
+                        type uint32;
+                        description
+                          "The VLAN ID of the Multicast group.";
+                      }
+                      leaf mac-gp-address {
+                        type yang:mac-address;
+                        description
+                          "The MAC address of the Multicast group.";
+                      }
+                      leaf port-lag-number {
+                        type uint32;
+                        description
+                          "The ports/LAGs belonging to the Multicast group.";
+                      }
+                    }
+                    leaf bum-overall-rate {
                       type uint32;
                       description
-                        "The VLAN ID of the Multicast group.";
+                        "overall rate for BUM";
                     }
-                    leaf mac-gp-address {
-                      type yang:mac-address;
-                      description
-                        "The MAC address of the Multicast group.";
-                    }
-                    leaf port-lag-number {
-                      type uint32;
-                      description
-                        "The ports/LAGs belonging to the Multicast group.";
-                    }
-                  }
-                  leaf bum-overall-rate {
-                    type uint32;
-                    description
-                      "overall rate for BUM";
-                  }
-                }
-                container ethernet-service-oam {
-                  description
-                    "Container for Ethernet service OAM.";
-                  leaf md-name {
-                    type string;
-                    description
-                      "Maintenance domain name";
-                  }
-                  leaf md-level {
-                    type uint8;
-                    description
-                      "Maintenance domain level";
-                  }
-                  container cfm-802.1-ag {
-                    description
-                      "Container of 802.1ag CFM configurations.";
-                    list n2-uni-c {
-                      key "maid";
-                      description
-                        "List of UNI-N to UNI-C";
-                      uses cfm-802-grouping;
-                    }
-                    list n2-uni-n {
-                      key "maid";
-                      description
-                        "List of UNI-N to UNI-N";
-                      uses cfm-802-grouping;
-                    }
-                  }
-                  uses y-1731;
-                }
-                container mac-loop-prevention {
-                  description
-                    "Container of MAC loop prevention.";
-                  leaf frequency {
-                    type uint32;
-                    description
-                      "Frequency";
-                  }
-                  leaf protection-type {
-                    type identityref {
-                      base loop-prevention-type;
-                    }
-                    description
-                      "Protection type";
-                  }
-                  leaf number-retries {
-                    type uint32;
-                    description
-                      "Number of retries";
-                  }
-                }
-                container access-control-list {
-                  description
-                    "Container for access control List.";
-                  list mac {
-                    key "mac-address";
-                    description
-                      "List for MAC.";
-                    leaf mac-address {
-                      type yang:mac-address;
-                      description
-                        "MAC address.";
-                    }
-                  }
-                }
-                container mac-addr-limit {
-                  description
-                    "Container of MAC-Addr limit configurations";
-                  leaf mac-num-limit {
-                    type uint16;
-                    description
-                      "maximum number of MAC addresses learned from
-                       the subscriber for a single service instance.";
-                  }
-                  leaf time-interval {
-                    type uint32;
-                    units "milliseconds";
-                    description
-                      "The aging time of the mac address.";
-                  }
-                  leaf action {
-                    type identityref {
-                      base mac-action;
-                    }
-                    description
-                      "specify the action when the upper limit is
-                       exceeded: drop the packet, flood the
-                       packet, or simply send a warning log message.";
                   }
                 }
               }
