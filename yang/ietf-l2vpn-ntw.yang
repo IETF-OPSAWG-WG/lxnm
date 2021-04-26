@@ -1807,7 +1807,85 @@ module ietf-l2vpn-ntw {
                       description
                         "Configuration of the traffic classification
                          policy.";
-                      uses vpn-common:qos-classification-policy;
+                      list rule {
+                        key "id";
+                        ordered-by user;
+                        description
+                          "List of classification rules.";
+                        leaf id {
+                          type string;
+                          description
+                            "A description identifying the QoS classification
+                             policy rule.";
+                        }
+                        choice match-type {
+                          default "match-flow";
+                          description
+                            "Choice for classification.";
+                          case match-flow {
+                            container match-flow {
+                              description
+                                "Describes flow-matching criteria.";
+                              leaf dscp {
+                                type inet:dscp;
+                                description
+                                  "DSCP value.";
+                              }
+                              leaf dot1q {
+                                type uint16;
+                                description
+                                  "802.1Q matching.  It is a VLAN tag added into
+                                   a frame.";
+                              }
+                              leaf pcp {
+                                type uint8 {
+                                  range "0..7";
+                                }
+                                description
+                                  "PCP value.";
+                              }
+                              leaf src-mac {
+                                type yang:mac-address;
+                                description
+                                  "Source MAC address.";
+                              }
+                              leaf dst-mac {
+                                type yang:mac-address;
+                                description
+                                  "Destination MAC address.";
+                              }
+                              leaf color-type {
+                                type identityref {
+                                  base color-type;
+                                }
+                                description
+                                  "Color types.";
+                              }
+                              leaf any {
+                                type empty;
+                                description
+                                  "Allow all.";
+                              }
+                            }
+                          }
+                          case match-application {
+                            leaf match-application {
+                              type identityref {
+                                base vpn-common:customer-application;
+                              }
+                              description
+                                "Defines the application to match.";
+                            }
+                          }
+                        }
+                        leaf target-class-id {
+                          type string;
+                          description
+                            "Identification of the CoS.
+                             This identifier is internal to the
+                             administration.";
+                        }
+                      }
                     }
                     container qos-profile {
                       description
@@ -1848,11 +1926,11 @@ module ietf-l2vpn-ntw {
                       list mac {
                         key "mac-address";
                         description
-                          "List for MAC.";
+                          "List for MAC addresses.";
                         leaf mac-address {
                           type yang:mac-address;
                           description
-                            "MAC address.";
+                            "Specifies a MAC address.";
                         }
                       }
                     }
