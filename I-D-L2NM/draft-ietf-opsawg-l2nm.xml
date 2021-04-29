@@ -46,7 +46,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-l2nm-01" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-l2nm-02" ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN"
@@ -664,10 +664,47 @@
         is only relevant in the L2SM model.</t>
 
         <figure align="center" anchor="vpn-service_tree">
-          <artwork align="left"><![CDATA[
-  
-     +--rw vpn-services
+          <artwork align="left"><![CDATA[     +--rw vpn-services
         +--rw vpn-service* [vpn-id]
+           +--rw vpn-id                        vpn-common:vpn-id
+           +--rw vpn-name?                     string
+           +--rw vpn-description?              string
+           +--rw customer-name?                string
+           +--rw service-vpn-id?               vpn-common:vpn-id
+           +--rw vpn-svc-type?                 identityref
+           +--rw svc-topo?                     identityref
+           +--rw global-parameters-profiles
+           |  +--rw global-parameters-profile* [profile-id]
+           |     +--rw profile-id                  string
+           |     +--rw role?                       identityref
+           |     +--rw svc-mtu?                    uint32
+           |     +--rw ce-vlan-preservation?       boolean
+           |     +--rw ce-vlan-cos-perservation?   boolean
+           |     +--rw control-word-negotiation?   boolean
+           |     +--rw mac-policies
+           |     |  +--rw mac-addr-limit
+           |     |  |  +--rw mac-num-limit?   uint16
+           |     |  |  +--rw time-interval?   uint32
+           |     |  |  +--rw action?          identityref
+           |     |  +--rw mac-loop-prevention
+           |     |     +--rw frequency?         uint32
+           |     |     +--rw protection-type?   identityref
+           |     |     +--rw number-retries?    uint32
+           |     +--rw multicast-like {vpn-common:multicast}?
+           |        +--rw enabled?                 boolean
+           |        +--rw customer-tree-flavors
+           |           +--rw tree-flavor*   identityref
+           +--rw extranet-vpns {vpn-common:extranet-vpn}?
+           |  +--rw extranet-vpn* [vpn-id]
+           |     +--rw vpn-id              vpn-common:vpn-id
+           |     +--rw local-sites-role?   identityref
+           +--rw underlay-transport
+           |  +--rw (type)?
+           |     +--:(abstract)
+           |     |  +--rw transport-instance-id?   string
+           |     |  +--rw instance-type?           identityref
+           |     +--:(protocol)
+           |        +--rw protocol*                identityref
            +--rw status
            |  +--rw admin-status
            |  |  +--rw status?         identityref
@@ -675,26 +712,6 @@
            |  +--ro oper-status
            |     +--ro status?         identityref
            |     +--ro last-updated?   yang:date-and-time
-           +--rw vpn-id                      vpn-id
-           +--rw vpn-name?                   string
-           +--rw vpn-description?            string
-           +--rw customer-name?              string
-           +--rw l2sm-vpn-id?                vpn-common:vpn-id
-           +--rw vpn-svc-type?               identityref
-           +--rw svc-topo?                   identityref
-           +--rw multicast-like {vpn-common:multicast}?
-           |  +--rw enabled?                 boolean
-           |  +--rw customer-tree-flavors
-           |     +--rw tree-flavor*   identityref
-           +--rw extranet-vpns {vpn-common:extranet-vpn}?
-           |  +--rw extranet-vpn* [vpn-id]
-           |     +--rw vpn-id              vpn-common:vpn-id
-           |     +--rw local-sites-role?   identityref
-           +--rw svc-mtu?                    uint32
-           +--rw ce-vlan-preservation?       boolean
-           +--rw ce-vlan-cos-perservation?   boolean
-           +--rw underlay-transport
-           |  +--rw type*   identityref
            +--rw vpn-nodes
                    .....
      ]]></artwork>
@@ -761,7 +778,7 @@
 
           <figure align="center" anchor="vpn-node_tree">
             <artwork align="left"><![CDATA[
-                   +--rw vpn-nodes
+           +--rw vpn-nodes
               +--rw vpn-node* [vpn-node-id ne-id]
                  +--rw vpn-node-id             vpn-common:vpn-id
                  +--rw description?            string
@@ -852,51 +869,92 @@
 
             <figure align="center" anchor="signaling_options_tree">
               <artwork align="left"><![CDATA[
-        
                  +--rw signaling-options* [type]
-                   +--rw type         identityref
-                   +--rw l2vpn-bgp
-                   |  +--rw pwe-encapsulation-type?   identityref
-                   |  +--rw vpn-target* [id]
-                   |  |  +--rw id                   int8
-                   |  |  +--rw route-targets* [route-target]
-                   |  |  |  +--rw route-target
-                   |  |  |          rt-types:route-target
-                   |  |  +--rw route-target-type
-                   |  |          rt-types:route-target-type
-                   |  +--rw vpn-policies
-                   |  |  +--rw import-policy?   string
-                   |  |  +--rw export-policy?   string
-                   |  +--rw pwe-mtu
-                   |  |  +--rw allow-mtu-mismatch?   boolean
-                   |  +--rw address-family?
-                   |          vpn-common:address-family
-                   +--rw evpn-bgp
-                   |  +--rw vpn-id?              leafref
-                   |  +--rw type?                identityref
-                   |  +--rw address-family?
-                   |  |       vpn-common:address-family
-                   |  +--rw mac-learning-mode?   identityref
-                   |  +--rw arp-suppress?        boolean
-                   +--rw t-ldp-pwe
-                   |  +--rw type?                     identityref
-                   |  +--rw pwe-encapsulation-type?   identityref
-                   |  +--rw pwe-mtu?                  uint16
-                   |  +--rw ac-pw-list* [peer-addr vc-id]
-                   |  |  +--rw peer-addr      inet:ip-address
-                   |  |  +--rw vc-id          vpn-common:vpn-id
-                   |  |  +--rw pw-type?       identityref
-                   |  |  +--rw pw-priority?   uint32
-                   |  +--rw qinq
-                   |     +--rw s-tag?   uint32
-                   |     +--rw c-tag?   uint32
-                   +--rw l2tp-pwe
-                      +--rw type?                 identityref
-                      +--rw encapsulation-type?   identityref
-                      +--rw ac-pw-list* [peer-addr vc-id]
-                         +--rw peer-addr      inet:ip-address
-                         +--rw vc-id          string
-                         +--rw pw-priority?   uint32
+                 |  +--rw type                                  identityref
+                 |  +--rw (signaling-option)?
+                 |     +--:(bgp)
+                 |     |  +--rw (rd-choice)?
+                 |     |  |  +--:(directly-assigned)
+                 |     |  |  |  +--rw rd?                       rt-types:route-distinguisher
+                 |     |  |  +--:(directly-assigned-suffix)
+                 |     |  |  |  +--rw rd-suffix?                uint16
+                 |     |  |  +--:(auto-assigned)
+                 |     |  |  |  +--rw rd-auto
+                 |     |  |  |     +--rw (auto-mode)?
+                 |     |  |  |     |  +--:(from-pool)
+                 |     |  |  |     |  |  +--rw rd-pool-name?   string
+                 |     |  |  |     |  +--:(full-auto)
+                 |     |  |  |     |     +--rw auto?           empty
+                 |     |  |  |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+                 |     |  |  +--:(auto-assigned-suffix)
+                 |     |  |  |  +--rw rd-auto-suffix
+                 |     |  |  |     +--rw (auto-mode)?
+                 |     |  |  |     |  +--:(from-pool)
+                 |     |  |  |     |  |  +--rw rd-pool-name?        string
+                 |     |  |  |     |  +--:(full-auto)
+                 |     |  |  |     |     +--rw auto?                empty
+                 |     |  |  |     +--ro auto-assigned-rd-suffix?   uint16
+                 |     |  |  +--:(no-rd)
+                 |     |  |     +--rw no-rd?                    empty
+                 |     |  +--rw vpn-target* [id]
+                 |     |  |  +--rw id                   int8
+                 |     |  |  +--rw route-targets* [route-target]
+                 |     |  |  |  +--rw route-target    rt-types:route-target
+                 |     |  |  +--rw route-target-type    rt-types:route-target-type
+                 |     |  +--rw vpn-policies
+                 |     |  |  +--rw import-policy?   string
+                 |     |  |  +--rw export-policy?   string
+                 |     |  +--rw address-family?                 identityref
+                 |     |  +--rw (l2vpn-bgp)?
+                 |     |  |  +--:(pwe-encapsulation-type)
+                 |     |  |  |  +--rw pwe-encapsulation-type?   identityref
+                 |     |  |  +--:(pwe-mtu)
+                 |     |  |     +--rw pwe-mtu
+                 |     |  |        +--rw allow-mtu-mismatch?   boolean
+                 |     |  +--rw (evpn-bgp)?
+                 |     |     +--:(vpn-id)
+                 |     |     |  +--rw vpn-id?                   -> /l2vpn-ntw/vpn-services/vpn-service/vpn-id
+                 |     |     +--:(evpn-type)
+                 |     |     |  +--rw evpn-type?                identityref
+                 |     |     +--:(service-interface-type)
+                 |     |     |  +--rw service-interface-type?   identityref
+                 |     |     +--:(common)
+                 |     |        +--rw common
+                 |     |           +--rw mac-learning-mode?                  identityref
+                 |     |           +--rw ingress-replication?                boolean
+                 |     |           +--rw p2mp-replication?                   boolean
+                 |     |           +--rw arp-proxy?                          boolean
+                 |     |           +--rw arp-suppression?                    boolean
+                 |     |           +--rw nd-proxy?                           boolean
+                 |     |           +--rw nd-suppression?                     boolean
+                 |     |           +--rw underlay-multicast?                 boolean
+                 |     |           +--rw flood-unknown-unicast-supression?   boolean
+                 |     |           +--rw vpws-vlan-aware?                    boolean
+                 |     |           +--rw bum-management
+                 |     |           |  +--rw discard-broadcast?           boolean
+                 |     |           |  +--rw discard-unknown-multicast?   boolean
+                 |     |           |  +--rw discard-unknown-unicast?     boolean
+                 |     |           +--rw pbb
+                 |     |              +--rw backbone-src-mac?   yang:mac-address
+                 |     +--:(ldp)
+                 |     |  +--rw t-ldp-pwe-type?                 identityref
+                 |     |  +--rw encapsulation-type?             identityref
+                 |     |  +--rw mtu-pwe?                        uint16
+                 |     |  +--rw ac-pw-list* [peer-addr vc-id]
+                 |     |  |  +--rw peer-addr      inet:ip-address
+                 |     |  |  +--rw vc-id          vpn-common:vpn-id
+                 |     |  |  +--rw pw-type?       identityref
+                 |     |  |  +--rw pw-priority?   uint32
+                 |     |  +--rw qinq
+                 |     |     +--rw s-tag?   uint32
+                 |     |     +--rw c-tag?   uint32
+                 |     +--:(l2tp-pwe)
+                 |        +--rw TBD-type?                       identityref
+                 |        +--rw XXXencapsulation-type?          identityref
+                 |        +--rw XXXXac-pw-list* [peer-addr vc-id]
+                 |           +--rw peer-addr      inet:ip-address
+                 |           +--rw vc-id          string
+                 |           +--rw pw-priority?   uint32
 
              ]]></artwork>
             </figure>
@@ -936,7 +994,7 @@
 
             <figure align="center" anchor="vpn_network_access_tree">
               <artwork align="left"><![CDATA[
-                         +--rw vpn-network-accesses
+                 +--rw vpn-network-accesses
                     +--rw vpn-network-access* [id]
                        +--rw id
                        |       vpn-common:vpn-id
@@ -1138,178 +1196,69 @@
               ethernet service such as bandwidth or qos.</t>
 
               <figure align="center" anchor="service_tree">
-                <artwork align="left"><![CDATA[
-+--rw service
-  |  +--rw svc-input-bandwidth
-  |  |       {vpn-common:input-bw}?
-  |  |  +--rw input-bandwidth* [type]
-  |  |     +--rw type      identityref
-  |  |     +--rw cos-id?   uint8
-  |  |     +--rw cir?      uint64
-  |  |     +--rw cbs?      uint64
-  |  |     +--rw eir?      uint64
-  |  |     +--rw ebs?      uint64
-  |  |     +--rw pir?      uint64
-  |  |     +--rw pbs?      uint64
-  |  +--rw svc-output-bandwidth {output-bw}?
-  |  |  +--rw output-bandwidth* [type]
-  |  |     +--rw type      identityref
-  |  |     +--rw cos-id?   uint8
-  |  |     +--rw cir?      uint64
-  |  |     +--rw cbs?      uint64
-  |  |     +--rw eir?      uint64
-  |  |     +--rw ebs?      uint64
-  |  |     +--rw pir?      uint64
-  |  |     +--rw pbs?      uint64
-  |  +--rw qos {vpn-common:qos}?
-  |  |  +--rw qos-classification-policy
-  |  |  |  +--rw rule* [id]
-  |  |  |     +--rw id
-  |  |  |     |       string
-  |  |  |     +--rw (match-type)?
-  |  |  |     |  +--:(match-flow)
-  |  |  |     |  |  +--rw (l3)?
-  |  |  |     |  |  |  +--:(ipv4)
-  |  |  |     |  |  |  |  +--rw ipv4
-  |  |  |     |  |  |  |     +--rw dscp?
-  |  |  |     |  |  |  |     |       inet:dscp
-  |  |  |     |  |  |  |     +--rw ecn?
-  |  |  |     |  |  |  |     |       uint8
-  |  |  |     |  |  |  |     +--rw length?
-  |  |  |     |  |  |  |     |       uint16
-  |  |  |     |  |  |  |     +--rw ttl?
-  |  |  |     |  |  |  |     |       uint8
-  |  |  |     |  |  |  |     +--rw protocol?
-  |  |  |     |  |  |  |     |       uint8
-  |  |  |     |  |  |  |     +--rw ihl?
-  |  |  |     |  |  |  |     |       uint8
-  |  |  |     |  |  |  |     +--rw flags?
-  |  |  |     |  |  |  |     |       bits
-  |  |  |     |  |  |  |     +--rw offset?
-  |  |  |     |  |  |  |     |       uint16
-  |  |  |     |  |  |  |     +--rw identification?
-  |  |  |     |  |  |  |     |       uint16
-  |  |  |     |  |  |  |     +--rw (destination-network)?
-  |  |  |     |  |  |  |     |  +--:(destination-ipv4-network)
-  |  |  |     |  |  |  |     |     +--rw destination-ipv4-network?
-  |  |  |     |  |  |  |     |             inet:ipv4-prefix
-  |  |  |     |  |  |  |     +--rw (source-network)?
-  |  |  |     |  |  |  |        +--:(source-ipv4-network)
-  |  |  |     |  |  |  |           +--rw source-ipv4-network?
-  |  |  |     |  |  |  |                   inet:ipv4-prefix
-  |  |  |     |  |  |  +--:(ipv6)
-  |  |  |     |  |  |     +--rw ipv6
-  |  |  |     |  |  |        +--rw dscp?
-  |  |  |     |  |  |        |       inet:dscp
-  |  |  |     |  |  |        +--rw ecn?
-  |  |  |     |  |  |        |       uint8
-  |  |  |     |  |  |        +--rw length?
-  |  |  |     |  |  |        |       uint16
-  |  |  |     |  |  |        +--rw ttl?
-  |  |  |     |  |  |        |       uint8
-  |  |  |     |  |  |        +--rw protocol?
-  |  |  |     |  |  |        |       uint8
-  |  |  |     |  |  |        +--rw (destination-network)?
-  |  |  |     |  |  |        |  +--:(destination-ipv6-network)
-  |  |  |     |  |  |        |     +--rw destination-ipv6-network?
-  |  |  |     |  |  |        |             inet:ipv6-prefix
-  |  |  |     |  |  |        +--rw (source-network)?
-  |  |  |     |  |  |        |  +--:(source-ipv6-network)
-  |  |  |     |  |  |        |     +--rw source-ipv6-network?
-  |  |  |     |  |  |        |             inet:ipv6-prefix
-  |  |  |     |  |  |        +--rw flow-label?
-  |  |  |     |  |  |                inet:ipv6-flow-label
-  |  |  |     |  |  +--rw (l4)?
-  |  |  |     |  |     +--:(tcp)
-  |  |  |     |  |     |  +--rw tcp
-  |  |  |     |  |     |     +--rw sequence-number?
-  |  |  |     |  |     |     |       uint32
-  |  |  |     |  |     |     +--rw acknowledgement-number?
-  |  |  |     |  |     |     |       uint32
-  |  |  |     |  |     |     +--rw data-offset?
-  |  |  |     |  |     |     |       uint8
-  |  |  |     |  |     |     +--rw reserved?
-  |  |  |     |  |     |     |       uint8
-  |  |  |     |  |     |     +--rw flags?
-  |  |  |     |  |     |     |       bits
-  |  |  |     |  |     |     +--rw window-size?
-  |  |  |     |  |     |     |       uint16
-  |  |  |     |  |     |     +--rw urgent-pointer?
-  |  |  |     |  |     |     |       uint16
-  |  |  |     |  |     |     +--rw options?
-  |  |  |     |  |     |     |       binary
-  |  |  |     |  |     |     +--rw (source-port)?
-  |  |  |     |  |     |     |  +--:(source-port-range-or-operator)
-  |  |  |     |  |     |     |     +--rw source-port-range-or-operator
-  |  |  |     |  |     |     |        +--rw (port-range-or-operator)?
-  |  |  |     |  |     |     |           +--:(range)
-  |  |  |     |  |     |     |           |  +--rw lower-port
-  |  |  |     |  |     |     |           |  |       inet:port-number
-  |  |  |     |  |     |     |           |  +--rw upper-port
-  |  |  |     |  |     |     |           |          inet:port-number
-  |  |  |     |  |     |     |           +--:(operator)
-  |  |  |     |  |     |     |              +--rw operator?
-  |  |  |     |  |     |     |              |       operator
-  |  |  |     |  |     |     |              +--rw port
-  |  |  |     |  |     |     |                      inet:port-number
-  |  |  |     |  |     |     +--rw (destination-port)?
-  |  |  |     |  |     |        +--:(destination-port-range-or-operator)
-  |  |  |     |  |     |           +--rw destination-port-range-or-operator
-  |  |  |     |  |     |              +--rw (port-range-or-operator)?
-  |  |  |     |  |     |                 +--:(range)
-  |  |  |     |  |     |    |  +--rw lower-port
-  |  |  |     |  |     |    |  |       inet:port-number
-  |  |  |     |  |     |    |  +--rw upper-port
-  |  |  |     |  |     |    |          inet:port-number
-  |  |  |     |  |     |                 +--:(operator)
-  |  |  |     |  |     |                    +--rw operator?
-  |  |  |     |  |     |       |       operator
-  |  |  |     |  |     |                    +--rw port
-  |  |  |     |  |     |                            inet:port-number
-  |  |  |     |  |     +--:(udp)
-  |  |  |     |  |        +--rw udp
-  |  |  |     |  |           +--rw length?
-  |  |  |     |  |           |       uint16
-  |  |  |     |  |           +--rw (source-port)?
-  |  |  |     |  |           |  +--:(source-port-range-or-operator)
-  |  |  |     |  |           |     +--rw source-port-range-or-operator
-  |  |  |     |  |           |        +--rw (port-range-or-operator)?
-  |  |  |     |  |           |           +--:(range)
-  |  |  |     |  |           |           |  +--rw lower-port
-  |  |  |     |  |           |           |  |       inet:port-number
-  |  |  |     |  |           |           |  +--rw upper-port
-  |  |  |     |  |           |           |          inet:port-number
-  |  |  |     |  |           |           +--:(operator)
-  |  |  |     |  |           |              +--rw operator?
-  |  |  |     |  |           |              |       operator
-  |  |  |     |  |           |              +--rw port
-  |  |  |     |  |           |                      inet:port-number
-  |  |  |     |  |           +--rw (destination-port)?
-  |  |  |     |  |              +--:(destination-port-range-or-operator)
-  |  |  |     |  |                 +--rw destination-port-range-or-operator
-  |  |  |     |  |                    +--rw (port-range-or-operator)?
-  |  |  |     |  |                       +--:(range)
-  |  |  |     |  |          |  +--rw lower-port
-  |  |  |     |  |          |  |       inet:port-number
-  |  |  |     |  |          |  +--rw upper-port
-  |  |  |     |  |          |          inet:port-number
-  |  |  |     |  |                       +--:(operator)
-  |  |  |     |  |                          +--rw operator?
-  |  |  |     |  |             |       operator
-  |  |  |     |  |                          +--rw port
-  |  |  |     |  |                                  inet:port-number
-  |  |  |     |  +--:(match-application)
-  |  |  |     |     +--rw match-application?
-  |  |  |     |             identityref
-  |  |  |     +--rw target-class-id?
-  |  |  |             string
-  |  |  +--rw qos-profile
-  |  |     +--rw qos-profile* [profile]
-  |  |        +--rw profile      leafref
-  |  |        +--rw direction?   identityref
-  |  +--rw precedence
-  |     +--rw precedence?   identityref
-            ]]></artwork>
+                <artwork align="left"><![CDATA[+--rw service
+   +--rw mtu?                                   uint32
+   +--rw svc-input-bandwidth {vpn-common:input-bw}?
+   |  +--rw input-bandwidth* [type]
+   |     +--rw type      identityref
+   |     +--rw cos-id?   uint8
+   |     +--rw cir?      uint64
+   |     +--rw cbs?      uint64
+   |     +--rw eir?      uint64
+   |     +--rw ebs?      uint64
+   |     +--rw pir?      uint64
+   |     +--rw pbs?      uint64
+   +--rw svc-output-bandwidth {output-bw}?
+   |  +--rw output-bandwidth* [type]
+   |     +--rw type      identityref
+   |     +--rw cos-id?   uint8
+   |     +--rw cir?      uint64
+   |     +--rw cbs?      uint64
+   |     +--rw eir?      uint64
+   |     +--rw ebs?      uint64
+   |     +--rw pir?      uint64
+   |     +--rw pbs?      uint64
+   +--rw qos {vpn-common:qos}?
+   |  +--rw qos-classification-policy
+   |  |  +--rw rule* [id]
+   |  |     +--rw id                         string
+   |  |     +--rw (match-type)?
+   |  |     |  +--:(match-flow)
+   |  |     |  |  +--rw match-flow
+   |  |     |  |     +--rw dscp?         inet:dscp
+   |  |     |  |     +--rw dot1q?        uint16
+   |  |     |  |     +--rw pcp?          uint8
+   |  |     |  |     +--rw src-mac?      yang:mac-address
+   |  |     |  |     +--rw dst-mac?      yang:mac-address
+   |  |     |  |     +--rw color-type?   identityref
+   |  |     |  |     +--rw any?          empty
+   |  |     |  +--:(match-application)
+   |  |     |     +--rw match-application?   identityref
+   |  |     +--rw target-class-id?           string
+   |  +--rw qos-profile
+   |     +--rw qos-profile* [profile]
+   |        +--rw profile      leafref
+   |        +--rw direction?   identityref
+   +--rw mac-policies
+   |  +--rw access-control-list
+   |  |  +--rw mac* [mac-address]
+   |  |     +--rw mac-address    yang:mac-address
+   |  +--rw mac-loop-prevention
+   |  |  +--rw frequency?         uint32
+   |  |  +--rw protection-type?   identityref
+   |  |  +--rw number-retries?    uint32
+   |  +--rw mac-addr-limit
+   |     +--rw mac-num-limit?   uint16
+   |     +--rw time-interval?   uint32
+   |     +--rw action?          identityref
+   +--rw broadcast-unknown-unicast-multicast
+       +--rw multicast-site-type?            enumeration
+       +--rw multicast-gp-address-mapping* [id]
+       |  +--rw id                 uint16
+       |  +--rw vlan-id?           uint32
+       |  +--rw mac-gp-address?    yang:mac-address
+       |  +--rw port-lag-number?   uint32
+       +--rw bum-overall-rate?               uint32            ]]></artwork>
               </figure>
             </section>
           </section>
@@ -1319,7 +1268,7 @@
 
     <section anchor="YANG_module" title="YANG Module">
       <figure align="center" anchor="module_YANG">
-        <artwork align="left"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-04-15.yang"
+        <artwork align="left"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-04-29.yang"
 module ietf-l2vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
@@ -1352,8 +1301,7 @@ module ietf-l2vpn-ntw {
      Editor:    Oscar Gonzalez de Dios
                <mailto:oscar.gonzalezdedios@telefonica.com>
      Editor:    Mohamed Boucadair
-               <mailto:mohamed.boucadair@orange.com>
-    ";
+               <mailto:mohamed.boucadair@orange.com>";
   description
     "This YANG module defines a generic network model
      for Layer 2 VPN services.
@@ -1362,17 +1310,16 @@ module ietf-l2vpn-ntw {
      authors of the code.  All rights reserved.
 
      Redistribution and use in source and binary forms, with or
-     without modification, is permitted pursuant to, and subject to
-     the license terms contained in, the Simplified BSD License set
-     forth in Section 4.c of the IETF Trust's Legal Provisions
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Simplified BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
      Relating to IETF Documents
-     (https://trustee.ietf.org/license-info).
+     (http://trustee.ietf.org/license-info).
 
-     This version of this YANG module is part of RFC XXXX
-     (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
-     for full legal notices.";
+     This version of this YANG module is part of RFC XXXX; see
+     the RFC itself for full legal notices.";
 
-  revision 2021-04-15 {
+  revision 2021-04-29 {
     description
       "Initial version.";
     reference
@@ -1463,6 +1410,58 @@ module ietf-l2vpn-ntw {
 
   /* Typedefs */
   /* Identities */
+
+  identity evpn-redundancy-mode {
+    description
+      "Base identity for EVPN redundancy modes.";
+  }
+
+  identity single-active {
+    base evpn-redundancy-mode;
+    description
+      "Indicates Single-Active redundancy mode for
+       a given Ethernet Segment (ES).";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.1";
+  }
+
+  identity all-active {
+    base evpn-redundancy-mode;
+    description
+      "Indicates All-Active redundancy mode for
+       a given Ethernet Segment (ES).";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.2";
+  }
+
+  identity evpn-service-type {
+    description
+      "Base identity for EVPN service type.";
+  }
+
+  identity vlan-based-service-interface {
+    base evpn-redundancy-mode;
+    description
+      "VLAN-Based Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.1";
+  }
+
+  identity vlan-bundle-service-interface {
+    base evpn-redundancy-mode;
+    description
+      "VLAN Bundle Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.2";
+  }
+
+  identity vlan-aware-bundle-service-interface {
+    base evpn-redundancy-mode;
+    description
+      "VLAN-Aware Bundle Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.3";
+  }
 
   identity mapping-type {
     base vpn-common:multicast-gp-address-mapping;
@@ -1943,6 +1942,120 @@ module ietf-l2vpn-ntw {
     }
   }
 
+  ///
+
+  grouping global-parameters-profile {
+    description
+      "Container for per-service paramters.";
+    leaf svc-mtu {
+      type uint32;
+      description
+        "SVC MTU, it is also known as the maximum transmission unit
+         or maximum frame size,When a frame is larger than the MTU,
+         it is broken down, or fragmented, into smaller pieces by the
+         network protocol to accommodate the MTU of the network";
+    }
+    leaf ce-vlan-preservation {
+      type boolean;
+      description
+        "Preserve the CE-VLAN ID from ingress to egress,i.e.,
+         CE-VLAN tag of the egress frame are identical to
+         those of the ingress frame that yielded this egress
+         service frame. If All-to-One bundling within a site
+         is Enabled, then preservation applies to all Ingress
+         service frames. If All-to-One bundling is Disabled,
+         then preservation applies to tagged Ingress service
+         frames having CE-VLAN ID 1 through 4094.";
+    }
+    leaf ce-vlan-cos-perservation {
+      type boolean;
+      description
+        "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
+         of the egress frame are identical to those of the ingress
+         frame that yielded this egress service frame.";
+    }
+    leaf control-word-negotiation {
+      type boolean;
+      description
+        "Controls whether Control-word negotiation is enabled
+         (if set to true) or not (if set to false).";
+      reference
+        "Section 7 of RFC8077";
+    }
+    container mac-policies {
+      description
+        "Container of MAC policies.";
+      container mac-addr-limit {
+        description
+          "Container of MAC-Addr limit configuration.";
+        leaf mac-num-limit {
+          type uint16;
+          description
+            "Maximum number of MAC addresses learned from
+             the customer for a single service instance.";
+        }
+        leaf time-interval {
+          type uint32;
+          units "milliseconds";
+          description
+            "The aging time of the mac address.";
+        }
+        leaf action {
+          type identityref {
+            base mac-action;
+          }
+          description
+            "Specifies the action when the upper limit is
+             exceeded: drop the packet, flood the
+             packet, or simply send a warning log message.";
+        }
+      }
+      container mac-loop-prevention {
+        description
+          "Container of MAC loop prevention.";
+        leaf frequency {
+          type uint32;
+          description
+            "Frequency";
+        }
+        leaf protection-type {
+          type identityref {
+            base loop-prevention-type;
+          }
+          description
+            "Protection type";
+        }
+        leaf number-retries {
+          type uint32;
+          description
+            "Number of retries";
+        }
+      }
+    }
+    container multicast-like {
+      if-feature "vpn-common:multicast";
+      description
+        "Multicast like container";
+      leaf enabled {
+        type boolean;
+        default "false";
+        description
+          "Enables multicast.";
+      }
+      container customer-tree-flavors {
+        description
+          "Type of trees used by customer.";
+        leaf-list tree-flavor {
+          type identityref {
+            base vpn-common:multicast-tree-type;
+          }
+          description
+            "Type of tree to be used.";
+        }
+      }
+    }
+  }
+
   /* Main L2NM Container */
 
   container l2vpn-ntw {
@@ -1960,7 +2073,6 @@ module ietf-l2vpn-ntw {
         key "vpn-id";
         description
           "Container of port configurations";
-        uses vpn-common:service-status;
         uses vpn-common:vpn-description;
         leaf service-vpn-id {
           type vpn-common:vpn-id;
@@ -1970,7 +2082,7 @@ module ietf-l2vpn-ntw {
         }
         leaf vpn-svc-type {
           type identityref {
-            base vpn-common:vpn-signaling-type;
+            base vpn-common:service-type;
           }
           description
             "Service type";
@@ -1983,26 +2095,27 @@ module ietf-l2vpn-ntw {
             "Defining service topology, such as
              any-to-any, hub-spoke, etc.";
         }
-        container multicast-like {
-          if-feature "vpn-common:multicast";
+        container global-parameters-profiles {
           description
-            "Multicast like container";
-          leaf enabled {
-            type boolean;
-            default "false";
+            "Container for a list of VPN instance profiles.";
+          list global-parameters-profile {
+            key "profile-id";
             description
-              "Enables multicast.";
-          }
-          container customer-tree-flavors {
-            description
-              "Type of trees used by customer.";
-            leaf-list tree-flavor {
-              type identityref {
-                base vpn-common:multicast-tree-type;
-              }
+              "List of XXX.";
+            leaf profile-id {
+              type string;
               description
-                "Type of tree to be used.";
+                "profile identifier.";
             }
+            leaf role {
+              type identityref {
+                base vpn-common:role;
+              }
+              default "vpn-common:any-to-any-role";
+              description
+                "Role of the VPN node in the VPN.";
+            }
+            uses global-parameters-profile;
           }
         }
         container extranet-vpns {
@@ -2029,38 +2142,12 @@ module ietf-l2vpn-ntw {
             }
           }
         }
-        leaf svc-mtu {
-          type uint32;
-          description
-            "SVC MTU, it is also known as the maximum transmission unit
-             or maximum frame size,When a frame is larger than the MTU,
-             it is broken down, or fragmented, into smaller pieces by the
-             network protocol to accommodate the MTU of the network";
-        }
-        leaf ce-vlan-preservation {
-          type boolean;
-          description
-            "Preserve the CE-VLAN ID from ingress to egress,i.e.,
-             CE-VLAN tag of the egress frame are identical to
-             those of the ingress frame that yielded this egress
-             service frame. If All-to-One bundling within a site
-             is Enabled, then preservation applies to all Ingress
-             service frames. If All-to-One bundling is Disabled,
-             then preservation applies to tagged Ingress service
-             frames having CE-VLAN ID 1 through 4094.";
-        }
-        leaf ce-vlan-cos-perservation {
-          type boolean;
-          description
-            "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
-             of the egress frame are identical to those of the ingress
-             frame that yielded this egress service frame.";
-        }
         container underlay-transport {
           description
             "Container for underlay transport.";
           uses vpn-common:underlay-transport;
         }
+        uses vpn-common:service-status;
         container vpn-nodes {
           description
             "Set fo VPN nodes that are involved in the L2NM.";
@@ -2078,62 +2165,35 @@ module ietf-l2vpn-ntw {
               description
                 "Textual description of a VPN node.";
             }
-            leaf node-role {
-              type identityref {
-                base vpn-common:role;
-              }
-              default "vpn-common:any-to-any-role";
-              description
-                "Role of the vpn-node in the IP VPN.";
-            }
             leaf ne-id {
               type string;
               description
                 "NE IP address";
             }
-            leaf port-id {
-              type string;
+            container active-global-parameters-profiles {
               description
-                "NE Port-id";
-            }
-            leaf control-word-negotiation {
-              type boolean;
-              description
-                "Controls whether Control-word negotiation is enabled
-                 (if set to true) or not (if set to false).";
-              reference
-                "Section 7 of RFC8077";
-            }
-            container mac-addr-limit {
-              description
-                "Container of MAC-Addr limit configuration.";
-              leaf mac-num-limit {
-                type uint16;
+                "Container for a list of VPN instance profiles.";
+              list global-parameters-profile {
+                key "profile-id";
                 description
-                  "Maximum number of MAC addresses learned from
-                   the customer for a single service instance.";
-              }
-              leaf time-interval {
-                type uint32;
-                units "milliseconds";
-                description
-                  "The aging time of the mac address.";
-              }
-              leaf action {
-                type identityref {
-                  base mac-action;
+                  "List of XXX.";
+                leaf profile-id {
+                  type leafref {
+                    path "/l2vpn-ntw/vpn-services/vpn-service"
+                       + "/global-parameters-profiles"
+                       + "/global-parameters-profile/profile-id";
+                  }
+                  description
+                    "XXXX.";
                 }
-                description
-                  "Specifies the action when the upper limit is
-                   exceeded: drop the packet, flood the
-                   packet, or simply send a warning log message.";
+                uses global-parameters-profile;
               }
             }
             uses vpn-common:service-status;
             list signaling-options {
               key "type";
               description
-                "List of VPN Signaling Option.";
+                "List of VPN signaling options.";
               leaf type {
                 type identityref {
                   base vpn-common:vpn-signaling-type;
@@ -2141,289 +2201,287 @@ module ietf-l2vpn-ntw {
                 description
                   "VPN signaling types.";
               }
-              container l2vpn-bgp {
-                when "../type = 'vpn-common:l2vpn-bgp'" {
-                  description
-                    "Only applies when VPN signaling type is l2vpn
-                     BGP protocol.";
-                }
+              choice signaling-option {
                 description
-                  "Container for MP BGP L2VPN";
-                leaf pwe-encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
+                  "Choice for the signaling-option.";
+                case bgp {
                   description
-                    "PWE encapsulation type.";
-                }
-                uses vpn-common:vpn-route-targets;
-                container pwe-mtu {
-                  description
-                    "Container of PWE MTU configurations.";
-                  leaf allow-mtu-mismatch {
-                    type boolean;
-                    description
-                      "When set to true, it allows MTU mismatch.";
-                  }
-                }
-                leaf address-family {
-                  type identityref {
-                    base vpn-common:address-family;
-                  }
-                  description
-                    "Address family used for router-id information.";
-                }
-              }
-              container evpn-bgp {
-                when "../type = 'vpn-common:evpn-bgp'" {
-                  description
-                    "Only applies when vpn signaling type is EVPN
-                     BGP protocol.";
-                }
-                description
-                  "Container for MP BGP L2VPN.";
-                leaf vpn-id {
-                  type leafref {
-                    path "/l2vpn-ntw/vpn-services/vpn-service/vpn-id";
-                  }
-                  description
-                    "Identifies the target EVPN.";
-                }
-                leaf type {
-                  type identityref {
-                    base evpn-type;
-                  }
-                  description
-                    "L2VPN type.";
-                }
-                leaf address-family {
-                  type identityref {
-                    base vpn-common:address-family;
-                  }
-                  description
-                    "Indicates the ddress family used for router-id
-                     information.";
-                }
-                uses vpn-common:vpn-route-targets;
-                container common {
-                  description
-                    "XXX.";
-                  leaf mac-learning-mode {
+                    "xxx.";
+                  uses vpn-common:route-distinguisher;
+                  uses vpn-common:vpn-route-targets;
+                  leaf address-family {
                     type identityref {
-                      base mac-learning-mode;
+                      base vpn-common:address-family;
                     }
                     description
-                      "Indicates through which plane MAC addresses are
-                       advertised.";
+                      "Indicates the ddress family used for router-id
+                       information.";
                   }
-                  leaf ingress-replication {
-                    type boolean;
-                    description
-                      "ingress-replication";
-                  }
-                  leaf p2mp-replication {
-                    type boolean;
-                    description
-                      "p2mp-replication";
-                  }
-                  leaf arp-proxy {
-                    type boolean;
-                    default "false";
-                    description
-                      "Enable (TRUE) or disable (FALSE) ARP proxy";
-                  }
-                  leaf arp-suppression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "ARP suppression";
-                  }
-                  leaf nd-proxy {
-                    type boolean;
-                    default "false";
-                    description
-                      "Enable (TRUE) or disable (FALSE) ND proxy";
-                  }
-                  leaf nd-suppression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "ND suppression";
-                  }
-                  leaf underlay-multicast {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "underlay multicast";
-                  }
-                  leaf flood-unknown-unicast-supression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "flood unknown unicast suppression";
-                  }
-                  leaf vpws-vlan-aware {
-                    type boolean;
-                    default "false";
-                    description "Enable (True) or disable (False) "
-                              + "VPWS VLAN aware";
-                  }
-                  container BUM-Management {
-                    description
-                      "broadcast-unknown-unicast-multicast management";
-                    leaf discard-broadcast {
-                      type boolean;
+                  choice l2vpn-bgp {
+                    when "./type = 'vpn-common:l2vpn-bgp'" {
                       description
-                        "Broadcast management";
+                        "Only applies when VPN signaling type is l2vpn
+                         BGP protocol.";
                     }
-                    leaf discard-unknown-multicast {
-                      type boolean;
-                      description
-                        "Broadcast management";
-                    }
-                    leaf discard-unknown-unicast {
-                      type boolean;
-                      description
-                        "Unicast management";
-                    }
-                  }
-                  container ethernet-segments {
                     description
-                      "Ethenet segment support on the EVPN";
-                    list ethernet-segment {
-                      key "name";
-                      description
-                        "Ethenet segment support on the EVPN";
-                      leaf name {
-                        type string;
-                        description
-                          "Ethenet segment name on the EVPN";
+                      "Container for MP BGP L2VPN.";
+                    leaf pwe-encapsulation-type {
+                      type identityref {
+                        base vpn-common:encapsulation-type;
                       }
-                      leaf ethernet-segment-identifier {
-                        type yang:hex-string {
-                          length "29";
+                      description
+                        "PWE encapsulation type.";
+                    }
+                    container pwe-mtu {
+                      description
+                        "Container of PWE MTU configurations.";
+                      leaf allow-mtu-mismatch {
+                        type boolean;
+                        description
+                          "When set to true, it allows MTU mismatch.";
+                      }
+                    }
+                  }
+                  choice evpn-bgp {
+                    when "./type = 'vpn-common:evpn-bgp'" {
+                      description
+                        "Only applies when VPN signaling type is EVPN
+                         BGP protocol.";
+                    }
+                    description
+                      "Container for MP BGP L2VPN.";
+                    leaf vpn-id {
+                      type leafref {
+                        path "/l2vpn-ntw/vpn-services/vpn-service/vpn-id";
+                      }
+                      description
+                        "Identifies the target EVPN.";
+                    }
+                    leaf evpn-type {
+                      type identityref {
+                        base evpn-type;
+                      }
+                      description
+                        "EVPN type.";
+                    }
+                    leaf service-interface-type {
+                      type identityref {
+                        base evpn-service-type;
+                      }
+                      description
+                        "EVPN service interface type.";
+                    }
+                    container common {
+                      description
+                        "MAC address managment attributes in the
+                         EVPN configuration";
+                      leaf mac-learning-mode {
+                        type identityref {
+                          base mac-learning-mode;
                         }
                         description
-                          "10-octet Ethernet segment identifier (ESI),
-                           ex: 00:5a:5a:5a:5a:5a:5a:5a:5a:5a";
+                          "Indicates through which plane MAC addresses are
+                           advertised.";
+                      }
+                      leaf ingress-replication {
+                        type boolean;
+                        description
+                          "ingress-replication";
+                      }
+                      leaf p2mp-replication {
+                        type boolean;
+                        description
+                          "p2mp-replication";
+                      }
+                      leaf arp-proxy {
+                        type boolean;
+                        default "false";
+                        description
+                          "Enable (TRUE) or disable (FALSE) ARP proxy";
+                      }
+                      leaf arp-suppression {
+                        type boolean;
+                        default "false";
+                        description "Enable (TRUE) or disable (FALSE) "
+                                  + "ARP suppression";
+                      }
+                      leaf nd-proxy {
+                        type boolean;
+                        default "false";
+                        description
+                          "Enable (TRUE) or disable (FALSE) ND proxy";
+                      }
+                      leaf nd-suppression {
+                        type boolean;
+                        default "false";
+                        description "Enable (TRUE) or disable (FALSE) "
+                                  + "ND suppression";
+                      }
+                      leaf underlay-multicast {
+                        type boolean;
+                        default "false";
+                        description "Enable (TRUE) or disable (FALSE) "
+                                  + "underlay multicast";
+                      }
+                      leaf flood-unknown-unicast-supression {
+                        type boolean;
+                        default "false";
+                        description "Enable (TRUE) or disable (FALSE) "
+                                  + "flood unknown unicast suppression";
+                      }
+                      leaf vpws-vlan-aware {
+                        type boolean;
+                        default "false";
+                        description "Enable (True) or disable (False) "
+                                  + "VPWS VLAN aware";
+                      }
+                      container bum-management {
+                        description
+                          "broadcast-unknown-unicast-multicast management";
+                        leaf discard-broadcast {
+                          type boolean;
+                          description
+                            "Broadcast management.";
+                        }
+                        leaf discard-unknown-multicast {
+                          type boolean;
+                          description
+                            "Broadcast management.";
+                        }
+                        leaf discard-unknown-unicast {
+                          type boolean;
+                          description
+                            "Unicast management.";
+                        }
+                      }
+                      container pbb {
+                        description
+                          "PBB parameters container";
+                        reference
+                          "IEEE 802.1ah Provider Backbone Bridge";
+                        leaf backbone-src-mac {
+                          type yang:mac-address;
+                          description
+                            "backbone-src-mac";
+                        }
                       }
                     }
                   }
                 }
-              }
-              container t-ldp-pwe {
-                when "../type = 'vpn-common:t-ldp'" {
-                  description
-                    "Only applies when vpn signaling type is Target LDP.";
-                }
-                description
-                  "Container of T-LDP PWE configurations";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type";
-                }
-                leaf pwe-encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "PWE encapsulation type.";
-                }
-                leaf pwe-mtu {
-                  type uint16;
-                  description
-                    "Allow MTU mismatch: TO BE CHECKED";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
+                case ldp {
+                  when "./type = 'vpn-common:t-ldp'" {
                     description
-                      "Indicates the peer's IP address.";
+                      "Only applies when vpn signaling type is Target LDP.";
                   }
-                  leaf vc-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-type {
+                  description
+                    "Container of T-LDP PWE configurations";
+                  leaf t-ldp-pwe-type {
                     type identityref {
-                      base vpn-common:vpn-topology;
+                      base t-ldp-pwe-type;
                     }
                     description
-                      "PW topology type.";
+                      "T-LDP PWE type";
                   }
-                  leaf pw-priority {
-                    type uint32;
+                  leaf encapsulation-type {
+                    type identityref {
+                      base vpn-common:encapsulation-type;
+                    }
                     description
-                      "Defines the priority for the PW.
-                       The higher the pw-priority value,
-                       the higher the preference of the PW will be.";
+                      "PWE encapsulation type.";
+                  }
+                  leaf mtu-pwe {
+                    type uint16;
+                    description
+                      "Allow MTU mismatch: TO BE CHECKED";
+                  }
+                  list ac-pw-list {
+                    key "peer-addr vc-id";
+                    description
+                      "List of AC and PW bindings.";
+                    leaf peer-addr {
+                      type inet:ip-address;
+                      description
+                        "Indicates the peer's IP address.";
+                    }
+                    leaf vc-id {
+                      type vpn-common:vpn-id;
+                      description
+                        "VC lable used to identify PW.";
+                    }
+                    leaf pw-type {
+                      type identityref {
+                        base vpn-common:vpn-topology;
+                      }
+                      description
+                        "PW topology type.";
+                    }
+                    leaf pw-priority {
+                      type uint32;
+                      description
+                        "Defines the priority for the PW.
+                         The higher the pw-priority value,
+                         the higher the preference of the PW will be.";
+                    }
+                  }
+                  container qinq {
+                    when "../type = 'vpn-common:h-vpls'" {
+                      description
+                        "Only applies when t-ldp pwe type is h-vpls.";
+                    }
+                    description
+                      "Container for QinQ";
+                    leaf s-tag {
+                      type uint32;
+                      description
+                        "S-TAG";
+                    }
+                    leaf c-tag {
+                      type uint32;
+                      description
+                        "C-TAG";
+                    }
                   }
                 }
-                container qinq {
-                  when "../type = 'vpn-common:h-vpls'" {
+                case l2tp-pwe {
+                  when "./type = 'vpn-common:l2tp'" {
                     description
-                      "Only applies when t-ldp pwe type is h-vpls.";
+                      "Applies when VPN signaling type is L2TP protocol.";
                   }
                   description
-                    "Container for QinQ";
-                  leaf s-tag {
-                    type uint32;
+                    "Container for l2tp pw";
+                  leaf TBD-type {
+                    type identityref {
+                      base t-ldp-pwe-type;
+                    }
                     description
-                      "S-TAG";
+                      "T-LDP PWE type.";
                   }
-                  leaf c-tag {
-                    type uint32;
+                  leaf XXXencapsulation-type {
+                    type identityref {
+                      base vpn-common:encapsulation-type;
+                    }
                     description
-                      "C-TAG";
+                      "Encapsulation type.";
                   }
-                }
-              }
-              container l2tp-pwe {
-                when "../type = 'vpn-common:l2tp'" {
-                  description
-                    "Applies when VPN signaling type is L2TP protocol.";
-                }
-                description
-                  "Container for l2tp pw";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type.";
-                }
-                leaf encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "Encapsulation type.";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
+                  list XXXXac-pw-list {
+                    key "peer-addr vc-id";
                     description
-                      "Indicates the peer's IP address.";
-                  }
-                  leaf vc-id {
-                    type string;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-priority {
-                    type uint32;
-                    description
-                      "PW priority.";
+                      "List of AC and PW bindings.";
+                    leaf peer-addr {
+                      type inet:ip-address;
+                      description
+                        "Indicates the peer's IP address.";
+                    }
+                    leaf vc-id {
+                      type string;
+                      description
+                        "VC lable used to identify PW.";
+                    }
+                    leaf pw-priority {
+                      type uint32;
+                      description
+                        "PW priority.";
+                    }
                   }
                 }
               }
@@ -2445,117 +2503,21 @@ module ietf-l2vpn-ntw {
                   description
                     "String to describe the element.";
                 }
-                leaf Interface-mtu {
-                  type uint32;
+                leaf port-id {
+                  type vpn-common:vpn-id;
                   description
-                    "Interface MTU, it is also known as the maximum
-                     transmission unit or maximum frame size. When a
-                     frame is larger than the MTU, it is broken down,
-                     or fragmented, into smaller pieces by the
-                     network protocol to accommodate the MTU of the
-                     network";
+                    "NE Port-id";
+                }
+                leaf global-parameters-profile {
+                  type leafref {
+                    path "/l2vpn-ntw/vpn-services/vpn-service/vpn-nodes"
+                       + "/vpn-node/active-global-parameters-profiles"
+                       + "/global-parameters-profile/profile-id";
+                  }
+                  description
+                    "An identifier of an active VPN instance profile.";
                 }
                 uses vpn-common:service-status;
-                container access-diversity {
-                  if-feature "vpn-common:placement-diversity";
-                  description
-                    "Diversity parameters.";
-                  container groups {
-                    description
-                      "Groups the fate sharing group member
-                       is belonging to";
-                    leaf fate-sharing-group-size {
-                      type uint16;
-                      description
-                        "Fate sharing group size.";
-                    }
-                    leaf group-color {
-                      type string;
-                      description
-                        "Group color associated with a particular VPN.";
-                    }
-                    leaf ethernet-segment-identifier {
-                      type leafref {
-                        path "/l2vpn-ntw/vpn-services"
-                             + "/vpn-service/vpn-nodes"
-                             + "/vpn-node/signaling-options"
-                             + "/evpn-bgp/common/ethernet-segments"
-                             + "/ethernet-segment/ethernet-segment-identifier";
-                      }
-                      description 
-                        "vpn-network-access associated to the ESI.";
-                    }
-                    list group {
-                      key "group-id";
-                      description
-                        "List of group-id";
-                      leaf group-id {
-                        type string;
-                        description
-                          "Group-id the site network access
-                           is belonging to";
-                      }
-                    }
-                  }
-                  container constraints {
-                    description
-                      "Constraints for placing this site
-                        network access.";
-                    list constraint {
-                      key "constraint-type";
-                      description
-                        "List of constraints.";
-                      leaf constraint-type {
-                        type identityref {
-                          base vpn-common:placement-diversity;
-                        }
-                        description
-                          "Diversity constraint type.";
-                      }
-                      container target {
-                        description
-                          "The constraint will apply against
-                           this list of groups.";
-                        choice target-flavor {
-                          description
-                            "Choice for the group definition.";
-                          case id {
-                            list group {
-                              key "group-id";
-                              description
-                                "List of groups";
-                              leaf group-id {
-                                type string;
-                                description
-                                  "The constraint will apply
-                                   against this particular
-                                   group-id.";
-                              }
-                            }
-                          }
-                          case all-accesses {
-                            leaf all-other-accesses {
-                              type empty;
-                              description
-                                "The constraint will apply
-                                 against all other site network
-                                 access of this site.";
-                            }
-                          }
-                          case all-groups {
-                            leaf all-other-groups {
-                              type empty;
-                              description
-                                "The constraint will apply
-                                 against all other groups the
-                                 customer is managing.";
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
                 container connection {
                   description
                     "Container for bearer";
@@ -2573,7 +2535,7 @@ module ietf-l2vpn-ntw {
                     description
                       "Ethernet interface type.";
                   }
-                  container dot1q-interface {
+                  container encapsulation {
                     description
                       "Container for dot1Q Interface";
                     leaf l2-access-type {
@@ -2642,15 +2604,10 @@ module ietf-l2vpn-ntw {
                         description
                           "specify the vxlan access mode";
                       }
-                      list peer-list {
-                        key "peer-ip";
+                      leaf-list peer-list {
+                        type inet:ip-address;
                         description
-                          "List for peer IP";
-                        leaf peer-ip {
-                          type inet:ip-address;
-                          description
-                            "Peer IP";
-                        }
+                          "Peer IP address.";
                       }
                     }
                   }
@@ -2737,12 +2694,24 @@ module ietf-l2vpn-ntw {
                           description
                             "The minimum aggregate bandwidth for a LAG";
                         }
-                        leaf system-priority {
+                        leaf system-id {
+                          type yang:mac-address;
+                          description
+                            "Indicates the System ID used by LACP.";
+                        }
+                        leaf admin-key {
                           type uint16;
                           description
-                            "Indicates the LACP priority for the system.
-                             The range is from 0 to 65535.
-                             The default is 32768.";
+                            "Indicates the value of the key used for the aggregate
+                             interface.";
+                        }
+                        leaf system-priority {
+                          type uint16 {
+                            range "0..65535";
+                          }
+                          default "32768";
+                          description
+                            "Indicates the LACP priority for the system.";
                         }
                         container member-link-list {
                           description
@@ -2830,40 +2799,202 @@ module ietf-l2vpn-ntw {
                     }
                   }
                 }
-                container availability {
+                container TO-SIMPLFY-diversity-redundancy-TO-SIMPLFY {
                   description
-                    "Container of availability optional configurations";
-                  leaf access-priority {
-                    type uint32;
+                    "placeholder. TO BE FURTHER WORKED OUT.";
+                  container access-diversity {
+                    if-feature "vpn-common:placement-diversity";
                     description
-                      "Access priority";
-                  }
-                  choice redundancy-mode {
-                    description
-                      "Redundancy mode choice";
-                    case single-active {
+                      "Diversity parameters.";
+                    container groups {
                       description
-                        "Single active case";
-                      leaf single-active {
-                        type boolean;
+                        "Groups the fate sharing group member
+                         is belonging to";
+                      list group {
+                        key "group-id";
                         description
-                          "Single active";
+                          "List of group-ids.";
+                        leaf group-id {
+                          type string;
+                          description
+                            "Indicates the Group-id to which the network access
+                             belongs to.";
+                        }
+                        leaf fate-sharing-group-size {
+                          type uint16;
+                          description
+                            "Fate sharing group size.";
+                        }
+                        leaf group-color {
+                          type string;
+                          description
+                            "Group color associated with a particular VPN.";
+                        }
+                        leaf ethernet-segment-identifier {
+                          type yang:hex-string {
+                            length "29";
+                          }
+                          description
+                            "10-octet Ethernet Segment Identifier (ESI).";
+                        }
+                        leaf esi-redundancy-mode {
+                          type identityref {
+                            base evpn-redundancy-mode;
+                          }
+                          description
+                            "Indicates the EVPN redundancy mode for
+                             a multihomed CE.";
+                        }
                       }
                     }
-                    case all-active {
+                  }
+                  container constraints {
+                    description
+                      "Constraints for placing this site
+                       network access.";
+                    list constraint {
+                      key "constraint-type";
                       description
-                        "All active case";
-                      leaf all-active {
-                        type boolean;
+                        "List of constraints.";
+                      leaf constraint-type {
+                        type identityref {
+                          base vpn-common:placement-diversity;
+                        }
                         description
-                          "All active";
+                          "Diversity constraint type.";
+                      }
+                      container target {
+                        description
+                          "The constraint will apply against
+                           this list of groups.";
+                        choice target-flavor {
+                          description
+                            "Choice for the group definition.";
+                          case id {
+                            list group {
+                              key "group-id";
+                              description
+                                "List of groups";
+                              leaf group-id {
+                                type string;
+                                description
+                                  "The constraint will apply
+                                   against this particular
+                                   group-id.";
+                              }
+                            }
+                          }
+                          case all-accesses {
+                            leaf all-other-accesses {
+                              type empty;
+                              description
+                                "The constraint will apply
+                                 against all other site network
+                                 access of this site.";
+                            }
+                          }
+                          case all-groups {
+                            leaf all-other-groups {
+                              type empty;
+                              description
+                                "The constraint will apply
+                                 against all other groups the
+                                 customer is managing.";
+                            }
+                          }
+                        }
                       }
                     }
                   }
+                  container availability {
+                    description
+                      "Container of availability optional configurations";
+                    leaf access-priority {
+                      type uint32;
+                      description
+                        "Access priority";
+                    }
+                    choice redundancy-mode {
+                      description
+                        "Redundancy mode choice";
+                      case single-active {
+                        description
+                          "Single active case";
+                        leaf single-active {
+                          type boolean;
+                          description
+                            "Single active";
+                        }
+                      }
+                      case all-active {
+                        description
+                          "All active case";
+                        leaf all-active {
+                          type boolean;
+                          description
+                            "All active";
+                        }
+                      }
+                    }
+                  }
+                  container precedence {
+                    description
+                      "Transport netowrk precedence selector
+                       Primary or Secondary tunnel.";
+                    leaf precedence {
+                      type identityref {
+                        base precedence-type;
+                      }
+                      description
+                        "Defining service redundancy in transport
+                         network.";
+                    }
+                  }
+                }
+                container ethernet-service-oam {
+                  description
+                    "Container for Ethernet service OAM.";
+                  leaf md-name {
+                    type string;
+                    description
+                      "Maintenance domain name";
+                  }
+                  leaf md-level {
+                    type uint8;
+                    description
+                      "Maintenance domain level";
+                  }
+                  container cfm-802.1-ag {
+                    description
+                      "Container of 802.1ag CFM configurations.";
+                    list n2-uni-c {
+                      key "maid";
+                      description
+                        "List of UNI-N to UNI-C";
+                      uses cfm-802-grouping;
+                    }
+                    list n2-uni-n {
+                      key "maid";
+                      description
+                        "List of UNI-N to UNI-N";
+                      uses cfm-802-grouping;
+                    }
+                  }
+                  uses y-1731;
                 }
                 container service {
                   description
                     "Container for service";
+                  leaf mtu {
+                    type uint32;
+                    description
+                      "MTU, it is also known as the maximum
+                       transmission unit or maximum frame size. When a
+                       frame is larger than the MTU, it is broken down,
+                       or fragmented, into smaller pieces by the
+                       network protocol to accommodate the MTU of the
+                       network";
+                  }
                   container svc-input-bandwidth {
                     if-feature "vpn-common:input-bw";
                     description
@@ -3006,7 +3137,85 @@ module ietf-l2vpn-ntw {
                       description
                         "Configuration of the traffic classification
                          policy.";
-                      uses vpn-common:qos-classification-policy;
+                      list rule {
+                        key "id";
+                        ordered-by user;
+                        description
+                          "List of classification rules.";
+                        leaf id {
+                          type string;
+                          description
+                            "A description identifying the QoS classification
+                             policy rule.";
+                        }
+                        choice match-type {
+                          default "match-flow";
+                          description
+                            "Choice for classification.";
+                          case match-flow {
+                            container match-flow {
+                              description
+                                "Describes flow-matching criteria.";
+                              leaf dscp {
+                                type inet:dscp;
+                                description
+                                  "DSCP value.";
+                              }
+                              leaf dot1q {
+                                type uint16;
+                                description
+                                  "802.1Q matching.  It is a VLAN tag added into
+                                   a frame.";
+                              }
+                              leaf pcp {
+                                type uint8 {
+                                  range "0..7";
+                                }
+                                description
+                                  "PCP value.";
+                              }
+                              leaf src-mac {
+                                type yang:mac-address;
+                                description
+                                  "Source MAC address.";
+                              }
+                              leaf dst-mac {
+                                type yang:mac-address;
+                                description
+                                  "Destination MAC address.";
+                              }
+                              leaf color-type {
+                                type identityref {
+                                  base color-type;
+                                }
+                                description
+                                  "Color types.";
+                              }
+                              leaf any {
+                                type empty;
+                                description
+                                  "Allow all.";
+                              }
+                            }
+                          }
+                          case match-application {
+                            leaf match-application {
+                              type identityref {
+                                base vpn-common:customer-application;
+                              }
+                              description
+                                "Defines the application to match.";
+                            }
+                          }
+                        }
+                        leaf target-class-id {
+                          type string;
+                          description
+                            "Identification of the CoS.
+                             This identifier is internal to the
+                             administration.";
+                        }
+                      }
                     }
                     container qos-profile {
                       description
@@ -3038,163 +3247,123 @@ module ietf-l2vpn-ntw {
                       }
                     }
                   }
-                  container precedence {
+                  container mac-policies {
                     description
-                      "Transport netowrk precedence selector
-                       Primary or Secondary tunnel.";
-                    leaf precedence {
-                      type identityref {
-                        base precedence-type;
-                      }
+                      "Container for MAC-related policies.";
+                    container access-control-list {
                       description
-                        "Defining service redundancy in transport
-                         network.";
+                        "Container for access control List.";
+                      list mac {
+                        key "mac-address";
+                        description
+                          "List for MAC addresses.";
+                        leaf mac-address {
+                          type yang:mac-address;
+                          description
+                            "Specifies a MAC address.";
+                        }
+                      }
+                    }
+                    container mac-loop-prevention {
+                      description
+                        "Container of MAC loop prevention.";
+                      leaf frequency {
+                        type uint32;
+                        description
+                          "Frequency";
+                      }
+                      leaf protection-type {
+                        type identityref {
+                          base loop-prevention-type;
+                        }
+                        description
+                          "Protection type";
+                      }
+                      leaf number-retries {
+                        type uint32;
+                        description
+                          "Number of retries";
+                      }
+                    }
+                    container mac-addr-limit {
+                      description
+                        "Container of MAC-Addr limit configurations";
+                      leaf mac-num-limit {
+                        type uint16;
+                        description
+                          "maximum number of MAC addresses learned from
+                           the subscriber for a single service instance.";
+                      }
+                      leaf time-interval {
+                        type uint32;
+                        units "milliseconds";
+                        description
+                          "The aging time of the mac address.";
+                      }
+                      leaf action {
+                        type identityref {
+                          base mac-action;
+                        }
+                        description
+                          "specify the action when the upper limit is
+                           exceeded: drop the packet, flood the
+                           packet, or simply send a warning log message.";
+                      }
                     }
                   }
-                }
-                container broadcast-unknown-unicast-multicast {
-                  description
-                    "Container of broadcast, unknown unicast, and multicast
-                     configurations";
-                  leaf multicast-site-type {
-                    type enumeration {
-                      enum receiver-only {
-                        description
-                          "The site only has receivers.";
-                      }
-                      enum source-only {
-                        description
-                          "The site only has sources.";
-                      }
-                      enum source-receiver {
-                        description
-                          "The site has both sources and receivers.";
-                      }
-                    }
-                    default "source-receiver";
+                  container broadcast-unknown-unicast-multicast {
                     description
-                      "Type of multicast site.";
-                  }
-                  list multicast-gp-address-mapping {
-                    key "id";
-                    description
-                      "List of Port to group mappings.";
-                    leaf id {
-                      type uint16;
+                      "Container of broadcast, unknown unicast, and multicast
+                       configurations";
+                    leaf multicast-site-type {
+                      type enumeration {
+                        enum receiver-only {
+                          description
+                            "The site only has receivers.";
+                        }
+                        enum source-only {
+                          description
+                            "The site only has sources.";
+                        }
+                        enum source-receiver {
+                          description
+                            "The site has both sources and receivers.";
+                        }
+                      }
+                      default "source-receiver";
                       description
-                        "Unique identifier for the mapping.";
+                        "Type of multicast site.";
                     }
-                    leaf vlan-id {
+                    list multicast-gp-address-mapping {
+                      key "id";
+                      description
+                        "List of Port to group mappings.";
+                      leaf id {
+                        type uint16;
+                        description
+                          "Unique identifier for the mapping.";
+                      }
+                      leaf vlan-id {
+                        type uint32;
+                        description
+                          "The VLAN ID of the Multicast group.";
+                      }
+                      leaf mac-gp-address {
+                        type yang:mac-address;
+                        description
+                          "The MAC address of the Multicast group.";
+                      }
+                      leaf port-lag-number {
+                        type uint32;
+                        description
+                          "The ports/LAGs belonging to the Multicast group.";
+                      }
+                    }
+                    leaf bum-overall-rate {
                       type uint32;
                       description
-                        "The VLAN ID of the Multicast group.";
+                        "overall rate for BUM";
                     }
-                    leaf mac-gp-address {
-                      type yang:mac-address;
-                      description
-                        "The MAC address of the Multicast group.";
-                    }
-                    leaf port-lag-number {
-                      type uint32;
-                      description
-                        "The ports/LAGs belonging to the Multicast group.";
-                    }
-                  }
-                  leaf bum-overall-rate {
-                    type uint32;
-                    description
-                      "overall rate for BUM";
-                  }
-                }
-                container ethernet-service-oam {
-                  description
-                    "Container for Ethernet service OAM.";
-                  leaf md-name {
-                    type string;
-                    description
-                      "Maintenance domain name";
-                  }
-                  leaf md-level {
-                    type uint8;
-                    description
-                      "Maintenance domain level";
-                  }
-                  container cfm-802.1-ag {
-                    description
-                      "Container of 802.1ag CFM configurations.";
-                    list n2-uni-c {
-                      key "maid";
-                      description
-                        "List of UNI-N to UNI-C";
-                      uses cfm-802-grouping;
-                    }
-                    list n2-uni-n {
-                      key "maid";
-                      description
-                        "List of UNI-N to UNI-N";
-                      uses cfm-802-grouping;
-                    }
-                  }
-                  uses y-1731;
-                }
-                container mac-loop-prevention {
-                  description
-                    "Container of MAC loop prevention.";
-                  leaf frequency {
-                    type uint32;
-                    description
-                      "Frequency";
-                  }
-                  leaf protection-type {
-                    type identityref {
-                      base loop-prevention-type;
-                    }
-                    description
-                      "Protection type";
-                  }
-                  leaf number-retries {
-                    type uint32;
-                    description
-                      "Number of retries";
-                  }
-                }
-                container access-control-list {
-                  description
-                    "Container for access control List.";
-                  list mac {
-                    key "mac-address";
-                    description
-                      "List for MAC.";
-                    leaf mac-address {
-                      type yang:mac-address;
-                      description
-                        "MAC address.";
-                    }
-                  }
-                }
-                container mac-addr-limit {
-                  description
-                    "Container of MAC-Addr limit configurations";
-                  leaf mac-num-limit {
-                    type uint16;
-                    description
-                      "maximum number of MAC addresses learned from
-                       the subscriber for a single service instance.";
-                  }
-                  leaf time-interval {
-                    type uint32;
-                    units "milliseconds";
-                    description
-                      "The aging time of the mac address.";
-                  }
-                  leaf action {
-                    type identityref {
-                      base mac-action;
-                    }
-                    description
-                      "specify the action when the upper limit is
-                       exceeded: drop the packet, flood the
-                       packet, or simply send a warning log message.";
                   }
                 }
               }
