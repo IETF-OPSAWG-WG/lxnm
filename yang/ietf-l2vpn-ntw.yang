@@ -851,6 +851,303 @@ module ietf-l2vpn-ntw {
             "Container for underlay transport.";
           uses vpn-common:underlay-transport;
         }
+        list signaling-options {
+          key "type";
+          description
+            "List of VPN signaling options.";
+          leaf type {
+            type identityref {
+              base vpn-common:vpn-signaling-type;
+            }
+            description
+              "VPN signaling types.";
+          }
+          container l2vpn-bgp {
+            when "../type = 'vpn-common:l2vpn-bgp'" {
+              description
+                "Only applies when VPN signaling type is l2vpn
+                 BGP protocol.";
+            }
+            description
+              "Container for MP BGP L2VPN.";
+            leaf pwe-encapsulation-type {
+              type identityref {
+                base vpn-common:encapsulation-type;
+              }
+              description
+                "PWE encapsulation type.";
+            }
+            uses vpn-common:route-distinguisher;
+            uses vpn-common:vpn-route-targets;
+            container pwe-mtu {
+              description
+                "Container of PWE MTU configurations.";
+              leaf allow-mtu-mismatch {
+                type boolean;
+                description
+                  "When set to true, it allows MTU mismatch.";
+              }
+            }
+            leaf address-family {
+              type identityref {
+                base vpn-common:address-family;
+              }
+              description
+                "Address family used for router-id information.";
+            }
+          }
+          container evpn-bgp {
+            when "../type = 'vpn-common:evpn-bgp'" {
+              description
+                "Only applies when VPN signaling type is EVPN
+                 BGP protocol.";
+            }
+            description
+              "Container for MP BGP L2VPN.";
+            leaf vpn-id {
+              type leafref {
+                path "/l2vpn-ntw/vpn-services/vpn-service/vpn-id";
+              }
+              description
+                "Identifies the target EVPN.";
+            }
+            leaf type {
+              type identityref {
+                base evpn-type;
+              }
+              description
+                "EVPN type.";
+            }
+            leaf service-interface-type {
+              type identityref {
+                base evpn-service-type;
+              }
+              description
+                "EVPN service interface type.";
+            }
+            leaf address-family {
+              type identityref {
+                base vpn-common:address-family;
+              }
+              description
+                "Indicates the ddress family used for router-id
+                 information.";
+            }
+            uses vpn-common:route-distinguisher;
+            uses vpn-common:vpn-route-targets;
+            container common {
+              description
+                "MAC address managment attributes in the
+                 EVPN configuration";
+              leaf mac-learning-mode {
+                type identityref {
+                  base mac-learning-mode;
+                }
+                description
+                  "Indicates through which plane MAC addresses are
+                   advertised.";
+              }
+              leaf ingress-replication {
+                type boolean;
+                description
+                  "ingress-replication";
+              }
+              leaf p2mp-replication {
+                type boolean;
+                description
+                  "p2mp-replication";
+              }
+              leaf arp-proxy {
+                type boolean;
+                default "false";
+                description
+                  "Enable (TRUE) or disable (FALSE) ARP proxy";
+              }
+              leaf arp-suppression {
+                type boolean;
+                default "false";
+                description "Enable (TRUE) or disable (FALSE) "
+                          + "ARP suppression";
+              }
+              leaf nd-proxy {
+                type boolean;
+                default "false";
+                description
+                  "Enable (TRUE) or disable (FALSE) ND proxy";
+              }
+              leaf nd-suppression {
+                type boolean;
+                default "false";
+                description "Enable (TRUE) or disable (FALSE) "
+                          + "ND suppression";
+              }
+              leaf underlay-multicast {
+                type boolean;
+                default "false";
+                description "Enable (TRUE) or disable (FALSE) "
+                          + "underlay multicast";
+              }
+              leaf flood-unknown-unicast-supression {
+                type boolean;
+                default "false";
+                description "Enable (TRUE) or disable (FALSE) "
+                          + "flood unknown unicast suppression";
+              }
+              leaf vpws-vlan-aware {
+                type boolean;
+                default "false";
+                description "Enable (True) or disable (False) "
+                          + "VPWS VLAN aware";
+              }
+              container bum-management {
+                description
+                  "broadcast-unknown-unicast-multicast management";
+                leaf discard-broadcast {
+                  type boolean;
+                  description
+                    "Broadcast management.";
+                }
+                leaf discard-unknown-multicast {
+                  type boolean;
+                  description
+                    "Broadcast management.";
+                }
+                leaf discard-unknown-unicast {
+                  type boolean;
+                  description
+                    "Unicast management.";
+                }
+              }
+              container pbb {
+                description
+                  "PBB parameters container";
+                reference
+                  "IEEE 802.1ah Provider Backbone Bridge";
+                leaf backbone-src-mac {
+                  type yang:mac-address;
+                  description
+                    "backbone-src-mac";
+                }
+              }
+            }
+          }
+          container t-ldp-pwe {
+            when "../type = 'vpn-common:t-ldp'" {
+              description
+                "Only applies when vpn signaling type is Target LDP.";
+            }
+            description
+              "Container of T-LDP PWE configurations";
+            leaf type {
+              type identityref {
+                base t-ldp-pwe-type;
+              }
+              description
+                "T-LDP PWE type";
+            }
+            leaf pwe-encapsulation-type {
+              type identityref {
+                base vpn-common:encapsulation-type;
+              }
+              description
+                "PWE encapsulation type.";
+            }
+            leaf pwe-mtu {
+              type uint16;
+              description
+                "Allow MTU mismatch: TO BE CHECKED";
+            }
+            list ac-pw-list {
+              key "peer-addr vc-id";
+              description
+                "List of AC and PW bindings.";
+              leaf peer-addr {
+                type inet:ip-address;
+                description
+                  "Indicates the peer's IP address.";
+              }
+              leaf vc-id {
+                type vpn-common:vpn-id;
+                description
+                  "VC lable used to identify PW.";
+              }
+              leaf pw-type {
+                type identityref {
+                  base vpn-common:vpn-topology;
+                }
+                description
+                  "PW topology type.";
+              }
+              leaf pw-priority {
+                type uint32;
+                description
+                  "Defines the priority for the PW.
+                   The higher the pw-priority value,
+                   the higher the preference of the PW will be.";
+              }
+            }
+            container qinq {
+              when "../type = 'vpn-common:h-vpls'" {
+                description
+                  "Only applies when t-ldp pwe type is h-vpls.";
+              }
+              description
+                "Container for QinQ";
+              leaf s-tag {
+                type uint32;
+                description
+                  "S-TAG";
+              }
+              leaf c-tag {
+                type uint32;
+                description
+                  "C-TAG";
+              }
+            }
+          }
+          container l2tp-pwe {
+            when "../type = 'vpn-common:l2tp'" {
+              description
+                "Applies when VPN signaling type is L2TP protocol.";
+            }
+            description
+              "Container for l2tp pw";
+            leaf type {
+              type identityref {
+                base t-ldp-pwe-type;
+              }
+              description
+                "T-LDP PWE type.";
+            }
+            leaf encapsulation-type {
+              type identityref {
+                base vpn-common:encapsulation-type;
+              }
+              description
+                "Encapsulation type.";
+            }
+            list ac-pw-list {
+              key "peer-addr vc-id";
+              description
+                "List of AC and PW bindings.";
+              leaf peer-addr {
+                type inet:ip-address;
+                description
+                  "Indicates the peer's IP address.";
+              }
+              leaf vc-id {
+                type string;
+                description
+                  "VC lable used to identify PW.";
+              }
+              leaf pw-priority {
+                type uint32;
+                description
+                  "PW priority.";
+              }
+            }
+          }
+        }
         uses vpn-common:service-status;
         container vpn-nodes {
           description
@@ -891,304 +1188,6 @@ module ietf-l2vpn-ntw {
                     "XXXX.";
                 }
                 uses global-parameters-profile;
-              }
-            }
-            uses vpn-common:service-status;
-            list signaling-options {
-              key "type";
-              description
-                "List of VPN signaling options.";
-              leaf type {
-                type identityref {
-                  base vpn-common:vpn-signaling-type;
-                }
-                description
-                  "VPN signaling types.";
-              }
-              container l2vpn-bgp {
-                when "../type = 'vpn-common:l2vpn-bgp'" {
-                  description
-                    "Only applies when VPN signaling type is l2vpn
-                     BGP protocol.";
-                }
-                description
-                  "Container for MP BGP L2VPN.";
-                leaf pwe-encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "PWE encapsulation type.";
-                }
-                uses vpn-common:route-distinguisher;
-                uses vpn-common:vpn-route-targets;
-                container pwe-mtu {
-                  description
-                    "Container of PWE MTU configurations.";
-                  leaf allow-mtu-mismatch {
-                    type boolean;
-                    description
-                      "When set to true, it allows MTU mismatch.";
-                  }
-                }
-                leaf address-family {
-                  type identityref {
-                    base vpn-common:address-family;
-                  }
-                  description
-                    "Address family used for router-id information.";
-                }
-              }
-              container evpn-bgp {
-                when "../type = 'vpn-common:evpn-bgp'" {
-                  description
-                    "Only applies when VPN signaling type is EVPN
-                     BGP protocol.";
-                }
-                description
-                  "Container for MP BGP L2VPN.";
-                leaf vpn-id {
-                  type leafref {
-                    path "/l2vpn-ntw/vpn-services/vpn-service/vpn-id";
-                  }
-                  description
-                    "Identifies the target EVPN.";
-                }
-                leaf type {
-                  type identityref {
-                    base evpn-type;
-                  }
-                  description
-                    "EVPN type.";
-                }
-                leaf service-interface-type {
-                  type identityref {
-                    base evpn-service-type;
-                  }
-                  description
-                    "EVPN service interface type.";
-                }
-                leaf address-family {
-                  type identityref {
-                    base vpn-common:address-family;
-                  }
-                  description
-                    "Indicates the ddress family used for router-id
-                     information.";
-                }
-                uses vpn-common:route-distinguisher;
-                uses vpn-common:vpn-route-targets;
-                container common {
-                  description
-                    "MAC address managment attributes in the
-                     EVPN configuration";
-                  leaf mac-learning-mode {
-                    type identityref {
-                      base mac-learning-mode;
-                    }
-                    description
-                      "Indicates through which plane MAC addresses are
-                       advertised.";
-                  }
-                  leaf ingress-replication {
-                    type boolean;
-                    description
-                      "ingress-replication";
-                  }
-                  leaf p2mp-replication {
-                    type boolean;
-                    description
-                      "p2mp-replication";
-                  }
-                  leaf arp-proxy {
-                    type boolean;
-                    default "false";
-                    description
-                      "Enable (TRUE) or disable (FALSE) ARP proxy";
-                  }
-                  leaf arp-suppression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "ARP suppression";
-                  }
-                  leaf nd-proxy {
-                    type boolean;
-                    default "false";
-                    description
-                      "Enable (TRUE) or disable (FALSE) ND proxy";
-                  }
-                  leaf nd-suppression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "ND suppression";
-                  }
-                  leaf underlay-multicast {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "underlay multicast";
-                  }
-                  leaf flood-unknown-unicast-supression {
-                    type boolean;
-                    default "false";
-                    description "Enable (TRUE) or disable (FALSE) "
-                              + "flood unknown unicast suppression";
-                  }
-                  leaf vpws-vlan-aware {
-                    type boolean;
-                    default "false";
-                    description "Enable (True) or disable (False) "
-                              + "VPWS VLAN aware";
-                  }
-                  container bum-management {
-                    description
-                      "broadcast-unknown-unicast-multicast management";
-                    leaf discard-broadcast {
-                      type boolean;
-                      description
-                        "Broadcast management.";
-                    }
-                    leaf discard-unknown-multicast {
-                      type boolean;
-                      description
-                        "Broadcast management.";
-                    }
-                    leaf discard-unknown-unicast {
-                      type boolean;
-                      description
-                        "Unicast management.";
-                    }
-                  }
-                  container pbb {
-                    description
-                      "PBB parameters container";
-                    reference
-                      "IEEE 802.1ah Provider Backbone Bridge";
-                    leaf backbone-src-mac {
-                      type yang:mac-address;
-                      description
-                        "backbone-src-mac";
-                    }
-                  }
-                }
-              }
-              container t-ldp-pwe {
-                when "../type = 'vpn-common:t-ldp'" {
-                  description
-                    "Only applies when vpn signaling type is Target LDP.";
-                }
-                description
-                  "Container of T-LDP PWE configurations";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type";
-                }
-                leaf pwe-encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "PWE encapsulation type.";
-                }
-                leaf pwe-mtu {
-                  type uint16;
-                  description
-                    "Allow MTU mismatch: TO BE CHECKED";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
-                    description
-                      "Indicates the peer's IP address.";
-                  }
-                  leaf vc-id {
-                    type vpn-common:vpn-id;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-type {
-                    type identityref {
-                      base vpn-common:vpn-topology;
-                    }
-                    description
-                      "PW topology type.";
-                  }
-                  leaf pw-priority {
-                    type uint32;
-                    description
-                      "Defines the priority for the PW.
-                       The higher the pw-priority value,
-                       the higher the preference of the PW will be.";
-                  }
-                }
-                container qinq {
-                  when "../type = 'vpn-common:h-vpls'" {
-                    description
-                      "Only applies when t-ldp pwe type is h-vpls.";
-                  }
-                  description
-                    "Container for QinQ";
-                  leaf s-tag {
-                    type uint32;
-                    description
-                      "S-TAG";
-                  }
-                  leaf c-tag {
-                    type uint32;
-                    description
-                      "C-TAG";
-                  }
-                }
-              }
-              container l2tp-pwe {
-                when "../type = 'vpn-common:l2tp'" {
-                  description
-                    "Applies when VPN signaling type is L2TP protocol.";
-                }
-                description
-                  "Container for l2tp pw";
-                leaf type {
-                  type identityref {
-                    base t-ldp-pwe-type;
-                  }
-                  description
-                    "T-LDP PWE type.";
-                }
-                leaf encapsulation-type {
-                  type identityref {
-                    base vpn-common:encapsulation-type;
-                  }
-                  description
-                    "Encapsulation type.";
-                }
-                list ac-pw-list {
-                  key "peer-addr vc-id";
-                  description
-                    "List of AC and PW bindings.";
-                  leaf peer-addr {
-                    type inet:ip-address;
-                    description
-                      "Indicates the peer's IP address.";
-                  }
-                  leaf vc-id {
-                    type string;
-                    description
-                      "VC lable used to identify PW.";
-                  }
-                  leaf pw-priority {
-                    type uint32;
-                    description
-                      "PW priority.";
-                  }
-                }
               }
             }
             container vpn-network-accesses {
