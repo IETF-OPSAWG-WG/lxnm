@@ -1063,13 +1063,74 @@ module ietf-l2vpn-ntw {
                       }
                       container ethernet-segment {
                         description
-                          "Top container for the ethernet segment identifier";  
-                        leaf ethernet-segment-identifier {
-                          type yang:hex-string {
-                            length "29";
-                          }
+                          "Top container for the ethernet segment identifier";                          
+                        choice esi-choice {
                           description
-                            "10-octet Ethernet Segment Identifier (ESI).";
+                            "Route distinguisher choice between several options
+                             on providing the route distinguisher value.";
+                          case directly-assigned {
+                            description
+                              "Explicitly assign an RD value.";
+                            leaf ethernet-segment-identifier {
+                              type yang:hex-string {
+                                length "29";
+                              }
+                              description
+                                "10-octet Ethernet Segment Identifier (ESI).";
+                            }
+                          }
+                          case auto-assigned {
+                            description
+                              "The ESI is auto-assigned.";
+                            container rd-auto {
+                              description
+                                "The RD is auto-assigned.";
+                              choice auto-mode {
+                                description
+                                  "Indicates the auto-assignment mode. ESI can be
+                                   automatically assigned either with or without
+                                   indicating a pool from which the ESI should be 
+                                   taken. 
+
+                                   For both cases, the server will auto-assign an ESI 
+                                   value 'auto-assigned-ESI' and use that value 
+                                   operationally.";
+                                case from-pool {
+                                  leaf esi-pool-name {
+                                    type string;
+                                    description
+                                      "The auto-assignment will be made from the pool
+                                       identified by the rd-pool-name.";
+                                  }
+                                }
+                                case full-auto {
+                                  leaf auto {
+                                    type empty;
+                                    description
+                                      "Indicates an RD is fully auto-assigned.";
+                                  }
+                                }
+                              }
+                              leaf auto-ethernet-segment-identifier {
+                                type yang:hex-string {
+                                  length "29";
+                                }
+                                config false;
+                                description
+                                  "The value of the auto-assigned RD.";
+                              }
+                            }
+                          }
+                          case no-ESI {
+                            description
+                              "Use the empty type to indicate ESI has no value and is not to
+                               be auto-assigned.";
+                            leaf no-esi {
+                              type empty;
+                              description
+                                "No ESI is assigned.";
+                            }
+                          }
                         }
                         leaf esi-redundancy-mode {
                           type identityref {
