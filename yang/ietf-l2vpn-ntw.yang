@@ -1061,138 +1061,150 @@ module ietf-l2vpn-ntw {
                             "backbone-src-mac";
                         }
                       }
-                      container ethernet-segment {
+                      container ethernet-segments {
                         description
                           "Top container for the ethernet segment identifier";                          
-                        choice esi-choice {
+                        list ethernet-segment {
                           description
-                            "Route distinguisher choice between several options
-                             on providing the route distinguisher value.";
-                          case directly-assigned {
+                            "Top list for the ethernet segment identifiers";  
+                          key "name";
+                          
+                          leaf name {
+                            type string;
                             description
-                              "Explicitly assign an RD value.";
-                            leaf ethernet-segment-identifier {
-                              type yang:hex-string {
-                                length "29";
-                              }
-                              description
-                                "10-octet Ethernet Segment Identifier (ESI).";
-                            }
+                              "Name of the ethernet segment";
                           }
-                          case auto-assigned {
-                            description
-                              "The ESI is auto-assigned.";
-                            container rd-auto {
-                              description
-                                "The RD is auto-assigned.";
-                              choice auto-mode {
-                                description
-                                  "Indicates the auto-assignment mode. ESI can be
-                                   automatically assigned either with or without
-                                   indicating a pool from which the ESI should be 
-                                   taken. 
 
-                                   For both cases, the server will auto-assign an ESI 
-                                   value 'auto-assigned-ESI' and use that value 
-                                   operationally.";
-                                case from-pool {
-                                  leaf esi-pool-name {
-                                    type string;
-                                    description
-                                      "The auto-assignment will be made from the pool
-                                       identified by the rd-pool-name.";
-                                  }
-                                }
-                                case full-auto {
-                                  leaf auto {
-                                    type empty;
-                                    description
-                                      "Indicates an RD is fully auto-assigned.";
-                                  }
-                                }
-                              }
-                              leaf auto-ethernet-segment-identifier {
+                          choice esi-choice {
+                            description
+                              "Route distinguisher choice between several options
+                               on providing the ESI value.";
+                            case directly-assigned {
+                              description
+                                "Explicitly assign an ESI value.";
+                              leaf ethernet-segment-identifier {
                                 type yang:hex-string {
                                   length "29";
                                 }
-                                config false;
                                 description
-                                  "The value of the auto-assigned RD.";
+                                  "10-octet Ethernet Segment Identifier (ESI).";
+                              }
+                            }
+                            case auto-assigned {
+                              description
+                                "The ESI is auto-assigned.";
+                              container rd-auto {
+                                description
+                                  "The RD is auto-assigned.";
+                                choice auto-mode {
+                                  description
+                                    "Indicates the auto-assignment mode. ESI can be
+                                     automatically assigned either with or without
+                                     indicating a pool from which the ESI should be 
+                                     taken. 
+
+                                     For both cases, the server will auto-assign an ESI 
+                                     value 'auto-assigned-ESI' and use that value 
+                                     operationally.";
+                                  case from-pool {
+                                    leaf esi-pool-name {
+                                      type string;
+                                      description
+                                        "The auto-assignment will be made from the pool
+                                         identified by the ESI-pool-name.";
+                                    }
+                                  }
+                                  case full-auto {
+                                    leaf auto {
+                                      type empty;
+                                      description
+                                        "Indicates an ESI is fully auto-assigned.";
+                                    }
+                                  }
+                                }
+                                leaf auto-ethernet-segment-identifier {
+                                  type yang:hex-string {
+                                    length "29";
+                                  }
+                                  config false;
+                                  description
+                                    "The value of the auto-assigned ESI.";
+                                }
+                              }
+                            }
+                            case no-ESI {
+                              description
+                                "Use the empty type to indicate ESI has no value and is not to
+                                 be auto-assigned.";
+                              leaf no-esi {
+                                type empty;
+                                description
+                                  "No ESI is assigned.";
                               }
                             }
                           }
-                          case no-ESI {
+                          leaf esi-redundancy-mode {
+                            type identityref {
+                              base evpn-redundancy-mode;
+                            }
                             description
-                              "Use the empty type to indicate ESI has no value and is not to
-                               be auto-assigned.";
-                            leaf no-esi {
-                              type empty;
-                              description
-                                "No ESI is assigned.";
-                            }
+                              "Indicates the EVPN redundancy mode for
+                               a multihomed CE.";
                           }
-                        }
-                        leaf esi-redundancy-mode {
-                          type identityref {
-                            base evpn-redundancy-mode;
+                          leaf df-election-method {
+                            type enumeration {
+                              enum default {
+                                value 0;
+                                description 
+                                  "The default DF election method";
+                              }
+                              enum highest-random-weight {
+                                value 1;
+                                description 
+                                  "The highest random weight (HRW) method";
+                                reference 
+                                  "draft-mohanty-bess-evpn-df-election";
+                              }
+                              enum preference {
+                                value 2;
+                                description 
+                                  "The preference based method";
+                                reference 
+                                  "draft-rabadan-bess-evpn-pref-df";
+                              }
+                            }
+                            description 
+                              "The DF election method";
                           }
-                          description
-                            "Indicates the EVPN redundancy mode for
-                             a multihomed CE.";
-                        }
-                        leaf df-election-method {
-                          type enumeration {
-                            enum default {
-                              value 0;
-                              description 
-                                "The default DF election method";
-                            }
-                            enum highest-random-weight {
-                              value 1;
-                              description 
-                                "The highest random weight (HRW) method";
-                              reference 
-                                "draft-mohanty-bess-evpn-df-election";
-                            }
-                            enum preference {
-                              value 2;
-                              description 
-                                "The preference based method";
-                              reference 
-                                "draft-rabadan-bess-evpn-pref-df";
-                            }
-                          }
-                          description 
-                            "The DF election method";
-                        }
 
-                        leaf preference {
-                          when "../df-election-method = 'preference'" {
-                          description 
-                            "The preference value is only applicable " +
-                            "to the preference based method";
+                          leaf preference {
+                            when "../df-election-method = 'preference'" {
+                            description 
+                              "The preference value is only applicable " +
+                              "to the preference based method";
+                            }
+                            type uint16;
+                            description 
+                              "The DF preference";
                           }
-                          type uint16;
-                          description 
-                            "The DF preference";
-                        }
 
-                        leaf revertive {
-                          when "../df-election-method = 'preference'" {
-                          description 
-                            "The revertive value is only applicable " +
-                            "to the preference method";
+                          leaf revertive {
+                            when "../df-election-method = 'preference'" {
+                            description 
+                              "The revertive value is only applicable " +
+                              "to the preference method";
+                            }
+                            type boolean;
+                            default true;
+                            description 
+                            "The 'preempt' or 'revertive' behavior";
                           }
-                          type boolean;
-                          default true;
-                          description 
-                          "The 'preempt' or 'revertive' behavior";
-                        }
 
-                        leaf election-wait-time {
-                          type uint32;
-                          description 
-                          "Election-wait-time";
+                          leaf election-wait-time {
+                            type uint32;
+                            description 
+                            "Election-wait-time";
+                          }
                         }
                       }
                     }
