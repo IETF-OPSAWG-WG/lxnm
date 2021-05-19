@@ -1151,59 +1151,63 @@ module ietf-l2vpn-ntw {
                               "Indicates the EVPN redundancy mode for
                                a multihomed CE.";
                           }
-                          leaf df-election-method {
-                            type enumeration {
-                              enum default {
-                                value 0;
-                                description 
-                                  "The default DF election method";
+                          container df-election {
+                            description 
+                              "Top container for the df-election method properties.";
+                            leaf df-election-method {
+                              type enumeration {
+                                enum default {
+                                  value 0;
+                                  description 
+                                    "The default DF election method";
+                                }
+                                enum highest-random-weight {
+                                  value 1;
+                                  description 
+                                    "The highest random weight (HRW) method";
+                                  reference 
+                                    "draft-mohanty-bess-evpn-df-election";
+                                }
+                                enum preference {
+                                  value 2;
+                                  description 
+                                    "The preference based method";
+                                  reference 
+                                    "draft-rabadan-bess-evpn-pref-df";
+                                }
                               }
-                              enum highest-random-weight {
-                                value 1;
-                                description 
-                                  "The highest random weight (HRW) method";
-                                reference 
-                                  "draft-mohanty-bess-evpn-df-election";
+                              description 
+                                "The DF election method";
+                            }
+
+                            leaf preference {
+                              when "../df-election-method = 'preference'" {
+                              description 
+                                "The preference value is only applicable " +
+                                "to the preference based method";
                               }
-                              enum preference {
-                                value 2;
-                                description 
-                                  "The preference based method";
-                                reference 
-                                  "draft-rabadan-bess-evpn-pref-df";
+                              type uint16;
+                              description 
+                                "The DF preference";
+                            }
+
+                            leaf revertive {
+                              when "../df-election-method = 'preference'" {
+                              description 
+                                "The revertive value is only applicable " +
+                                "to the preference method";
                               }
+                              type boolean;
+                              default true;
+                              description 
+                              "The 'preempt' or 'revertive' behavior";
                             }
-                            description 
-                              "The DF election method";
-                          }
 
-                          leaf preference {
-                            when "../df-election-method = 'preference'" {
-                            description 
-                              "The preference value is only applicable " +
-                              "to the preference based method";
+                            leaf election-wait-time {
+                              type uint32;
+                              description 
+                              "Election-wait-time";
                             }
-                            type uint16;
-                            description 
-                              "The DF preference";
-                          }
-
-                          leaf revertive {
-                            when "../df-election-method = 'preference'" {
-                            description 
-                              "The revertive value is only applicable " +
-                              "to the preference method";
-                            }
-                            type boolean;
-                            default true;
-                            description 
-                            "The 'preempt' or 'revertive' behavior";
-                          }
-
-                          leaf election-wait-time {
-                            type uint32;
-                            description 
-                            "Election-wait-time";
                           }
                         }
                       }
@@ -1671,6 +1675,15 @@ module ietf-l2vpn-ntw {
                           type string;
                           description
                             "Group color associated with a particular VPN.";
+                        }
+                        leaf ethernet-segment-identifier {
+                          type leafref {
+                            path '/l2vpn-ntw/vpn-services/vpn-service/vpn-nodes/vpn-node/' +
+                            'signaling-options/common/ethernet-segments' +
+                            '/ethernet-segment/name';
+                          }
+                            description
+                              "Reference to the ESI associated to the VPN network Access";
                         }
                       }
                     }
