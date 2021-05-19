@@ -2212,7 +2212,20 @@
           BFD is supported. The current data nodes can be specified:</t>
 
           <t><list style="hanging">
-              <t hangText="holdtime':">Is used to indicate the expected BFD
+              <t hangText="'desired-min-tx-interval':">Is the minimum
+              interval, in microseconds, that a PE would like to use when
+              transmitting BFD Control packets less any jitter applied.</t>
+
+              <t hangText="'required-min-rx-interval':">Is the minimum
+              interval, in microseconds, between received BFD Control packets
+              that a PE is capable of supporting, less any jitter applied by
+              the sender.</t>
+
+              <t hangText="'detection-multiplier':">The negotiated transmit
+              interval, multiplied by this value, provides the detection time
+              for the PE.</t>
+
+              <t hangText="'holdtime':">Is used to indicate the expected BFD
               holddown time. The value can be set by the customer or selected
               from a profile.</t>
 
@@ -2228,6 +2241,9 @@
               <artwork align="left"><![CDATA[...
 +--rw oam
 |  +--rw bfd {vpn-common:bfd}?
+|     +--rw desired-min-tx-interval?   uint32
+|     +--rw required-min-rx-interval?   uint32
+|     +--rw detection-multiplier?      uint8
 |     +--rw (holdtime)?
 |     |  +--:(fixed)
 |     |  |  +--rw fixed-value?    uint32
@@ -4557,7 +4573,7 @@ module ietf-l3vpn-ntw {
                              messages are disabled.
 
                              It is suggested that the maximum time
-                             between KEEPALIVEmessages would be
+                             between KEEPALIVE messages would be
                              one third of the Hold Time interval.";
                           reference
                             "RFC 4271: A Border Gateway Protocol 4
@@ -5121,6 +5137,40 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:bfd";
                     description
                       "Container for BFD.";
+                    leaf desired-min-tx-interval {
+                      type uint32;
+                      units microseconds;
+                      default 1000000;
+                      description
+                        "The minimum interval between transmission of 
+                         BFD control packets that the operator desires.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
+                    leaf required-min-rx-interval {
+                      type uint32;
+                      units microseconds;
+                      description
+                        "The minimum interval between received BFD 
+                         control packets that the PE should support.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
+                    leaf detection-multiplier {
+                      type uint8 {
+                        range "1..max";
+                      }
+                      description
+                        "The detection interval for the BFD session
+                         is calculated by multiplying the value of
+                         the negotiated transmission interval by 
+                         the detection multiplier value.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
                     choice holdtime {
                       default "fixed";
                       description
