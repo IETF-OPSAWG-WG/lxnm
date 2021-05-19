@@ -1883,9 +1883,9 @@
                   this container: (1) 'hold-time' which is the time interval
                   that will be used for the HoldTimer (Section 4.2 of <xref
                   target="RFC4271"></xref>) when establishing a BGP session.
-                  (2) 'keep-alive' which is the time interval for the
-                  KeepAlive timer between a PE and a BGP peer (Section 4.4 of
-                  <xref target="RFC4271"></xref>).</t>
+                  (2) 'keepalive' which is the time interval for the KeepAlive
+                  timer between a PE and a BGP peer (Section 4.4 of <xref
+                  target="RFC4271"></xref>).</t>
 
                   <t hangText="'security':">The module adheres to the
                   recommendations in Section 13.2 of <xref
@@ -1925,7 +1925,7 @@
 |     |  |  +--rw violate-action?      enumeration
 |     |  |  +--rw restart-interval?    uint16
 |     |  +--rw bgp-timers
-|     |  |  +--rw keep-alive?   uint16
+|     |  |  +--rw keepalive?   uint16
 |     |  |  +--rw hold-time?    uint16
 |     |  +--rw security
 |     |  |  +--rw enable?            boolean
@@ -2164,7 +2164,10 @@
                   group.</t>
 
                   <t hangText="'backup-peer':">Carries the IP address of the
-                  peer</t>
+                  peer.</t>
+
+                  <t hangText="'virtual-ip-address':">Includes virtual IP
+                  addresses for a single VRRP group.</t>
 
                   <t hangText="'priority':">Assigns the VRRP election priority
                   for the backup virtual router.</t>
@@ -2186,6 +2189,7 @@
 |        +--rw address-family*   identityref
 |        +--rw vrrp-group?       uint8
 |        +--rw backup-peer?      inet:ip-address
+|        +--rw virtual-ip-address*   inet:ip-address
 |        +--rw priority?         uint8
 |        +--rw ping-reply?       boolean
 |        +--rw status
@@ -2291,9 +2295,9 @@
    +--rw vpn-network-access* [id]
       ...
       +--rw service
-         +--rw input-bandwidth     uint64
-         +--rw output-bandwidth    uint64
-         +--rw mtu                 uint16
+         +--rw input-bandwidth?    uint64 {vpn-common:input-bw}?
+         +--rw output-bandwidth?   uint64 {vpn-common:output-bw}?
+         +--rw mtu?                uint16
          +--rw qos {vpn-common:qos}?
          |  ...
          +--rw carrierscarrier
@@ -2323,8 +2327,8 @@
               bandwidth of the connection (i.e., upload bandwidth from the
               site to the service provider).</t>
 
-              <t hangText="'mtu':">Indicates the MTU at service level. It can
-              be the IP MTU or MPLS MTU, for example.</t>
+              <t hangText="'mtu':">Indicates the MTU at the service level.
+              </t>
 
               <t hangText="'qos':">Is used to define a set of QoS policies to
               apply on a given connection (<xref target="qos-sub"></xref>). A
@@ -2988,14 +2992,14 @@ module ietf-l3vpn-ntw {
       if-feature "vpn-common:rtg-bgp";
       type inet:as-number;
       description
-        "Provider's Autonomous System (AS) number in case the 
+        "Provider's Autonomous System (AS) number in case the
          customer requests BGP routing.";
     }
     uses vpn-common:route-distinguisher;
     list address-family {
       key "address-family";
       description
-        "Set of per-address family paramters.";
+        "Set of per-address family parameters.";
       leaf address-family {
         type identityref {
           base vpn-common:address-family;
@@ -3025,7 +3029,7 @@ module ietf-l3vpn-ntw {
         leaf maximum-routes {
           type uint32;
           description
-            "Indicates the maximum prefixes that the VRF can 
+            "Indicates the maximum prefixes that the VRF can
              accept for this address family and protocol.";
         }
       }
@@ -3078,8 +3082,8 @@ module ietf-l3vpn-ntw {
                 type boolean;
                 default "false";
                 description
-                  "If set to true, the service provider (SP) must 
-                   ensure that the traffic uses an optimal path. 
+                  "If set to true, the service provider (SP) must
+                   ensure that the traffic uses an optimal path.
                    An SP may use Anycast RP or RP-tree-to-SPT
                    switchover architectures.";
               }
@@ -3097,7 +3101,7 @@ module ietf-l3vpn-ntw {
                   type inet:ip-address;
                   description
                     "IP local address for PIM RP. Usually, it
-                     corresponds to the Router ID or the 
+                     corresponds to the Router ID or the
                      primary address.";
                 }
                 leaf-list rp-set-address {
@@ -3180,7 +3184,7 @@ module ietf-l3vpn-ntw {
                 "Only applicable if discovery type is BSR-RP.";
             }
             description
-              "Container for the customer Bootstrap Router (BSR) 
+              "Container for the customer Bootstrap Router (BSR)
                candidate's addresses.";
             leaf-list bsr-candidate-address {
               type inet:ip-address;
@@ -3296,7 +3300,7 @@ module ietf-l3vpn-ntw {
           type uint32;
           default "1";
           description
-            "Indicates the preference in the Designated Router (DR) 
+            "Indicates the preference in the Designated Router (DR)
              election process. Numerically larger DR priority allows
              a node to be elected as a DR.";
           reference
@@ -3463,7 +3467,7 @@ module ietf-l3vpn-ntw {
                       base vpn-common:address-family;
                     }
                     description
-                      "Indicates the address family for which the 
+                      "Indicates the address family for which the
                        Router-ID applies.";
                   }
                   leaf router-id {
@@ -3638,7 +3642,7 @@ module ietf-l3vpn-ntw {
                   }
                   choice l2-service {
                     description
-                      "The layer 2 connectivity service can be 
+                      "The layer 2 connectivity service can be
                        provided by indicating a pointer to an L2VPN or
                        by specifying a layer 2 tunnel service.";
                     container l2-tunnel-service {
@@ -3745,7 +3749,7 @@ module ietf-l3vpn-ntw {
                     type string;
                     description
                       "This is an internal reference for the service
-                       provider to identify the bearer associated 
+                       provider to identify the bearer associated
                        with this VPN.";
                   }
                 }
@@ -3784,7 +3788,8 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message "SLAAC is only applicable to IPv6.";
+                        error-message 
+                          "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated to the
@@ -4537,7 +4542,7 @@ module ietf-l3vpn-ntw {
                            customized when building a VPN service
                            with BGP used as CE-PE routing
                            protocol.";
-                        leaf keep-alive {
+                        leaf keepalive {
                           type uint16 {
                             range "0..21845";
                           }
@@ -4552,7 +4557,7 @@ module ietf-l3vpn-ntw {
                              messages are disabled.
 
                              It is suggested that the maximum time
-                             between  KEEPALIVEmessages would be
+                             between KEEPALIVEmessages would be
                              one third of the Hold Time interval.";
                           reference
                             "RFC 4271: A Border Gateway Protocol 4
@@ -4842,7 +4847,7 @@ module ietf-l3vpn-ntw {
                           base vpn-common:isis-level;
                         }
                         description
-                          "Can be level1, level2, or level1-2.";
+                          "Can be level-1, level-2, or level-1-2.";
                       }
                       leaf metric {
                         type uint16;
@@ -5076,6 +5081,15 @@ module ietf-l3vpn-ntw {
                         description
                           "Indicates the IP address of the peer.";
                       }
+                      leaf-list virtual-ip-address {
+                        type inet:ip-address;
+                        description
+                          "Virtual IP addresses for a single VRRP group. ";
+                        reference
+                          "RFC 5798: Virtual Router Redundancy Protocol (VRRP)
+                                     Version 3 for IPv4 and IPv6,  Sections
+                                     1.2 and 1.3";
+                      }
                       leaf priority {
                         type uint8 {
                           range "1..254";
@@ -5244,9 +5258,9 @@ module ietf-l3vpn-ntw {
                   description
                     "Service parameters of the attachment.";
                   leaf input-bandwidth {
+                    if-feature "vpn-common:input-bw";
                     type uint64;
                     units "bps";
-                    mandatory true;
                     description
                       "From the customer site's perspective, the
                        service input bandwidth of the connection
@@ -5254,9 +5268,9 @@ module ietf-l3vpn-ntw {
                        the site.";
                   }
                   leaf output-bandwidth {
+                    if-feature "vpn-common:output-bw";
                     type uint64;
                     units "bps";
-                    mandatory true;
                     description
                       "From the customer site's perspective,
                        the service output bandwidth of the
@@ -5266,7 +5280,6 @@ module ietf-l3vpn-ntw {
                   leaf mtu {
                     type uint16;
                     units "bytes";
-                    mandatory true;
                     description
                       "MTU at service level.  If the service is IP,
                        it refers to the IP MTU.  If CsC is enabled,
@@ -6040,7 +6053,7 @@ content-type: application/yang-data+json
         "vpn-instance-profile": "simple-profile",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "connection": {
@@ -6096,7 +6109,7 @@ content-type: application/yang-data+json
         "vpn-instance-profile": "simple-profile",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "connection": {
@@ -6168,7 +6181,7 @@ content-type: application/yang-data+json
         "vpn-network-access-type": "vpn-common:loopback",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "ip-connection": {
@@ -6301,7 +6314,7 @@ content-type: application/yang-data+json
     "vpn-instance-profile": "multicast",
     "status": {
       "admin-status": {
-        "status": "vpn-common:administrative-state-up"
+        "status": "vpn-common:admin-state-up"
       },
       "ip-connection": {
         "ipv4": {
@@ -6345,7 +6358,7 @@ content-type: application/yang-data+json
             "hello-interval": 30,
             "status": {
               "admin-status": {
-                "status": "vpn-common:administrative-state-up"
+                "status": "vpn-common:admin-state-up"
               }
             }
           }
@@ -6408,9 +6421,9 @@ content-type: application/yang-data+json
       <t>During the discussions of this work, helpful comments, suggestions,
       and reviews were received from (listed alphabetically): Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel, Roque
-      Gagliano, Christian Jacquenet, Kireeti Kompella, and Julian Lucek. Many
-      thanks to them. Thanks to Philip Eardly for the review of an early
-      version of the document.</t>
+      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, and Tom
+      Petch. Many thanks to them. Thanks to Philip Eardly for the review of an
+      early version of the document.</t>
 
       <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
       contributed to early version of the individual submission.</t>
