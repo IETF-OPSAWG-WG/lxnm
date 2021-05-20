@@ -150,6 +150,34 @@ module ietf-l2vpn-ntw {
   }
   /* Identities */
 
+  identity df-election-methods {
+    description 
+    "Base Identity DF election method";
+  }
+
+  identity default {
+    base df-election-methods;
+    description 
+      "The default DF election method";
+    reference 
+      "draft-rabadan-bess-evpn-pref-df";
+  }
+
+  identity highest-random-weight {
+    base df-election-methods;
+    description 
+      "The highest random weight (HRW) method";
+    reference 
+      "draft-mohanty-bess-evpn-df-election";
+  }
+  identity preference {
+    base df-election-methods;
+    description 
+      "The preference based method";
+    reference 
+      "draft-rabadan-bess-evpn-pref-df";
+  }
+
   identity evpn-redundancy-mode {
     description
       "Base identity for EVPN redundancy modes.";
@@ -1158,26 +1186,8 @@ module ietf-l2vpn-ntw {
                             description 
                               "Top container for the df-election method properties.";
                             leaf df-election-method {
-                              type enumeration {
-                                enum default {
-                                  value 0;
-                                  description 
-                                    "The default DF election method";
-                                }
-                                enum highest-random-weight {
-                                  value 1;
-                                  description 
-                                    "The highest random weight (HRW) method";
-                                  reference 
-                                    "draft-mohanty-bess-evpn-df-election";
-                                }
-                                enum preference {
-                                  value 2;
-                                  description 
-                                    "The preference based method";
-                                  reference 
-                                    "draft-rabadan-bess-evpn-pref-df";
-                                }
+                              type identityref {
+                                base df-election-methods;
                               }
                               description 
                                 "The DF election method";
@@ -1186,12 +1196,15 @@ module ietf-l2vpn-ntw {
                             leaf preference {
                               when "../df-election-method = 'preference'" {
                               description 
-                                "The preference value is only applicable " +
-                                "to the preference based method";
+                                "The preference value is only applicable 
+                                to the preference based method";
                               }
                               type uint16;
                               description 
-                                "The DF preference";
+                                "Defines a 2-octet value that indicates the PE 
+                                preference to become the DF in the Ethernet-Segment.";
+                              reference
+                                "draft-ietf-bess-evpn-pref-df-07";
                             }
 
                             leaf revertive {
@@ -1203,7 +1216,8 @@ module ietf-l2vpn-ntw {
                               type boolean;
                               default true;
                               description 
-                              "The 'preempt' or 'revertive' behavior";
+                              "The 'preempt' or 'revertive' behavior. This option will allow a 
+                              non-revertive behavior in the DF election.";
                             }
 
                             leaf election-wait-time {
