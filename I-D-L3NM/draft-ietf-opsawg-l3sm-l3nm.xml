@@ -189,7 +189,7 @@
       </address>
     </author>
 
-    <date day="22" month="April" year="2021" />
+    <date day="19" month="May" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -1179,8 +1179,8 @@
                  |     +--rw multicast {vpn-common:multicast}?
                  |        ...
                  +--rw msdp {msdp}?
-                 |  +--rw peer?            inet:ip-address
-                 |  +--rw local-address?   inet:ip-address
+                 |  +--rw peer?            inet:ipv4-address
+                 |  +--rw local-address?   inet:ipv4-address
                  |  +--rw status
                  |     +--rw admin-status
                  |     |  +--rw status?         identityref
@@ -1883,9 +1883,9 @@
                   this container: (1) 'hold-time' which is the time interval
                   that will be used for the HoldTimer (Section 4.2 of <xref
                   target="RFC4271"></xref>) when establishing a BGP session.
-                  (2) 'keep-alive' which is the time interval for the
-                  KeepAlive timer between a PE and a BGP peer (Section 4.4 of
-                  <xref target="RFC4271"></xref>).</t>
+                  (2) 'keepalive' which is the time interval for the KeepAlive
+                  timer between a PE and a BGP peer (Section 4.4 of <xref
+                  target="RFC4271"></xref>).</t>
 
                   <t hangText="'security':">The module adheres to the
                   recommendations in Section 13.2 of <xref
@@ -1925,7 +1925,7 @@
 |     |  |  +--rw violate-action?      enumeration
 |     |  |  +--rw restart-interval?    uint16
 |     |  +--rw bgp-timers
-|     |  |  +--rw keep-alive?   uint16
+|     |  |  +--rw keepalive?   uint16
 |     |  |  +--rw hold-time?    uint16
 |     |  +--rw security
 |     |  |  +--rw enable?            boolean
@@ -2026,8 +2026,10 @@
 
               <t hangText="IS-IS:">The model (<xref
               target="routing-isis"></xref>) allows the user to configure
-              IS-IS to run on the 'vpn-network-access' interface. The
-              following IS-IS data nodes are supported:<list style="hanging">
+              IS-IS <xref target="ISO10589"></xref><xref
+              target="RFC1195"></xref><xref target="RFC5308"></xref> to run on
+              the 'vpn-network-access' interface. The following IS-IS data
+              nodes are supported:<list style="hanging">
                   <t hangText="'address-family':">Indicates whether IPv4,
                   IPv6, or both address families are to be activated.</t>
 
@@ -2035,7 +2037,7 @@
                   address.</t>
 
                   <t hangText="'level':">Indicates the IS-IS level: Level 1,
-                  Level2, or both.</t>
+                  Level 2, or both.</t>
 
                   <t hangText="'metric':">Associates a metric with IS-IS
                   routes.</t>
@@ -2047,7 +2049,10 @@
                   interface).</t>
 
                   <t hangText="'security':">Controls the authentication
-                  schemes to be enabled for the IS-IS instance.</t>
+                  schemes to be enabled for the IS-IS instance. Both the
+                  specification of a key-chain <xref target="RFC8177"></xref>
+                  and the direct specification of key and authentication
+                  algorithm are supported.</t>
 
                   <t hangText="'status':">Indicates the status of the OSPF
                   routing instance.</t>
@@ -2068,7 +2073,8 @@
 |     |  |  +--rw keying-material
 |     |  |     +--rw (option)?
 |     |  |        +--:(auth-key-chain)
-|     |  |        |  +--rw key-chain?          key-chain:key-chain-ref
+|     |  |        |  +--rw key-chain?          
+|     |  |        |          key-chain:key-chain-ref
 |     |  |        +--:(auth-key-explicit)
 |     |  |           +--rw key-id?             uint32
 |     |  |           +--rw key?                string
@@ -2137,7 +2143,8 @@
 |     |  |  +--rw keying-material
 |     |  |     +--rw (option)?
 |     |  |        +--:(auth-key-chain)
-|     |  |        |  +--rw key-chain?          key-chain:key-chain-ref
+|     |  |        |  +--rw key-chain?          
+|     |  |        |          key-chain:key-chain-ref
 |     |  |        +--:(auth-key-explicit)
 |     |  |           +--rw key?                string
 |     |  |           +--rw crypto-algorithm?   identityref
@@ -2164,7 +2171,10 @@
                   group.</t>
 
                   <t hangText="'backup-peer':">Carries the IP address of the
-                  peer</t>
+                  peer.</t>
+
+                  <t hangText="'virtual-ip-address':">Includes virtual IP
+                  addresses for a single VRRP group.</t>
 
                   <t hangText="'priority':">Assigns the VRRP election priority
                   for the backup virtual router.</t>
@@ -2186,6 +2196,7 @@
 |        +--rw address-family*   identityref
 |        +--rw vrrp-group?       uint8
 |        +--rw backup-peer?      inet:ip-address
+|        +--rw virtual-ip-address*   inet:ip-address
 |        +--rw priority?         uint8
 |        +--rw ping-reply?       boolean
 |        +--rw status
@@ -2208,7 +2219,20 @@
           BFD is supported. The current data nodes can be specified:</t>
 
           <t><list style="hanging">
-              <t hangText="holdtime':">Is used to indicate the expected BFD
+              <t hangText="'desired-min-tx-interval':">Is the minimum
+              interval, in microseconds, that a PE would like to use when
+              transmitting BFD Control packets less any jitter applied.</t>
+
+              <t hangText="'required-min-rx-interval':">Is the minimum
+              interval, in microseconds, between received BFD Control packets
+              that a PE is capable of supporting, less any jitter applied by
+              the sender.</t>
+
+              <t hangText="'detection-multiplier':">The negotiated transmit
+              interval, multiplied by this value, provides the detection time
+              for the PE.</t>
+
+              <t hangText="'holdtime':">Is used to indicate the expected BFD
               holddown time. The value can be set by the customer or selected
               from a profile.</t>
 
@@ -2224,6 +2248,9 @@
               <artwork align="left"><![CDATA[...
 +--rw oam
 |  +--rw bfd {vpn-common:bfd}?
+|     +--rw desired-min-tx-interval?   uint32
+|     +--rw required-min-rx-interval?   uint32
+|     +--rw detection-multiplier?      uint8
 |     +--rw (holdtime)?
 |     |  +--:(fixed)
 |     |  |  +--rw fixed-value?    uint32
@@ -2291,9 +2318,9 @@
    +--rw vpn-network-access* [id]
       ...
       +--rw service
-         +--rw input-bandwidth     uint64
-         +--rw output-bandwidth    uint64
-         +--rw mtu                 uint16
+         +--rw input-bandwidth?    uint64 {vpn-common:input-bw}?
+         +--rw output-bandwidth?   uint64 {vpn-common:output-bw}?
+         +--rw mtu?                uint16
          +--rw qos {vpn-common:qos}?
          |  ...
          +--rw carrierscarrier
@@ -2323,8 +2350,8 @@
               bandwidth of the connection (i.e., upload bandwidth from the
               site to the service provider).</t>
 
-              <t hangText="'mtu':">Indicates the MTU at service level. It can
-              be the IP MTU or MPLS MTU, for example.</t>
+              <t hangText="'mtu':">Indicates the MTU at the service level.
+              </t>
 
               <t hangText="'qos':">Is used to define a set of QoS policies to
               apply on a given connection (<xref target="qos-sub"></xref>). A
@@ -2759,7 +2786,7 @@
       target="RFC8294"></xref>.</t>
 
       <figure align="center">
-        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-04-21.yang"
+        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-05-18.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -2811,8 +2838,7 @@ module ietf-l3vpn-ntw {
      Author:    Luis Angel Munoz
                 <mailto:luis-angel.munoz@vodafone.com>
      Author:    Alejandro Aguado
-                <mailto:alejandro.aguado_martin@nokia.com>
-    ";
+                <mailto:alejandro.aguado_martin@nokia.com>";
   description
     "This YANG module defines a generic network-oriented model
      for the configuration of Layer 3 Virtual Private Networks.
@@ -2830,7 +2856,7 @@ module ietf-l3vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-04-21 {
+  revision 2021-05-18 {
     description
       "Initial revision.";
     reference
@@ -2988,14 +3014,14 @@ module ietf-l3vpn-ntw {
       if-feature "vpn-common:rtg-bgp";
       type inet:as-number;
       description
-        "Provider's Autonomous System (AS) number in case the 
+        "Provider's Autonomous System (AS) number in case the
          customer requests BGP routing.";
     }
     uses vpn-common:route-distinguisher;
     list address-family {
       key "address-family";
       description
-        "Set of per-address family paramters.";
+        "Set of per-address family parameters.";
       leaf address-family {
         type identityref {
           base vpn-common:address-family;
@@ -3025,7 +3051,7 @@ module ietf-l3vpn-ntw {
         leaf maximum-routes {
           type uint32;
           description
-            "Indicates the maximum prefixes that the VRF can 
+            "Indicates the maximum prefixes that the VRF can
              accept for this address family and protocol.";
         }
       }
@@ -3078,8 +3104,8 @@ module ietf-l3vpn-ntw {
                 type boolean;
                 default "false";
                 description
-                  "If set to true, the service provider (SP) must 
-                   ensure that the traffic uses an optimal path. 
+                  "If set to true, the service provider (SP) must
+                   ensure that the traffic uses an optimal path.
                    An SP may use Anycast RP or RP-tree-to-SPT
                    switchover architectures.";
               }
@@ -3097,7 +3123,7 @@ module ietf-l3vpn-ntw {
                   type inet:ip-address;
                   description
                     "IP local address for PIM RP. Usually, it
-                     corresponds to the Router ID or the 
+                     corresponds to the Router ID or the
                      primary address.";
                 }
                 leaf-list rp-set-address {
@@ -3180,7 +3206,7 @@ module ietf-l3vpn-ntw {
                 "Only applicable if discovery type is BSR-RP.";
             }
             description
-              "Container for the customer Bootstrap Router (BSR) 
+              "Container for the customer Bootstrap Router (BSR)
                candidate's addresses.";
             leaf-list bsr-candidate-address {
               type inet:ip-address;
@@ -3296,7 +3322,7 @@ module ietf-l3vpn-ntw {
           type uint32;
           default "1";
           description
-            "Indicates the preference in the Designated Router (DR) 
+            "Indicates the preference in the Designated Router (DR)
              election process. Numerically larger DR priority allows
              a node to be elected as a DR.";
           reference
@@ -3463,7 +3489,7 @@ module ietf-l3vpn-ntw {
                       base vpn-common:address-family;
                     }
                     description
-                      "Indicates the address family for which the 
+                      "Indicates the address family for which the
                        Router-ID applies.";
                   }
                   leaf router-id {
@@ -3486,14 +3512,14 @@ module ietf-l3vpn-ntw {
               description
                 "Includes MSDP-related parameters.";
               leaf peer {
-                type inet:ip-address;
+                type inet:ipv4-address;
                 description
-                  "Indicates the IP address of the MSDP peer.";
+                  "Indicates the IPv4 address of the MSDP peer.";
               }
               leaf local-address {
-                type inet:ip-address;
+                type inet:ipv4-address;
                 description
-                  "Indicates the IP address of the local end.
+                  "Indicates the IPv4 address of the local end.
                    This local address must be configured on
                    the node.";
               }
@@ -3638,7 +3664,7 @@ module ietf-l3vpn-ntw {
                   }
                   choice l2-service {
                     description
-                      "The layer 2 connectivity service can be 
+                      "The layer 2 connectivity service can be
                        provided by indicating a pointer to an L2VPN or
                        by specifying a layer 2 tunnel service.";
                     container l2-tunnel-service {
@@ -3745,7 +3771,7 @@ module ietf-l3vpn-ntw {
                     type string;
                     description
                       "This is an internal reference for the service
-                       provider to identify the bearer associated 
+                       provider to identify the bearer associated
                        with this VPN.";
                   }
                 }
@@ -3784,7 +3810,8 @@ module ietf-l3vpn-ntw {
                       must "not(derived-from-or-self(current(), "
                          + "'slaac') or derived-from-or-self(current(),"
                          + " 'provider-dhcp-slaac'))" {
-                        error-message "SLAAC is only applicable to IPv6.";
+                        error-message 
+                          "SLAAC is only applicable to IPv6.";
                       }
                       description
                         "Defines how addresses are allocated to the
@@ -4537,7 +4564,7 @@ module ietf-l3vpn-ntw {
                            customized when building a VPN service
                            with BGP used as CE-PE routing
                            protocol.";
-                        leaf keep-alive {
+                        leaf keepalive {
                           type uint16 {
                             range "0..21845";
                           }
@@ -4552,7 +4579,7 @@ module ietf-l3vpn-ntw {
                              messages are disabled.
 
                              It is suggested that the maximum time
-                             between  KEEPALIVEmessages would be
+                             between KEEPALIVE messages would be
                              one third of the Hold Time interval.";
                           reference
                             "RFC 4271: A Border Gateway Protocol 4
@@ -4842,7 +4869,7 @@ module ietf-l3vpn-ntw {
                           base vpn-common:isis-level;
                         }
                         description
-                          "Can be level1, level2, or level1-2.";
+                          "Can be level-1, level-2, or level-1-2.";
                       }
                       leaf metric {
                         type uint16;
@@ -5076,6 +5103,15 @@ module ietf-l3vpn-ntw {
                         description
                           "Indicates the IP address of the peer.";
                       }
+                      leaf-list virtual-ip-address {
+                        type inet:ip-address;
+                        description
+                          "Virtual IP addresses for a single VRRP group. ";
+                        reference
+                          "RFC 5798: Virtual Router Redundancy Protocol (VRRP)
+                                     Version 3 for IPv4 and IPv6,  Sections
+                                     1.2 and 1.3";
+                      }
                       leaf priority {
                         type uint8 {
                           range "1..254";
@@ -5107,6 +5143,40 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:bfd";
                     description
                       "Container for BFD.";
+                    leaf desired-min-tx-interval {
+                      type uint32;
+                      units microseconds;
+                      default 1000000;
+                      description
+                        "The minimum interval between transmission of 
+                         BFD control packets that the operator desires.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
+                    leaf required-min-rx-interval {
+                      type uint32;
+                      units microseconds;
+                      description
+                        "The minimum interval between received BFD 
+                         control packets that the PE should support.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
+                    leaf detection-multiplier {
+                      type uint8 {
+                        range "1..max";
+                      }
+                      description
+                        "The detection interval for the BFD session
+                         is calculated by multiplying the value of
+                         the negotiated transmission interval by 
+                         the detection multiplier value.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.7";
+                    }
                     choice holdtime {
                       default "fixed";
                       description
@@ -5244,9 +5314,9 @@ module ietf-l3vpn-ntw {
                   description
                     "Service parameters of the attachment.";
                   leaf input-bandwidth {
+                    if-feature "vpn-common:input-bw";
                     type uint64;
                     units "bps";
-                    mandatory true;
                     description
                       "From the customer site's perspective, the
                        service input bandwidth of the connection
@@ -5254,9 +5324,9 @@ module ietf-l3vpn-ntw {
                        the site.";
                   }
                   leaf output-bandwidth {
+                    if-feature "vpn-common:output-bw";
                     type uint64;
                     units "bps";
-                    mandatory true;
                     description
                       "From the customer site's perspective,
                        the service output bandwidth of the
@@ -5266,7 +5336,6 @@ module ietf-l3vpn-ntw {
                   leaf mtu {
                     type uint16;
                     units "bytes";
-                    mandatory true;
                     description
                       "MTU at service level.  If the service is IP,
                        it refers to the IP MTU.  If CsC is enabled,
@@ -5691,6 +5760,11 @@ module ietf-l3vpn-ntw {
           customer-provider trust relationship.</t>
         </list></t>
 
+      <t>Several data nodes defined in the L3NM rely upon <xref
+      target="RFC8177"></xref> for authentication purposes. Therefore, this
+      module inherits the security considerations discussed in Section 5 of
+      <xref target="RFC8177"></xref>.</t>
+
       <t>The following summarizes the foreseen risks of using the
       "ietf-l3vpn-ntw" module can be classified into: <list style="symbols">
           <t>Malicious clients attempting to delete or modify VPN
@@ -5827,6 +5901,26 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.8446'?>
 
       <?rfc include='reference.RFC.5905'?>
+
+      <?rfc include='reference.RFC.5308'?>
+
+      <?rfc include='reference.RFC.1195'?>
+
+      <reference anchor="ISO10589"
+                 target="International Standard 10589:2002, Second Edition">
+        <front>
+          <title>Intermediate System to Intermediate System intra- domain
+          routeing information exchange protocol for use in conjunction with
+          the protocol for providing the connectionless-mode network service
+          (ISO 8473)</title>
+
+          <author fullname="ISO">
+            <organization></organization>
+          </author>
+
+          <date year="2002" />
+        </front>
+      </reference>
     </references>
 
     <references title="Informative References">
@@ -6040,7 +6134,7 @@ content-type: application/yang-data+json
         "vpn-instance-profile": "simple-profile",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "connection": {
@@ -6096,7 +6190,7 @@ content-type: application/yang-data+json
         "vpn-instance-profile": "simple-profile",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "connection": {
@@ -6168,7 +6262,7 @@ content-type: application/yang-data+json
         "vpn-network-access-type": "vpn-common:loopback",
         "status": {
           "admin-status": {
-            "status": "vpn-common:administrative-state-up"
+            "status": "vpn-common:admin-state-up"
           }
         },
         "ip-connection": {
@@ -6301,7 +6395,7 @@ content-type: application/yang-data+json
     "vpn-instance-profile": "multicast",
     "status": {
       "admin-status": {
-        "status": "vpn-common:administrative-state-up"
+        "status": "vpn-common:admin-state-up"
       },
       "ip-connection": {
         "ipv4": {
@@ -6345,7 +6439,7 @@ content-type: application/yang-data+json
             "hello-interval": 30,
             "status": {
               "admin-status": {
-                "status": "vpn-common:administrative-state-up"
+                "status": "vpn-common:admin-state-up"
               }
             }
           }
@@ -6408,9 +6502,9 @@ content-type: application/yang-data+json
       <t>During the discussions of this work, helpful comments, suggestions,
       and reviews were received from (listed alphabetically): Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel, Roque
-      Gagliano, Christian Jacquenet, Kireeti Kompella, and Julian Lucek. Many
-      thanks to them. Thanks to Philip Eardly for the review of an early
-      version of the document.</t>
+      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, and Tom
+      Petch. Many thanks to them. Thanks to Philip Eardly for the review of an
+      early version of the document.</t>
 
       <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
       contributed to early version of the individual submission.</t>
