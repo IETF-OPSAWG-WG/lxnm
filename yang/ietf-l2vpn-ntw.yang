@@ -56,36 +56,107 @@ module ietf-l2vpn-ntw {
   }
 
   /* Features */
-  /*feature multicast-like {
-    description
-      "Indicates the support of multicast-like capabilities
-       in a L2VPN.";
-  }*/
-  /*feature target-sites {
-    description
-      "Indicates the support of 'target-sites' match flow
-       parameter.";
-  }*/
-  /*feature l2cp-control {
-    description
-      "Indicates the support of L2CP control.";
-  }*/
-  /*feature output-bw {
-    description
-      "Indicates the support of Output Bandwidth in
-       a VPN";
-  }*/
-  /*feature uni-list {
-    description
-      "Indicates thesupport of UNI list in a VPN.";
-  }*/
 
   feature oam-3ah {
     description
       "Indicates the support of OAM 802.3ah.";
   }
+  
+  /* Typedefs */
+    /* 
 
+  typedef ccm-priority-type {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "A 3-bit priority value to be used in the VLAN tag,
+      if present in the transmitted frame.";
+  }
+  
   /* Identities */
+
+  identity esi-type {
+     description
+      "T-(ESI Type) is a 1-octet field (most significant octet) that
+      specifies the format of the remaining 9 octets (ESI Value).";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+  }
+  
+  identity esi-type-0 {
+    base esi-type;
+    description
+      "This type indicates an arbitrary 9-octet ESI value, 
+        which is managed and configured by the operator.";
+  }
+  
+  identity esi-type-1 {
+    base esi-type;
+    description
+      "When IEEE 802.1AX LACP is used between the PEs and CEs, 
+      this ESI type indicates an auto-generated ESI value
+      determined from LACP.";
+  }
+  
+  identity esi-type-2 {
+    base esi-type;
+    description
+      "The ESI value is auto-generated and determined based 
+      on the Layer 2 bridge protocol";
+  }
+  
+  identity esi-type-3 {
+    base esi-type;
+    description
+      "This type indicates a MAC-based ESI value that can be auto-generated 
+      or configured by the operator.";
+  }
+  
+  identity esi-type-4 {
+    base esi-type;
+    description
+      "TThis type indicates a Router-ID ESI value that can be auto-generated
+      or configured by the operator.";
+  }
+  
+  identity esi-type-5 {
+    base esi-type;
+    description
+      "This type indicates an Autonomous System (AS)-based ESI value that can 
+      be auto-generated or configured by the operator.";
+  }
+
+  identity df-election-methods {
+    description 
+    "Base Identity DF election method";
+  }
+
+  identity default-7432 {
+    base df-election-methods;
+    description 
+      "The default DF election method. 
+      
+      The default procedure for DF election at the granularity of <ES,
+     VLAN> for VLAN-based service or <ES, VLAN bundle> for VLAN-(aware)
+      bundle service is referred to as 'service carving'.";
+    reference 
+     "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 8.5";
+  }
+
+  identity highest-random-weight {
+    base df-election-methods;
+    description 
+      "The highest random weight (HRW) method";
+    reference 
+      "RFC 8584: Framework for Ethernet VPN Designated
+                        Forwarder Election Extensibility, Section 3";
+  }
+  identity preference {
+    base df-election-methods;
+    description 
+      "The preference based method. PEs are assigned with preferences to become the DF in the ES. The exact preference-based algorithm (e.g., lowest-preference algorithm, highest-preference algorithm) to use is signaled at the control plane. ";
+  }
 
   identity evpn-redundancy-mode {
     description
@@ -171,69 +242,7 @@ module ietf-l2vpn-ntw {
        a faulty state is detected on the primary circuit.";
   }
 
-  /*identity bundling-type {
-    description
-      "The base identity for the bundling type.  It supports
-       multiple CE-VLANs associated with an L2VPN service or
-       all CE-VLANs associated with an L2VPN service.";
-  }
-  
-  identity multi-svc-bundling {
-    base bundling-type;
-    description
-      "Identity for multi-service bundling, i.e.,
-       multiple CE-VLAN IDs can be associated with an
-       L2VPN service at a site.";
-  }
-  
-  identity one2one-bundling {
-    base bundling-type;
-    description
-      "Identity for one-to-one service bundling, i.e.,
-       each L2VPN can be associated with only one CE-VLAN ID
-       at a site.";
-  }
-  
-  identity all2one-bundling {
-    base bundling-type;
-    description
-      "Identity for all-to-one bundling, i.e., all CE-VLAN IDs
-       are mapped to one L2VPN service.";
-  }*/
-  /*identity color-id {
-    description
-      "Base identity of the color ID.";
-  }*/
-  /*identity color-id-cvlan {
-    base color-id;
-    description
-      "Identity of the color ID based on a CVLAN.";
-  }*/
-
-  identity color-type {
-    description
-      "Identity of color types.";
-  }
-
-  identity green {
-    base color-type;
-    description
-      "Identity of the 'green' color type.";
-  }
-
-  identity yellow {
-    base color-type;
-    description
-      "Identity of the 'yellow' color type.";
-  }
-
-  identity red {
-    base color-type;
-    description
-      "Identity of the 'red' color type.";
-  }
-
-  /*identity perf-tier-opt {
+  identity perf-tier-opt {
     description
       "Identity of performance tier option.";
   }
@@ -260,8 +269,9 @@ module ietf-l2vpn-ntw {
     base perf-tier-opt;
     description
       "Identity of global";
-  }*/
-  /*identity policing {
+  }
+
+  identity policing {
     description
       "Identity of policing type";
   }
@@ -276,7 +286,7 @@ module ietf-l2vpn-ntw {
     base policing;
     description
       "Identity of two-rate, three-color (2R3C)";
-  }*/
+  }
 
   identity loop-prevention-type {
     description
@@ -293,6 +303,29 @@ module ietf-l2vpn-ntw {
     base loop-prevention-type;
     description
       "Identity of trap protection.";
+  }
+
+  identity color-type {
+    description
+      "Identity of color types.";
+  }
+
+  identity green {
+    base color-type;
+    description
+      "Identity of the 'green' color type.";
+  }
+
+  identity yellow {
+    base color-type;
+    description
+      "Identity of the 'yellow' color type.";
+  }
+
+  identity red {
+    base color-type;
+    description
+      "Identity of the 'red' color type.";
   }
 
   identity t-ldp-pwe-type {
@@ -317,29 +350,6 @@ module ietf-l2vpn-ntw {
     description
       "Identity for h-vpls";
   }
-
-  /*identity l2vpn-type {
-    description
-      "Layer 2 VPN types";
-  }
-  
-  identity l2vpn-vpws {
-    base l2vpn-type;
-    description
-      "VPWS L2VPN type.";
-  }
-  
-  identity l2vpn-vpls {
-    base l2vpn-type;
-    description
-      "VPLS L2VPN type.";
-  }
-  
-  identity distribute-vpls {
-    base l2vpn-type;
-    description
-      "distribute VPLS L2VPN type.";
-  }*/
 
   identity evpn-type {
     description
@@ -415,34 +425,6 @@ module ietf-l2vpn-ntw {
       "Identity for sending a warning log message.";
   }
 
-  /*identity load-balance-method {
-    description
-      "Base identity for load balance method.";
-  }
-  
-  identity fat-pw {
-    base load-balance-method;
-    description
-      "Identity for Fat PW. Fat label is
-       applied to Pseudowires across MPLS
-       network.";
-  }
-  
-  identity entropy-label {
-    base load-balance-method;
-    description
-      "Identity for entropy label.Entropy label
-       is applied to IP forwarding,
-       L2VPN or L3VPN across MPLS network";
-  }
-  
-  identity vxlan-source-port {
-    base load-balance-method;
-    description
-      "Identity for vxlan source port.VxLAN
-       Source Port is one load balancing method.";
-  }*/
-
   identity precedence-type {
     description
       "Redundancy type. The service can be created
@@ -461,44 +443,6 @@ module ietf-l2vpn-ntw {
       "Identifies the Backup L2VPN.";
   }
 
-  /*feature micro-bfd {
-    description
-      "Indicates the support of Micro-BFD.";
-  }*/
-  /*feature signaling-options {
-    description
-      "Indicates the support of signalling option.";
-  }*/
-  /*feature always-on {
-    description
-      "Indicates the support for always-on access
-       constraint.";
-  }*/
-  /*feature requested-type {
-    description
-      "Indicates the support for requested-type access
-       constraint.";
-  }*/
-  /*feature vlan {
-    description
-      "Indicates the support of VLAN.";
-  }*/
-  /*feature sub-inf {
-    description
-      "Indicates the support of Sub Interface.";
-  }*/
-  /*feature atm {
-    description
-      "Indicates the support of ATM.";
-  }*/
-  /*feature vxlan {
-    description
-      "Indicates the support of VxLAN.";
-  }*/
-  /*feature lan-tag {
-    description
-      "Indicates the LAN Tag support in a VPN.";
-  }*/
   /* Typedefs */
 
   typedef ccm-priority-type {
@@ -1047,6 +991,160 @@ module ietf-l2vpn-ntw {
                           }
                         }
                       }
+                      container ethernet-segments {
+                        description
+                          "Top container for the Ethernet Segment Identifier (ESI).";                          
+                        list ethernet-segment {
+                          description
+                            "Top list for ESIs.";  
+                          key "name";
+                          
+                          leaf name {
+                            type string;
+                            description
+                              "Includes the name of the Ethernet Segment (ES).";
+                          }
+                          leaf esi-type {
+                            default "esi-type-0";
+                            type identityref {
+                              base esi-type;
+                            }
+                            description
+                              "T-(ESI Type) is a 1-octet field (most significant octet) that
+                              specifies the format of the remaining 9 octets (ESI Value).";
+                            reference
+                              "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+                          }
+                          choice esi-choice {
+                            description
+                                "Ethernet segment choice between several types.
+                                For ESI Type 0: The esi is directly configured by the operator.
+                                For ESI Type 1: The auto-mode must be used.
+                                For ESI Type 2: The auto-mode must be used.
+                                For ESI Type 3: The directly-assigned or auto-mode must be used.
+                                For ESI Type 4: The directly-assigned or auto-mode must be used.
+                                For ESI Type 5: The directly-assigned or auto-mode must be used.";
+                            case directly-assigned {
+                              description
+                                "Explicitly assign an ESI value.";
+                              leaf ethernet-segment-identifier {
+                                type yang:hex-string {
+                                  length "29";
+                                }
+                                description
+                                  "10-octet Ethernet Segment Identifier (ESI).";
+                              }
+                            }
+                            case auto-assigned {
+                              description
+                                "The ESI is auto-assigned.";
+                              container esi-auto {
+                                description
+                                  "The ESI is auto-assigned.";
+                                choice auto-mode {
+                                  description
+                                    "Indicates the auto-assignment mode. ESI can be
+                                     automatically assigned either with or without
+                                     indicating a pool from which the ESI should be 
+                                     taken. 
+
+                                     For both cases, the server will auto-assign an ESI 
+                                     value 'auto-assigned-ESI' and use that value 
+                                     operationally.";
+                                  case from-pool {
+                                    leaf esi-pool-name {
+                                      type string;
+                                      description
+                                        "The auto-assignment will be made from the pool
+                                         identified by the ESI-pool-name.";
+                                    }
+                                  }
+                                  case full-auto {
+                                    leaf auto {
+                                      type empty;
+                                      description
+                                        "Indicates an ESI is fully auto-assigned.";
+                                    }
+                                  }
+                                }
+                                leaf auto-ethernet-segment-identifier {
+                                  type yang:hex-string {
+                                    length "29";
+                                  }
+                                  config false;
+                                  description
+                                    "The value of the auto-assigned ESI.";
+                                }
+                              }
+                            }
+                          }
+                          leaf esi-redundancy-mode {
+                            type identityref {
+                              base evpn-redundancy-mode;
+                            }
+                            description
+                              "Indicates the EVPN redundancy mode for
+                               a multihomed CE.";
+                            reference
+                              "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1"; 
+                          }
+                          container df-election {
+                            description 
+                              "Top container for the df-election method properties.";
+                            leaf df-election-method {
+                              default "default-7432";
+                              type identityref {
+                                base df-election-methods;
+                              }
+                              description 
+                                "Specifies the DF election method.";
+                              reference
+                                "RFC 8584: Framework for Ethernet VPN Designated Forwarder 
+                                Election Extensibility";
+                            }
+
+                            leaf preference {
+                              when "../df-election-method = 'preference'" {
+                              description 
+                                "The preference value is only applicable 
+                                to the preference based method";
+                              }
+                              type uint16;
+                              description 
+                                "Defines a 2-octet value that indicates the PE 
+                                preference to become the DF in the Ethernet-Segment.";
+                              reference
+                                "RFC8584: Framework for Ethernet VPN Designated Forwarder 
+                                Election Extensibility";
+                            }
+
+                            leaf revertive {
+                              when "../df-election-method = 'preference'" {
+                              description 
+                                "The revertive value is only applicable " +
+                                "to the preference method";
+                              }
+                              type boolean;
+                              default true;
+                              description 
+                                "The 'preempt' or 'revertive' behavior. This option will allow a 
+                                non-revertive behavior in the DF election.";
+                              reference
+                                "RFC8584: Framework for Ethernet VPN Designated Forwarder 
+                                Election Extensibility";
+                            }
+
+                            leaf election-wait-time {
+                              type uint32;
+                              description 
+                                "Election-wait-time";
+                              reference
+                                "RFC8584: Framework for Ethernet VPN Designated Forwarder 
+                                Election Extensibility";
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -1539,19 +1637,13 @@ module ietf-l2vpn-ntw {
                             "Group color associated with a particular VPN.";
                         }
                         leaf ethernet-segment-identifier {
-                          type yang:hex-string {
-                            length "29";
+                          type leafref {
+                            path '/l2vpn-ntw/vpn-services/vpn-service/vpn-nodes/vpn-node/' +
+                            'signaling-options/ethernet-segments' +
+                            '/ethernet-segment/name';
                           }
-                          description
-                            "10-octet Ethernet Segment Identifier (ESI).";
-                        }
-                        leaf esi-redundancy-mode {
-                          type identityref {
-                            base evpn-redundancy-mode;
-                          }
-                          description
-                            "Indicates the EVPN redundancy mode for
-                             a multihomed CE.";
+                            description
+                              "Reference to the ESI associated to the VPN network Access";
                         }
                       }
                     }
