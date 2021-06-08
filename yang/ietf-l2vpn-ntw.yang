@@ -1298,6 +1298,22 @@ module ietf-l2vpn-ntw {
                 container connection {
                   description
                     "Container for bearer and AC";
+                  leaf l2-termination-point {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a reference to a local layer 2
+                       termination point such as a layer 2 sub-interface.";
+                  }
+
+                  leaf local-bridge-reference {
+                    type vpn-common:vpn-id;
+                    description
+                      "Specifies a local bridge reference to
+                       accommodate, for example, implementations
+                       that require internal bridging.
+                       A reference may be a local bridge domain.";
+                  }
+
                   leaf bearer-reference {
                     if-feature "vpn-common:bearer-reference";
                     type string;
@@ -1306,158 +1322,97 @@ module ietf-l2vpn-ntw {
                        provider to identify the bearer associated
                        with this VPN.";
                   }
-                  /*leaf encapsulation-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
-                    }
-                    description
-                      "Encapsulation Type";
-                  }
-                  leaf-list eth-inf-type {
-                    type identityref {
-                      base vpn-common:encapsulation-type;
-                    }
-                    description
-                      "Ethernet interface type.";
-                  }*/
+                  
                   container encapsulation {
                     description
-                      "Container for Dot1Q interface";
-                    leaf l2-access-type {
+                      "Container for layer 2 encapsulation.";
+                    leaf type {
                       type identityref {
                         base vpn-common:encapsulation-type;
                       }
+                      default "vpn-common:priority-tagged";
                       description
-                        "L2 access encapsulation type.";
+                        "Tagged interface type. By default, the type of
+                         the tagged interface is 'priority-tagged'.";
                     }
+                    
                     container dot1q {
-                      when "derived-from-or-self(../l2-access-type, "
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:dot1q')" {
                         description
-                          "Only applicable if L2 access type is Do1q.";
+                          "Only applies when the type of the
+                           tagged interface is 'dot1q'.";
                       }
                       if-feature "vpn-common:dot1q";
                       description
-                        "Qot1q";
-                      leaf physical-inf {
-                        type string;
+                        "Tagged interface.";
+                      leaf tag-type {
+                        type identityref {
+                          base vpn-common:tag-type;
+                        }
+                        default "vpn-common:c-vlan";
                         description
-                          "Physical Interface";
+                          "Tag type. By default, the tag type is
+                           'c-vlan'.";
                       }
-                      leaf c-vlan-id {
-                        type uint32;
+                      leaf cvlan-id {
+                        type uint16;
                         description
-                          "VLAN identifier";
+                          "VLAN identifier.";
                       }
                     }
+                    
+                    container priority-tagged {
+                      when "derived-from-or-self(../type, "
+                         + "'vpn-common:priority-tagged')" {
+                        description
+                          "Only applies when the type of the
+                           tagged interface is 'priority-tagged'.";
+                      }
+                      description
+                        "Priority tagged.";
+                      leaf tag-type {
+                        type identityref {
+                          base vpn-common:tag-type;
+                        }
+                        default "vpn-common:c-vlan";
+                        description
+                          "Tag type. By default, the tag type is
+                           'c-vlan'.";
+                      }
+                    }
+                    
                     container qinq {
-                      when "derived-from-or-self(../l2-access-type, "
+                      when "derived-from-or-self(../type, "
                          + "'vpn-common:qinq')" {
                         description
-                          "Only applicable if L2 access type is QinQ.";
+                          "Only applies when the type of the tagged
+                           interface is QinQ.";
                       }
                       if-feature "vpn-common:qinq";
                       description
-                        "QinQ";
-                      leaf s-vlan-id {
-                        type uint32;
-                        description
-                          "S-VLAN Identifier";
-                      }
-                      leaf c-vlan-id {
-                        type uint32;
-                        description
-                          "C-VLAN Identifier";
-                      }
-                    }
-                    container qinany {
-                      when "derived-from-or-self(../l2-access-type, "
-                         + "'vpn-common:qinany')" {
-                        description
-                          "Only applicable if L2 access type is QinAny.";
-                      }
-                      if-feature "vpn-common:qinany";
-                      description
-                        "Container for Q in Any";
-                      leaf s-vlan-id {
-                        type uint32;
-                        description
-                          "S-Vlan ID";
-                      }
-                    }
-                    container vxlan {
-                      when "derived-from-or-self(../l2-access-type, "
-                         + "'vpn-common:vxlan')" {
-                        description
-                          "Only applicable if L2 access type is VXLAN.";
-                      }
-                      if-feature "vpn-common:vxlan";
-                      description
-                        "QinQ";
-                      leaf vni-id {
-                        type uint32;
-                        description
-                          "VNI Identifier";
-                      }
-                      leaf peer-mode {
+                        "Includes QinQ parameters.";
+                      leaf tag-type {
                         type identityref {
-                          base vpn-common:vxlan-peer-mode;
+                          base vpn-common:tag-type;
                         }
+                        default "vpn-common:c-s-vlan";
                         description
-                          "specify the vxlan access mode";
+                          "Tag type. By default, the tag type is
+                           'c-s-vlan'.";
                       }
-                      leaf-list peer-list {
-                        type inet:ip-address;
+                      leaf svlan-id {
+                        type uint16;
+                        mandatory true;
                         description
-                          "Peer IP address.";
+                          "SVLAN identifier.";
                       }
-                    }
-                  }
-                  container phy-interface {
-                    description
-                      "Container of PHY Interface Attributes configurations";
-                    leaf port-number {
-                      type uint32;
-                      description
-                        "Port number";
-                    }
-                    leaf port-speed {
-                      type uint32;
-                      description
-                        "Port speed";
-                    }
-                    leaf mode {
-                      type identityref {
-                        base vpn-common:neg-mode;
-                      }
-                      description
-                        "Negotiation mode";
-                    }
-                    leaf phy-mtu {
-                      type uint32;
-                      description
-                        "PHY MTU";
-                    }
-                    leaf flow-control {
-                      type string;
-                      description
-                        "Flow control";
-                    }
-                    container oam-802.3ah-link {
-                      if-feature "oam-3ah";
-                      description
-                        "Container for oam 802.3 ah link.";
-                      leaf enable {
-                        type boolean;
+                      leaf cvlan-id {
+                        type uint16;
+                        mandatory true;
                         description
-                          "Indicate whether support oam 802.3 ah link";
+                          "CVLAN identifier.";
                       }
-                    }
-                    leaf uni-loop-prevention {
-                      type boolean;
-                      description
-                        "If this leaf set to truth that the port automatically
-                         goes down when a physical loopback is detect.";
                     }
                   }
                   container lag-interface {
@@ -1591,15 +1546,6 @@ module ietf-l2vpn-ntw {
                       }
                     }
                   }*/
-                  container split-horizon {
-                    description
-                      "Configuration with split horizon enabled";
-                    leaf group-name {
-                      type string;
-                      description
-                        "group-name of the Split Horizon";
-                    }
-                  }
                 }
                 container TO-SIMPLFY-diversity-redundancy-TO-SIMPLFY {
                   description
