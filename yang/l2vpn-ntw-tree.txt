@@ -133,23 +133,67 @@ module: ietf-l2vpn-ntw
                  |     |     +--:(evpn-bgp)
                  |     |        +--rw evpn-type?                                  identityref
                  |     |        +--rw service-interface-type?                     identityref
+                 |     |        +--rw vpws-service-instance
+                 |     |        |  +--rw (local-vsi-choice)?
+                 |     |        |  |  +--:(directly-assigned)
+                 |     |        |  |  |  +--rw local-vpws-service-instance?    uint32
+                 |     |        |  |  +--:(auto-assigned)
+                 |     |        |  |     +--rw local-vsi-auto
+                 |     |        |  |        +--rw (auto-mode)?
+                 |     |        |  |        |  +--:(from-pool)
+                 |     |        |  |        |  |  +--rw vsi-pool-name?   string
+                 |     |        |  |        |  +--:(full-auto)
+                 |     |        |  |        |     +--rw auto?            empty
+                 |     |        |  |        +--ro auto-local-vsi?        uint32
+                 |     |        |  +--rw (remote-vsi-choice)?
+                 |     |        |     +--:(directly-assigned)
+                 |     |        |     |  +--rw remote-vpws-service-instance?   uint32
+                 |     |        |     +--:(auto-assigned)
+                 |     |        |        +--rw remote-vsi-auto
+                 |     |        |           +--rw (auto-mode)?
+                 |     |        |           |  +--:(from-pool)
+                 |     |        |           |  |  +--rw vsi-pool-name?   string
+                 |     |        |           |  +--:(full-auto)
+                 |     |        |           |     +--rw auto?            empty
+                 |     |        |           +--ro auto-remote-vsi?       uint32
                  |     |        +--rw TORENAME_OR_MOVE-common-TORENAME_OR_MOVE
-                 |     |           +--rw mac-learning-mode?                  identityref
-                 |     |           +--rw ingress-replication?                boolean
-                 |     |           +--rw p2mp-replication?                   boolean
-                 |     |           +--rw arp-proxy?                          boolean
-                 |     |           +--rw arp-suppression?                    boolean
-                 |     |           +--rw nd-proxy?                           boolean
-                 |     |           +--rw nd-suppression?                     boolean
-                 |     |           +--rw underlay-multicast?                 boolean
-                 |     |           +--rw flood-unknown-unicast-supression?   boolean
-                 |     |           +--rw vpws-vlan-aware?                    boolean
-                 |     |           +--rw bum-management
-                 |     |           |  +--rw discard-broadcast?           boolean
-                 |     |           |  +--rw discard-unknown-multicast?   boolean
-                 |     |           |  +--rw discard-unknown-unicast?     boolean
-                 |     |           +--rw pbb
-                 |     |              +--rw backbone-src-mac?   yang:mac-address
+                 |     |        |  +--rw mac-learning-mode?                  identityref
+                 |     |        |  +--rw ingress-replication?                boolean
+                 |     |        |  +--rw p2mp-replication?                   boolean
+                 |     |        |  +--rw arp-proxy?                          boolean
+                 |     |        |  +--rw arp-suppression?                    boolean
+                 |     |        |  +--rw nd-proxy?                           boolean
+                 |     |        |  +--rw nd-suppression?                     boolean
+                 |     |        |  +--rw underlay-multicast?                 boolean
+                 |     |        |  +--rw flood-unknown-unicast-supression?   boolean
+                 |     |        |  +--rw vpws-vlan-aware?                    boolean
+                 |     |        |  +--rw bum-management
+                 |     |        |  |  +--rw discard-broadcast?           boolean
+                 |     |        |  |  +--rw discard-unknown-multicast?   boolean
+                 |     |        |  |  +--rw discard-unknown-unicast?     boolean
+                 |     |        |  +--rw pbb
+                 |     |        |     +--rw backbone-src-mac?   yang:mac-address
+                 |     |        +--rw ethernet-segments
+                 |     |           +--rw ethernet-segment* [name]
+                 |     |              +--rw name                                 string
+                 |     |              +--rw esi-type?                            identityref
+                 |     |              +--rw (esi-choice)?
+                 |     |              |  +--:(directly-assigned)
+                 |     |              |  |  +--rw ethernet-segment-identifier?   yang:hex-string
+                 |     |              |  +--:(auto-assigned)
+                 |     |              |     +--rw esi-auto
+                 |     |              |        +--rw (auto-mode)?
+                 |     |              |        |  +--:(from-pool)
+                 |     |              |        |  |  +--rw esi-pool-name?                string
+                 |     |              |        |  +--:(full-auto)
+                 |     |              |        |     +--rw auto?                         empty
+                 |     |              |        +--ro auto-ethernet-segment-identifier?   yang:hex-string
+                 |     |              +--rw esi-redundancy-mode?                 identityref
+                 |     |              +--rw df-election
+                 |     |                 +--rw df-election-method?   identityref
+                 |     |                 +--rw preference?           uint16
+                 |     |                 +--rw revertive?            boolean
+                 |     |                 +--rw election-wait-time?   uint32
                  |     +--:(ldp)
                  |     |  +--rw t-ldp-pwe-type?                                   identityref
                  |     |  +--rw encapsulation-type?                               identityref
@@ -183,6 +227,7 @@ module: ietf-l2vpn-ntw
                        |     +--ro status?         identityref
                        |     +--ro last-updated?   yang:date-and-time
                        +--rw connection
+                       |  +--rw bearer-reference?   string {vpn-common:bearer-reference}?
                        |  +--rw encapsulation
                        |  |  +--rw l2-access-type?   identityref
                        |  |  +--rw dot1q {vpn-common:dot1q}?
@@ -227,10 +272,6 @@ module: ietf-l2vpn-ntw
                        |  |        |        +--rw enable?   boolean
                        |  |        +--rw flow-control?       string
                        |  |        +--rw lldp?               boolean
-                       |  +--rw cvlan-id-to-svc-map* [svc-id]
-                       |  |  +--rw svc-id      -> /l2vpn-ntw/vpn-services/vpn-service/vpn-id
-                       |  |  +--rw cvlan-id* [vid]
-                       |  |     +--rw vid    uint32
                        |  +--rw split-horizon
                        |     +--rw group-name?   string
                        +--rw TO-SIMPLFY-diversity-redundancy-TO-SIMPLFY
@@ -240,8 +281,7 @@ module: ietf-l2vpn-ntw
                        |  |        +--rw group-id                       string
                        |  |        +--rw fate-sharing-group-size?       uint16
                        |  |        +--rw group-color?                   string
-                       |  |        +--rw ethernet-segment-identifier?   yang:hex-string
-                       |  |        +--rw esi-redundancy-mode?           identityref
+                       |  |        +--rw ethernet-segment-identifier?   -> /l2vpn-ntw/vpn-services/vpn-service/vpn-nodes/vpn-node/signaling-options/ethernet-segments/ethernet-segment/name
                        |  +--rw constraints
                        |  |  +--rw constraint* [constraint-type]
                        |  |     +--rw constraint-type    identityref
@@ -307,7 +347,7 @@ module: ietf-l2vpn-ntw
                           +--rw svc-input-bandwidth {vpn-common:input-bw}?
                           |  +--rw input-bandwidth* [type]
                           |     +--rw type      identityref
-                          |     +--rw cos-id?   uint8
+                          |     +--rw cos-id?   uint8 {vpn-common:qos}?
                           |     +--rw cir?      uint64
                           |     +--rw cbs?      uint64
                           |     +--rw eir?      uint64
@@ -317,7 +357,7 @@ module: ietf-l2vpn-ntw
                           +--rw svc-output-bandwidth {vpn-common:output-bw}?
                           |  +--rw output-bandwidth* [type]
                           |     +--rw type      identityref
-                          |     +--rw cos-id?   uint8
+                          |     +--rw cos-id?   uint8 {vpn-common:qos}?
                           |     +--rw cir?      uint64
                           |     +--rw cbs?      uint64
                           |     +--rw eir?      uint64
