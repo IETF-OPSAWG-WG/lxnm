@@ -117,9 +117,10 @@ Internet-Draft                    L2NM                        April 2021
      10.1.  Normative References . . . . . . . . . . . . . . . . . .  72
      10.2.  Informative References . . . . . . . . . . . . . . . . .  74
    Appendix A.  Examples . . . . . . . . . . . . . . . . . . . . . .  75
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  76
-   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .  76
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  76
+     A.1.  VPN Network Access Precedence . . . . . . . . . . . . . .  76
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  77
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .  78
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  78
 
 1.  Introduction
 
@@ -160,7 +161,6 @@ Internet-Draft                    L2NM                        April 2021
    This document assumes that the reader is familiar with the contents
    of [RFC6241], [RFC7950], [RFC8466], [RFC8309], and uses terminology
    from those documents.
-
 
 
 
@@ -1299,38 +1299,7 @@ Internet-Draft                    L2NM                        April 2021
       netwrok-accesses' related to the same customer/service SHOULD have
       the same group-id.  In that case, the precedence attribute SHOULD
       be used to differentiate the Primary and Secondary accesses for
-      that service.
-
-                                        {
-                                          "vpn-services": {
-                                            "vpn-service": {
-                                              "vpn-id": "Sample-Service",
-                                              "vpn-nodes": {
-                                                "vpn-node": {
-                                                  "vpn-node-id": "VPN-NODE",
-                                                  "vpn-network-accesses": {
-??????????                                     "vpn-network-access": [
-?VPN-NODE      ?                                      {
-?          ????????                                  "id": "NET-ACC-1",
-?          ? NET-ACC-2? PRIMARY  xx                      "group": {
-?          ?  ?      ???????????xx                       "group-id": "1",
-?          ????-???          xx                        "precedence": "primary"
-?              ?                 xx                     }
-?          ??????-?          xx                    },
-?          ? NET-ACC-1? BACKUP   xx                    {
-?          ?  ?      ???????????xx                     "id": "NET-ACC-1",
-?          ??????-?          xx                      "group": {
-?              ?                                           "group-id": "1",
-??????????                                             "precedence": "backup"
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              }
-                                            }
- xx-GROUP-ID:                            },
-                                        }
+      that service (an example is shown in Appendix A.1).
 
    Note that the 'connection' container does not include the physical-
    specific configuration as this is assumed to be directly handled
@@ -1338,6 +1307,37 @@ Internet-Draft                    L2NM                        April 2021
    design is also meant to avoid manipulated global parameters at the
    service level and lower the risk of impacting other services sharing
    the same physical interface.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4190,8 +4190,8 @@ Internet-Draft                    L2NM                        April 2021
 
 Appendix A.  Examples
 
-   To be completed
-
+   This section includes a non-exhaustive list of examples to illustrate
+   the use of the L2NM.
 
 
 
@@ -4201,6 +4201,95 @@ Barguil, et al.         Expires November 1, 2021               [Page 75]
 
 Internet-Draft                    L2NM                        April 2021
 
+
+A.1.  VPN Network Access Precedence
+
+   In reference to the example depicted in Figure 12, an L2VPN service
+   involves two VPN network accesses to sites that belong to the same
+   customer.
+
+   ??????????
+   ?VPN-NODE      ?
+   ?          ????????
+   ?          ? NET-ACC-2? Primacy
+   ?          ?  ?      ???????????
+   ?          ????-???
+   ?              ?
+   ?          ??????-?
+   ?          ? NET-ACC-1? Backup
+   ?          ?  ?      ???????????
+   ?          ??????-?
+   ?              ?
+   ??????????
+
+                                 Figure 12
+
+   In order to tag one of these VPN network accesses as "primary" and
+   the other one as "backup", Figure 13 shows an excerpt of the
+   corresponding L2NM configuration.  In such as configuration, both
+   accesses are bound to the same "group-id" and the "precedence" data
+   node set as function of the intended role of each access (primary or
+   backup).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.         Expires November 1, 2021               [Page 76]
+
+Internet-Draft                    L2NM                        April 2021
+
+
+   {
+     "vpn-services": {
+       "vpn-service": {
+         "vpn-id": "Sample-Service",
+         "vpn-nodes": {
+           "vpn-node": {
+             "vpn-node-id": "VPN-NODE",
+             "vpn-network-accesses": {
+               "vpn-network-access": [
+                 {
+                   "id": "NET-ACC-1",
+                   "group": {
+                     "group-id": "1",
+                     "precedence": "primary"
+                   }
+                 },
+                 {
+                   "id": "NET-ACC-1",
+                   "group": {
+                     "group-id": "1",
+                     "precedence": "backup"
+                   }
+                 }
+               ]
+             }
+           }
+         }
+       }
+     }
+   }
+
+                                 Figure 13
 
 Acknowledgements
 
@@ -4214,6 +4303,16 @@ Acknowledgements
    early version of this document.
 
    Thanks to Yingzhen Qu for the rtgdir review.
+
+
+
+
+
+
+Barguil, et al.         Expires November 1, 2021               [Page 77]
+
+Internet-Draft                    L2NM                        April 2021
+
 
 Contributors
 
@@ -4247,17 +4346,6 @@ Authors' Addresses
    Email: oscar.gonzalezdedios@telefonica.com
 
 
-
-
-
-
-
-
-Barguil, et al.         Expires November 1, 2021               [Page 76]
-
-Internet-Draft                    L2NM                        April 2021
-
-
    Mohamed Boucadair (editor)
    Orange
    France
@@ -4277,36 +4365,4 @@ Internet-Draft                    L2NM                        April 2021
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.         Expires November 1, 2021               [Page 77]
+Barguil, et al.         Expires November 1, 2021               [Page 78]
