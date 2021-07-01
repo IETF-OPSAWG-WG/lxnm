@@ -667,8 +667,8 @@ module: ietf-l2vpn-ntw
            +--rw vpn-description?              string
            +--rw customer-name?                string
            +--rw parent-service-id?            vpn-common:vpn-id
-           +--rw vpn-svc-type?                 identityref
-           +--rw svc-topo?                     identityref
+           +--rw vpn-type?                     identityref
+           +--rw vpn-service-topology?         identityref
            +--rw global-parameters-profiles
            |  +--rw global-parameters-profile* [profile-id]
            |     +--rw profile-id                  string
@@ -816,49 +816,41 @@ module: ietf-l2vpn-ntw
           'vpn_network_accesses'.</t>
 
           <figure align="center" anchor="vpn-node_tree">
-            <artwork align="left"><![CDATA[  +--rw l2vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [vpn-node-id]
-                 +--rw vpn-node-id             vpn-common:vpn-id
-                 +--rw description?            string
-                 +--rw role?                   identityref
-                 +--rw ne-id                   string
-                 +--rw active-global-parameters-profiles
-                 |  +--rw global-parameters-profile* [profile-id]
-                 |     +--rw profile-id                  leafref
-                 |     +--rw svc-mtu?                    uint32
-                 |     +--rw ce-vlan-preservation?       boolean
-                 |     +--rw ce-vlan-cos-perservation?   boolean
-                 |     +--rw control-word-negotiation?   boolean
-                 |     +--rw mac-policies
-                 |     |  +--rw mac-addr-limit
-                 |     |  |  +--rw mac-num-limit?   uint16
-                 |     |  |  +--rw time-interval?   uint32
-                 |     |  |  +--rw action?          identityref
-                 |     |  +--rw mac-loop-prevention
-                 |     |     +--rw frequency?         uint32
-                 |     |     +--rw protection-type?   identityref
-                 |     |     +--rw number-retries?    uint32
-                 |     +--rw multicast-like {vpn-common:multicast}?
-                 |        +--rw enabled?                 boolean
-                 |        +--rw customer-tree-flavors
-                 |           +--rw tree-flavor*   identityref
-                 +--rw status
-                 |  +--rw admin-status
-                 |  |  +--rw status?         identityref
-                 |  |  +--rw last-updated?   yang:date-and-time
-                 |  +--ro oper-status
-                 |     +--ro status?         identityref
-                 |     +--ro last-updated?   yang:date-and-time
-                 +--rw signaling-options* [type]
-                 |  ...
-                 +--rw vpn-network-accesses
-                    ...             ]]></artwork>
+            <artwork align="left"><![CDATA[  
++--rw l2vpn-ntw
+ |  ...
+ +--rw vpn-nodes
+    +--rw vpn-node* [vpn-node-id]
+       +--rw vpn-node-id                          vpn-common:vpn-id
+       +--rw description?                         string
+       +--rw ne-id?                               string
+       +--rw role?                                identityref
+       +--rw active-global-parameters-profiles
+       |  +--rw global-parameters-profile* [profile-id]
+       |     +--rw profile-id                  
+       -> .../global-parameters-profile/profile-id
+       |     +--rw svc-mtu?                    uint32
+       |     +--rw ce-vlan-preservation?       boolean
+       |     +--rw ce-vlan-cos-perservation?   boolean
+       |     +--rw control-word-negotiation?   boolean
+       |     +--rw mac-policies
+       |     |  +--rw mac-addr-limit
+       |     |  |  +--rw mac-num-limit?   uint16
+       |     |  |  +--rw time-interval?   uint32
+       |     |  |  +--rw action?          identityref
+       |     |  +--rw mac-loop-prevention
+       |     |     +--rw frequency?         uint32
+       |     |     +--rw protection-type?   identityref
+       |     |     +--rw number-retries?    uint32
+       |     +--rw multicast-like {vpn-common:multicast}?
+       |        +--rw enabled?                 boolean
+       |        +--rw customer-tree-flavors
+       |           +--rw tree-flavor*   identityref
+       +--rw status
+         ...
+       +--rw signaling-options* [type]
+        ...
+          ]]></artwork>
           </figure>
 
           <t>In reference to the subtree shown in <xref
@@ -894,18 +886,6 @@ module: ietf-l2vpn-ntw
               operational status can be used as a trigger to detect
               anomalies.</t>
 
-              <t hangText="'vpn-network-accesses':">Represents the point to
-              which sites are connected. <vspace blankLines="1" />Note that,
-              unlike in L2SM, the L2NM does not need to model the customer
-              site, only the points where the traffic from the site are
-              received (i.e., the PE side of PE-CE connections). Hence, the
-              VPN network access contains the connectivity information between
-              the provider's network and the customer premises. The VPN
-              profiles ('vpn-profiles') have a set of routing policies that
-              can be applied during the service creation. <vspace
-              blankLines="1" />See <xref target="sna"></xref> for more
-              details.</t>
-            </list></t>
 
           <section anchor="signaling_options" title="Signaling Options">
             <t>This sub-tree defines the L2VPN service type, according to the
@@ -1174,74 +1154,115 @@ module: ietf-l2vpn-ntw
             </figure>
 
             <section anchor="connection" title="Connection">
-              <t>The connection container is used to configure the relevant
+              <t>The 'connection' container is used to configure the relevant
               properties of the interface that is attached to the VPN, for
-              example the encapsulation type, the physical interface or
-              creating a lag.</t>
+              example the encapsulation type, the lag creation or the 
+              relation ship between vpn-network-accesses.</t>
+
+              <t hangText="'encapsulation':">Contains the layer 2 encapsulation 
+              properties of a VPN network access (e.g., IP dot1q, qinq or vxlan).</t>
+
+              <t hangText="'lag-interface':">Includes the Link Aggregation Protocol (LACP) 
+                configuration attributes including as main attributes the LACP-Mode, 
+                LACP-Speed and Members.</t>
+
+              <t hangText="'group':"> Group container allows spanning several 
+                'vpn-network-accesses' based on the group identifier attribute. 
+                The 'vpn-netwrok-accesses' related to the same customer/service 
+                SHOULD have the same group-id.  In that case, the precedence 
+                attribute SHOULD be used to differentiate the Primary and Secondary 
+                accesses for that service.</t>
+
+
+      <figure align="center" anchor="l2sm_group_id"
+              title="Sample of primary and backup accesses based on group-id">
+        <artwork align="left"><![CDATA[
+                                        {
+                                          "vpn-services": {
+                                            "vpn-service": {
+                                              "vpn-id": "Sample-Service",
+                                              "vpn-nodes": {
+                                                "vpn-node": {
+                                                  "vpn-node-id": "Sample-Node",
+                                                  "vpn-network-accesses": {
+┌──────────────┐                                     "vpn-network-access": [
+│VPN-NODE      │                                      {
+│          ┌───┴──────┐                                  "id": "vpn-net-acc-1",
+│          │ NET-ACC-2│ PRIMARY  xx                      "group": {
+│          │   │      ├──────────xx                       "group-id": "1",
+│          └───┼──────┘          xx                        "precedence": "primary"
+│              │                 xx                     }
+│          ┌───┴──────┐          xx                    },
+│          │ NET-ACC-1│ BACKUP   xx                    {
+│          │   │      ├──────────xx                     "id": "vpn-net-acc-2",
+│          └───┼──────┘          xx                      "group": {
+│              │                                           "group-id": "1",
+└──────────────┘                                             "precedence": "backup"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+ xx-GROUP-ID 1                            },
+                                        }
+         ]]></artwork>
+      </figure>
+
 
               <figure align="center" anchor="connection_tree">
                 <artwork align="left"><![CDATA[
-                +--rw connection
-                   +--rw encapsulation-type?    identityref
-                   +--rw eth-inf-type*          identityref
-                   +--rw dot1q-interface
-                   |  +--rw l2-access-type?   identityref
-                   |  +--rw dot1q {vpn-common:dot1q}?
-                   |  |  +--rw physical-inf?   string
-                   |  |  +--rw c-vlan-id?      uint32
-                   |  +--rw qinq {vpn-common:qinq}?
-                   |  |  +--rw s-vlan-id?   uint32
-                   |  |  +--rw c-vlan-id?   uint32
-                   |  +--rw qinany {vpn-common:qinany}?
-                   |  |  +--rw s-vlan-id?   uint32
-                   |  +--rw vxlan {vxlan}?
-                   |     +--rw vni-id?      uint32
-                   |     +--rw peer-mode?   identityref
-                   |     +--rw peer-list* [peer-ip]
-                   |        +--rw peer-ip    inet:ip-address
-                   +--rw phy-interface
-                   |  +--rw port-number?           uint32
-                   |  +--rw port-speed?            uint32
-                   |  +--rw mode?
-                   |  |       vpn-common:neg-mode
-                   |  +--rw phy-mtu?               uint32
-                   |  +--rw flow-control?          string
-                   |  +--rw oam-802.3ah-link {oam-3ah}?
-                   |  |  +--rw enable?   boolean
-                   |  +--rw uni-loop-prevention?   boolean
-                   +--rw lag-interface
-                   |       {vpn-common:lag-interface}?
-                   |  +--rw lag-interface*
-                   |          [lag-interface-number]
-                   |     +--rw lag-interface-number    uint32
-                   |     +--rw lacp
-                   |        +--rw lacp-state?         boolean
-                   |        +--rw lacp-mode?          boolean
-                   |        +--rw lacp-speed?         boolean
-                   |        +--rw mini-link?          uint32
-                   |        +--rw system-priority?    uint16
-                   |        +--rw member-link-list
-                   |        |  +--rw member-link* [name]
-                   |        |     +--rw name    string
-                   |        |     +--rw port-speed?
-                   |        |     |       uint32
-                   |        |     +--rw mode?
-                   |        |     |       vpn-common:neg-mode
-                   |        |     +--rw link-mtu? uint32
-                   |        |     +--rw oam-802.3ah-link
-                   |        |             {oam-3ah}?
-                   |        |        +--rw enable?   boolean
-                   |        +--rw flow-control?       string
-                   |        +--rw lldp?               boolean
-                   +--rw cvlan-id-to-svc-map* [svc-id]
-                   |  +--rw svc-id      leafref
-                   |  +--rw cvlan-id* [vid]
-                   |     +--rw vid    uint32
-                   +--rw split-horizon
-                      +--rw group-name?   string
+   +--rw connection
+   |  +--rw bearer-reference?   string {vpn-common:bearer-reference}?
+   |  +--rw encapsulation
+   |  |  +--rw l2-access-type?   identityref
+   |  |  +--rw dot1q {vpn-common:dot1q}?
+   |  |  |  +--rw physical-inf?   string
+   |  |  |  +--rw c-vlan-id?      uint32
+   |  |  +--rw qinq {vpn-common:qinq}?
+   |  |  |  +--rw s-vlan-id?   uint32
+   |  |  |  +--rw c-vlan-id?   uint32
+   |  |  +--rw qinany {vpn-common:qinany}?
+   |  |  |  +--rw s-vlan-id?   uint32
+   |  |  +--rw vxlan {vpn-common:vxlan}?
+   |  |     +--rw vni-id?      uint32
+   |  |     +--rw peer-mode?   identityref
+   |  |     +--rw peer-list*   inet:ip-address
+   |  +--rw lag-interface {vpn-common:lag-interface}?
+   |  |  +--rw lag-interface* [lag-interface-number]
+   |  |     +--rw lag-interface-number    uint32
+   |  |     +--rw lacp
+   |  |        +--rw lacp-state?         boolean
+   |  |        +--rw lacp-mode?          boolean
+   |  |        +--rw lacp-speed?         boolean
+   |  |        +--rw mini-link?          uint32
+   |  |        +--rw system-id?          yang:mac-address
+   |  |        +--rw admin-key?          uint16
+   |  |        +--rw system-priority?    uint16
+   |  |        +--rw member-link-list
+   |  |        |  +--rw member-link* [name]
+   |  |        |     +--rw name                string
+   |  |        |     +--rw port-speed?         uint32
+   |  |        |     +--rw mode?               identityref
+   |  |        |     +--rw link-mtu?           uint32
+   |  |        |     +--rw oam-802.3ah-link {oam-3ah}?
+   |  |        |        +--rw enable?   boolean
+   |  |        +--rw flow-control?       string
+   |  |        +--rw lldp?               boolean
+   |  +--rw split-horizon
+   |     +--rw group-name?   string
+   +--rw group* [group-id]
+   |  +--rw group-id                       string
+   |  +--rw group-color?                   string
+   |  +--rw precedence?                    identityref
+   |  +--rw ethernet-segment-identifier?   -> ../ethernet-segment/name
+
                         ]]></artwork>
               </figure>
             </section>
+
+
 
             <section anchor="service_details" title="Services">
               <t>This container is used to indicate the details of the
