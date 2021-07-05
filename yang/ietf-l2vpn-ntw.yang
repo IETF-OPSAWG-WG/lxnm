@@ -21,11 +21,14 @@ module ietf-l2vpn-ntw {
   import iana-bgp-l2-encaps {
     prefix iana-bgp-l2-encaps;
   }
-  /*import ietf-routing-types {
+  import iana-pseudowire-types {
+    prefix iana-pw-types;
+  }
+  import ietf-routing-types {
     prefix rt-types;
     reference
       "RFC 8294: Common YANG Data Types for the Routing Area";
-  }*/
+  }
 
   organization
     "IETF OPSA (Operations and Management Area) Working Group";
@@ -1637,39 +1640,80 @@ module ietf-l2vpn-ntw {
                   }
                   description
                     "Container for l2tp pw";
-                  leaf TBD-type {
-                    type identityref {
-                      base t-ldp-pw-type;
-                    }
+                  leaf router-id {
+                    type rt-types:router-id;
                     description
-                      "T-LDP PW type.";
+                      "A 32-bit number in the dotted-quad format that is used
+                       to uniquely identify a node within an autonomous
+                       system.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section 4.2";
                   }
-                  leaf XXXencapsulation-type {
+                  leaf pseudowire-type {
                     type identityref {
-                      base vpn-common:encapsulation-type;
+                      base iana-pw-types:iana-pw-types;
                     }
                     description
                       "Encapsulation type.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section 4.2";
                   }
-                  list XXXXac-pw-list {
-                    key "peer-addr vc-id";
+                  leaf mtu-allow-mismatch {
+                    type boolean;
                     description
-                      "List of AC and PW bindings.";
+                      "Allows MTU mismatch.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section 4.3";
+                  }
+                  leaf agi {
+                    type uint32;
+                    description
+                      "Attachment Group Identifier.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section 4.3";
+                  }
+                  leaf saii {
+                    type uint8;
+                    description
+                      "Source Attachment Individual Identifier.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section3";
+                  }
+                  list remote-forwarders {
+                    key "peer-addr taii";
+                    description
+                      "List of allowed Target AII and peers.";
+                    reference
+                      "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                 for Layer 2 Tunneling Protocol (L2TP), Section 5";
                     leaf peer-addr {
                       type inet:ip-address;
                       description
-                        "Indicates the peer's IP address.";
+                        "Indicates the peer forwarder's IP address.";
                     }
-                    leaf vc-id {
+                    leaf taii {
+                      type uint8;
+                      description
+                        "Target Attachment Individual Identifier.";
+                      reference
+                        "RFC 4667: Layer 2 Virtual Private Network (L2VPN) Extensions
+                                   for Layer 2 Tunneling Protocol (L2TP), Section 3";
+                    }
+                    /*leaf vc-id {
                       type string;
                       description
-                        "VC lable used to identify PW.";
+                        "VC label used to identify PW.";
                     }
                     leaf pw-priority {
                       type uint32;
                       description
                         "PW priority.";
-                    }
+                    }*/
                   }
                 }
               }
