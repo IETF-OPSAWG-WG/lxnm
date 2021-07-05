@@ -251,9 +251,9 @@
       <xref target="RFC8466"></xref>). The module supports additional
       capabilities, such as exposing operational parameters, transport
       protocols selection and precedence. It also serves as a multi-domain
-      orchestration interface, because this model can transport resources
-      (i.e., VCID) between domains. The data model keeps minimum
-      customer-related information.</t>
+      orchestration interface, because this model can use resources
+      (i.e., Virtual Connection Identifier - VCID) between domains. The data 
+      model keeps minimum customer-related information.</t>
 
       <t>This document uses the common VPN YANG module defined in <xref
       target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
@@ -289,7 +289,7 @@
       <t><list style="hanging">
           <t hangText="L2 VPN Customer Service Model (L2SM):">Describes the
           service characterization of an L2VPN that interconnects a set of
-          sites from the perspective of the customer. The customer service
+          sites from the customer's perspective. The customer service
           model does not provide details on the service provider network. The
           L2VPN customer service model is defined in <xref
           target="RFC8466"></xref>.</t>
@@ -297,9 +297,9 @@
           <t hangText="L2 VPN Service Network Model (L2NM):">Refers to the
           YANG module that describes an L2VPN service with a network-centric
           view. It contains information of the service providers network and
-          might include allocated resources. It can be used by network
-          controllers to manage the Layer 2 VPN service configuration in the
-          service providers network. The YANG module can be consumed by a
+          might include allocated resources. Network controllers can use it to 
+          manage the Layer 2 VPN service configuration in the service 
+          providers network. The YANG module can be consumed by a
           service orchestrator to request a VPN service to a network
           controller or to expose the list of active L2VPN services.</t>
 
@@ -428,7 +428,7 @@
             ]]></artwork>
       </figure>
 
-      <t>The customer may use a variety of means to request a service that may
+      <t>The customer may use various means to request a service that may
       trigger the instantiation of a L2NM. The customer may use the L2SM or
       may rely upon more abstract models to request a service that relies upon
       an L3VPN service. For example, the customer may supply an IP
@@ -514,7 +514,7 @@
           requested by customers, typically, relying upon an L2SM template.
           Concretely, some parts of the L2SM module can be directly mapped
           into L2NM while other parts are generated as a function of the
-          requested service and local guidelines. Some other parts are local
+          requested service and local guidelines. Finally, there are parts local
           to the service provider and do not map directly to L2SM.<vspace
           blankLines="1" />Note that the use of L2NM within a service provider
           does not assume nor preclude exposing the VPN service via the L2SM.
@@ -544,23 +544,30 @@
       <t>The L2NM module ('ietf-l2vpn-ntw') is meant to manage L2VPNs within a
       service provider network. In particular, the 'ietf-l2vpn-ntw' module can
       be used to create, modify, and retrieve L2VPN services in a network
-      controller. The module is not aimed at maintaining customer-related
-      information.</t>
+      controller. The aim of the module is not to maintain customer-
+      related information.</t>
 
-      <t>Editor's note: Next version of the document will include the full
-      description of the parameters. When the parameters match with L2SM, the
-      exact reference will be done</t>
+      <t>The full tree diagram of the module can be generated using the
+      "pyang" tool <xref target="PYANG"></xref>. That tree is not included
+      here because it is too long (Section 3.3 of <xref
+      target="RFC8340"></xref>). Instead, subtrees are provided for the
+      reader's convenience.</t>
 
-      <section anchor="structure_model" title="Structure of the Module">
+      <section anchor="structure_model" title="Overall Structure of the Module">
         <t>The 'ietf-l2vpn-ntw' module uses two main containers:
-        'vpn-services' and 'vpn-profiles'. The 'vpn-services' container
-        maintains a set of L2VPN services managed in the service providers
+        'vpn-services' and 'vpn-profiles' (see <xref
+        target="ietf-l2vpn-ntw_tree"></xref>).</t>
+        <t>The 'vpn-profiles' container is used by the provider to maintain a
+        set of common VPN profiles that apply to one or several VPN services
+        (<xref target="vpn_profiles"></xref>).</t>
+        <t> The 'vpn-services' container
+        maintains the set of L2VPN services managed in the service providers
         network. The module allows to create a new L2VPN service by adding a
         new instance of 'vpn-service'. The 'vpn-service' is the data structure
         that abstracts the VPN Service.</t>
 
-        <figure align="center" anchor="ietf-l3vpn-ntw_tree"
-                title="Simplified L2NM Tree Structure">
+        <figure align="center" anchor="ietf-l2vpn-ntw_tree"
+                title="Overall L2NM Tree Structure">
           <artwork align="left"><![CDATA[module: ietf-l3vpn-ntw
   +--rw l3vpn-ntw
      +--rw vpn-profiles
@@ -648,7 +655,7 @@
         <t></t>
       </section>
 
-      <section anchor="l2_vpn_service" title="L2VPN Service">
+      <section anchor="l2_vpn_service" title="VPN Services">
         <t>The 'vpn-service' is the data structure that abstracts a VPN
         service in the service provider network. Each 'vpn-service' is
         uniquely identified by an identifier: 'vpn-id'. Such 'vpn-id' is only
@@ -705,8 +712,9 @@
         </figure>
 
         <t>The description of the VPN service data nodes that are depicted in
-        <xref target="vpn-service_tree"></xref> are as follows:<list
-            style="hanging">
+        <xref target="vpn-service_tree"></xref> are as follows:
+
+        <list style="hanging">
             <t hangText="'vpn-id':">Is an identifier that is used to uniquely
             identify the L2VPN service within L2NM scope.</t>
 
@@ -800,7 +808,86 @@
           </list></t>
 
         <section anchor="profile" title="Global Parameters Profiles">
-          <t>TBC</t>
+          <t>The 'global-parameters-profile' defines reusable
+            parameters for the same 'vpn-service'. A 
+            'global-parameters-profile' contains 'profile-ids', which is a list 
+            of 'profile-id', which is the identifier of the global parameters 
+            profiles.</t>
+
+          <figure align="center" anchor="global_param_prof_tree">
+            <artwork align="left"><![CDATA[  +--rw l2vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw vpn-services
+        +--rw vpn-service* [vpn-id]
+           ...
+           +--rw global-parameters-profiles
+           |  +--rw global-parameters-profile* [profile-id]
+           |     +--rw profile-id                  string
+           |     +--rw svc-mtu?                    uint32
+           |     +--rw ce-vlan-preservation?       boolean
+           |     +--rw ce-vlan-cos-perservation?   boolean
+           |     +--rw control-word-negotiation?   boolean
+           |     +--rw mac-policies
+           |     |  +--rw mac-addr-limit
+           |     |  |  +--rw mac-num-limit?   uint16
+           |     |  |  +--rw time-interval?   uint32
+           |     |  |  +--rw action?          identityref
+           |     |  +--rw mac-loop-prevention
+           |     |     +--rw window?            uint32
+           |     |     +--rw frequency?         uint32
+           |     |     +--rw retry-timer?       uint32
+           |     |     +--rw protection-type?   identityref
+           |     +--rw multicast-like {vpn-common:multicast}?
+           |        +--rw enabled?                 boolean
+           |        +--rw customer-tree-flavors
+           |           +--rw tree-flavor*   identityref
+
+                    ...             ]]></artwork>
+          </figure>
+
+          <t>The description of the Global Parameters Profile that are depicted 
+            in <xref target="global_param_prof_tree"></xref> are as follows:</t>
+          <list style="hanging">
+            <t hangText="'svc-mtu':"> Service MTU, it is also known as t
+              he maximum transmission unit
+              or maximum frame size. When a frame is larger than the MTU,
+              it is fragmented to accommodate the MTU of the network.</t>
+            <t hangText="'ce-vlan-preservation':"> Preserve the CE-VLAN 
+              ID from ingress to egress,i.e.,
+              CE-VLAN tag of the egress frame are identical to
+              those of the ingress frame that yielded this egress
+              service frame. If All-to-One bundling within a site
+              is Enabled, then preservation applies to all Ingress
+              service frames. If All-to-One bundling is disabled,
+              then preservation applies to tagged Ingress service
+              frames having CE-VLAN ID 1 through 4094.</t>
+            <t hangText="'ce-vlan-cos-perservation':"> CE vlan CoS preservation. 
+              PCP bits in the CE-VLAN tag of the egress frame are identical to 
+              those of the ingress frame that yielded this egress service frame.</t>
+            <t hangText="'control-word-negotiation':"> Controls whether 
+              control-word negotiation is enabled (if set to true) or not (if set 
+              to false). More information in Section 7 of <xref target="RFC8077">
+              </xref></t>
+              <t hangText="'mac-policies':"> It is a container of MAC policies.</t>
+              <t hangText="'mac-addr-limit':">It is a container of MAC-Addr limit configuration.</t>
+              <t hangText="'mac-num-limit':">Maximum number of MAC addresses learned from
+             the customer for a single service instance.</t>
+              <t hangText="'time-interval':">The aging time of the mac address.</t>
+              <t hangText="'action':">Specifies the action when the upper limit is
+             exceeded: drop the packet, flood the packet, or simply send a warning log message.</t>
+              <t hangText="'mac-loop-prevention':">Container for MAC loop prevention.</t>
+              <t hangText="'window':">The timer when a MAC mobility event is detected.</t>
+              <t hangText="'frequency':">The number of times to detect MAC duplication, where
+                a 'duplicate MAC address' situation has occurred and
+                the duplicate MAC address has been added to a list of
+                duplicate MAC addresses.</t>
+              <t hangText="'retry-timer':">The retry timer. When the retry timer expires,
+                the duplicate MAC address will be flushed from
+                the MAC-VRF.</t>
+              <t hangText="'protection-type':"> It defines the protection type</t>
+          </list>
+
         </section>
 
         <section anchor="vpn_node" title="VPN Node">
