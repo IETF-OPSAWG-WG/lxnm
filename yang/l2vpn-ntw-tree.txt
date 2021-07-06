@@ -28,6 +28,7 @@ module: ietf-l2vpn-ntw
            +--rw global-parameters-profiles
            |  +--rw global-parameters-profile* [profile-id]
            |     +--rw profile-id                  string
+           |     +--rw local-autonomous-system?    inet:as-number
            |     +--rw svc-mtu?                    uint32
            |     +--rw ce-vlan-preservation?       boolean
            |     +--rw ce-vlan-cos-perservation?   boolean
@@ -87,9 +88,11 @@ module: ietf-l2vpn-ntw
                  +--rw description?                         string
                  +--rw ne-id?                               string
                  +--rw role?                                identityref
+                 +--rw router-id?                           rt-types:router-id
                  +--rw active-global-parameters-profiles
                  |  +--rw global-parameters-profile* [profile-id]
                  |     +--rw profile-id                  -> /l2vpn-ntw/vpn-services/vpn-service/global-parameters-profiles/global-parameters-profile/profile-id
+                 |     +--rw local-autonomous-system?    inet:as-number
                  |     +--rw svc-mtu?                    uint32
                  |     +--rw ce-vlan-preservation?       boolean
                  |     +--rw ce-vlan-cos-perservation?   boolean
@@ -118,14 +121,16 @@ module: ietf-l2vpn-ntw
                  +--rw bgp-auto-discovery
                  |  +--rw (bgp-type)?
                  |  |  +--:(l2vpn-bgp)
-                 |  |  |  +--rw vpn-id?           vpn-common:vpn-id
+                 |  |  |  +--rw vpn-id?              vpn-common:vpn-id
                  |  |  +--:(evpn-bgp)
-                 |  |     +--rw evpn-type?        identityref
+                 |  |     +--rw evpn-type?           identityref
+                 |  |     +--rw auto-rt-enable?      boolean
+                 |  |     +--ro auto-route-target?   rt-types:route-target
                  |  +--rw (rd-choice)?
                  |  |  +--:(directly-assigned)
-                 |  |  |  +--rw rd?               rt-types:route-distinguisher
+                 |  |  |  +--rw rd?                  rt-types:route-distinguisher
                  |  |  +--:(directly-assigned-suffix)
-                 |  |  |  +--rw rd-suffix?        uint16
+                 |  |  |  +--rw rd-suffix?           uint16
                  |  |  +--:(auto-assigned)
                  |  |  |  +--rw rd-auto
                  |  |  |     +--rw (auto-mode)?
@@ -143,7 +148,7 @@ module: ietf-l2vpn-ntw
                  |  |  |     |     +--rw auto?                empty
                  |  |  |     +--ro auto-assigned-rd-suffix?   uint16
                  |  |  +--:(no-rd)
-                 |  |     +--rw no-rd?            empty
+                 |  |     +--rw no-rd?               empty
                  |  +--rw vpn-target* [id]
                  |  |  +--rw id                   int8
                  |  |  +--rw route-targets* [route-target]
