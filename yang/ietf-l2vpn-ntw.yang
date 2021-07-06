@@ -73,18 +73,7 @@ module ietf-l2vpn-ntw {
       "Indicates the support of OAM 802.3ah.";
   }
 
-  /* Typedefs */
-  /* 
-  
-  typedef ccm-priority-type {
-  type uint8 {
-    range "0..7";
-  }
-  description
-    "A 3-bit priority value to be used in the VLAN tag,
-    if present in the transmitted frame.";
-  }
-  
+ 
   /* Identities */
 
   identity esi-type {
@@ -627,7 +616,7 @@ module ietf-l2vpn-ntw {
 
   grouping global-parameters-profile {
     description
-      "Container for per-service parameters.";
+      "Container for per-service paramters.";
     leaf svc-mtu {
       type uint32;
       description
@@ -841,6 +830,19 @@ module ietf-l2vpn-ntw {
           description
             "Defining service topology, such as
              any-to-any, hub-spoke, etc.";
+        }
+        leaf bgp-ad-enabled {
+          type boolean; 
+          description
+            "Indicates whether BGP auto-discovey is enabled 
+             or disabled.";
+        }
+        leaf signaling-type {
+          type identityref {
+            base vpn-common:vpn-signaling-type;
+          }
+          description
+            "VPN signaling type.";
         }
         container global-parameters-profiles {
           description
@@ -1065,7 +1067,10 @@ module ietf-l2vpn-ntw {
             }
             uses vpn-common:service-status;
             container bgp-auto-discovery {
-              //key "type";
+              when "/l2vpn-ntw/vpn-services/vpn-service/bgp-ad-enabled = 'true'" {
+                description
+                  "Only applies when BGP auto-discovery is enabled.";
+              }
               description
                 "BGP is used for auto-discovery.";
               choice bgp-type {
@@ -1100,15 +1105,14 @@ module ietf-l2vpn-ntw {
               uses vpn-common:vpn-route-targets;
             }
             container signaling-option {
-              //key "type";
               description
                 "List of VPN signaling options.";
               leaf type {
-                type identityref {
-                  base vpn-common:vpn-signaling-type;
+                type leafref {
+                  path "/l2vpn-ntw/vpn-services/vpn-service/signaling-type";
                 }
                 description
-                  "VPN signaling types.";
+                  "VPN signaling type.";
               }
               choice signaling-option {
                 description
