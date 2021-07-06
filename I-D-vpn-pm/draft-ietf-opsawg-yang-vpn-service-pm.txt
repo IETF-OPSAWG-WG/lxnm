@@ -2,10 +2,10 @@
 
 
 
-OPSAWG Working Group                                               B. Wu
-Internet-Draft                                                     Q. Wu
+OPSAWG Working Group                                          B. Wu, Ed.
+Internet-Draft                                                Q. Wu, Ed.
 Intended status: Standards Track                                  Huawei
-Expires: January 6, 2022                                    M. Boucadair
+Expires: January 6, 2022                               M. Boucadair, Ed.
                                                                   Orange
                                                      O. Gonzalez de Dios
                                                               Telefonica
@@ -23,19 +23,18 @@ Expires: January 6, 2022                                    M. Boucadair
 
 Abstract
 
-   The data model defined in RFC8345 introduces vertical layering
-   relationships between networks that can be augmented to cover
-   network/service topologies.  This document defines a YANG model for
-   both Network Performance Monitoring (PM) and VPN Service Performance
-   Monitoring (PM) that can be used to monitor and manage network
-   performance on the topology at higher layer or the service topology
-   between VPN sites.
+   The data model defined in RFC 8345 introduces vertical layering
+   relationships between networks that can be augmented to cover network
+   and service topologies.  This document defines a YANG module for both
+   network performance monitoring (PM) and VPN service performance
+   monitoring that can be used to monitor and manage network performance
+   on the topology at higher layer or the service topology between VPN
+   sites.
 
-   This document does not define metrics for network performance or
-   mechanisms for measuring network performance.  The YANG model defined
-   in this document is designed as an augmentation to the network
-   topology YANG model defined in RFC 8345 and draws on relevant YANG
-   types defined in RFC 6991, RFC 8299, RFC 8345, and RFC 8532.
+   The YANG model defined in this document is designed as an
+   augmentation to the network topology YANG model defined in RFC 8345
+   and draws on relevant YANG types defined in RFC 6991, RFC 8299, RFC
+   8345, and RFC 8532.
 
 Status of This Memo
 
@@ -49,7 +48,8 @@ Status of This Memo
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
-
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
 
 
 
@@ -57,9 +57,6 @@ Wu, et al.               Expires January 6, 2022                [Page 1]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
-
-   time.  It is inappropriate to use Internet-Drafts as reference
-   material or to cite them other than as "work in progress."
 
    This Internet-Draft will expire on January 6, 2022.
 
@@ -80,32 +77,35 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Network and VPN Service Performance Monitoring Model Usage  .   3
      3.1.  Collecting Data via Pub/Sub Mechanism . . . . . . . . . .   5
      3.2.  Collecting Data via Retrieval Methods . . . . . . . . . .   5
-   4.  Description of the Data Model . . . . . . . . . . . . . . . .   5
+   4.  Description of The Data Model . . . . . . . . . . . . . . . .   5
      4.1.  Layering Relationship between Multiple Layers of Topology   5
      4.2.  Network Level . . . . . . . . . . . . . . . . . . . . . .   7
      4.3.  Node Level  . . . . . . . . . . . . . . . . . . . . . . .   7
      4.4.  Link and Termination Point Level  . . . . . . . . . . . .   8
-   5.  Example of I2RS Pub/Sub Retrieval . . . . . . . . . . . . . .  11
-   6.  Example of RPC-based Retrieval  . . . . . . . . . . . . . . .  12
-   7.  Network and VPN Service Performance Monitoring YANG Module  .  14
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  26
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  26
-   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  27
-   11. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  27
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  27
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  27
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  29
-   Appendix A.  Example of Percentile Monitoring . . . . . . . . . .  30
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  30
+   5.  Network and VPN Service Performance Monitoring YANG Module  .  11
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  23
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  23
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  24
+   9.  Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  24
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  24
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .  24
+     10.2.  Informative References . . . . . . . . . . . . . . . . .  26
+   Appendix A.  Illustrating Examples  . . . . . . . . . . . . . . .  27
+     A.1.  Example of Pub/Sub Retrieval  . . . . . . . . . . . . . .  27
+     A.2.  Example of RPC-based Retrieval  . . . . . . . . . . . . .  29
+     A.3.  Example of Percentile Monitoring  . . . . . . . . . . . .  30
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  31
 
+1.  Introduction
 
-
-
+   [RFC8969] describes a framework for automating service and network
+   management with YANG models, proposing the performance measurement
+   telemetry model to be tied with the service, such as Layer 3 VPN and
 
 
 
@@ -114,28 +114,27 @@ Wu, et al.               Expires January 6, 2022                [Page 2]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-1.  Introduction
+   Layer 2 VPN, or network models to monitor the overall network
+   performance or Service Level Agreements (SLA).
 
-   [RFC8969] describes a general framework for automating service and
-   network management with YANG model, proposing the performance
-   measurement telemetry model can tie with service, such as Layer 3 VPN
-   and Layer 2 VPN, or network models to monitor network performance or
-   Service Level Agreements (SLA).
-
-   This document defines a YANG Model for both network performance
-   monitoring and VPN service performance monitoring that can be used to
-   monitor and manage network performance on the topology level or the
-   service topology between VPN sites.
+   This document defines a YANG module [RFC7950] for both network
+   performance monitoring and VPN service performance monitoring.  This
+   module can be used to monitor and manage network performance on the
+   topology level or the service topology between VPN sites, in
+   particular.
 
    This document does not introduce new metrics for network performance
    or mechanisms for measuring network performance, but uses the
    existing mechanisms and statistics to show the performance monitoring
-   statistics at the network and service layers.  The YANG model defined
-   in this document is designed as an augmentation to the network
-   topology YANG model defined in [RFC8345].
+   statistics at the network and service layers.  The YANG module
+   defined in this document is designed as an augmentation to the
+   network topology YANG model defined in [RFC8345].
 
-   This document uses the common VPN YANG module defined in [I-D.ietf-
-   opsawg-vpn-common].
+   This document uses the common VPN YANG module defined in
+   [I-D.ietf-opsawg-vpn-common].
+
+   Appendix A provides a set of examples to illustrate the use of the
+   module.
 
 2.  Terminology
 
@@ -150,13 +149,14 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 3.  Network and VPN Service Performance Monitoring Model Usage
 
-   Models are key for automatic management operations.  According to
-   [RFC8969] , together with service and network models, performance
-   measurement telemetry model can monitor network performance to meet
-   specific service SLA requirements.  The model defined in this
-   document is to derive VPN or network level performance data based on
-   lower-level data collected via monitoring counters in the devices.
-
+   Models are key for automating network management operations.
+   According to [RFC8969], together with service and network models,
+   performance measurement telemetry models are needed to monitor
+   network performance to meet specific service requirements (typically
+   captured in an SLA).  The YANG module defined in this document is
+   designed to derive VPN or network level performance data based on
+   lower-level data collected via monitoring counters of the involved
+   devices.
 
 
 
@@ -170,52 +170,52 @@ Wu, et al.               Expires January 6, 2022                [Page 3]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-                             +---------------+
-                             |   Customer    |
-                             +---------------+
-             Customer Service Models |
-                                     |
-                             +-----------------+
-                             |    Service      |
-                             |  Orchestration  |
-                             +-----------------+
-             Network Service Models | | Network and VPN Service PM Model
-                                    | |
-                             +-----------------+
-                             |     Network     |
-                             |   Controller    |
-                             +-------|----------+
-                                     |
-             +------------------------------------------------+
-                                   Network
+                            +---------------+
+                            |   Customer    |
+                            +-------+-------+
+                                    |
+            Customer Service Models |
+                                    |
+                            +-------+---------+
+                            |    Service      |
+                            |  Orchestration  |
+                            +------+-+--------+
+                                   | |
+            Network Service Models | | Network and VPN Service PM Models
+                                   | |
+                            +------+-+--------+
+                            |     Network     |
+                            |   Controller    |
+                            +-------+---------+
+                                    |
+            +-----------------------+------------------------+
+                                  Network
 
                      Figure 1: Reference Architecture
 
    As shown in Figure 1, in the context of layering model architecture
    described in [RFC8309], the network and VPN service performance
    monitoring (PM) model can be used to expose some performance
-   information to the above layer.  The information can be used by the
-   orchestrator to subscribe to performance data.  The controller will
-   then notify the orchestrator of corresponding parameter changes.
+   information to the above layer.  Such an information can be used by
+   an orchestrator to subscribe to performance data.  The network
+   controller will then notify the orchestrator about corresponding
+   parameter changes.
 
-   Before using the Network and VPN Service PM Model, the mapping
-   between the VPN Service topology and the underlying physical network
-   has been setup, and the performance monitoring data per link in the
-   underlying network can be collected using network performance
+   Before using the network and VPN service PM model, the mapping
+   between the VPN service topology and the underlying physical network
+   should be setup.  Also, the performance monitoring data per link in
+   the underlying network can be collected using network performance
    measurement method such as MPLS Loss and Delay Measurement [RFC6374].
 
    The performance monitoring information reflecting the quality of the
-   Network or VPN service such as end to end network performance data
+   network or VPN service (e.g., end to end network performance data
    between source node and destination node in the network or between
-   VPN sites can be aggregated or calculated using, for example, the
+   VPN sites) can be computed and aggregated, for example, the
    information from Traffic Engineering Database (TED), defined in
    [RFC7471], [RFC8570], or [RFC8571] or LMAP [RFC8194].
 
-   The measurement interval and report interval associated with these
-   performance data usually depends on configuration parameters.
-
-
-
+   The measurement and report intervals that are associated with these
+   performance data usually depend on the configuration parameters.
 
 
 
@@ -229,12 +229,12 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 3.1.  Collecting Data via Pub/Sub Mechanism
 
    Some applications such as service-assurance applications, which must
-   maintain a continuous view of operational data and state, can use
-   subscription model [RFC8641] to subscribe to the specific Network
+   maintain a continuous view of operational data and state, can use the
+   subscription model [RFC8641] to subscribe to the specific network
    performance data or VPN service performance data they are interested
    in, at the data source.
 
-   The data source can then use the Network and VPN service assurance
+   The data source can, then, use the network and VPN service assurance
    model defined in this document and the YANG Push model [RFC8641] to
    distribute specific telemetry data to target recipients.
 
@@ -243,14 +243,14 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
    To obtain a snapshot of a large amount of performance data from a
    network element (including network controllers), service-assurance
    applications may use methods such as retrieving performance data or
-   RPC commands of YANG models.
+   RPC commands defined as part of YANG models.
 
-4.  Description of the Data Model
+4.  Description of The Data Model
 
-   This document defines the YANG module "ietf-network-vpn-pm", which is
-   an augmentation to the "ietf-network" and "ietf-network-topology".
+   This document defines the YANG module, "ietf-network-vpn-pm", which
+   is an augmentation to the "ietf-network" and "ietf-network-topology".
 
-   The performance monitoring data is augmented to service topology as
+   The performance monitoring data augments the service topology as
    shown in Figure 2.
 
    +----------------------+          +-----------------------+
@@ -263,15 +263,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 4.1.  Layering Relationship between Multiple Layers of Topology
 
-   [RFC8345] defines a YANG [RFC7950] data model for network/service
-   topologies and inventories.  The service topology described in
-   [RFC8345] includes the virtual topology for a service layer above
-   Layer 1 (L1), Layer 2 (L2), and Layer 3 (L3).  This service topology
-   has the generic topology elements of node, link, and terminating
-   point.  One typical example of a service topology is described in
-   Figure 3 of [RFC8345]: two VPN service topologies instantiated over a
-   common L3 topology.  Each VPN service topology is mapped onto a
-   subset of nodes from the common L3 topology.
+   [RFC8345] defines a YANG data model for network/service topologies
+   and inventories.  The service topology described in [RFC8345]
+   includes the virtual topology for a service layer above Layer 1 (L1),
+   Layer 2 (L2), and Layer 3 (L3).  This service topology has the
+   generic topology elements of node, link, and terminating point.  One
+   typical example of a service topology is described in Figure 3 of
+   [RFC8345]: two VPN service topologies instantiated over a common L3
+   topology.  Each VPN service topology is mapped onto a subset of nodes
+   from the common L3 topology.
 
 
 
@@ -282,8 +282,8 @@ Wu, et al.               Expires January 6, 2022                [Page 5]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-   Figure 3 illustrates an example of a topology mapping between the VPN
-   service topology and an underlying network:
+   Figure 3 illustrates an example of a topology that maps between the
+   VPN service topology and an underlying network:
 
                         VPN 1                       VPN 2
              +-----------------------+    +---------------------+
@@ -310,24 +310,24 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
        Legend: N:node  VN:VPN-Node
 
 
-    Figure 3: Example of topology mapping between VPN Service Topo and
-                            Underlying network
+    Figure 3: Example of Topology Mapping Between VPN Service Topology
+                          and Underlying Network
 
    As shown in Figure 3, two VPN services topologies are both built on
    top of one common underlying physical network:
 
-   o  VPN 1: supporting hub-spoke communications for customer 1
-      connecting the customer's access at 3 sites.  Site-1A, Site-1B,
-      and Site-1C are connected to nodes that are mapped to node 1 (N1),
-      node 2 (N2), and node 4 (N4) in the underlying physical network.
-      Site-1A plays the role of hub while Site-1B and Site-1C plays the
-      role of spoke.
+   VPN 1:   This service topology supports hub-spoke communications for
+      'customer 1' connecting the customer's access at three sites:
+      'Site-1A', 'Site-1B', and 'Site-1C'.  These sites are connected to
+      nodes that are mapped to node 1 (N1), node 2 (N2), and node 4 (N4)
+      in the underlying physical network.  'Site-1A' plays the role of
+      hub while 'Site-1B' and 'Site-1C' are configured as spoke.
 
-   o  VPN 2: supporting any-to-any communications for customer 2
-      connecting the customer's access at 2 sites.  Site-2A and Site-2B
-      are connected to nodess that are mapped to nodes 1 (N1) and Node 3
-      (N3)5 in the underlying physical network.  Site-2A and Site-2B
-      play the role of any-to-any.
+   VPN 2:   This service supports any-to-any communications for
+      'customer 2' connecting the customer's access at two sites: 'Site-
+      2A' and 'Site-2B'.  These sites are connected to nodes that are
+      mapped to nodes 1 (N1) and node 3 (N3)5 in the underlying physical
+      network.  'Site-2A' and 'Site-2B' have 'any-to-any' role.
 
 
 
@@ -341,27 +341,28 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 4.2.  Network Level
 
    For network performance monitoring, the container of "ietf-network"
-   that defined in [RFC8345] do not need to be extended.
+   do not need to be extended.
 
    For VPN service performance monitoring, the container "service-type"
-   is defined to indicate the VPN type, e.g.  L3VPN or VPLS.  The values
-   are taken from [I-D.ietf-opsawg-vpn-common].  When a network topology
-   instance contains the L3VPN or other L2VPN network type, it
-   represents an VPN instance that can perform performance monitoring.
+   is defined to indicate the VPN type, e.g., L3VPN or Virtual Private
+   LAN Service (VPLS).  The values are taken from
+   [I-D.ietf-opsawg-vpn-common].  When a network topology instance
+   contains the L3VPN or other L2VPN network type, it represents a VPN
+   instance that can perform performance monitoring.
 
    This model defines the following set of network level attributes:
 
-   o  "vpn-id": Refers to an identifier of VPN service defined in
-      [I-D.ietf-opsawg-vpn-common]).  This identifier allows to
+   "vpn-id":  Refers to an identifier of VPN service defined in
+      [I-D.ietf-opsawg-vpn-common]).  This identifier is used to
       correlate the performance status with the network service
       configuration.
 
-   o  "vpn-service-topology": The type of VPN topology, this model
-      supports "any-to-any", "Hub and Spoke" (where Hubs can exchange
-      traffic), and "Hub and Spoke disjoint" (where Hubs cannot exchange
-      traffic).  [I-D.ietf-opsawg-vpn-common] defines a YANG model for .
-      These VPN topology types can be used to describe how VPN sites
-      communicate with each other.
+   "vpn-service-topology":  Indicates the type of VPN topology.  This
+      model supports "any-to-any", "Hub and Spoke" (where Hubs can
+      exchange traffic), and "Hub and Spoke disjoint" (where Hubs cannot
+      exchange traffic) that are taken from
+      [I-D.ietf-opsawg-vpn-common].  These VPN topology types can be
+      used to describe how VPN sites communicate with each other.
 
    module: ietf-network-vpn-pm
      augment /nw:networks/nw:network/nw:network-types:
@@ -372,19 +373,18 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
           +--rw vpn-id?                 vpn-common:vpn-id
           +--rw vpn-service-topology?   identityref
 
-              Figure 4: Network Level View of the hierarchies
+              Figure 4: Network Level View of the Hierarchies
 
 4.3.  Node Level
 
    For network performance monitoring, the attributes of "Node Level"
-   that defined in [RFC8345] do not need to be extended. //note-type
-   belong to network,"node-type" : Indicates the type of the node, such
-   as PE or ASBR.  This "node-type" can be used to report performance
-   metric between any two nodes each with specific node-type.
+   that are defined in [RFC8345] do not need to be extended.
 
    For VPN service performance monitoring, this model defines only the
    following minimal set of Node level network topology attributes:
 
+   "node-type":  Indicates the type of the node, such as Provider Edge
+      (PE) or Autonomous System Border Router (ASBR).  This "node-type"
 
 
 
@@ -394,12 +394,16 @@ Wu, et al.               Expires January 6, 2022                [Page 7]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-   o  "role": Defines the role of the site in a particular VPN service
-      topology, defined in [I-D.ietf-opsawg-vpn-common] (e.g., any-to-
+      can be used to report performance metric between any two nodes
+      each with specific node-type.
+
+   "role":  Defines the role in a particular VPN service topology.  The
+      roles are taken from [I-D.ietf-opsawg-vpn-common] (e.g., any-to-
       any-role, spoke-role, hub-role).
 
-   o  "vpn-summary-statistics": IPv4 statistics, IPv6 statistics and MAC
-      statistics have been specified separately.
+   "vpn-summary-statistics":  Lists a set of IPv4 statistics, IPv6
+      statistics, and MAC statistics.  These statistics are specified
+      separately.
 
      augment /nw:networks/nw:network/nw:node:
        +--rw pm-attributes
@@ -416,26 +420,22 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
                 +--ro mac-num-limit?          uint32
                 +--ro total-active-mac-num?   uint32
 
-               Figure 5: Node Level View of the hierarchies
+               Figure 5: Node Level View of the Hierarchies
 
 4.4.  Link and Termination Point Level
 
-   The link nodes are classified into two types: one is topology link
-   defined in [RFC8345], and the other is abstract link of a VPN between
-   PEs.
+   The 'links' are classified into two types: topology link defined in
+   [RFC8345] and abstract link of a VPN between PEs.
 
-   The performance data of the link is a collection of counters that
+   The performance data of a link is a collection of counters that
    report the performance status.  The data for the topology link can be
-   based on BGP-LS [RFC8571].  The statistics of the VPN abstract links
-   can be collected based on VPN OAM mechanisms, e.g.  TWAMP etc.
-   Alternatively, the data can base on the underlay technology OAM
-   mechanism, for example, GRE tunnel OAM.
+   based, e.g., on BGP-LS [RFC8571].  The statistics of the VPN abstract
+   links can be collected based upon VPN OAM mechanisms, e.g., Two-way
+   Active Measurement Protocol (TWAMP) [RFC5357].  Alternatively, the
+   data can be based upon the underlay technology OAM mechanisms, for
+   example, GRE tunnel OAM.
 
-   the customer sites are connected to the 'vpn-network-accesses'.
-   site-id" : Uniquely identifies the site within the overall network
-   infrastructure.
-
-
+   The customer sites are connected to the 'vpn-network-accesses'.
 
 
 
@@ -506,16 +506,11 @@ Wu, et al.               Expires January 6, 2022                [Page 9]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-   For the nodes of the link in the figure, this module defines the
-   following minimal set of link level performance attributes:
+   For the data nodes of 'link' depicted in Figure 6, the YANG module
+   defines the following minimal set of link-level performance
+   attributes:
 
-   o  "protocol-type": Indicates the abstract link protocol-type of a
-      VPN, such as GRE or IP-in-IP.  The leaf refers to an identifier of
-      VPN Common "underlay-transport" [I-D.ietf-opsawg-vpn-common],
-      which describes the transport technology to carry the traffic of
-      the VPN service.
-
-   o  Percentile parameters: The module supports reporting delay and
+   Percentile parameters:  The module supports reporting delay and
       jitter metric by percentile values.  By default, low percentile
       (10th percentile), mid percentile (50th percentile), high
       percentile (90th percentile) are used.  Setting a percentile into
@@ -526,34 +521,39 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
       variation) and only peak/min values will be reported.  For
       example, a client can inform the server that it is interested in
       receiving only high percentiles.  Then for a given link, at a
-      given "reference-time" "measurement-interval", the high-delay-
-      percentile and high-jitter-percentile will be reported.
+      given "reference-time" "measurement-interval", the 'high-delay-
+      percentile' and 'high-jitter-percentile' will be reported.  An
+      example to illustrate the use of percentiles is provided in
+      Appendix A.3.
 
-   o  Loss Statistics: A set of loss statistics attributes that are used
+   Loss Statistics:  A set of loss statistics attributes that are used
       to measure end to end loss between VPN sites or between any two
       network nodes.  The exact loss value or the loss percentage can be
       reported.
 
-   o  Delay Statistics: A set of delay statistics attributes that are
-      used to measure end to end latency between VPN sites or between
-      any two network nodes.  The peak/min values or percentile values
-      can be reported.
+   Delay Statistics:  A set of delay statistics attributes that are used
+      to measure end to end latency between VPN sites or between any two
+      network nodes.  The peak/min values or percentile values can be
+      reported.
 
-   o  Jitter Statistics: A set of IP Packet Delay Variation [RFC3393]
+   Jitter Statistics:   A set of IP Packet Delay Variation [RFC3393]
       statistics attributes that are used to measure end to end jitter
       between VPN sites or between any two network nodes.  The peak/min
       values or percentile values can be reported.
 
-   For the nodes of "termination points" in the figure, the module
-   defines the following minimal set of statistics:
+   "protocol-type":  Indicates the abstract link protocol-type of a VPN,
+      such as GRE or IP-in-IP.  The leaf refers to an identifier of the
+      "underlay-transport" defined in [I-D.ietf-opsawg-vpn-common],
+      which describes the transport technology to carry the traffic of
+      the VPN service.
 
-   o  Inbound statistics: A set of inbound statistics attributes that
-      are used to measure the inbound statistics of the termination
-      point, such as received packets, received packets with errors,
-      etc.
+   For the data nodes of 'termination-point' depicted inFigure 6, the
+   module defines the following minimal set of statistics:
 
-   o  Outbound statistics: A set of outbound statistics attributes that
-      are used to measure the outbound statistics of the termination
+   Inbound statistics:  A set of inbound statistics attributes that are
+      used to measure the inbound statistics of the termination point,
+      such as received packets, received packets with errors, etc.
+
 
 
 
@@ -562,183 +562,15 @@ Wu, et al.               Expires January 6, 2022               [Page 10]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+   Outbound statistics:  A set of outbound statistics attributes that
+      are used to measure the outbound statistics of the termination
       point, such as sent packets, packets that could not be sent due to
       errors, etc.
 
-5.  Example of I2RS Pub/Sub Retrieval
+5.  Network and VPN Service Performance Monitoring YANG Module
 
-   This example shows the way for a client to subscribe for the
-   Performance monitoring information between node A and node B in the
-   L3 network topology built on top of the underlying network . The
-   performance monitoring parameter that the client is interested in is
-   end to end loss attribute.
-
-    <rpc netconf:message-id="101"
-       xmlns:netconf="urn:ietf:params:xml:ns:netconf:base:1.0">
-       <establish-subscription
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
-          <stream-subtree-filter>
-             <networks
-        xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
-                <network>
-                 <network-id>l3-network</network-id>
-                 <service-type
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                    L3VPN
-                 </service-type>
-                   <node>
-                     <node-id>A</node-id>
-                     <pm-attributes>
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                       <node-type>pe</node-type>
-                     </pm-attributes>
-                     <termination-point
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
-                      <tp-id>1-0-1</tp-id>
-                      <pm-statistics
-      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                       <inbound-octets>150</inbound-octets>
-                       <outbound-octets>100</outbound-octets>
-                      </pm-statistics>
-                     </termination-point>
-                    </node>
-                   <node>
-                     <node-id>B</node-id>
-                     <pm-attributes>
-           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                      <node-type>pe</node-type>
-                     </pm-attributes>
-                       <termination-point
-           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
-
-
-
-Wu, et al.               Expires January 6, 2022               [Page 11]
-
-Internet-Draft       Network and VPN Service PM YANG           July 2021
-
-
-                         <tp-id>2-0-1</tp-id>
-                         <pm-statistics
-           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                           <inbound-octets>150</inbound-octets>
-                           <outbound-octets>100</outbound-octets>
-                         </pm-statistics>
-                      </termination-point>
-                    </node>
-                    <link
-             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
-                     <link-id>A-B</link-id>
-                      <source>
-                        <source-node>A</source-node>
-                      </source>
-                      <destination>
-                       <dest-node>B</dest-node>
-                      </destination>
-                      <protocol-type>mpls-te</protocol-type>
-                      <pm-attributes
-               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-                        <loss-statistics>
-                         <packet-loss-count>100</packet-loss-count>
-                        </loss-statistics>
-                      </pm-attributes>
-                    </link>
-                </network>
-              </networks>
-           </stream-subtree-filter>
-         <period
-           xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push:1.0">
-          500
-       </period>
-       </establish-subscription>
-    </rpc>
-
-6.  Example of RPC-based Retrieval
-
-   This example shows the way for the client to use RPC model to fetch
-   performance data on demand, e.g., the client requests "packet-loss-
-   count" between PE1 in site 1 and PE2 in site 2 belonging to the same
-   VPN1.
-
-  <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
-         message-id="1">
-    <report
-         xmlns="urn:ietf:params:xml:ns:yang:example-service-pm-report">
-       <networks xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
-         <network>
-
-
-
-Wu, et al.               Expires January 6, 2022               [Page 12]
-
-Internet-Draft       Network and VPN Service PM YANG           July 2021
-
-
-          <network-id>vpn1</network-id>
-          <node>
-           <node-id>A</node-id>
-           <pm-attributes
-                xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-             <node-type>pe</node-type>
-           </pm-attribtues>
-           <termination-point
-              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
-            <tp-id>1-0-1</tp-id>
-            <pm-statistics
-               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-             <inbound-octets>100</inbound-octets>
-             <outbound-octets>150</outbound-octets>
-            </pm-statistics>
-           </termination-point>
-          </node>
-          <node>
-           <node-id>B</node-id>
-           <pm-attributes
-               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-             <node-type>pe</node-type>
-           </pm-attribtues>
-           <termination-point
-              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
-            <tp-id>2-0-1</tp-id>
-            <pm-statistics
-                xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
-             <inbound-octets>150</inbound-octets>
-             <outbound-octets>100</outbound-octets>
-            </pm-statistics>
-           </termination-point>
-          </node>
-          <link>
-          <link-id>A-B</link-id>
-           <source>
-            <source-node>A</source-node>
-           </source>
-           <destination>
-            <dest-node>B</dest-node>
-           </destination>
-          <-type>mpls-te</link-type>
-           <pm-attributes
-              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-pm">
-            <loss-statistics>
-             <packet-loss-count>120</packet-loss-count>
-            </loss-statistics>
-           </pm-attributes>
-
-
-
-Wu, et al.               Expires January 6, 2022               [Page 13]
-
-Internet-Draft       Network and VPN Service PM YANG           July 2021
-
-
-          </link>
-        </network>
-      </report>
-    </rpc>
-
-7.  Network and VPN Service Performance Monitoring YANG Module
-
-   This module uses types defined in [RFC8345], and also draws on
-   relevant YANG types defined in [RFC6991] and [RFC8532].
+   The "ietf-network-vpn-pm" module uses types defined in [RFC8345],
+   [RFC6991], and [RFC8532].
 
 <CODE BEGINS> file "ietf-network-vpn-pm@2021-07-05.yang"
 module ietf-network-vpn-pm {
@@ -749,43 +581,45 @@ module ietf-network-vpn-pm {
   import ietf-yang-types {
     prefix yang;
     reference
-      "RFC 6991: Common YANG Types.";
+      "RFC 6991: Common YANG Types";
   }
   import ietf-vpn-common {
     prefix vpn-common;
+    reference
+      "RFC CCCC: A Layer 2/3 VPN Common YANG Model";
   }
   import ietf-network {
     prefix nw;
     reference
-      "Section 6.1 of RFC 8345: A YANG Data Model for Network
-       Topologies";
+      "RFC 8345: A YANG Data Model for Network
+                 Topologies, Section 6.1";
   }
   import ietf-network-topology {
     prefix nt;
     reference
-      "Section 6.2 of RFC 8345: A YANG Data Model for Network
-       Topologies";
+      "RFC 8345: A YANG Data Model for Network
+                 Topologies, Section 6.2";
   }
   import ietf-lime-time-types {
     prefix lime;
     reference
       "RFC 8532: Generic YANG Data Model for the Management of
-       Operations, Administration, and Maintenance (OAM) Protocols
-       That Use Connectionless Communications";
+                 Operations, Administration, and Maintenance
+                 (OAM) Protocols That Use Connectionless Communications";
   }
 
   organization
     "IETF OPSAWG Working Group";
-  contact
-    "Editor: Qin Wu
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 14]
+Wu, et al.               Expires January 6, 2022               [Page 11]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+  contact
+    "Editor: Qin Wu
              <bill.wu@huawei.com>
      Editor: Bo Wu
              <lana.wubo@huawei.com>
@@ -824,45 +658,44 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
   identity pe {
     base node-type;
     description
-      "Identity for PE type";
+      "Identity for Provider Edge (PE) type.";
   }
 
   identity asbr {
     base node-type;
     description
-      "Identity for ASBR type";
+      "Identity for Autonomous System Border Router (ASBR) type.";
   }
 
-  identity p {
 
 
-
-Wu, et al.               Expires January 6, 2022               [Page 15]
+Wu, et al.               Expires January 6, 2022               [Page 12]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+  identity p {
     base node-type;
     description
-      "Identity for P type";
+      "Identity for P type.";
   }
 
   identity direction {
     description
-      "Base Identity for measurement direction including
-       one way measurement and two way measurement.";
+      "Base identity for measurement direction including
+       one-way measurement and two-way measurement.";
   }
 
   identity one-way {
     base direction;
     description
-      "Identity for one way measurement.";
+      "Identity for one-way measurement.";
   }
 
   identity two-way {
     base direction;
     description
-      "Identity for two way measurement.";
+      "Identity for two-way measurement.";
   }
 
   typedef percentage {
@@ -889,15 +722,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
        augmentation.";
     container vpn-summary-statistics {
       config false;
-      description
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 16]
+Wu, et al.               Expires January 6, 2022               [Page 13]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+      description
         "Container for VPN summary statistics.";
       container ipv4 {
         leaf maximum-routes {
@@ -945,15 +778,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
   }
 
   grouping link-error-statistics {
-    description
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 17]
+Wu, et al.               Expires January 6, 2022               [Page 14]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+    description
       "Grouping for per link error statistics.";
     container loss-statistics {
       description
@@ -1001,15 +834,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
         }
         default "one-way";
         description
-          "Define measurement direction including one way
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 18]
+Wu, et al.               Expires January 6, 2022               [Page 15]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+          "Define measurement direction including one way
            measurement and two way measurement.";
       }
       leaf unit-value {
@@ -1057,15 +890,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
     container jitter-statistics {
       description
         "Link jitter summarised information. By default,
-         jitter is measured using IP Packet Delay Variation
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 19]
+Wu, et al.               Expires January 6, 2022               [Page 16]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+         jitter is measured using IP Packet Delay Variation
          (IPDV).";
       leaf unit-value {
         type identityref {
@@ -1113,15 +946,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
     leaf inbound-unicast {
       type yang:counter64;
       description
-        "Inbound unicast packets were received, and delivered
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 20]
+Wu, et al.               Expires January 6, 2022               [Page 17]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+        "Inbound unicast packets were received, and delivered
          to a higher layer during the last period.";
     }
     leaf inbound-nunicast {
@@ -1169,15 +1002,15 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
     }
     leaf outbound-nunicast {
       type yang:counter64;
-      description
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 21]
+Wu, et al.               Expires January 6, 2022               [Page 18]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+      description
         "The total number of packets that higher-level
          protocols requested be transmitted to a non-
          unicast (i.e., a subnetwork-broadcast or
@@ -1206,7 +1039,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
   augment "/nw:networks/nw:network/nw:network-types" {
     description
-      "Defines the service topologyies types";
+      "Defines the service topologies types";
     container service-type {
       presence "Indicates Network service topology";
       leaf service-type {
@@ -1218,22 +1051,22 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
            e.g., L3VPN, VPLS, etc.";
       }
       description
-        "Container for vpn service type.";
+        "Container for VPN service type.";
     }
   }
 
   augment "/nw:networks/nw:network" {
     when 'nw:network-types/nvp:service-type' {
       description
-        "Augment only for VPN Network topology.";
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 22]
+Wu, et al.               Expires January 6, 2022               [Page 19]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
+        "Augment only for VPN Network topology.";
     }
     description
       "Augment the network with service topology attributes";
@@ -1241,8 +1074,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
       leaf vpn-id {
         type vpn-common:vpn-id;
         description
-          "Pointer to the parent VPN service(e.g., L3NM),
-           if any.";
+          "VPN identifier.";
       }
       leaf vpn-service-topology {
         type identityref {
@@ -1285,7 +1117,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 23]
+Wu, et al.               Expires January 6, 2022               [Page 20]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
@@ -1341,7 +1173,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 24]
+Wu, et al.               Expires January 6, 2022               [Page 21]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
@@ -1397,7 +1229,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 25]
+Wu, et al.               Expires January 6, 2022               [Page 22]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
@@ -1407,10 +1239,9 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
     }
   }
 }
-
 <CODE ENDS>
 
-8.  Security Considerations
+6.  Security Considerations
 
    The YANG modules defined in this document MAY be accessed via the
    RESTCONF protocol [RFC8040] or NETCONF protocol [RFC6241].  The
@@ -1439,7 +1270,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
    o  /nw:networks/nw:network/nw:node/svc-topo:node-attributes
 
-9.  IANA Considerations
+7.  IANA Considerations
 
    This document requests IANA to register the following URI in the "ns"
    subregistry within the "IETF XML Registry" [RFC3688]:
@@ -1448,19 +1279,16 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
       Registrant Contact: The IESG.
       XML: N/A, the requested URI is an XML namespace.
 
-
-
-
-
-
-Wu, et al.               Expires January 6, 2022               [Page 26]
-
-Internet-Draft       Network and VPN Service PM YANG           July 2021
-
-
    This document requests IANA to register the following YANG module in
    the "YANG Module Names" subregistry [RFC6020] within the "YANG
    Parameters" registry.
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 23]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
 
       Name:         ietf-network-vpn-pm
       Namespace:    urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm
@@ -1468,13 +1296,13 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
       Prefix:       nvp
       Reference:    RFC XXXX
 
-10.  Acknowledgements
+8.  Acknowledgements
 
-   Thanks to Joe Clarke, Adrian Farrel, Greg Mirsky, Roque Gagliano Erez
-   Segev, Dhruv Dhody for reviewing this draft and providing important
+   Thanks to Joe Clarke, Adrian Farrel, Greg Mirsky, Roque Gagliano,
+   Erez Segev, and Dhruv Dhody for reviewing and providing important
    input to this document.
 
-11.  Contributors
+9.  Contributors
 
       Michale Wang
       Huawei
@@ -1484,9 +1312,9 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
       Huawei
       Email: ron.even.tlv@gmail.com
 
-12.  References
+10.  References
 
-12.1.  Normative References
+10.1.  Normative References
 
    [I-D.ietf-opsawg-vpn-common]
               Barguil, S., Dios, O. G. D., Boucadair, M., and Q. Wu, "A
@@ -1509,7 +1337,11 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 27]
+
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 24]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
@@ -1565,7 +1397,7 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 28]
+Wu, et al.               Expires January 6, 2022               [Page 25]
 
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
@@ -1581,7 +1413,12 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
               for Datastore Updates", RFC 8641, DOI 10.17487/RFC8641,
               September 2019, <https://www.rfc-editor.org/info/rfc8641>.
 
-12.2.  Informative References
+10.2.  Informative References
+
+   [RFC5357]  Hedayat, K., Krzanowski, R., Morton, A., Yum, K., and J.
+              Babiarz, "A Two-Way Active Measurement Protocol (TWAMP)",
+              RFC 5357, DOI 10.17487/RFC5357, October 2008,
+              <https://www.rfc-editor.org/info/rfc5357>.
 
    [RFC7471]  Giacalone, S., Ward, D., Drake, J., Atlas, A., and S.
               Previdi, "OSPF Traffic Engineering (TE) Metric
@@ -1610,14 +1447,177 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
               Metric Extensions", RFC 8570, DOI 10.17487/RFC8570, March
               2019, <https://www.rfc-editor.org/info/rfc8570>.
 
+
+
+
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 26]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
+
    [RFC8571]  Ginsberg, L., Ed., Previdi, S., Wu, Q., Tantsura, J., and
               C. Filsfils, "BGP - Link State (BGP-LS) Advertisement of
               IGP Traffic Engineering Performance Metric Extensions",
               RFC 8571, DOI 10.17487/RFC8571, March 2019,
               <https://www.rfc-editor.org/info/rfc8571>.
 
+   [RFC8969]  Wu, Q., Ed., Boucadair, M., Ed., Lopez, D., Xie, C., and
+              L. Geng, "A Framework for Automating Service and Network
+              Management with YANG", RFC 8969, DOI 10.17487/RFC8969,
+              January 2021, <https://www.rfc-editor.org/info/rfc8969>.
+
+Appendix A.  Illustrating Examples
+
+A.1.  Example of Pub/Sub Retrieval
+
+   The example shown in Figure 7 illustrates how a client subscribes to
+   the performance monitoring information between nodes ('node-id') A
+   and B in the L3 network topology.  The performance monitoring
+   parameter that the client is interested in is end-to-end loss.
+
+    <rpc netconf:message-id="101"
+       xmlns:netconf="urn:ietf:params:xml:ns:netconf:base:1.0">
+       <establish-subscription
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications">
+          <stream-subtree-filter>
+             <networks
+        xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
+                <network>
+                 <network-id>l3-network</network-id>
+                 <service-type
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                    L3VPN
+                 </service-type>
+                   <node>
+                     <node-id>A</node-id>
+                     <pm-attributes>
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                       <node-type>pe</node-type>
+                     </pm-attributes>
+                     <termination-point
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                      <tp-id>1-0-1</tp-id>
+                      <pm-statistics
+      xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                       <inbound-octets>150</inbound-octets>
+                       <outbound-octets>100</outbound-octets>
+                      </pm-statistics>
+                     </termination-point>
 
 
+
+Wu, et al.               Expires January 6, 2022               [Page 27]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
+
+                    </node>
+                   <node>
+                     <node-id>B</node-id>
+                     <pm-attributes>
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                      <node-type>pe</node-type>
+                     </pm-attributes>
+                       <termination-point
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                         <tp-id>2-0-1</tp-id>
+                         <pm-statistics
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                           <inbound-octets>150</inbound-octets>
+                           <outbound-octets>100</outbound-octets>
+                         </pm-statistics>
+                      </termination-point>
+                    </node>
+                    <link
+             xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+                     <link-id>A-B</link-id>
+                      <source>
+                        <source-node>A</source-node>
+                      </source>
+                      <destination>
+                       <dest-node>B</dest-node>
+                      </destination>
+                      <protocol-type>mpls-te</protocol-type>
+                      <pm-attributes
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+                        <loss-statistics>
+                         <packet-loss-count>100</packet-loss-count>
+                        </loss-statistics>
+                      </pm-attributes>
+                    </link>
+                </network>
+              </networks>
+           </stream-subtree-filter>
+         <period
+           xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push:1.0">
+          500
+       </period>
+       </establish-subscription>
+    </rpc>
+
+                       Figure 7: Pub/Siub Retrieval
+
+
+
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 28]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
+
+A.2.  Example of RPC-based Retrieval
+
+   This example, depicted in Figure 8, illustrates how a the client can
+   use the RPC model to fetch performance data on demand.  For example,
+   the client requests "packet-loss-count" between 'source-node' A and
+   'dest-node' B that belong to the same VPN ('VPN1').
+
+  <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+         message-id="1">
+    <report
+         xmlns="urn:ietf:params:xml:ns:yang:example-service-pm-report">
+       <networks xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topo">
+         <network>
+          <network-id>vpn1</network-id>
+          <node>
+           <node-id>A</node-id>
+           <pm-attributes
+                xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+             <node-type>pe</node-type>
+           </pm-attribtues>
+           <termination-point
+              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+            <tp-id>1-0-1</tp-id>
+            <pm-statistics
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+             <inbound-octets>100</inbound-octets>
+             <outbound-octets>150</outbound-octets>
+            </pm-statistics>
+           </termination-point>
+          </node>
+          <node>
+           <node-id>B</node-id>
+           <pm-attributes
+               xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+             <node-type>pe</node-type>
+           </pm-attribtues>
+           <termination-point
+              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-topology">
+            <tp-id>2-0-1</tp-id>
+            <pm-statistics
+                xmlns="urn:ietf:params:xml:ns:yang:ietf-network-vpn-pm">
+             <inbound-octets>150</inbound-octets>
+             <outbound-octets>100</outbound-octets>
+            </pm-statistics>
+           </termination-point>
+          </node>
+          <link>
+          <link-id>A-B</link-id>
 
 
 
@@ -1626,15 +1626,61 @@ Wu, et al.               Expires January 6, 2022               [Page 29]
 Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
-   [RFC8969]  Wu, Q., Ed., Boucadair, M., Ed., Lopez, D., Xie, C., and
-              L. Geng, "A Framework for Automating Service and Network
-              Management with YANG", RFC 8969, DOI 10.17487/RFC8969,
-              January 2021, <https://www.rfc-editor.org/info/rfc8969>.
+           <source>
+            <source-node>A</source-node>
+           </source>
+           <destination>
+            <dest-node>B</dest-node>
+           </destination>
+          <-type>mpls-te</link-type>
+           <pm-attributes
+              xmlns="urn:ietf:params:xml:ns:yang:ietf-network-pm">
+            <loss-statistics>
+             <packet-loss-count>120</packet-loss-count>
+            </loss-statistics>
+           </pm-attributes>
+          </link>
+        </network>
+      </report>
+    </rpc>
 
-Appendix A.  Example of Percentile Monitoring
+                                 Figure 8
+
+A.3.  Example of Percentile Monitoring
 
    The following shows an example of a percentile measurement for a VPN
    link.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 30]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
 
    {
       "ietf-network-topology:link":[
@@ -1667,7 +1713,7 @@ Appendix A.  Example of Percentile Monitoring
 
 Authors' Addresses
 
-   Bo Wu
+   Bo Wu (editor)
    Huawei
    101 Software Avenue, Yuhua District
    Nanjing, Jiangsu  210012
@@ -1676,13 +1722,7 @@ Authors' Addresses
    Email: lana.wubo@huawei.com
 
 
-
-Wu, et al.               Expires January 6, 2022               [Page 30]
-
-Internet-Draft       Network and VPN Service PM YANG           July 2021
-
-
-   Qin Wu
+   Qin Wu (editor)
    Huawei
    101 Software Avenue, Yuhua District
    Nanjing, Jiangsu  210012
@@ -1691,7 +1731,14 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
    Email: bill.wu@huawei.com
 
 
-   Mohamed Boucadair
+
+
+Wu, et al.               Expires January 6, 2022               [Page 31]
+
+Internet-Draft       Network and VPN Service PM YANG           July 2021
+
+
+   Mohamed Boucadair (editor)
    Orange
    Rennes 35000
    France
@@ -1733,4 +1780,13 @@ Internet-Draft       Network and VPN Service PM YANG           July 2021
 
 
 
-Wu, et al.               Expires January 6, 2022               [Page 31]
+
+
+
+
+
+
+
+
+
+Wu, et al.               Expires January 6, 2022               [Page 32]
