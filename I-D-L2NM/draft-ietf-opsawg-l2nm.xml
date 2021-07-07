@@ -190,8 +190,6 @@
 
     <keyword>service provider</keyword>
 
-    <keyword>VPN</keyword>
-
     <keyword>service provisionning</keyword>
 
     <keyword>network automation</keyword>
@@ -230,36 +228,34 @@
       <t>Please update "RFC CCCC" to the RFC number to be assigned to
       I-D.ietf-opsawg-vpn-common.</t>
 
-      <t>Also, please update the "revision" date of the YANG module.</t>
+      <t>Also, please update the "revision" date of the YANG modules.</t>
     </note>
   </front>
 
   <middle>
     <section title="Introduction">
       <t><xref target="RFC8466"></xref> defines an L2VPN Service Model (L2SM)
-      YANG data model that can be used for L2VPN service ordering matters
-      between customers and service providers (SPs). This document complements
-      the L2SM by creating a network-centric view of the service which can be
-      exposed by a network to a service controller within the service
-      providers network. In particular, the model can be used in the
-      communication between the entity that interacts directly with the
-      customer, the service orchestrator, (either fully automated or a human
-      operator) and the entity in charge of network orchestration and control
-      (a.k.a., network controller/orchestrator).</t>
+      YANG data model that can be used for Layer 2 Virtual Private Network
+      (L2VPN) service ordering matters between customers and service providers
+      (SPs). This document complements the L2SM by creating a network-centric
+      view of the service: the L2VPN Network Model (L2NM). </t>
 
-      <t>The data model defined in this document is called the L2VPN Network
-      Model (L2NM), playing the role of Service Delivery Model (Figure 3 of
-      <xref target="RFC8466"></xref>). The module supports additional
-      capabilities, such as exposing operational parameters, transport
-      protocols selection and precedence. It also serves as a multi-domain
-      orchestration interface, because this model can use resources (i.e.,
-      Virtual Connection Identifier, VCID) between domains. The data model
-      keeps minimum customer-related information.</t>
+      <t>The L2NM can be exposed, for example, by a network to a service
+      controller within the service providers network. In particular, the
+      model can be used in the communication between the entity that interacts
+      directly with the customer, the service orchestrator (either fully
+      automated or a human operator), and the entity in charge of network
+      orchestration and control (a.k.a., network controller/orchestrator).
+      </t>
+
+      <t>The L2NM supports additional capabilities, such as exposing
+      operational parameters, transport protocols selection and precedence. It
+      also serves as a multi-domain orchestration interface.</t>
 
       <t>This document uses the common VPN YANG module defined in <xref
       target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
 
-      <t>The YANG data model in this document conforms to the Network
+      <t>The YANG data models in this document conforms to the Network
       Management Datastore Architecture (NMDA) defined in <xref
       target="RFC8342"></xref>.</t>
     </section>
@@ -343,6 +339,12 @@
 
           <t hangText="CE">Customer Edge</t>
 
+          <t hangText="ES">Ethernet Segment</t>
+
+          <t hangText="ESI">Ethernet Segment Identifier</t>
+
+          <t hangText="EVPN">Ethernet VPN</t>
+
           <t hangText="L2VPN">Layer 2 Virtual Private Network</t>
 
           <t hangText="L2SM">L2VPN Service Model</t>
@@ -357,7 +359,11 @@
 
           <t hangText="RT">Route Target</t>
 
+          <t hangText="VPLS">Virtual Private LAN Service</t>
+
           <t hangText="VPN">Virtual Private Network</t>
+
+          <t hangText="VPWS">Virtual Private Wire Service</t>
 
           <t hangText="VRF">Virtual Routing and Forwarding</t>
         </list></t>
@@ -366,12 +372,12 @@
     </section>
 
     <section anchor="ref" title="Reference Architecture">
-      <t><xref target="L2SM_and_L2NM"></xref> illustrates how L2NM is used. As
-      a reminder, this figure is an expansion of the architecture presented in
-      Section 3 of <xref target="RFC8466"></xref> and decomposes the box
-      marked "orchestration" in that figure into three separate functional
-      components called "Service Orchestration", "Network Orchestration", and
-      "Domain Orchestration".</t>
+      <t><xref target="L2SM_and_L2NM"></xref> illustrates how the L2NM is
+      used. As a reminder, this figure is an expansion of the architecture
+      presented in Section 3 of <xref target="RFC8466"></xref> and decomposes
+      the box marked "orchestration" in that figure into three separate
+      functional components called "Service Orchestration", "Network
+      Orchestration", and "Domain Orchestration".</t>
 
       <t>The reader may refer to <xref target="RFC8309"></xref> for the
       distinction between the "Customer Service Model", the "Service Delivery
@@ -386,7 +392,7 @@
                           |   Customer    |
                           +-------+-------+
           Customer Service Model  |
-                 l2vpn-svc        |
+              e.g., l2vpn-svc     |
                           +-------+-------+
                           |    Service    |
                           | Orchestration |
@@ -499,6 +505,13 @@
       target="RFC8466"></xref>). The L2NM reuses these common types and
       groupings.</t>
 
+      <t>Also, the L2NM uses the IANA-maintained modules "iana-bgp-l2-encaps"
+      (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
+      target="iana-pw"></xref>) to identify a layer 2 encapsulation type.
+      Relying upon these IANA-maintained modules is meant to provide more
+      flexibility in handling new types rather than be limited by a set of
+      identities defined in the L2NM itself. </t>
+
       <t>As discussed in <xref target="ref"></xref>, the L2NM is meant to
       manage L2VPN services within a service provider network. The module
       provides a network view of the service. Such a view is only visible
@@ -549,11 +562,11 @@
 
     <section anchor="design_data_model"
              title="Description of the L2NM YANG Module ">
-      <t>The L2NM module ('ietf-l2vpn-ntw') is meant to manage L2VPNs within a
-      service provider network. In particular, the 'ietf-l2vpn-ntw' module can
-      be used to create, modify, and retrieve L2VPN services in a network
-      controller. The aim of the module is not to maintain customer-related
-      information.</t>
+      <t>The L2NM ('ietf-l2vpn-ntw', <xref target="YANG_module"></xref>) is
+      meant to manage L2VPNs within a service provider network. In particular,
+      the 'ietf-l2vpn-ntw' module can be used to create, modify, and retrieve
+      L2VPN services in a network controller. The module is designed to
+      minimize the amount of customer-related information.</t>
 
       <t>The full tree diagram of the module can be generated using the
       "pyang" tool <xref target="PYANG"></xref>. That tree is not included
@@ -1811,9 +1824,7 @@
       <section anchor="iana-bgp" title="IANA BGP Layer 2 Encapsulation Types">
         <t>The "iana-bgp-l2-encaps" YANG module (<xref
         target="iana-bgp"></xref>) is designed to echo the registry available
-        at <xref target="IANA-BGP-L2"></xref>. The currently defined values
-        are provided for the readers convenience in <xref
-        target="bet"></xref>.</t>
+        at <xref target="IANA-BGP-L2"></xref>. </t>
 
         <t><figure>
             <artwork><![CDATA[<CODE BEGINS>file "iana-bgp-l2-encaps@2021-07-05.yang"
@@ -2087,9 +2098,7 @@ module iana-bgp-l2-encaps {
       <section anchor="iana-pw" title="IANA Encapsulation Types">
         <t>The initial version of the "iana-pseudowire-types" YANG module
         (<xref target="iana-pw"></xref>) is designed to echo the registry
-        available at <xref target="IANA-PW-Types"></xref>. The currently
-        defined values are provided for the readers convenience in <xref
-        target="pwt"></xref>.</t>
+        available at <xref target="IANA-PW-Types"></xref>. </t>
 
         <t><figure>
             <artwork><![CDATA[<CODE BEGINS>file "iana-pseudowire-types@2021-07-05.yang"
