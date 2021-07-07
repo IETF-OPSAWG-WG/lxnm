@@ -5295,6 +5295,8 @@ module ietf-l2vpn-ntw {
 
       <?rfc include='reference.RFC.8519'?>
 
+      <?rfc include='reference.RFC.7951'?>
+
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
           <title>pyang</title>
@@ -5311,6 +5313,9 @@ module ietf-l2vpn-ntw {
     <section title="Examples">
       <t>This section includes a non-exhaustive list of examples to illustrate
       the use of the L2NM.</t>
+
+      <t>In the following subsections, only the content of the message bodies
+      is shown using JSON notations <xref target="RFC7951"></xref>.</t>
 
       <section anchor="prec-example" title="VPN Network Access Precedence">
         <t>In reference to the example depicted in <xref target="p1"></xref>,
@@ -5375,7 +5380,7 @@ module ietf-l2vpn-ntw {
         <t></t>
       </section>
 
-      <section title="EVPN-VPWS Service Instance">
+      <section anchor="evpn-vpws-app" title="EVPN-VPWS Service Instance">
         <t><xref target="vpws-evpn-ex"></xref> depictes a sample architecture
         to offer VPWS-EVPN service between CE1 and CE2. Both CEs are
         multi-homed. BGP sessions are maintained between these PEs as per
@@ -5628,6 +5633,244 @@ module ietf-l2vpn-ntw {
           </figure></t>
 
         <t></t>
+      </section>
+
+      <section anchor="auto-ex" title="Automatic ESI Assignment">
+        <t>This section provides an example to illustrate how the L2NM can be
+        used to manage ESI auto-assignment. We consider the sample EVPN
+        service delivered using the architecture depicted in <xref
+        target="auto-esi-ex"></xref>.</t>
+
+        <t><figure align="center" anchor="auto-esi-ex"
+            title="An Example of Automatic ESI Assignment ">
+            <artwork><![CDATA[ 
+             ES      
+             |     +-----+      +--------------+   +-----+    
+      +----+ |     | PE1 |======|              |===| PE3 |       +----+
+      |    +-------+     |      |              |   |     +-------+ CE3|
+      |    | |     +-----+      |              |   +-----+       +----+
+      | CE1| |                  |     Core     |                 
+      |    | |     +-----+      |              |   +-----+       +----+
+      |    +-------+     |      |              |   |     +-------+ CE2|
+      +----+ |     | PE2 |======|              |===| PE4 |       +----+
+           LACP    +-----+      +--------------+   +-----+          
+ ]]></artwork>
+          </figure></t>
+
+        <t><xref target="auto-lacp"></xref> shows how the L2NM is used to
+        instruct both PE1 and PE2 to auto-assign the ESI to identify the ES
+        used with CE1. In this example, we suppose that LACP is enabled and
+        that a Type 1 (T=0x01) is used as per Section 5 of <xref
+        target="RFC7432"></xref>. Note that this example does not include all
+        the details to configure the EVPN service, but focuses only on the ESI
+        management part.</t>
+
+        <t><figure align="center" anchor="auto-lacp">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "auto-esi-lacp",
+        "description": "Sample to illustrate auto-ESI",
+        "vpn-type": "vpn-common:vpls-evpn",
+        "ethernet-segments": {
+          "ethernet-segment": [
+            {
+              "name": "esi1",
+              "esi-type": "esi-type-1",
+              "esi-redundancy-mode": "all-active"
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "198.51.100.1",
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+            "ne-id": "198.51.100.2",
+            "vpn-network-access": [
+              {
+                "id": "2/2/2.5",
+                "port-id": "2/2/2",
+                "description": "Interface to CE1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+]]></artwork>
+          </figure></t>
+
+        <t>The auto-assigned ESI can be retrieved using, e.g., a GET RESTCONF
+        method. The assigned value will be then returned as shown in the
+        'esi-auto' data node in <xref target="auto-lacp-response"></xref>.</t>
+
+        <t><figure align="center" anchor="auto-lacp-response">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "auto-esi-lacp",
+        "description": "Sample to illustrate auto-ESI",
+        "vpn-type": "vpn-common:vpls-evpn",
+        "ethernet-segments": {
+          "ethernet-segment": [
+            {
+              "name": "esi1",
+              "esi-type": "esi-type-1",
+              "esi-auto": {
+                "auto-ethernet-segment-identifier": "01:11:00:11:00:11:11:9A:00:00"
+              },
+              "esi-redundancy-mode": "all-active"
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "198.51.100.1",
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+            "ne-id": "198.51.100.2",
+            "vpn-network-access": [
+              {
+                "id": "2/2/2.5",
+                "port-id": "2/2/2",
+                "description": "Interface to CE1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+]]></artwork>
+          </figure></t>
       </section>
     </section>
 

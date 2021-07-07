@@ -129,11 +129,12 @@ Internet-Draft                    L2NM                        April 2021
    Appendix A.  Examples . . . . . . . . . . . . . . . . . . . . . . 111
      A.1.  VPN Network Access Precedence . . . . . . . . . . . . . . 111
      A.2.  EVPN-VPWS Service Instance  . . . . . . . . . . . . . . . 112
-   Appendix B.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 118
-   Appendix C.  Initial PW Types . . . . . . . . . . . . . . . . . . 118
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 120
-   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 120
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 120
+     A.3.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 118
+   Appendix B.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 122
+   Appendix C.  Initial PW Types . . . . . . . . . . . . . . . . . . 123
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 125
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 125
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 125
 
 1.  Introduction
 
@@ -160,8 +161,7 @@ Internet-Draft                    L2NM                        April 2021
    This document uses the common VPN YANG module defined in
    [I-D.ietf-opsawg-vpn-common].
 
-   The YANG data model in this document conforms to the Network
-   Management Datastore Architecture (NMDA) defined in [RFC8342].
+
 
 
 
@@ -169,6 +169,9 @@ Barguil, et al.         Expires November 1, 2021                [Page 3]
 
 Internet-Draft                    L2NM                        April 2021
 
+
+   The YANG data model in this document conforms to the Network
+   Management Datastore Architecture (NMDA) defined in [RFC8342].
 
 2.  Terminology
 
@@ -216,9 +219,6 @@ Internet-Draft                    L2NM                        April 2021
    Network controller:  Denotes a functional entity responsible for the
       management of the service providers network.
 
-   VPN node:  Is an abstraction that represents a set of policies
-      applied on a PE and that belong to a single VPN service.  A VPN
-
 
 
 Barguil, et al.         Expires November 1, 2021                [Page 4]
@@ -226,6 +226,8 @@ Barguil, et al.         Expires November 1, 2021                [Page 4]
 Internet-Draft                    L2NM                        April 2021
 
 
+   VPN node:  Is an abstraction that represents a set of policies
+      applied on a PE and that belong to a single VPN service.  A VPN
       service involves one or more VPN nodes.  The VPN node will
       identify the service providers node on which the VPN is deployed.
 
@@ -271,8 +273,6 @@ Internet-Draft                    L2NM                        April 2021
    Configuration Model", and the "Device Configuration Model".  The
    "Domain Orchestration" and "Config Manager" roles may be performed by
    "SDN Controllers".
-
-
 
 
 
@@ -6126,6 +6126,10 @@ Internet-Draft                    L2NM                        April 2021
               DOI 10.17487/RFC7297, July 2014,
               <https://www.rfc-editor.org/info/rfc7297>.
 
+   [RFC7951]  Lhotka, L., "JSON Encoding of Data Modeled with YANG",
+              RFC 7951, DOI 10.17487/RFC7951, August 2016,
+              <https://www.rfc-editor.org/info/rfc7951>.
+
    [RFC8309]  Wu, Q., Liu, W., and A. Farrel, "Service Models
               Explained", RFC 8309, DOI 10.17487/RFC8309, January 2018,
               <https://www.rfc-editor.org/info/rfc8309>.
@@ -6148,10 +6152,6 @@ Internet-Draft                    L2NM                        April 2021
               DOI 10.17487/RFC8453, August 2018,
               <https://www.rfc-editor.org/info/rfc8453>.
 
-   [RFC8519]  Jethanandani, M., Agarwal, S., Huang, L., and D. Blair,
-              "YANG Data Model for Network Access Control Lists (ACLs)",
-              RFC 8519, DOI 10.17487/RFC8519, March 2019,
-              <https://www.rfc-editor.org/info/rfc8519>.
 
 
 
@@ -6162,6 +6162,11 @@ Barguil, et al.         Expires November 1, 2021              [Page 110]
 Internet-Draft                    L2NM                        April 2021
 
 
+   [RFC8519]  Jethanandani, M., Agarwal, S., Huang, L., and D. Blair,
+              "YANG Data Model for Network Access Control Lists (ACLs)",
+              RFC 8519, DOI 10.17487/RFC8519, March 2019,
+              <https://www.rfc-editor.org/info/rfc8519>.
+
    [RFC8969]  Wu, Q., Ed., Boucadair, M., Ed., Lopez, D., Xie, C., and
               L. Geng, "A Framework for Automating Service and Network
               Management with YANG", RFC 8969, DOI 10.17487/RFC8969,
@@ -6171,6 +6176,9 @@ Appendix A.  Examples
 
    This section includes a non-exhaustive list of examples to illustrate
    the use of the L2NM.
+
+   In the following subsections, only the content of the message bodies
+   is shown using JSON notations [RFC7951].
 
 A.1.  VPN Network Access Precedence
 
@@ -6200,14 +6208,6 @@ A.1.  VPN Network Access Precedence
    accesses are bound to the same "group-id" and the "precedence" data
    node set as function of the intended role of each access (primary or
    backup).
-
-
-
-
-
-
-
-
 
 
 
@@ -6556,7 +6556,283 @@ Internet-Draft                    L2NM                        April 2021
 
                                  Figure 25
 
+A.3.  Automatic ESI Assignment
+
+   This section provides an example to illustrate how the L2NM can be
+   used to manage ESI auto-assignment.  We consider the sample EVPN
+   service delivered using the architecture depicted in Figure 26.
+
+              ES
+              |     +-----+      +--------------+   +-----+
+       +----+ |     | PE1 |======|              |===| PE3 |       +----+
+       |    +-------+     |      |              |   |     +-------+ CE3|
+       |    | |     +-----+      |              |   +-----+       +----+
+       | CE1| |                  |     Core     |
+       |    | |     +-----+      |              |   +-----+       +----+
+       |    +-------+     |      |              |   |     +-------+ CE2|
+       +----+ |     | PE2 |======|              |===| PE4 |       +----+
+            LACP    +-----+      +--------------+   +-----+
+
+             Figure 26: An Example of Automatic ESI Assignment
+
+   Figure 27 shows how the L2NM is used to instruct both PE1 and PE2 to
+   auto-assign the ESI to identify the ES used with CE1.  In this
+   example, we suppose that LACP is enabled and that a Type 1 (T=0x01)
+   is used as per Section 5 of [RFC7432].  Note that this example does
+   not include all the details to configure the EVPN service, but
+   focuses only on the ESI management part.
+
+   {
+     "ietf-l2vpn-ntw:vpn-services": {
+       "vpn-service": [
+         {
+           "vpn-id": "auto-esi-lacp",
+           "description": "Sample to illustrate auto-ESI",
+           "vpn-type": "vpn-common:vpls-evpn",
+           "ethernet-segments": {
+             "ethernet-segment": [
+               {
+                 "name": "esi1",
+                 "esi-type": "esi-type-1",
+                 "esi-redundancy-mode": "all-active"
+               }
+             ]
+           },
+           "vpn-node": [
+             {
+               "vpn-node-id": "pe1",
+               "ne-id": "198.51.100.1",
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 118]
+
+Internet-Draft                    L2NM                        April 2021
+
+
+               "vpn-network-access": [
+                 {
+                   "id": "1/1/1.1",
+                   "port-id": "1/1/1",
+                   "description": "Interface to CE1",
+                   "global-parameters-profile": "simple-profile",
+                   "status": {
+                     "admin-status": {
+                       "status": "vpn-common:admin-state-up"
+                     }
+                   },
+                   "connection": {
+                     "lag-interface": {
+                       "lag-interface": [
+                         {
+                           "lag-interface-number": 1,
+                           "lacp": {
+                             "lacp-state": true,
+                             "system-id": "11:00:11:00:11:11",
+                             "admin-key": 154
+                           }
+                         }
+                       ]
+                     }
+                   },
+                   "group": [
+                     {
+                       "group-id": "gr1",
+                       "ethernet-segment-identifier": "esi1"
+                     }
+                   ]
+                 }
+               ]
+             },
+             {
+               "vpn-node-id": "pe2",
+               "ne-id": "198.51.100.2",
+               "vpn-network-access": [
+                 {
+                   "id": "2/2/2.5",
+                   "port-id": "2/2/2",
+                   "description": "Interface to CE1",
+                   "status": {
+                     "admin-status": {
+                       "status": "vpn-common:admin-state-up"
+                     }
+                   },
+                   "connection": {
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 119]
+
+Internet-Draft                    L2NM                        April 2021
+
+
+                     "lag-interface": {
+                       "lag-interface": [
+                         {
+                           "lag-interface-number": 1,
+                           "lacp": {
+                             "lacp-state": true,
+                             "system-id": "11:00:11:00:11:11",
+                             "admin-key": 154
+                           }
+                         }
+                       ]
+                     }
+                   },
+                   "group": [
+                     {
+                       "group-id": "gr1",
+                       "ethernet-segment-identifier": "esi1"
+                     }
+                   ]
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   }
+
+
+                                 Figure 27
+
+   The auto-assigned ESI can be retrieved using, e.g., a GET RESTCONF
+   method.  The assigned value will be then returned as shown in the
+   'esi-auto' data node in Figure 28.
+
+{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "auto-esi-lacp",
+        "description": "Sample to illustrate auto-ESI",
+        "vpn-type": "vpn-common:vpls-evpn",
+        "ethernet-segments": {
+          "ethernet-segment": [
+            {
+              "name": "esi1",
+              "esi-type": "esi-type-1",
+              "esi-auto": {
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 120]
+
+Internet-Draft                    L2NM                        April 2021
+
+
+                "auto-ethernet-segment-identifier": "01:11:00:11:00:11:11:9A:00:00"
+              },
+              "esi-redundancy-mode": "all-active"
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "198.51.100.1",
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+            "ne-id": "198.51.100.2",
+            "vpn-network-access": [
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 121]
+
+Internet-Draft                    L2NM                        April 2021
+
+
+              {
+                "id": "2/2/2.5",
+                "port-id": "2/2/2",
+                "description": "Interface to CE1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+                                 Figure 28
+
 Appendix B.  Initial BGP Layer 2 Encapsulation Types
+
+
+
+
+
+
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 122]
+
+Internet-Draft                    L2NM                        April 2021
+
 
              Value Description                       Reference
              ===== ================================  =========
@@ -6605,7 +6881,11 @@ Appendix C.  Initial PW Types
 
 
 
-Barguil, et al.         Expires November 1, 2021              [Page 118]
+
+
+
+
+Barguil, et al.         Expires November 1, 2021              [Page 123]
 
 Internet-Draft                    L2NM                        April 2021
 
@@ -6661,7 +6941,7 @@ Internet-Draft                    L2NM                        April 2021
 
 
 
-Barguil, et al.         Expires November 1, 2021              [Page 119]
+Barguil, et al.         Expires November 1, 2021              [Page 124]
 
 Internet-Draft                    L2NM                        April 2021
 
@@ -6717,7 +6997,7 @@ Authors' Addresses
 
 
 
-Barguil, et al.         Expires November 1, 2021              [Page 120]
+Barguil, et al.         Expires November 1, 2021              [Page 125]
 
 Internet-Draft                    L2NM                        April 2021
 
@@ -6773,4 +7053,4 @@ Internet-Draft                    L2NM                        April 2021
 
 
 
-Barguil, et al.         Expires November 1, 2021              [Page 121]
+Barguil, et al.         Expires November 1, 2021              [Page 126]
