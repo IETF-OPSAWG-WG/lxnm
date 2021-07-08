@@ -779,7 +779,28 @@
 
             <t hangText="'signaling-type':">Indicates the signaling that is
             used for setting pseudowires. Signaling type values are taken from
-            <xref target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
+            <xref target="I-D.ietf-opsawg-vpn-common"></xref>. The following
+            signaling options are supported:<list style="hanging">
+                <t hangText="'l2vpn-bgp':">The service is a Multipoint VPLS
+                that uses a BGP control plane as described in <xref
+                target="RFC4761"></xref> and <xref target="RFC6624"></xref>.
+                </t>
+
+                <t hangText="'evpn-bgp':">The service is a Multipoint VPLS
+                that uses also a BGP control plane, but also includes the
+                additional features and related parameters <xref
+                target="RFC7432"></xref> and <xref target="RFC7209"></xref>.
+                </t>
+
+                <t hangText="'t-ldp-pwe':">A Multipoint VPLS that uses a mesh
+                of LDP-signaled Pseudowires <xref target="RFC6074"></xref>.
+                </t>
+
+                <t hangText="'l2tp-pwe':">The L2NM uses L2TP-signaled
+                Pseudowires as described in <xref target="RFC6074"></xref>.
+                </t>
+              </list><xref target="service-sig"></xref> summarizes allowed
+            signaling types for each VPN service type ('vpn-type').</t>
 
             <t hangText="'global-parameters-profiles':">Defines reusable
             parameters for the same L2VPN service. <vspace
@@ -829,6 +850,37 @@
             implementation-specific. <vspace blankLines="1" />More details are
             provided in <xref target="vpn_node"></xref>.</t>
           </list></t>
+
+        <texttable anchor="service-sig"
+                   title="Valid Signaling Options per VPN Service Type">
+          <ttcol>VPN Type</ttcol>
+
+          <ttcol>Signaling Options</ttcol>
+
+          <c>vpls</c>
+
+          <c>t-ldp-pwe, l2tp-pwe, l2vpn-bgp</c>
+
+          <c>vpws</c>
+
+          <c>t-ldp-pwe, l2tp-pwe</c>
+
+          <c>vpws-evpn</c>
+
+          <c>evpn-bgp</c>
+
+          <c>pbb-evpn</c>
+
+          <c>evpn-bgp</c>
+
+          <c>mpls-evpn</c>
+
+          <c>evpn-bgp</c>
+
+          <c>vxlan-evpn</c>
+
+          <c>evpn-bgp</c>
+        </texttable>
 
         <section anchor="profile" title="Global Parameters Profiles">
           <t>The 'global-parameters-profile' defines reusable parameters for
@@ -1161,6 +1213,7 @@
                  |     +--ro status?         identityref
                  |     +--ro last-updated?   yang:date-and-time
                  +--rw bgp-auto-discovery
+                 |  ...
                  +--rw signaling-option
                  |  ...
                  +--rw vpn-network-accesses
@@ -1179,20 +1232,21 @@
             <t hangText="'ne-id':">Includes a unique identifier of the network
             element where the VPN node is deployed.</t>
 
-            <t hangText="'router-id':"></t>
+            <t hangText="'router-id':">Indicates a 32-bit number that is used
+            to uniquely identify a router within an Autonomous System.</t>
 
             <t hangText="'active-global-parameters-profiles':">Lists the set
             of active global VPN parameters profiles for this VPN node.
             Concretely, one or more global profiles that are defined at the
             VPN service level can be activated at the VPN node level; each of
             these profiles is uniquely identified by means of 'profile-id'.
-            The structure of 'active-global-parameters-profiles' is the same
-            as the one discussed in <xref target="profile"></xref>.<vspace
-            blankLines="1" />Values defined in
+            The structure of 'active-global-parameters-profiles' uses the same
+            data nodes as <xref target="profile"></xref> except RD and RT
+            related data nodes.<vspace blankLines="1" />Values defined in
             'active-global-parameters-profiles' overrides the ones defined in
             the VPN service level.</t>
 
-            <t hangText="'signaling-options':">See <xref
+            <t hangText="'signaling-option':">See <xref
             target="signaling_options"></xref>.</t>
 
             <t hangText="'status':">Tracks the status of a node involved in a
@@ -1311,37 +1365,6 @@
               model allows configuring
               &lt;&lt;&lt;&lt;TBC&gt;&gt;&gt;&gt;&gt;.</t>
             </list></t>
-
-          <texttable anchor="service-sig"
-                     title="Valid Signaling Options per Service Type">
-            <ttcol>Service Type</ttcol>
-
-            <ttcol>Signaling Options</ttcol>
-
-            <c>vpls</c>
-
-            <c>t-ldp-pwe, l2tp-pwe, l2vpn-bgp</c>
-
-            <c>vpws</c>
-
-            <c>t-ldp-pwe, l2tp-pwe</c>
-
-            <c>vpws-evpn</c>
-
-            <c>evpn-bgp</c>
-
-            <c>pbb-evpn</c>
-
-            <c>evpn-bgp</c>
-
-            <c>mpls-evpn</c>
-
-            <c>evpn-bgp</c>
-
-            <c>vxlan-evpn</c>
-
-            <c>evpn-bgp</c>
-          </texttable>
 
           <figure align="right" anchor="signaling_options_tree"
                   title="Signaling Option Subtree">
@@ -2935,18 +2958,18 @@ module ietf-l2vpn-ntw {
       "Identity for allowed LDP-based PW type.";
     reference
       "RFC 4762: Virtual Private LAN Service (VPLS) Using
-                 Label Distribution Protocol (LDP) 
+                 Label Distribution Protocol (LDP)
                  Signaling, Section 6.1.1";
   }
 
   identity ethernet {
-    base pw-type ;
+    base pw-type;
     description
       "Identity for PW Ethernet type.";
   }
 
   identity ethernet-tagged {
-    base pw-type ;
+    base pw-type;
     description
       "Identity for PW Ethernet tagged mode type.";
   }
@@ -3943,9 +3966,9 @@ module ietf-l2vpn-ntw {
                     description
                       "PW encapsulation type.";
                     reference
-                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
-                                  Label Distribution Protocol (LDP) 
-                                  Signaling, Section 6.1.1";
+                      "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                 Label Distribution Protocol (LDP)
+                                 Signaling, Section 6.1.1";
                   }
                   leaf mac-addr-withdraw {
                     type boolean;
@@ -3954,9 +3977,9 @@ module ietf-l2vpn-ntw {
                        is enabled.  If 'false', then MAC address withdrawal
                        is disabled.";
                     reference
-                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
-                                  Label Distribution Protocol (LDP) 
-                                  Signaling, Section 6.2";
+                      "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                 Label Distribution Protocol (LDP)
+                                 Signaling, Section 6.2";
                   }
                   list ac-pw-list {
                     key "peer-addr vc-id";
@@ -4180,48 +4203,94 @@ module ietf-l2vpn-ntw {
                       }
                       container rewrite {
                         description
-                          "Set the tag rewriting policy for this
-                           EFP";
+                          "Sets the tag rewriting policy for this
+                           'vpn-network-accesses'. Enables the
+                           manipulation of the layer-2 frame header for
+                           data frames as they are processed on the
+                           'vpn-network-access'.";
                         choice tag-choice {
                           description
-                            "Select the tag rewriting policy for this
-                             EFP";
+                            "Selects the tag rewriting policy for a VPN
+                             network access. It defines a set of
+                             standard tag manipulations that allow for
+                             the insertion, removal, or rewriting of one
+                             or two 802.1Q VLAN tags.";
                           leaf pop {
                             type enumeration {
-                              enum 1;
-                              enum 2;
+                              enum 1 {
+                                description
+                                  "Allows one (1) tag removal.";
+                              }
+                              enum 2 {
+                                description
+                                  "Allows two (2) tags removal.";
+                              }
                             }
                             description
-                              "Remove one or more tags";
+                              "Standard tag removal.
+                               The number of 802.1Q VLAN tags to pop.";
                           }
                           leaf push {
                             type empty;
                             description
-                              "Push one or more tags";
+                              "Standard tag Push.
+                               The number of 802.1Q tags to push on the
+                               front of the frame.";
                           }
                           leaf translate {
                             type enumeration {
-                              enum 1-to-1;
-                              enum 1-to-2;
-                              enum 2-to-1;
-                              enum 2-to-2;
+                              enum 1-to-1 {
+                                description
+                                  "Allows one (1) to one (1) tag
+                                   translation.";
+                              }
+                              enum 1-to-2 {
+                                description
+                                  "Allows one (1) to two (2) tags
+                                   translation.";
+                              }
+                              enum 2-to-1 {
+                                description
+                                  "Allows two (2) to one (1) tag
+                                   translation.";
+                              }
+                              enum 2-to-2 {
+                                description
+                                  "Allows two (2) to two (2) tags
+                                   translation.";
+                              }
                             }
                             description
-                              "Replace tags with other tags.";
+                              "Replaces tags with other tags.
+                               Translate operations are expressed as
+                               as a combination of tag push and pop
+                               operations. For example, translating the
+                               outer tag is expressed as popping a
+                               single tag.";
                           }
                         }
                         leaf cvlan-id {
                           when 'not(../pop)';
                           type uint16;
                           description
-                            "<1-4094> - Push a Dot1Q vlan tag";
+                            "Push/Translate vlan tags";
                         }
-                        leaf mode {
+                        leaf direction {
                           type enumeration {
-                            enum symmetric;
+                            enum symmetric {
+                              description
+                                "TAGs operation is performed in a
+                                 symetric way.
+
+                                 The operation is performed on the
+                                 outbound traffic on an interface, then
+                                 the reverse operation is performed on
+                                 the inbound traffic out of the
+                                 same interface.";
+                            }
                           }
                           description
-                            "TBC";
+                            "Indicates the direction.";
                         }
                       }
                     }
