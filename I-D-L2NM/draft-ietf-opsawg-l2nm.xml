@@ -677,12 +677,10 @@
         </figure>
 
         <t></t>
-
-        <t></t>
       </section>
 
       <section anchor="l2_vpn_service" title="VPN Services">
-        <t>The 'vpn-service' is the data structure that abstracts a VPN
+        <t>The 'vpn-service' is the data structure that abstracts an L2VPN
         service in the service provider network. Each 'vpn-service' is
         uniquely identified by an identifier: 'vpn-id'. Such 'vpn-id' is only
         meaningful locally within the network controller. The subtree of the
@@ -705,33 +703,7 @@
            +--rw global-parameters-profiles
            |  ...
            +--rw ethernet-segments
-           |  +--rw ethernet-segment* [name]
-           |     +--rw name                                 string
-           |     +--rw esi-type?
-           |     |       identityref
-           |     +--rw (esi-choice)?
-           |     |  +--:(directly-assigned)
-           |     |  |  +--rw ethernet-segment-identifier?
-           |     |  |          yang:hex-string
-           |     |  +--:(auto-assigned)
-           |     |     +--rw esi-auto
-           |     |        +--rw (auto-mode)?
-           |     |        |  +--:(from-pool)
-           |     |        |  |  +--rw esi-pool-name?
-           |     |        |  |          string
-           |     |        |  +--:(full-auto)
-           |     |        |     +--rw auto?
-           |     |        |             empty
-           |     |        +--ro auto-ethernet-segment-identifier?
-           |     |                yang:hex-string
-           |     +--rw esi-redundancy-mode?
-           |     |       identityref
-           |     +--rw df-election
-           |     |  +--rw df-election-method?   identityref
-           |     |  +--rw preference?           uint16
-           |     |  +--rw revertive?            boolean
-           |     |  +--rw election-wait-time?   uint32
-           |     +--rw split-horizon-filtering?             boolean
+           |  ...
            +--rw underlay-transport
            |  +--rw (type)?
            |     +--:(abstract)
@@ -767,16 +739,17 @@
             who ordered the service.</t>
 
             <t hangText="'parent-service-id':">Refers to an identifier of the
-            parent service (e.g, L2SM, IETF network slice, VPN+) that
-            triggered the creation of the VPN service. This identifier is used
-            to easily correlate the (network) service as built in the network
-            with a service order. A controller can use that correlation to
-            enrich or populate some fields (e.g., description fields) as a
-            function of local deployments.</t>
+            parent service (e.g., L2SM, IETF network slice, VPN+) that
+            triggered the creation of the L2VPN service. This identifier is
+            used to easily correlate the (network) service as built in the
+            network with a service order. A controller can use that
+            correlation to enrich or populate some fields (e.g., description
+            fields) as a function of local deployments.</t>
 
-            <t hangText="'vpn-type':">Indicates the VPN type. Typically, the
-            following types can be used for the L2NM <xref
-            target="I-D.ietf-opsawg-vpn-common"></xref>:<list style="hanging">
+            <t hangText="'vpn-type':">Indicates the L2VPN type. Typically, the
+            following types, defined in <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref>, can be used for the
+            L2NM :<list style="hanging">
                 <t hangText="'vpls': ">Virtual Private LAN Service (VPLS) as
                 defined in <xref target="RFC4761"></xref> or <xref
                 target="RFC4762"></xref>.</t>
@@ -796,23 +769,28 @@
 
                 <t hangText="'vxlan-evpn': ">VXLAN based EVPNs <xref
                 target="RFC8365"></xref>.</t>
-              </list></t>
+              </list>The type will condition the presence of some data nodes.
+            </t>
 
             <t hangText="'vpn-service-topology':">Indicates the network
             topology for the service: hub-spoke, any-to-any, or custom.</t>
 
-            <t hangText="'bgp-ad-enabled':">xxxxxxxxxxxxxx</t>
+            <t hangText="'bgp-ad-enabled':">Controls whether BGP
+            auto-discovery is enabled. </t>
 
-            <t hangText="'signaling-type':">xxxxxxxxxxxxxxxxxx</t>
+            <t hangText="'signaling-type':">Indicates the signaling that is
+            used for setting pseudowires. Signaling type values are taken from
+            <xref target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
 
             <t hangText="'global-parameters-profiles':">Defines reusable
-            parameters for the same 'vpn-service'. <vspace
+            parameters for the same L2VPN service. <vspace
             blankLines="1" />More details are provided in <xref
             target="profile"></xref>.</t>
 
-            <t hangText="'ethernet-segments':">xxxxxxxxxxxxxxxxxx<vspace
-            blankLines="1" />More details are provided in <xref
-            target="es"></xref>.</t>
+            <t hangText="'ethernet-segments':">Provides a set of data related
+            to Ethernet Segment (ES). This container is present only for
+            EVPN-related L2VPN types. <vspace blankLines="1" />More details
+            are provided in <xref target="es"></xref>.</t>
 
             <t hangText="'underlay-transport':">Describes the preference for
             the transport technology to carry the traffic of the VPN service.
@@ -839,7 +817,7 @@
 
             <t hangText="'vpn-node':">Is an abstraction that represents a set
             of policies applied to a network node and that belong to a single
-            'vpn-service'. A VPN service is typically built by adding
+            'vpn-service'. An L2VPN service is typically built by adding
             instances of 'vpn-node' to the 'vpn-nodes' container. <vspace
             blankLines="1" />A 'vpn-node' contains 'vpn-network-accesses',
             which are the interfaces attached to the VPN by which the customer
@@ -849,15 +827,20 @@
             sites is not required in the model. Such information is rather
             relevant in the L2SM. Whether that information is included in the
             L2NM, e.g., to populate the various 'description' data node is
-            implementation specific. <vspace blankLines="1" />More details are
+            implementation-specific. <vspace blankLines="1" />More details are
             provided in <xref target="vpn_node"></xref>.</t>
           </list></t>
 
         <section anchor="profile" title="Global Parameters Profiles">
           <t>The 'global-parameters-profile' defines reusable parameters for
-          the same 'vpn-service'. A 'global-parameters-profile' contains
-          'profile-ids', which is a list of 'profile-id', which is the
-          identifier of the global parameters profiles.</t>
+          the same L2VPN service instance ('vpn-service'). Global parameters
+          profile are defined at the VPN service level and then called at the
+          VPN node and VPN network access levels. Each VPN instance profile is
+          identified by 'profile-id'. Some of the data nodes can be adjusted
+          at the VPN node or VPN network access levels. These adjusted values
+          take precedence over the global ones. The subtree of
+          'global-parameters-profile' is depicted in <xref
+          target="global_param_prof_tree"></xref>. </t>
 
           <figure align="center" anchor="global_param_prof_tree"
                   title="Global Parameters Profiles Subtree">
@@ -926,41 +909,71 @@
                     ...             ]]></artwork>
           </figure>
 
-          <t>The description of the Global Parameters Profile that are
-          depicted in <xref target="global_param_prof_tree"></xref> are as
+          <t>The description of the global parameters profile is as
           follows:</t>
 
           <t><list style="hanging">
-              <t hangText="'profile-id':">XXX</t>
+              <t hangText="'profile-id':">Uniquely identifies a global
+              parameter profile.</t>
 
-              <t hangText="'svc-mtu':">Service MTU, it is also known as t he
-              maximum transmission unit or maximum frame size. When a frame is
-              larger than the MTU, it is fragmented to accommodate the MTU of
-              the network.</t>
+              <t hangText="'rd':">As defined in <xref
+              target="I-D.ietf-opsawg-vpn-common"></xref>, these RD assignment
+              modes are supported: direct assignment, automatic assignment
+              from a given pool, automatic assignment, and no assignment. For
+              illustration purposes, the following modes can be used in the
+              deployment cases: <list style="hanging">
+                  <t hangText="'directly-assigned':">The VPN service provider
+                  (service orchestrator) assigns explicitly RDs. </t>
 
-              <t hangText="'ce-vlan-preservation':">Preserve the CE-VLAN ID
-              from ingress to egress,i.e., CE-VLAN tag of the egress frame are
-              identical to those of the ingress frame that yielded this egress
-              service frame. If All-to-One bundling within a site is Enabled,
-              then preservation applies to all Ingress service frames. If
-              All-to-One bundling is disabled, then preservation applies to
-              tagged Ingress service frames having CE-VLAN ID 1 through
-              4094.</t>
+                  <t hangText="'full-auto':">The network controller
+                  auto-assigns RDs. </t>
 
-              <t hangText="'ce-vlan-cos-perservation':">CE vlan CoS
-              preservation. PCP bits in the CE-VLAN tag of the egress frame
-              are identical to those of the ingress frame that yielded this
-              egress service frame.</t>
+                  <t hangText="'no-rd':">The VPN service provider (service
+                  orchestrator) explicitly wants no RD to be assigned. </t>
+                </list>Also, the module accommodates deployments where only
+              the Assigned Number subfield of RDs is assigned from a pool
+              while the Administrator subfield is set to, e.g., the Router ID
+              that is assigned to a VPN node. The module supports these modes
+              for managing the Assigned Number subfield: explicit assignment,
+              auto-assignment from a pool, and full auto-assignment.</t>
+
+              <t hangText="'vpn-targets':">Specifies RT import/export rules
+              for the VPN service.</t>
+
+              <t hangText="'local-autonomous-system':">Indicates the
+              Autonomous System Number (ASN) that is configured for the VPN
+              node. The ASN can be used to auto-derive some other attributes
+              such as RDs or Ethernet Segment Identifiers (ESIs).</t>
+
+              <t hangText="'svc-mtu':">Is the service MTU for an L2VPN
+              service. It is also known as the maximum transmission unit or
+              maximum frame size. When a frame is larger than the MTU, it is
+              fragmented to accommodate the MTU of the network.</t>
+
+              <t hangText="'ce-vlan-preservation':">Is set to preserve the
+              CE-VLAN ID from ingress to egress, i.e., CE-VLAN tag of the
+              egress frame are identical to those of the ingress frame that
+              yielded this egress service frame. If All-to-One bundling within
+              a site is enabled, then preservation applies to all ingress
+              service frames. If All-to-One bundling is disabled, then
+              preservation applies to tagged Ingress service frames having
+              CE-VLAN ID 1 through 4094.</t>
+
+              <t hangText="'ce-vlan-cos-perservation':">Controls the CE VLAN
+              CoS preservation. When set, PCP bits in the CE-VLAN tag of the
+              egress frame are identical to those of the ingress frame that
+              yielded this egress service frame.</t>
 
               <t hangText="'control-word-negotiation':">Controls whether
               control-word negotiation is enabled (if set to true) or not (if
               set to false). Refer to Section 7 of <xref
               target="RFC8077"></xref> for more details.</t>
 
-              <t hangText="'mac-policies':">It is a container of MAC
-              policies.<list style="hanging">
-                  <t hangText="'mac-addr-limit':">It is a container of
-                  MAC-Addr limit configuration.<list style="hanging">
+              <t hangText="'mac-policies':">Includes a set of MAC policies
+              that apply to the service:<list style="hanging">
+                  <t hangText="'mac-addr-limit':">Is a container of MAC
+                  address limit configuration. It includes the following data
+                  nodes: <list style="hanging">
                       <t hangText="'mac-num-limit':">Maximum number of MAC
                       addresses learned from the customer for a single service
                       instance.</t>
@@ -992,12 +1005,28 @@
                     </list></t>
                 </list></t>
 
-              <t hangText="multicast-like':">XXX</t>
+              <t hangText="multicast-like':">Controls whether multicast is
+              allowed in the service.</t>
             </list></t>
         </section>
 
         <section anchor="es" title="Ethernet Segments">
-          <t>xxx</t>
+          <t>The 'ethernet-segments' container is used to list a set of ESes
+          that are defined in an EVPN service. In reference to the structure
+          shown in <xref target="es-tree"></xref>, the following data nodes
+          can be included:<list style="hanging">
+              <t hangText="'name':">Sets a name to uniquely identify an ES.
+              This name is called in the VPN network access level to handle
+              multihoming, for example. </t>
+
+              <t hangText="'esi-type':">Indicates a tyXXXX</t>
+
+              <t hangText="'esi-redundancy-mode':"></t>
+
+              <t hangText="'df-election':"></t>
+
+              <t hangText="'split-horizon-filtering':"></t>
+            </list></t>
 
           <t><figure align="center" anchor="es-tree"
               title="Ethernet Segments Subtree">
@@ -1037,18 +1066,17 @@
                     ...             ]]></artwork>
             </figure></t>
         </section>
+      </section>
 
-        <section anchor="vpn_node" title="VPN Node">
-          <t>The 'vpn-node' is an abstraction that represents a set of
-          policies/configurations applied to a network node and that belong to
-          a single 'vpn-service'. A 'vpn-node' contains
-          'vpn-network-accesses', which are the interfaces involved in the
-          creation of the VPN. The customer sites are connected to the
-          'vpn-network-accesses'.</t>
+      <section anchor="vpn_node" title="VPN Node">
+        <t>The 'vpn-node' is an abstraction that represents a set of
+        policies/configurations applied to a network node and that belong to a
+        single 'vpn-service'. A 'vpn-node' contains 'vpn-network-accesses',
+        which are the interfaces involved in the creation of the VPN. The
+        customer sites are connected to the 'vpn-network-accesses'.</t>
 
-          <figure align="right" anchor="vpn-node_tree"
-                  title="VPN Nodes Subtree">
-            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+        <figure align="right" anchor="vpn-node_tree" title="VPN Nodes Subtree">
+          <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1096,62 +1124,60 @@
                  |  ...
                  +--rw vpn-network-accesses
                     ...             ]]></artwork>
-          </figure>
+        </figure>
 
-          <t>In reference to the subtree shown in <xref
-          target="vpn-node_tree"></xref>, the description of VPN node data
-          nodes is as follows:<list style="hanging">
-              <t hangText="'vpn-node-id':">Is an identifier that uniquely
-              identifies a node that enables a VPN network access.</t>
+        <t>In reference to the subtree shown in <xref
+        target="vpn-node_tree"></xref>, the description of VPN node data nodes
+        is as follows:<list style="hanging">
+            <t hangText="'vpn-node-id':">Is an identifier that uniquely
+            identifies a node that enables a VPN network access.</t>
 
-              <t hangText="'description':">Provides a textual description of
-              the VPN node.</t>
+            <t hangText="'description':">Provides a textual description of the
+            VPN node.</t>
 
-              <t hangText="'ne-id':">Includes a unique identifier of the
-              network element where the VPN node is deployed.</t>
+            <t hangText="'ne-id':">Includes a unique identifier of the network
+            element where the VPN node is deployed.</t>
 
-              <t hangText="'router-id':"></t>
+            <t hangText="'router-id':"></t>
 
-              <t hangText="'active-global-parameters-profiles':">Lists the set
-              of active global VPN parameters profiles for this VPN node.
-              Concretely, one or more global profiles that are defined at the
-              VPN service level can be activated at the VPN node level; each
-              of these profiles is uniquely identified by means of
-              'profile-id'. The structure of
-              'active-global-parameters-profiles' is the same as the one
-              discussed in <xref target="profile"></xref>.<vspace
-              blankLines="1" />Values defined in
-              'active-global-parameters-profiles' overrides the ones defined
-              in the VPN service level.</t>
+            <t hangText="'active-global-parameters-profiles':">Lists the set
+            of active global VPN parameters profiles for this VPN node.
+            Concretely, one or more global profiles that are defined at the
+            VPN service level can be activated at the VPN node level; each of
+            these profiles is uniquely identified by means of 'profile-id'.
+            The structure of 'active-global-parameters-profiles' is the same
+            as the one discussed in <xref target="profile"></xref>.<vspace
+            blankLines="1" />Values defined in
+            'active-global-parameters-profiles' overrides the ones defined in
+            the VPN service level.</t>
 
-              <t hangText="'signaling-options':">See <xref
-              target="signaling_options"></xref>.</t>
+            <t hangText="'signaling-options':">See <xref
+            target="signaling_options"></xref>.</t>
 
-              <t hangText="'status':">Tracks the status of a node involved in
-              a VPN service. Both operational and administrative status are
-              maintained. A mismatch between the administrative status vs. the
-              operational status can be used as a trigger to detect
-              anomalies.</t>
+            <t hangText="'status':">Tracks the status of a node involved in a
+            VPN service. Both operational and administrative status are
+            maintained. A mismatch between the administrative status vs. the
+            operational status can be used as a trigger to detect
+            anomalies.</t>
 
-              <t hangText="'vpn-network-accesses':">Represents the point to
-              which sites are connected. <vspace blankLines="1" />Note that,
-              unlike in L2SM, the L2NM does not need to model the customer
-              site, only the points where the traffic from the site are
-              received (i.e., the PE side of PE-CE connections). Hence, the
-              VPN network access contains the connectivity information between
-              the provider's network and the customer premises. The VPN
-              profiles ('vpn-profiles') have a set of routing policies that
-              can be applied during the service creation. <vspace
-              blankLines="1" />See <xref target="sna"></xref> for more
-              details.</t>
-            </list></t>
+            <t hangText="'vpn-network-accesses':">Represents the point to
+            which sites are connected. <vspace blankLines="1" />Note that,
+            unlike in L2SM, the L2NM does not need to model the customer site,
+            only the points where the traffic from the site are received
+            (i.e., the PE side of PE-CE connections). Hence, the VPN network
+            access contains the connectivity information between the
+            provider's network and the customer premises. The VPN profiles
+            ('vpn-profiles') have a set of routing policies that can be
+            applied during the service creation. <vspace blankLines="1" />See
+            <xref target="sna"></xref> for more details.</t>
+          </list></t>
 
-          <section title="BGP Auto-Discovery">
-            <t></t>
+        <section title="BGP Auto-Discovery">
+          <t></t>
 
-            <t><figure align="right" anchor="bgpad-tree"
-                title="BGP Auto-Discovery Subtree">
-                <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+          <t><figure align="right" anchor="bgpad-tree"
+              title="BGP Auto-Discovery Subtree">
+              <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1208,78 +1234,77 @@
                  |  ...
                  +--rw vpn-network-accesses
                     ...             ]]></artwork>
-              </figure></t>
-          </section>
+            </figure></t>
+        </section>
 
-          <section anchor="signaling_options" title="Signaling Option">
-            <t>This sub-tree defines the L2VPN service type, according to the
-            several signaling options to exchange membership information
-            between PEs of an L2VPN. The following signaling options are
-            supported:</t>
+        <section anchor="signaling_options" title="Signaling Option">
+          <t>This sub-tree defines the L2VPN service type, according to the
+          several signaling options to exchange membership information between
+          PEs of an L2VPN. The following signaling options are supported:</t>
 
-            <t><list style="hanging">
-                <t hangText="'l2vpn-bgp':">The service is a Multipoint VPLSs
-                that use a BGP control plane as described in <xref
-                target="RFC4761"></xref> and <xref target="RFC6624"></xref>.
-                For this L2VPN service, the model allows configuring the Route
-                Distinguisher, the Route Targets, the PWE encapsulation type
-                and the MTU configurations to allow MTU mismatch.</t>
+          <t><list style="hanging">
+              <t hangText="'l2vpn-bgp':">The service is a Multipoint VPLSs
+              that use a BGP control plane as described in <xref
+              target="RFC4761"></xref> and <xref target="RFC6624"></xref>. For
+              this L2VPN service, the model allows configuring the Route
+              Distinguisher, the Route Targets, the PWE encapsulation type and
+              the MTU configurations to allow MTU mismatch.</t>
 
-                <t hangText="'evpn-bgp':">The service is a Multipoint VPLSs
-                that use also a BGP control plane but also includes the
-                additional features and related parameters <xref
-                target="RFC7432"></xref> and <xref target="RFC7209"></xref>.
-                The model allows the configuration of the EVPN service
-                interface type, the local and remote VPWS Service Instance
-                (VSI) <xref target="RFC8214"></xref>, the EVPN policies for
-                handling MAC addresses and the Ethernet Segment Identifier
-                (ESI) information.</t>
+              <t hangText="'evpn-bgp':">The service is a Multipoint VPLSs that
+              use also a BGP control plane but also includes the additional
+              features and related parameters <xref target="RFC7432"></xref>
+              and <xref target="RFC7209"></xref>. The model allows the
+              configuration of the EVPN service interface type, the local and
+              remote VPWS Service Instance (VSI) <xref
+              target="RFC8214"></xref>, the EVPN policies for handling MAC
+              addresses and the Ethernet Segment Identifier (ESI)
+              information.</t>
 
-                <t hangText="'t-ldp-pwe':">A Multipoint VPLSs that use a mesh
-                of LDP-signaled Pseudowires <xref target="RFC6074"></xref>.
-                The model allows configuring the T-LDP PWE type, MTU mismatch
-                and the list of AC and PW bindings.</t>
+              <t hangText="'t-ldp-pwe':">A Multipoint VPLSs that use a mesh of
+              LDP-signaled Pseudowires <xref target="RFC6074"></xref>. The
+              model allows configuring the T-LDP PWE type, MTU mismatch and
+              the list of AC and PW bindings.</t>
 
-                <t hangText="'l2tp-pwe':">The L2NM uses L2TP-signaled
-                Pseudowires as described in <xref target="RFC6074"></xref>.
-                The model allows configuring
-                &lt;&lt;&lt;&lt;TBC&gt;&gt;&gt;&gt;&gt;.</t>
-              </list></t>
+              <t hangText="'l2tp-pwe':">The L2NM uses L2TP-signaled
+              Pseudowires as described in <xref target="RFC6074"></xref>. The
+              model allows configuring
+              &lt;&lt;&lt;&lt;TBC&gt;&gt;&gt;&gt;&gt;.</t>
+            </list></t>
 
-            <texttable anchor="service-sig"
-                       title="Valid Signaling Options per Service Type">
-              <ttcol>Service Type</ttcol>
+          <texttable anchor="service-sig"
+                     title="Valid Signaling Options per Service Type">
+            <ttcol>Service Type</ttcol>
 
-              <ttcol>Signaling Options</ttcol>
+            <ttcol>Signaling Options</ttcol>
 
-              <c>vpls</c>
+            <c>vpls</c>
 
-              <c>t-ldp-pwe, l2tp-pwe, l2vpn-bgp</c>
+            <c>t-ldp-pwe, l2tp-pwe, l2vpn-bgp</c>
 
-              <c>vpws</c>
+            <c>vpws</c>
 
-              <c>t-ldp-pwe, l2tp-pwe</c>
+            <c>t-ldp-pwe, l2tp-pwe</c>
 
-              <c>vpws-evpn</c>
+            <c>vpws-evpn</c>
 
-              <c>evpn-bgp</c>
+            <c>evpn-bgp</c>
 
-              <c>pbb-evpn</c>
+            <c>pbb-evpn</c>
 
-              <c>evpn-bgp</c>
+            <c>evpn-bgp</c>
 
-              <c>mpls-evpn</c>
+            <c>mpls-evpn</c>
 
-              <c>evpn-bgp</c>
+            <c>evpn-bgp</c>
 
-              <c>vxlan-evpn</c>
+            <c>vxlan-evpn</c>
 
-              <c>evpn-bgp</c>
-            </texttable>
+            <c>evpn-bgp</c>
+          </texttable>
 
-            <figure align="right" anchor="signaling_options_tree"
-                    title="Signaling Option Subtree">
-              <artwork align="center"><![CDATA[...
+          <figure align="right" anchor="signaling_options_tree"
+                  title="Signaling Option Subtree">
+            <artwork align="center"><![CDATA[...
 +--rw vpn-nodes
    +--rw vpn-node* [vpn-node-id]
    ...
@@ -1366,39 +1391,39 @@
    |           +--rw peer-addr    inet:ip-address
    |           +--rw taii         uint8
                  ...]]></artwork>
-            </figure>
-          </section>
+          </figure>
         </section>
+      </section>
 
-        <section anchor="sna" title="VPN Network Access">
-          <t>A 'vpn-network-access' represents an entry point to a VPN service
-          . In other words, this container encloses the parameters that
-          describe the access information for the traffic that belongs to a
-          particular L2VPN. As such, every 'vpn-network-access' MUST belong to
-          one and only one 'vpn-node'.</t>
+      <section anchor="sna" title="VPN Network Access">
+        <t>A 'vpn-network-access' represents an entry point to a VPN service .
+        In other words, this container encloses the parameters that describe
+        the access information for the traffic that belongs to a particular
+        L2VPN. As such, every 'vpn-network-access' MUST belong to one and only
+        one 'vpn-node'.</t>
 
-          <t>A 'vpn-network-access' includes information such as the
-          connection on which the access is defined , the specific layer 2
-          service requirements, etc.</t>
+        <t>A 'vpn-network-access' includes information such as the connection
+        on which the access is defined , the specific layer 2 service
+        requirements, etc.</t>
 
-          <t>The VPN network access is comprised of:</t>
+        <t>The VPN network access is comprised of:</t>
 
-          <t><list style="hanging">
-              <t hangText="'id':">Identifier of the VPN network access.</t>
+        <t><list style="hanging">
+            <t hangText="'id':">Identifier of the VPN network access.</t>
 
-              <t hangText="'description':">Text describing the VPN network
-              access.</t>
+            <t hangText="'description':">Text describing the VPN network
+            access.</t>
 
-              <t hangText="'status':">Administrative and operational status of
-              the service.</t>
+            <t hangText="'status':">Administrative and operational status of
+            the service.</t>
 
-              <t hangText="'ethernet-service-oam':">Carries information about
-              the service OAM.</t>
-            </list></t>
+            <t hangText="'ethernet-service-oam':">Carries information about
+            the service OAM.</t>
+          </list></t>
 
-          <figure align="right" anchor="vpn_network_access_tree"
-                  title="VPN Network Access Subtree">
-            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+        <figure align="right" anchor="vpn_network_access_tree"
+                title="VPN Network Access Subtree">
+          <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1432,44 +1457,44 @@
                        |  ...
                        +--rw service
                           ...                      ]]></artwork>
-          </figure>
+        </figure>
 
-          <section anchor="connection" title="Connection">
-            <t>The 'connection' container is used to configure the relevant
-            properties of the interface that is attached to the VPN, for
-            example, the encapsulation type, the lag creation, or the relation
-            ship between 'vpn-network-accesses'.</t>
+        <section anchor="connection" title="Connection">
+          <t>The 'connection' container is used to configure the relevant
+          properties of the interface that is attached to the VPN, for
+          example, the encapsulation type, the lag creation, or the relation
+          ship between 'vpn-network-accesses'.</t>
 
-            <t><list style="hanging">
-                <t hangText="'encapsulation':">Contains the layer 2
-                encapsulation properties of a VPN network access (e.g., IP
-                dot1q, qinq or vxlan).</t>
+          <t><list style="hanging">
+              <t hangText="'encapsulation':">Contains the layer 2
+              encapsulation properties of a VPN network access (e.g., IP
+              dot1q, qinq or vxlan).</t>
 
-                <t hangText="'lag-interface':">Includes the Link Aggregation
-                Protocol (LACP) configuration attributes including as main
-                attributes the LACP-Mode, LACP-Speed, and Members.</t>
+              <t hangText="'lag-interface':">Includes the Link Aggregation
+              Protocol (LACP) configuration attributes including as main
+              attributes the LACP-Mode, LACP-Speed, and Members.</t>
 
-                <t hangText="'group':">Group container allows spanning several
-                'vpn-network-accesses' based on the group identifier
-                attribute. The 'vpn-netwrok-accesses' related to the same
-                customer/service SHOULD have the same group-id. In that case,
-                the precedence attribute SHOULD be used to differentiate the
-                Primary and Secondary accesses for that service (an example is
-                shown in <xref target="prec-example"></xref>).</t>
-              </list></t>
+              <t hangText="'group':">Group container allows spanning several
+              'vpn-network-accesses' based on the group identifier attribute.
+              The 'vpn-netwrok-accesses' related to the same customer/service
+              SHOULD have the same group-id. In that case, the precedence
+              attribute SHOULD be used to differentiate the Primary and
+              Secondary accesses for that service (an example is shown in
+              <xref target="prec-example"></xref>).</t>
+            </list></t>
 
-            <t></t>
+          <t></t>
 
-            <t>Note that the 'connection' container does not include the
-            physical-specific configuration as this is assumed to be directly
-            handled using device modules (e.g., interfaces module). Moreover,
-            this design is also meant to avoid manipulated global parameters
-            at the service level and lower the risk of impacting other
-            services sharing the same physical interface.</t>
+          <t>Note that the 'connection' container does not include the
+          physical-specific configuration as this is assumed to be directly
+          handled using device modules (e.g., interfaces module). Moreover,
+          this design is also meant to avoid manipulated global parameters at
+          the service level and lower the risk of impacting other services
+          sharing the same physical interface.</t>
 
-            <figure align="right" anchor="connection_tree"
-                    title="Connection Subtree">
-              <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+          <figure align="right" anchor="connection_tree"
+                  title="Connection Subtree">
+            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1539,19 +1564,19 @@
                        |     +--rw split-horizon
                        |        +--rw group-name?   string    
                        ...            ]]></artwork>
-            </figure>
-          </section>
+          </figure>
+        </section>
 
-          <section title="EVPN-VPWS Service Instance">
-            <t></t>
+        <section title="EVPN-VPWS Service Instance">
+          <t></t>
 
-            <t>XXX Only valid for EVPN/VPWS, hence the check on evpn-type.</t>
+          <t>XXX Only valid for EVPN/VPWS, hence the check on evpn-type.</t>
 
-            <t></t>
+          <t></t>
 
-            <t><figure align="center" anchor="vsi-tree"
-                title="EVPN-VPWS Service Instance Subtree">
-                <artwork><![CDATA[  +--rw l2vpn-ntw
+          <t><figure align="center" anchor="vsi-tree"
+              title="EVPN-VPWS Service Instance Subtree">
+              <artwork><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1594,14 +1619,14 @@
                        |                   uint32
                        ...
 ]]></artwork>
-              </figure></t>
-          </section>
+            </figure></t>
+        </section>
 
-          <section title="Ethernet OAM">
-            <t></t>
+        <section title="Ethernet OAM">
+          <t></t>
 
-            <t><figure align="center" anchor="oamt" title="OAM Subtree">
-                <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+          <t><figure align="center" anchor="oamt" title="OAM Subtree">
+              <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1658,16 +1683,16 @@
                        |     +--rw frame-size?     uint32
                        |     +--rw session-type?   enumeration
                        ...]]></artwork>
-              </figure></t>
-          </section>
+            </figure></t>
+        </section>
 
-          <section anchor="service_details" title="Services">
-            <t>This container (<xref target="service_tree"></xref>) provides a
-            set of service details such as bandwidth and QoS.</t>
+        <section anchor="service_details" title="Services">
+          <t>This container (<xref target="service_tree"></xref>) provides a
+          set of service details such as bandwidth and QoS.</t>
 
-            <t><figure align="center" anchor="service_tree"
-                title="Service Overall Subtree">
-                <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+          <t><figure align="center" anchor="service_tree"
+              title="Service Overall Subtree">
+              <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
      +--rw vpn-services
@@ -1691,15 +1716,15 @@
                           |  ...
                           +--rw broadcast-unknown-unicast-multicast
                              ...         ]]></artwork>
-              </figure>The description of the service data nodes is as
-            follows:</t>
+            </figure>The description of the service data nodes is as
+          follows:</t>
 
-            <t><list style="hanging">
-                <t hangText="'mtu':">sss</t>
+          <t><list style="hanging">
+              <t hangText="'mtu':">sss</t>
 
-                <t hangText="'svc-input-bandwidth':">xxx<figure align="center"
-                    anchor="inbw-tree" title="Service Input Bandwidth Subtree">
-                    <artwork align="center"><![CDATA[                       +--rw service
+              <t hangText="'svc-input-bandwidth':">xxx<figure align="center"
+                  anchor="inbw-tree" title="Service Input Bandwidth Subtree">
+                  <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw svc-input-bandwidth
                           |       {vpn-common:input-bw}?
@@ -1714,12 +1739,11 @@
                           |     +--rw pir?      uint64
                           |     +--rw pbs?      uint64
                           ...         ]]></artwork>
-                  </figure></t>
+                </figure></t>
 
-                <t hangText="'svc-output-bandwidth':">xx<figure align="center"
-                    anchor="outbw-tree"
-                    title="Service Output Bandwidth Subtree">
-                    <artwork align="center"><![CDATA[                       +--rw service
+              <t hangText="'svc-output-bandwidth':">xx<figure align="center"
+                  anchor="outbw-tree" title="Service Output Bandwidth Subtree">
+                  <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw svc-output-bandwidth
                           |       {vpn-common:output-bw}?
@@ -1734,11 +1758,11 @@
                           |     +--rw pir?      uint64
                           |     +--rw pbs?      uint64
                           ...         ]]></artwork>
-                  </figure></t>
+                </figure></t>
 
-                <t hangText="QoS">ssss<figure align="center" anchor="qos-tree"
-                    title="QoS Subtree">
-                    <artwork align="center"><![CDATA[                       +--rw service
+              <t hangText="QoS">ssss<figure align="center" anchor="qos-tree"
+                  title="QoS Subtree">
+                  <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw qos {vpn-common:qos}?
                           |  +--rw qos-classification-policy
@@ -1766,11 +1790,11 @@
                           |        +--rw profile      leafref
                           |        +--rw direction?   identityref
                           ...         ]]></artwork>
-                  </figure></t>
+                </figure></t>
 
-                <t hangText="'mac-policies':">ssss<figure align="center"
-                    anchor="mac-policies-tree" title="MAC Policies Subtree">
-                    <artwork align="center"><![CDATA[                       +--rw service
+              <t hangText="'mac-policies':">ssss<figure align="center"
+                  anchor="mac-policies-tree" title="MAC Policies Subtree">
+                  <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw mac-policies
                           |  +--rw access-control-list* [name]
@@ -1795,12 +1819,11 @@
                           |     +--rw time-interval?   uint32
                           |     +--rw action?          identityref
                           ...         ]]></artwork>
-                  </figure></t>
+                </figure></t>
 
-                <t
-                hangText="'broadcast-unknown-unicast-multicast':">xxxx<figure
-                    align="center" anchor="bum_tree" title="BUM  Subtree">
-                    <artwork align="center"><![CDATA[                       +--rw service
+              <t hangText="'broadcast-unknown-unicast-multicast':">xxxx<figure
+                  align="center" anchor="bum_tree" title="BUM  Subtree">
+                  <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw broadcast-unknown-unicast-multicast
                              +--rw multicast-site-type?
@@ -1812,9 +1835,8 @@
                              |  |       yang:mac-address
                              |  +--rw port-lag-number?   uint32
                              +--rw bum-overall-rate?     uint32         ]]></artwork>
-                  </figure></t>
-              </list></t>
-          </section>
+                </figure></t>
+            </list></t>
         </section>
       </section>
     </section>
@@ -5255,8 +5277,6 @@ module ietf-l2vpn-ntw {
 
       <?rfc include='reference.RFC.8365'?>
 
-      <?rfc include='reference.RFC.8446'?>
-
       <?rfc include='reference.RFC.8077'?>
 
       <?rfc include='reference.RFC.6991'?>
@@ -5302,6 +5322,8 @@ module ietf-l2vpn-ntw {
       &RFC8453;
 
       <?rfc include='reference.RFC.3644'?>
+
+      <?rfc include='reference.RFC.8446'?>
 
       <?rfc include='reference.RFC.5880'?>
 
