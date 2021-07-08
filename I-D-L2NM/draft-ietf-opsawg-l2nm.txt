@@ -102,7 +102,7 @@ Table of Contents
        6.4.1.  BGP Auto-Discovery  . . . . . . . . . . . . . . . . .  25
        6.4.2.  Signaling Option  . . . . . . . . . . . . . . . . . .  26
      6.5.  VPN Network Access  . . . . . . . . . . . . . . . . . . .  31
-       6.5.1.  Connection (TBC)  . . . . . . . . . . . . . . . . . .  33
+       6.5.1.  Connection  . . . . . . . . . . . . . . . . . . . . .  33
        6.5.2.  EVPN-VPWS Service Instance  . . . . . . . . . . . . .  35
        6.5.3.  Ethernet OAM  . . . . . . . . . . . . . . . . . . . .  36
        6.5.4.  Services  . . . . . . . . . . . . . . . . . . . . . .  38
@@ -1823,25 +1823,25 @@ Internet-Draft                    L2NM                        April 2021
 
                    Figure 14: VPN Network Access Subtree
 
-6.5.1.  Connection (TBC)
+6.5.1.  Connection
 
    The 'connection' container (Figure 15) is used to configure the
    relevant properties of the interface to which the L2VPN instance is
-   attached to (e.g., encapsulation type, the lag creation).
-
-   'encapsulation':  Contains the layer 2 encapsulation properties of a
-      VPN network access (e.g., IP dot1q, QinQ, or VXLAN).
-
-   'lag-interface':  Includes the Link Aggregation Protocol (LACP)
-      configuration attributes including as main attributes the LACP
-      mode, LACP speed, and members.
-
-   'split-horizon':  XXXXX
+   attached to (e.g., encapsulation type, lag interfaces, split-
+   horizon).  The L2NM supports tag manipulation operations (e.g., tag
+   rewrite).
 
    Note that the 'connection' container does not include the physical-
    specific configuration as this is assumed to be directly handled
    using device modules (e.g., interfaces module).  Moreover, this
    design is also meant to avoid manipulated global parameters at the
+   service level and lower the risk of impacting other services sharing
+   the same physical interface.
+
+              ...
+              +--rw vpn-nodes
+                 +--rw vpn-node* [vpn-node-id]
+                    ...
 
 
 
@@ -1850,13 +1850,6 @@ Barguil, et al.         Expires November 1, 2021               [Page 33]
 Internet-Draft                    L2NM                        April 2021
 
 
-   service level and lower the risk of impacting other services sharing
-   the same physical interface.
-
-              ...
-              +--rw vpn-nodes
-                 +--rw vpn-node* [vpn-node-id]
-                    ...
                     +--rw vpn-network-accesses
                        +--rw vpn-network-access* [id]
                           ...
@@ -1898,6 +1891,13 @@ Internet-Draft                    L2NM                        April 2021
                           |     |  +--rw lacp
                           |     |     +--rw lacp-state?         boolean
                           |     |     +--rw lacp-mode?          boolean
+                          |     |     +--rw lacp-speed?         boolean
+                          |     |     +--rw mini-link?          uint32
+                          |     |     +--rw system-id?
+                          |     |     |       yang:mac-address
+                          |     |     +--rw admin-key?          uint16
+                          |     |     +--rw system-priority?    uint16
+                          |     |     +--rw member-link-list
 
 
 
@@ -1906,13 +1906,6 @@ Barguil, et al.         Expires November 1, 2021               [Page 34]
 Internet-Draft                    L2NM                        April 2021
 
 
-                          |     |     +--rw lacp-speed?         boolean
-                          |     |     +--rw mini-link?          uint32
-                          |     |     +--rw system-id?
-                          |     |     |       yang:mac-address
-                          |     |     +--rw admin-key?          uint16
-                          |     |     +--rw system-priority?    uint16
-                          |     |     +--rw member-link-list
                           |     |     |  +--rw member-link* [name]
                           |     |     |     +--rw name          string
                           |     |     |     +--rw port-speed?   uint32
@@ -1938,6 +1931,13 @@ Internet-Draft                    L2NM                        April 2021
 
    An example to illustrate the use of the L2NM to configure VPWS-EVPN
    instances is provided in Appendix A.3.
+
+
+
+
+
+
+
 
 
 
