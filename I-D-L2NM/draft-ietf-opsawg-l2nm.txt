@@ -100,9 +100,9 @@ Table of Contents
        6.3.2.  Ethernet Segments . . . . . . . . . . . . . . . . . .  21
      6.4.  VPN Node  . . . . . . . . . . . . . . . . . . . . . . . .  22
        6.4.1.  BGP Auto-Discovery  . . . . . . . . . . . . . . . . .  25
-       6.4.2.  Signaling Option  . . . . . . . . . . . . . . . . . .  26
+       6.4.2.  Signaling Option (TBC)  . . . . . . . . . . . . . . .  26
      6.5.  VPN Network Access  . . . . . . . . . . . . . . . . . . .  30
-       6.5.1.  Connection  . . . . . . . . . . . . . . . . . . . . .  32
+       6.5.1.  Connection (TBC)  . . . . . . . . . . . . . . . . . .  32
        6.5.2.  EVPN-VPWS Service Instance  . . . . . . . . . . . . .  34
        6.5.3.  Ethernet OAM  . . . . . . . . . . . . . . . . . . . .  35
        6.5.4.  Services  . . . . . . . . . . . . . . . . . . . . . .  37
@@ -1433,7 +1433,7 @@ Internet-Draft                    L2NM                        April 2021
 
                    Figure 9: BGP Auto-Discovery Subtree
 
-6.4.2.  Signaling Option
+6.4.2.  Signaling Option (TBC)
 
    The 'signaling-option' container (Figure 10) defines a set of data
    nodes for a given signaling protocol that is used for an L2VPN
@@ -1708,8 +1708,10 @@ Internet-Draft                    L2NM                        April 2021
       Section 6.5.2.
 
    'group':  Is used for grouping VPN network accesses by assigning the
-      same identifier to these accesses.  An example to illustrate the
-      use of this container for redundancy purposes is provided in
+      same identifier to these accesses.  The precedence attribute is
+      used to differentiate the primary and secondary accesses for a
+      service with multiple accesses.  An example to illustrate the use
+      of this container for redundancy purposes is provided in
       Appendix A.1.  This container is also used to identify the link of
       an ES by allocating the same ESI.  An example to illustrate this
       functionality is provided in Appendices A.3 and A.4.
@@ -1719,8 +1721,6 @@ Internet-Draft                    L2NM                        April 2021
 
    'service':  Specifies the service parameters (e.g., QoS, multicast)
       to apply for a given VPN network access.  See Section 6.5.4.
-
-
 
 
 
@@ -1767,25 +1767,25 @@ Internet-Draft                    L2NM                        April 2021
 
                    Figure 13: VPN Network Access Subtree
 
-6.5.1.  Connection
+6.5.1.  Connection (TBC)
 
-   The 'connection' container is used to configure the relevant
-   properties of the interface that is attached to the VPN, for example,
-   the encapsulation type, the lag creation, or the relation ship
-   between 'vpn-network-accesses'.
+   The 'connection' container (Figure 14) is used to configure the
+   relevant properties of the interface to which the L2VPN instance is
+   attached to (e.g., encapsulation type, the lag creation).
 
    'encapsulation':  Contains the layer 2 encapsulation properties of a
-      VPN network access (e.g., IP dot1q, qinq or vxlan).
+      VPN network access (e.g., IP dot1q, QinQ, or VXLAN).
 
    'lag-interface':  Includes the Link Aggregation Protocol (LACP)
-      configuration attributes including as main attributes the LACP-
-      Mode, LACP-Speed, and Members.
+      configuration attributes including as main attributes the LACP
+      mode, LACP speed, and members.
 
-   'group':  Group container allows spanning several 'vpn-network-
-      accesses' based on the group identifier attribute.  The 'vpn-
-      netwrok-accesses' related to the same customer/service SHOULD have
-      the same group-id.  In that case, the precedence attribute SHOULD
+   'split-horizon':  XXXXX
 
+   Note that the 'connection' container does not include the physical-
+   specific configuration as this is assumed to be directly handled
+   using device modules (e.g., interfaces module).  Moreover, this
+   design is also meant to avoid manipulated global parameters at the
 
 
 
@@ -1794,13 +1794,6 @@ Barguil, et al.         Expires November 1, 2021               [Page 32]
 Internet-Draft                    L2NM                        April 2021
 
 
-      be used to differentiate the Primary and Secondary accesses for
-      that service (an example is shown in Appendix A.1).
-
-   Note that the 'connection' container does not include the physical-
-   specific configuration as this is assumed to be directly handled
-   using device modules (e.g., interfaces module).  Moreover, this
-   design is also meant to avoid manipulated global parameters at the
    service level and lower the risk of impacting other services sharing
    the same physical interface.
 
@@ -1842,6 +1835,13 @@ Internet-Draft                    L2NM                        April 2021
                           |  |     +--rw svlan-id    uint16
                           |  |     +--rw cvlan-id    uint16
                           |  +--rw lag-interface
+                          |          {vpn-common:lag-interface}?
+                          |     +--rw lag-interface*
+                          |     |       [lag-interface-number]
+                          |     |  +--rw lag-interface-number    uint32
+                          |     |  +--rw lacp
+                          |     |     +--rw lacp-state?         boolean
+                          |     |     +--rw lacp-mode?          boolean
 
 
 
@@ -1850,13 +1850,6 @@ Barguil, et al.         Expires November 1, 2021               [Page 33]
 Internet-Draft                    L2NM                        April 2021
 
 
-                          |          {vpn-common:lag-interface}?
-                          |     +--rw lag-interface*
-                          |     |       [lag-interface-number]
-                          |     |  +--rw lag-interface-number    uint32
-                          |     |  +--rw lacp
-                          |     |     +--rw lacp-state?         boolean
-                          |     |     +--rw lacp-mode?          boolean
                           |     |     +--rw lacp-speed?         boolean
                           |     |     +--rw mini-link?          uint32
                           |     |     +--rw system-id?
@@ -1889,6 +1882,13 @@ Internet-Draft                    L2NM                        April 2021
 
    An example to illustrate the use of the L2NM to configure VPWS-EVPN
    instances is provided in Appendix A.3.
+
+
+
+
+
+
+
 
 
 
