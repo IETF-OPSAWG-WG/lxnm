@@ -6042,6 +6042,345 @@ module ietf-l2vpn-ntw {
         <t></t>
       </section>
 
+      <section anchor="bgp-vpws-ldp" title="BGP-based VPWS with LDP Signaling">
+        <t>Let's consider the simple architecture depicted in <xref
+        target="vpws-ex"></xref> to offer a VPWS between CE1 and CE2. The
+        service uses BGP for auto-discovery and LDP for signaling.</t>
+
+        <t><figure align="center" anchor="vpws-ex" title="An Example of VPLS">
+            <artwork><![CDATA[                   
+                   +-----+      +--------------+   +-----+    
+      +----+       | PE1 |======|              |===| PE2 |       +----+
+      | CE1+-------+     |      |     Core     |   |     +-------+ CE2|
+      +----+       +-----+      +--------------+   +-----+       +----+
+             site1                                          site2 ]]></artwork>
+          </figure></t>
+
+        <t><figure align="center" anchor="l2nm-vpws-ex"
+            title="Example of L2NM Message Body to Configure a BGP-based VPWS with LDP Signaling">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "vpws12345",
+        "description": "Simple VPWS",
+        "customer-name": "customer_12345",
+        "vpn-type": "vpn-common:vpws",
+        "bgp-ad-enabled": true,
+        "signaling-type": "vpn-common:ldp-signaling",
+        "global-parameters-profiles": {
+          "global-parameters-profile": [
+            {
+              "profile-id": "simple-profile",
+              "local-autonomous-system": 65550,
+              "rd-auto": {
+                "auto": [
+                  null
+                ]
+              },
+              "vpn-targets": {
+                "vpn-target": [
+                  {
+                    "id": "1",
+                    "route-targets": [
+                      "0:65550:1"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "2001:db8:100::1",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": 587
+                },
+                "signaling-option": {
+                  "mtu-pw": 1500,
+                  "ldp-or-l2tp": {
+                    "saii": "site1",
+                    "remote-targets": [
+                      {
+                        "taii": "site2"
+                      }
+                    ]
+                  },
+                  "pw-type": "ethernet"
+                }
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+            "ne-id": "2001:db8:200::1",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "vpn-network-access": [
+              {
+                "id": "5/1/1.1",
+                "port-id": "5/1/1",
+                "description": "Interface to CE2",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": 587
+                },
+                "signaling-option": {
+                  "mtu-pw": 1500,
+                  "ldp-or-l2tp": {
+                    "saii": "site2",
+                    "remote-targets": [
+                      {
+                        "taii": "site1"
+                      }
+                    ]
+                  },
+                  "pw-type": "ethernet"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+]]></artwork>
+          </figure></t>
+
+        <t></t>
+      </section>
+
+      <section anchor="vpls-ldp" title="LDP-based VPLS">
+        <t>This section provides an example to illustrate how the L2NM can be
+        used to manage a VPLS with LDP signaling. The connectivity between the
+        CE and the PE is direct using Dot1q encapsulation. We consider the
+        sample service delivered using the architecture depicted in <xref
+        target="vpls-ldp-ex"></xref>.</t>
+
+        <t><figure align="center" anchor="vpls-ldp-ex"
+            title="An Example of VPLS topology ">
+            <artwork><![CDATA[                
+                  +-----------  VPLS "1543" ------------+
+                                                           
+                  +-----+      +--------------+   +-----+    
+      +----+      | PE1 |======|              |===| PE2 |       +----+
+      | CE1 +-----+"450"|      |     MPLS     |   |"451"+-------+ CE2|
+      +----+      +-----+      |              |   +-----+       +----+
+                               |     Core     |                 
+                               +--------------+           
+        ]]></artwork>
+          </figure></t>
+
+        <t><xref target="vpls-ldp-call"></xref> shows how the L2NM is used to
+        instruct both PE1 and PE2 to use the targeted LDP session between them
+        to establish the VPLS "1543" between the ends. A single VPN service is
+        created for this purpose. Additionally, two VPN Nodes and each with a
+        corresponding VPN network access is also created.</t>
+
+        <t><figure align="center" anchor="vpls-ldp-call"
+            title="Example of L2NM Message Body for LDP-based VPLS">
+            <artwork align="center"><![CDATA[{
+  "l2vpn-ntw": {
+    "vpn-services": {
+      "vpn-service": {
+        "vpn-id": "450",
+        "vpn-name": "BANCO_EXAMPLE_CORP",
+        "vpn-description": "SEDE_CENTRO_450",
+        "customer-name": "EXAMPLE",
+        "vpn-type": "vpn-common:vpls",
+        "vpn-service-topology": "vpn-common:hub-spoke",
+        "bgp-ad-enabled": false,
+        "signaling-type": "vpn-common:ldp-signaling",
+        "global-parameters-profiles": {
+          "global-parameters-profile": {
+            "ce-vlan-preservation": "true",
+            "ce-vlan-cos-perservation": "true"
+          }
+        },
+        "vpn-nodes": [
+          {
+            "vpn-node": {
+              "vpn-node-id": "450",
+              "description": "SEDE_CENTRO_450",
+              "ne-id": "2001:db8:5::1",
+              "role": "vpn-common:spoke-role",
+              "status": {
+                "admin-status": {
+                  "status": "vpn-common:admin-up"
+                }
+              },
+              "ldp-or-l2tp": {
+                "signaling-option": [
+                  {
+                    "t-ldp-pw-type": "vpls-type"
+                  }
+                ]
+              },
+              "ac-pw-list": [
+                {
+                  "peer-addr": "2001:db8:50::1",
+                  "vc-id": "1543"
+                }
+              ]
+            },
+            "vpn-network-accesses": {
+              "vpn-network-access": {
+                "id": "4508671287",
+                "description": "VPN_450_SNA",
+                "port-id": "gigabithethernet0/0/1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-up"
+                  }
+                },
+                "connection": {
+                  "l2-termination-point": "550",
+                  "encapsulation": {
+                    "type": "vpn-common:dot1q",
+                    "dot1q": {
+                      "tag-type": "vpn-common:c-vlan",
+                      "cvlan-id": "550"
+                    }
+                  }
+                },
+                "service": {
+                  "mtu": "1550",
+                  "svc-input-bandwidth": {
+                    "input-bandwidth": {
+                      "type": "vpn-common:bw-per-service",
+                      "cir": "20480000"
+                    }
+                  },
+                  "svc-output-bandwidth": {
+                    "output-bandwidth": {
+                      "type": "vpn-common:bw-per-port",
+                      "cir": "20480000"
+                    }
+                  },
+                  "qos": {
+                    "qos-profile": {
+                      "qos-profile": {
+                        "profile": "QoS_Profile_A",
+                        "direction": "vpn-common:both"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "vpn-node": {
+              "vpn-node-id": "451",
+              "description": "SEDE_CHAPINERO_451",
+              "ne-id": "2001:db8:50::1",
+              "role": "vpn-common:spoke-role",
+              "status": {
+                "admin-status": {
+                  "status": "vpn-common:admin-up"
+                }
+              },
+              "ldp-or-l2tp": {
+                "signaling-option": [
+                  {
+                    "t-ldp-pw-type": "vpls-type"
+                  }
+                ]
+              },
+              "ac-pw-list": [
+                {
+                  "peer-addr": "2001:db8:5::1",
+                  "vc-id": "1543"
+                }
+              ]
+            },
+            "vpn-network-accesses": {
+              "vpn-network-access": {
+                "id": "4508671288",
+                "description": "VPN_450_SNA",
+                "port-id": "gigabithethernet0/0/1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-up"
+                  }
+                },
+                "connection": {
+                  "l2-termination-point": "550",
+                  "encapsulation": {
+                    "type": "vpn-common:dot1q",
+                    "dot1q": {
+                      "tag-type": "vpn-common:c-vlan",
+                      "cvlan-id": "550"
+                    }
+                  }
+                },
+                "service": {
+                  "mtu": "1550",
+                  "svc-input-bandwidth": {
+                    "input-bandwidth": {
+                      "type": "vpn-common:bw-per-service",
+                      "cir": "20480000"
+                    }
+                  },
+                  "svc-output-bandwidth": {
+                    "output-bandwidth": {
+                      "type": "vpn-common:bw-per-port",
+                      "cir": "20480000"
+                    }
+                  },
+                  "qos": {
+                    "qos-profile": {
+                      "qos-profile": {
+                        "profile": "QoS_Profile_A",
+                        "direction": "vpn-common:both"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+]]></artwork>
+          </figure></t>
+      </section>
+
       <section anchor="evpn-vpws-app" title="EVPN-VPWS Service Instance">
         <t><xref target="vpws-evpn-ex"></xref> depictes a sample architecture
         to offer VPWS-EVPN service between CE1 and CE2. Both CEs are
@@ -6539,345 +6878,6 @@ module ietf-l2vpn-ntw {
 ]]></artwork>
           </figure></t>
       </section>
-
-      <section anchor="bgp-vpws-ldp" title="BGP-based VPWS with LDP Signaling">
-        <t>Let's consider the simple architecture depicted in <xref
-        target="vpws-ex"></xref> to offer a VPWS between CE1 and CE2. The
-        service uses BGP for auto-discovery and LDP for signaling.</t>
-
-        <t><figure align="center" anchor="vpws-ex" title="An Example of VPLS">
-            <artwork><![CDATA[                   
-                   +-----+      +--------------+   +-----+    
-      +----+       | PE1 |======|              |===| PE2 |       +----+
-      | CE1+-------+     |      |     Core     |   |     +-------+ CE2|
-      +----+       +-----+      +--------------+   +-----+       +----+
-             site1                                          site2 ]]></artwork>
-          </figure></t>
-
-        <t><figure align="center" anchor="l2nm-vpws-ex"
-            title="Example of L2NM Message Body to Configure a BGP-based VPWS with LDP Signaling">
-            <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "vpws12345",
-        "description": "Simple VPWS",
-        "customer-name": "customer_12345",
-        "vpn-type": "vpn-common:vpws",
-        "bgp-ad-enabled": true,
-        "signaling-type": "vpn-common:ldp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": [
-            {
-              "profile-id": "simple-profile",
-              "local-autonomous-system": 65550,
-              "rd-auto": {
-                "auto": [
-                  null
-                ]
-              },
-              "vpn-targets": {
-                "vpn-target": [
-                  {
-                    "id": "1",
-                    "route-targets": [
-                      "0:65550:1"
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "2001:db8:100::1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
-              {
-                "id": "1/1/1.1",
-                "port-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "bgp-auto-discovery": {
-                  "vpn-id": 587
-                },
-                "signaling-option": {
-                  "mtu-pw": 1500,
-                  "ldp-or-l2tp": {
-                    "saii": "site1",
-                    "remote-targets": [
-                      {
-                        "taii": "site2"
-                      }
-                    ]
-                  },
-                  "pw-type": "ethernet"
-                }
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "2001:db8:200::1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
-              {
-                "id": "5/1/1.1",
-                "port-id": "5/1/1",
-                "description": "Interface to CE2",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "bgp-auto-discovery": {
-                  "vpn-id": 587
-                },
-                "signaling-option": {
-                  "mtu-pw": 1500,
-                  "ldp-or-l2tp": {
-                    "saii": "site2",
-                    "remote-targets": [
-                      {
-                        "taii": "site1"
-                      }
-                    ]
-                  },
-                  "pw-type": "ethernet"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-}
-
-]]></artwork>
-          </figure></t>
-
-        <t></t>
-      </section>
-    </section>
-
-    <section anchor="vpls-ldp" title="LDP-based VPLS">
-      <t>This section provides an example to illustrate how the L2NM can be
-      used to manage a VPLS with LDP signaling. The connectivity between the
-      CE and the PE is direct using Dot1q encapsulation. We consider the
-      sample service delivered using the architecture depicted in <xref
-      target="vpls-ldp-ex"></xref>.</t>
-
-      <t><figure align="center" anchor="vpls-ldp-ex"
-          title="An Example of VPLS topology ">
-          <artwork><![CDATA[                
-                  +-----------  VPLS "1543" ------------+
-                                                           
-                  +-----+      +--------------+   +-----+    
-      +----+      | PE1 |======|              |===| PE2 |       +----+
-      | CE1 +-----+"450"|      |     MPLS     |   |"451"+-------+ CE2|
-      +----+      +-----+      |              |   +-----+       +----+
-                               |     Core     |                 
-                               +--------------+           
-        ]]></artwork>
-        </figure></t>
-
-      <t><xref target="vpls-ldp-call"></xref> shows how the L2NM is used to
-      instruct both PE1 and PE2 to use the targeted LDP session between them
-      to establish the VPLS "1543" between the ends. A single VPN service is
-      created for this purpose. Additionally, two VPN Nodes and each with a
-      corresponding VPN network access is also created.</t>
-
-      <t><figure align="center" anchor="vpls-ldp-call"
-          title="Example of L2NM Message Body for LDP-based VPLS">
-          <artwork align="center"><![CDATA[{
-  "l2vpn-ntw": {
-    "vpn-services": {
-      "vpn-service": {
-        "vpn-id": "450",
-        "vpn-name": "BANCO_EXAMPLE_CORP",
-        "vpn-description": "SEDE_CENTRO_450",
-        "customer-name": "EXAMPLE",
-        "vpn-type": "vpn-common:vpls",
-        "vpn-service-topology": "vpn-common:hub-spoke",
-        "bgp-ad-enabled": false,
-        "signaling-type": "vpn-common:ldp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": {
-            "ce-vlan-preservation": "true",
-            "ce-vlan-cos-perservation": "true"
-          }
-        },
-        "vpn-nodes": [
-          {
-            "vpn-node": {
-              "vpn-node-id": "450",
-              "description": "SEDE_CENTRO_450",
-              "ne-id": "2001:db8:5::1",
-              "role": "vpn-common:spoke-role",
-              "status": {
-                "admin-status": {
-                  "status": "vpn-common:admin-up"
-                }
-              },
-              "ldp-or-l2tp": {
-                "signaling-option": [
-                  {
-                    "t-ldp-pw-type": "vpls-type"
-                  }
-                ]
-              },
-              "ac-pw-list": [
-                {
-                  "peer-addr": "2001:db8:50::1",
-                  "vc-id": "1543"
-                }
-              ]
-            },
-            "vpn-network-accesses": {
-              "vpn-network-access": {
-                "id": "4508671287",
-                "description": "VPN_450_SNA",
-                "port-id": "gigabithethernet0/0/1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-up"
-                  }
-                },
-                "connection": {
-                  "l2-termination-point": "550",
-                  "encapsulation": {
-                    "type": "vpn-common:dot1q",
-                    "dot1q": {
-                      "tag-type": "vpn-common:c-vlan",
-                      "cvlan-id": "550"
-                    }
-                  }
-                },
-                "service": {
-                  "mtu": "1550",
-                  "svc-input-bandwidth": {
-                    "input-bandwidth": {
-                      "type": "vpn-common:bw-per-service",
-                      "cir": "20480000"
-                    }
-                  },
-                  "svc-output-bandwidth": {
-                    "output-bandwidth": {
-                      "type": "vpn-common:bw-per-port",
-                      "cir": "20480000"
-                    }
-                  },
-                  "qos": {
-                    "qos-profile": {
-                      "qos-profile": {
-                        "profile": "QoS_Profile_A",
-                        "direction": "vpn-common:both"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "vpn-node": {
-              "vpn-node-id": "451",
-              "description": "SEDE_CHAPINERO_451",
-              "ne-id": "2001:db8:50::1",
-              "role": "vpn-common:spoke-role",
-              "status": {
-                "admin-status": {
-                  "status": "vpn-common:admin-up"
-                }
-              },
-              "ldp-or-l2tp": {
-                "signaling-option": [
-                  {
-                    "t-ldp-pw-type": "vpls-type"
-                  }
-                ]
-              },
-              "ac-pw-list": [
-                {
-                  "peer-addr": "2001:db8:5::1",
-                  "vc-id": "1543"
-                }
-              ]
-            },
-            "vpn-network-accesses": {
-              "vpn-network-access": {
-                "id": "4508671288",
-                "description": "VPN_450_SNA",
-                "port-id": "gigabithethernet0/0/1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-up"
-                  }
-                },
-                "connection": {
-                  "l2-termination-point": "550",
-                  "encapsulation": {
-                    "type": "vpn-common:dot1q",
-                    "dot1q": {
-                      "tag-type": "vpn-common:c-vlan",
-                      "cvlan-id": "550"
-                    }
-                  }
-                },
-                "service": {
-                  "mtu": "1550",
-                  "svc-input-bandwidth": {
-                    "input-bandwidth": {
-                      "type": "vpn-common:bw-per-service",
-                      "cir": "20480000"
-                    }
-                  },
-                  "svc-output-bandwidth": {
-                    "output-bandwidth": {
-                      "type": "vpn-common:bw-per-port",
-                      "cir": "20480000"
-                    }
-                  },
-                  "qos": {
-                    "qos-profile": {
-                      "qos-profile": {
-                        "profile": "QoS_Profile_A",
-                        "direction": "vpn-common:both"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-]]></artwork>
-        </figure></t>
     </section>
 
     <section anchor="bet" title="Initial BGP Layer 2 Encapsulation Types">

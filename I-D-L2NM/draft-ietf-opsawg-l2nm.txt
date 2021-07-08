@@ -129,12 +129,12 @@ Internet-Draft                    L2NM                         July 2021
    Appendix A.  Examples . . . . . . . . . . . . . . . . . . . . . . 122
      A.1.  VPN Network Access Precedence . . . . . . . . . . . . . . 122
      A.2.  BGP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 123
-     A.3.  EVPN-VPWS Service Instance  . . . . . . . . . . . . . . . 128
-     A.4.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 134
-     A.5.  BGP-based VPWS with LDP Signaling . . . . . . . . . . . . 138
-   Appendix B.  LDP-based VPLS . . . . . . . . . . . . . . . . . . . 141
-   Appendix C.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 145
-   Appendix D.  Initial PW Types . . . . . . . . . . . . . . . . . . 146
+     A.3.  BGP-based VPWS with LDP Signaling . . . . . . . . . . . . 128
+     A.4.  LDP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 131
+     A.5.  EVPN-VPWS Service Instance  . . . . . . . . . . . . . . . 135
+     A.6.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 141
+   Appendix B.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 145
+   Appendix C.  Initial PW Types . . . . . . . . . . . . . . . . . . 146
    Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 148
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 148
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . . 148
@@ -1820,7 +1820,7 @@ Internet-Draft                    L2NM                         July 2021
       of this container for redundancy purposes is provided in
       Appendix A.1.  This container is also used to identify the link of
       an ES by allocating the same ESI.  An example to illustrate this
-      functionality is provided in Appendices A.3 and A.4.
+      functionality is provided in Appendices A.5 and A.6.
 
    'ethernet-service-oam':  Carries information about the service OAM.
       See Section 6.5.3.
@@ -1986,7 +1986,7 @@ Internet-Draft                    L2NM                         July 2021
    can be configured by an operator or auto-generated.
 
    An example to illustrate the use of the L2NM to configure VPWS-EVPN
-   instances is provided in Appendix A.3.
+   instances is provided in Appendix A.5.
 
 
 
@@ -7150,12 +7150,12 @@ Internet-Draft                    L2NM                         July 2021
 
    Figure 26: Example of L2NM Message Body to Configure a BGP-based VPLS
 
-A.3.  EVPN-VPWS Service Instance
+A.3.  BGP-based VPWS with LDP Signaling
 
-   Figure 27 depictes a sample architecture to offer VPWS-EVPN service
-   between CE1 and CE2.  Both CEs are multi-homed.  BGP sessions are
-   maintained between these PEs as per [RFC8214].  In this EVPN
-   instance, an All-Active redundancy mode is used.
+   Let's consider the simple architecture depicted in Figure 27 to offer
+   a VPWS between CE1 and CE2.  The service uses BGP for auto-discovery
+   and LDP for signaling.
+
 
 
 
@@ -7170,573 +7170,13 @@ Barguil, et al.         Expires January 10, 2022              [Page 128]
 Internet-Draft                    L2NM                         July 2021
 
 
-                    |<--------- EVPN Instance ----------->|
-                    |                                     |
-              |     V                                     V  |
-              |     +-----+      +--------------+   +-----+  |
-       +----+ |     | PE1 |======|              |===| PE3 |  |    +----+
-       |    +-------+     |      |              |   |     +-------+    |
-       |    | |     +-----+      |              |   +-----+  |    |    |
-       | CE1| |                  |     Core     |            |    |CE2 |
-       |    | |     +-----+      |              |   +-----+  |    |    |
-       |    +-------+     |      |              |   |     +-------+    |
-       +----+ |     | PE2 |======|              |===| PE4 |  |    +----+
-            ^  ESI1 +-----+      +--------------+   +-----+  ESI2    ^
-            |                                                        |
-            |<---------------- Emulated Service -------------------->|
-
-                    Figure 27: An Example of VPWS-EVPN
-
-   Figure 27 shows a simplified configuration to illustrate the use of
-   the L2NM to configured VPWS-EVPN instance.
-
- {
-   "ietf-l2vpn-ntw:vpn-services": {
-     "vpn-service": [
-       {
-         "vpn-id": "vpws15432855",
-         "description": "Sample EVPN-VPWS",
-         "customer-name": "customer_15432855",
-         "vpn-type": "vpn-common:vpws-evpn",
-         "bgp-ad-enabled": true,
-         "signaling-type": "vpn-common:bgp-signaling",
-         "global-parameters-profiles": {
-           "global-parameters-profile": [
-             {
-               "profile-id": "simple-profile",
-               "local-autonomous-system": 65550,
-               "rd-suffix": "1",
-               "vpn-targets": {
-                 "vpn-target": [
-                   {
-                     "id": "1",
-                     "route-targets": [
-                       "0:65550:1"
-                     ],
-                     "route-target-type": "both"
-                   }
-                 ]
-               }
-             }
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 129]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-           ]
-         },
-         "ethernet-segments": {
-           "ethernet-segment": [
-             {
-               "name": "esi1",
-               "ethernet-segment-identifier": "00:11:11:11:11:11:11:11:\
-                11:11",
-               "esi-redundancy-mode": "all-active"
-             },
-             {
-               "name": "esi2",
-               "ethernet-segment-identifier": "00:22:22:22:22:22:22:22:\
-               22:22",
-               "esi-redundancy-mode": "all-active"
-             }
-           ]
-         },
-         "vpn-node": [
-           {
-             "vpn-node-id": "pe1",
-             "ne-id": "198.51.100.1",
-             "active-global-parameters-profile": {
-               "global-parameters-profile": [
-                 {
-                   "profile-id": "simple-profile"
-                 }
-               ]
-             },
-             "vpn-network-access": [
-               {
-                 "id": "1/1/1.1",
-                 "port-id": "1/1/1",
-                 "description": "Interface to CE1",
-                 "global-parameters-profile": "simple-profile",
-                 "status": {
-                   "admin-status": {
-                     "status": "vpn-common:admin-state-up"
-                   }
-                 },
-                 "connection": {
-                   "encapsulation": {
-                     "type": "dot1q",
-                     "dot1q": {
-                       "cvlan-id": 1
-                     }
-                   }
-                 },
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 130]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-                 "vpws-service-instance": {
-                   "local-vpws-service-instance": 1111,
-                   "remote-vpws-service-instance": 1112
-                 },
-                 "group": [
-                   {
-                     "group-id": "gr1",
-                     "ethernet-segment-identifier": "esi1"
-                   }
-                 ]
-               }
-             ]
-           },
-           {
-             "vpn-node-id": "pe2",
-             "ne-id": "198.51.100.2",
-             "active-global-parameters-profile": {
-               "global-parameters-profile": [
-                 {
-                   "profile-id": "simple-profile"
-                 }
-               ]
-             },
-             "vpn-network-access": [
-               {
-                 "id": "1/1/1.1",
-                 "port-id": "1/1/1",
-                 "description": "Interface to CE1",
-                 "global-parameters-profile": "simple-profile",
-                 "status": {
-                   "admin-status": {
-                     "status": "vpn-common:admin-state-up"
-                   }
-                 },
-                 "connection": {
-                   "encapsulation": {
-                     "type": "dot1q",
-                     "dot1q": {
-                       "cvlan-id": 1
-                     }
-                   }
-                 },
-                 "vpws-service-instance": {
-                   "local-vpws-service-instance": 1111,
-                   "remote-vpws-service-instance": 1112
-                 },
-                 "group": [
-                   {
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 131]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-                     "group-id": "gr1",
-                     "ethernet-segment-identifier": "esi1"
-                   }
-                 ]
-               }
-             ]
-           },
-           {
-             "vpn-node-id": "pe3",
-             "ne-id": "198.51.100.3",
-             "active-global-parameters-profile": {
-               "global-parameters-profile": [
-                 {
-                   "profile-id": "simple-profile"
-                 }
-               ]
-             },
-             "vpn-network-access": [
-               {
-                 "id": "1/1/1.1",
-                 "port-id": "1/1/1",
-                 "description": "Interface to CE2",
-                 "global-parameters-profile": "simple-profile",
-                 "status": {
-                   "admin-status": {
-                     "status": "vpn-common:admin-state-up"
-                   }
-                 },
-                 "connection": {
-                   "encapsulation": {
-                     "type": "dot1q",
-                     "dot1q": {
-                       "cvlan-id": 1
-                     }
-                   }
-                 },
-                 "vpws-service-instance": {
-                   "local-vpws-service-instance": 1112,
-                   "remote-vpws-service-instance": 1111
-                 },
-                 "group": [
-                   {
-                     "group-id": "gr1",
-                     "ethernet-segment-identifier": "esi2"
-                   }
-                 ]
-               }
-             ]
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 132]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-           },
-           {
-             "vpn-node-id": "pe4",
-             "ne-id": "198.51.100.4",
-             "active-global-parameters-profile": {
-               "global-parameters-profile": [
-                 {
-                   "profile-id": "simple-profile"
-                 }
-               ]
-             },
-             "vpn-network-access": [
-               {
-                 "id": "1/1/1.1",
-                 "port-id": "1/1/1",
-                 "description": "Interface to CE2",
-                 "global-parameters-profile": "simple-profile",
-                 "status": {
-                   "admin-status": {
-                     "status": "vpn-common:admin-state-up"
-                   }
-                 },
-                 "connection": {
-                   "encapsulation": {
-                     "type": "dot1q",
-                     "dot1q": {
-                       "cvlan-id": 1
-                     }
-                   }
-                 },
-                 "vpws-service-instance": {
-                   "local-vpws-service-instance": 1112,
-                   "remote-vpws-service-instance": 1111
-                 },
-                 "group": [
-                   {
-                     "group-id": "gr1",
-                     "ethernet-segment-identifier": "esi2"
-                   }
-                 ]
-               }
-             ]
-           }
-         ]
-       }
-     ]
-   }
- }
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 133]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-     Figure 28: Example of L2NM Message Body to Configure a VPWS-EVPN
-                                 Instance
-
-A.4.  Automatic ESI Assignment
-
-   This section provides an example to illustrate how the L2NM can be
-   used to manage ESI auto-assignment.  We consider the sample EVPN
-   service delivered using the architecture depicted in Figure 29.
-
-              ES
-              |     +-----+      +--------------+   +-----+
-       +----+ |     | PE1 |======|              |===| PE3 |       +----+
-       |    +-------+     |      |              |   |     +-------+ CE3|
-       |    | |     +-----+      |              |   +-----+       +----+
-       | CE1| |                  |     Core     |
-       |    | |     +-----+      |              |   +-----+       +----+
-       |    +-------+     |      |              |   |     +-------+ CE2|
-       +----+ |     | PE2 |======|              |===| PE4 |       +----+
-            LACP    +-----+      +--------------+   +-----+
-
-             Figure 29: An Example of Automatic ESI Assignment
-
-   Figure 30 shows how the L2NM is used to instruct both PE1 and PE2 to
-   auto-assign the ESI to identify the ES used with CE1.  In this
-   example, we suppose that LACP is enabled and that a Type 1 (T=0x01)
-   is used as per Section 5 of [RFC7432].  Note that this example does
-   not include all the details to configure the EVPN service, but
-   focuses only on the ESI management part.
-
-   {
-     "ietf-l2vpn-ntw:vpn-services": {
-       "vpn-service": [
-         {
-           "vpn-id": "auto-esi-lacp",
-           "description": "Sample to illustrate auto-ESI",
-           "vpn-type": "vpn-common:vpls-evpn",
-           "ethernet-segments": {
-             "ethernet-segment": [
-               {
-                 "name": "esi1",
-                 "esi-type": "esi-type-1",
-                 "esi-redundancy-mode": "all-active"
-               }
-             ]
-           },
-           "vpn-node": [
-             {
-               "vpn-node-id": "pe1",
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 134]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-               "ne-id": "198.51.100.1",
-               "vpn-network-access": [
-                 {
-                   "id": "1/1/1.1",
-                   "port-id": "1/1/1",
-                   "description": "Interface to CE1",
-                   "global-parameters-profile": "simple-profile",
-                   "status": {
-                     "admin-status": {
-                       "status": "vpn-common:admin-state-up"
-                     }
-                   },
-                   "connection": {
-                     "lag-interface": {
-                       "lag-interface": [
-                         {
-                           "lag-interface-number": 1,
-                           "lacp": {
-                             "lacp-state": true,
-                             "system-id": "11:00:11:00:11:11",
-                             "admin-key": 154
-                           }
-                         }
-                       ]
-                     }
-                   },
-                   "group": [
-                     {
-                       "group-id": "gr1",
-                       "ethernet-segment-identifier": "esi1"
-                     }
-                   ]
-                 }
-               ]
-             },
-             {
-               "vpn-node-id": "pe2",
-               "ne-id": "198.51.100.2",
-               "vpn-network-access": [
-                 {
-                   "id": "2/2/2.5",
-                   "port-id": "2/2/2",
-                   "description": "Interface to CE1",
-                   "status": {
-                     "admin-status": {
-                       "status": "vpn-common:admin-state-up"
-                     }
-                   },
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 135]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-                   "connection": {
-                     "lag-interface": {
-                       "lag-interface": [
-                         {
-                           "lag-interface-number": 1,
-                           "lacp": {
-                             "lacp-state": true,
-                             "system-id": "11:00:11:00:11:11",
-                             "admin-key": 154
-                           }
-                         }
-                       ]
-                     }
-                   },
-                   "group": [
-                     {
-                       "group-id": "gr1",
-                       "ethernet-segment-identifier": "esi1"
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-     }
-   }
-
-
-    Figure 30: An Example of L2NM Message Body for ESI Auto-Assignement
-
-   The auto-assigned ESI can be retrieved using, e.g., a GET RESTCONF
-   method.  The assigned value will be then returned as shown in the
-   'esi-auto' data node in Figure 31.
-
-{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "auto-esi-lacp",
-        "description": "Sample to illustrate auto-ESI",
-        "vpn-type": "vpn-common:vpls-evpn",
-        "ethernet-segments": {
-          "ethernet-segment": [
-            {
-              "name": "esi1",
-              "esi-type": "esi-type-1",
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 136]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-              "esi-auto": {
-                "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
-                 11:9A:00:00"
-              },
-              "esi-redundancy-mode": "all-active"
-            }
-          ]
-        },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "198.51.100.1",
-            "vpn-network-access": [
-              {
-                "id": "1/1/1.1",
-                "port-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-number": 1,
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
-                        }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe2",
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 137]
-
-Internet-Draft                    L2NM                         July 2021
-
-
-            "ne-id": "198.51.100.2",
-            "vpn-network-access": [
-              {
-                "id": "2/2/2.5",
-                "port-id": "2/2/2",
-                "description": "Interface to CE1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-number": 1,
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
-                        }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-}
-
-    Figure 31: An Example of L2NM Message Body to Retrieve the Assigned
-                                    ESI
-
-A.5.  BGP-based VPWS with LDP Signaling
-
-   Let's consider the simple architecture depicted in Figure 32 to offer
-   a VPWS between CE1 and CE2.  The service uses BGP for auto-discovery
-   and LDP for signaling.
-
-
-
-Barguil, et al.         Expires January 10, 2022              [Page 138]
-
-Internet-Draft                    L2NM                         July 2021
-
-
                     +-----+      +--------------+   +-----+
        +----+       | PE1 |======|              |===| PE2 |       +----+
        | CE1+-------+     |      |     Core     |   |     +-------+ CE2|
        +----+       +-----+      +--------------+   +-----+       +----+
               site1                                          site2
 
-                       Figure 32: An Example of VPLS
+                       Figure 27: An Example of VPLS
 
    {
      "ietf-l2vpn-ntw:vpn-services": {
@@ -7781,7 +7221,7 @@ Internet-Draft                    L2NM                         July 2021
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 139]
+Barguil, et al.         Expires January 10, 2022              [Page 129]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -7837,7 +7277,7 @@ Internet-Draft                    L2NM                         July 2021
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 140]
+Barguil, et al.         Expires January 10, 2022              [Page 130]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -7873,16 +7313,16 @@ Internet-Draft                    L2NM                         July 2021
    }
 
 
-   Figure 33: Example of L2NM Message Body to Configure a BGP-based VPWS
+   Figure 28: Example of L2NM Message Body to Configure a BGP-based VPWS
                             with LDP Signaling
 
-Appendix B.  LDP-based VPLS
+A.4.  LDP-based VPLS
 
    This section provides an example to illustrate how the L2NM can be
    used to manage a VPLS with LDP signaling.  The connectivity between
    the CE and the PE is direct using Dot1q encapsulation.  We consider
    the sample service delivered using the architecture depicted in
-   Figure 34.
+   Figure 29.
 
 
 
@@ -7893,7 +7333,7 @@ Appendix B.  LDP-based VPLS
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 141]
+Barguil, et al.         Expires January 10, 2022              [Page 131]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -7907,9 +7347,9 @@ Internet-Draft                    L2NM                         July 2021
                                  |     Core     |
                                  +--------------+
 
-                  Figure 34: An Example of VPLS topology
+                  Figure 29: An Example of VPLS topology
 
-   Figure 35 shows how the L2NM is used to instruct both PE1 and PE2 to
+   Figure 30 shows how the L2NM is used to instruct both PE1 and PE2 to
    use the targeted LDP session between them to establish the VPLS
    "1543" between the ends.  A single VPN service is created for this
    purpose.  Additionally, two VPN Nodes and each with a corresponding
@@ -7949,7 +7389,7 @@ Internet-Draft                    L2NM                         July 2021
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 142]
+Barguil, et al.         Expires January 10, 2022              [Page 132]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -8005,7 +7445,7 @@ Internet-Draft                    L2NM                         July 2021
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 143]
+Barguil, et al.         Expires January 10, 2022              [Page 133]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -8061,7 +7501,7 @@ Internet-Draft                    L2NM                         July 2021
 
 
 
-Barguil, et al.         Expires January 10, 2022              [Page 144]
+Barguil, et al.         Expires January 10, 2022              [Page 134]
 
 Internet-Draft                    L2NM                         July 2021
 
@@ -8106,10 +7546,570 @@ Internet-Draft                    L2NM                         July 2021
           }
         }
 
-        Figure 35: Example of L2NM Message Body for LDP-based VPLS
+        Figure 30: Example of L2NM Message Body for LDP-based VPLS
 
-Appendix C.  Initial BGP Layer 2 Encapsulation Types
+A.5.  EVPN-VPWS Service Instance
 
+   Figure 31 depictes a sample architecture to offer VPWS-EVPN service
+   between CE1 and CE2.  Both CEs are multi-homed.  BGP sessions are
+   maintained between these PEs as per [RFC8214].  In this EVPN
+   instance, an All-Active redundancy mode is used.
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 135]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+                    |<--------- EVPN Instance ----------->|
+                    |                                     |
+              |     V                                     V  |
+              |     +-----+      +--------------+   +-----+  |
+       +----+ |     | PE1 |======|              |===| PE3 |  |    +----+
+       |    +-------+     |      |              |   |     +-------+    |
+       |    | |     +-----+      |              |   +-----+  |    |    |
+       | CE1| |                  |     Core     |            |    |CE2 |
+       |    | |     +-----+      |              |   +-----+  |    |    |
+       |    +-------+     |      |              |   |     +-------+    |
+       +----+ |     | PE2 |======|              |===| PE4 |  |    +----+
+            ^  ESI1 +-----+      +--------------+   +-----+  ESI2    ^
+            |                                                        |
+            |<---------------- Emulated Service -------------------->|
+
+                    Figure 31: An Example of VPWS-EVPN
+
+   Figure 31 shows a simplified configuration to illustrate the use of
+   the L2NM to configured VPWS-EVPN instance.
+
+ {
+   "ietf-l2vpn-ntw:vpn-services": {
+     "vpn-service": [
+       {
+         "vpn-id": "vpws15432855",
+         "description": "Sample EVPN-VPWS",
+         "customer-name": "customer_15432855",
+         "vpn-type": "vpn-common:vpws-evpn",
+         "bgp-ad-enabled": true,
+         "signaling-type": "vpn-common:bgp-signaling",
+         "global-parameters-profiles": {
+           "global-parameters-profile": [
+             {
+               "profile-id": "simple-profile",
+               "local-autonomous-system": 65550,
+               "rd-suffix": "1",
+               "vpn-targets": {
+                 "vpn-target": [
+                   {
+                     "id": "1",
+                     "route-targets": [
+                       "0:65550:1"
+                     ],
+                     "route-target-type": "both"
+                   }
+                 ]
+               }
+             }
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 136]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+           ]
+         },
+         "ethernet-segments": {
+           "ethernet-segment": [
+             {
+               "name": "esi1",
+               "ethernet-segment-identifier": "00:11:11:11:11:11:11:11:\
+                11:11",
+               "esi-redundancy-mode": "all-active"
+             },
+             {
+               "name": "esi2",
+               "ethernet-segment-identifier": "00:22:22:22:22:22:22:22:\
+               22:22",
+               "esi-redundancy-mode": "all-active"
+             }
+           ]
+         },
+         "vpn-node": [
+           {
+             "vpn-node-id": "pe1",
+             "ne-id": "198.51.100.1",
+             "active-global-parameters-profile": {
+               "global-parameters-profile": [
+                 {
+                   "profile-id": "simple-profile"
+                 }
+               ]
+             },
+             "vpn-network-access": [
+               {
+                 "id": "1/1/1.1",
+                 "port-id": "1/1/1",
+                 "description": "Interface to CE1",
+                 "global-parameters-profile": "simple-profile",
+                 "status": {
+                   "admin-status": {
+                     "status": "vpn-common:admin-state-up"
+                   }
+                 },
+                 "connection": {
+                   "encapsulation": {
+                     "type": "dot1q",
+                     "dot1q": {
+                       "cvlan-id": 1
+                     }
+                   }
+                 },
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 137]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+                 "vpws-service-instance": {
+                   "local-vpws-service-instance": 1111,
+                   "remote-vpws-service-instance": 1112
+                 },
+                 "group": [
+                   {
+                     "group-id": "gr1",
+                     "ethernet-segment-identifier": "esi1"
+                   }
+                 ]
+               }
+             ]
+           },
+           {
+             "vpn-node-id": "pe2",
+             "ne-id": "198.51.100.2",
+             "active-global-parameters-profile": {
+               "global-parameters-profile": [
+                 {
+                   "profile-id": "simple-profile"
+                 }
+               ]
+             },
+             "vpn-network-access": [
+               {
+                 "id": "1/1/1.1",
+                 "port-id": "1/1/1",
+                 "description": "Interface to CE1",
+                 "global-parameters-profile": "simple-profile",
+                 "status": {
+                   "admin-status": {
+                     "status": "vpn-common:admin-state-up"
+                   }
+                 },
+                 "connection": {
+                   "encapsulation": {
+                     "type": "dot1q",
+                     "dot1q": {
+                       "cvlan-id": 1
+                     }
+                   }
+                 },
+                 "vpws-service-instance": {
+                   "local-vpws-service-instance": 1111,
+                   "remote-vpws-service-instance": 1112
+                 },
+                 "group": [
+                   {
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 138]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+                     "group-id": "gr1",
+                     "ethernet-segment-identifier": "esi1"
+                   }
+                 ]
+               }
+             ]
+           },
+           {
+             "vpn-node-id": "pe3",
+             "ne-id": "198.51.100.3",
+             "active-global-parameters-profile": {
+               "global-parameters-profile": [
+                 {
+                   "profile-id": "simple-profile"
+                 }
+               ]
+             },
+             "vpn-network-access": [
+               {
+                 "id": "1/1/1.1",
+                 "port-id": "1/1/1",
+                 "description": "Interface to CE2",
+                 "global-parameters-profile": "simple-profile",
+                 "status": {
+                   "admin-status": {
+                     "status": "vpn-common:admin-state-up"
+                   }
+                 },
+                 "connection": {
+                   "encapsulation": {
+                     "type": "dot1q",
+                     "dot1q": {
+                       "cvlan-id": 1
+                     }
+                   }
+                 },
+                 "vpws-service-instance": {
+                   "local-vpws-service-instance": 1112,
+                   "remote-vpws-service-instance": 1111
+                 },
+                 "group": [
+                   {
+                     "group-id": "gr1",
+                     "ethernet-segment-identifier": "esi2"
+                   }
+                 ]
+               }
+             ]
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 139]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+           },
+           {
+             "vpn-node-id": "pe4",
+             "ne-id": "198.51.100.4",
+             "active-global-parameters-profile": {
+               "global-parameters-profile": [
+                 {
+                   "profile-id": "simple-profile"
+                 }
+               ]
+             },
+             "vpn-network-access": [
+               {
+                 "id": "1/1/1.1",
+                 "port-id": "1/1/1",
+                 "description": "Interface to CE2",
+                 "global-parameters-profile": "simple-profile",
+                 "status": {
+                   "admin-status": {
+                     "status": "vpn-common:admin-state-up"
+                   }
+                 },
+                 "connection": {
+                   "encapsulation": {
+                     "type": "dot1q",
+                     "dot1q": {
+                       "cvlan-id": 1
+                     }
+                   }
+                 },
+                 "vpws-service-instance": {
+                   "local-vpws-service-instance": 1112,
+                   "remote-vpws-service-instance": 1111
+                 },
+                 "group": [
+                   {
+                     "group-id": "gr1",
+                     "ethernet-segment-identifier": "esi2"
+                   }
+                 ]
+               }
+             ]
+           }
+         ]
+       }
+     ]
+   }
+ }
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 140]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+     Figure 32: Example of L2NM Message Body to Configure a VPWS-EVPN
+                                 Instance
+
+A.6.  Automatic ESI Assignment
+
+   This section provides an example to illustrate how the L2NM can be
+   used to manage ESI auto-assignment.  We consider the sample EVPN
+   service delivered using the architecture depicted in Figure 33.
+
+              ES
+              |     +-----+      +--------------+   +-----+
+       +----+ |     | PE1 |======|              |===| PE3 |       +----+
+       |    +-------+     |      |              |   |     +-------+ CE3|
+       |    | |     +-----+      |              |   +-----+       +----+
+       | CE1| |                  |     Core     |
+       |    | |     +-----+      |              |   +-----+       +----+
+       |    +-------+     |      |              |   |     +-------+ CE2|
+       +----+ |     | PE2 |======|              |===| PE4 |       +----+
+            LACP    +-----+      +--------------+   +-----+
+
+             Figure 33: An Example of Automatic ESI Assignment
+
+   Figure 34 shows how the L2NM is used to instruct both PE1 and PE2 to
+   auto-assign the ESI to identify the ES used with CE1.  In this
+   example, we suppose that LACP is enabled and that a Type 1 (T=0x01)
+   is used as per Section 5 of [RFC7432].  Note that this example does
+   not include all the details to configure the EVPN service, but
+   focuses only on the ESI management part.
+
+   {
+     "ietf-l2vpn-ntw:vpn-services": {
+       "vpn-service": [
+         {
+           "vpn-id": "auto-esi-lacp",
+           "description": "Sample to illustrate auto-ESI",
+           "vpn-type": "vpn-common:vpls-evpn",
+           "ethernet-segments": {
+             "ethernet-segment": [
+               {
+                 "name": "esi1",
+                 "esi-type": "esi-type-1",
+                 "esi-redundancy-mode": "all-active"
+               }
+             ]
+           },
+           "vpn-node": [
+             {
+               "vpn-node-id": "pe1",
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 141]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+               "ne-id": "198.51.100.1",
+               "vpn-network-access": [
+                 {
+                   "id": "1/1/1.1",
+                   "port-id": "1/1/1",
+                   "description": "Interface to CE1",
+                   "global-parameters-profile": "simple-profile",
+                   "status": {
+                     "admin-status": {
+                       "status": "vpn-common:admin-state-up"
+                     }
+                   },
+                   "connection": {
+                     "lag-interface": {
+                       "lag-interface": [
+                         {
+                           "lag-interface-number": 1,
+                           "lacp": {
+                             "lacp-state": true,
+                             "system-id": "11:00:11:00:11:11",
+                             "admin-key": 154
+                           }
+                         }
+                       ]
+                     }
+                   },
+                   "group": [
+                     {
+                       "group-id": "gr1",
+                       "ethernet-segment-identifier": "esi1"
+                     }
+                   ]
+                 }
+               ]
+             },
+             {
+               "vpn-node-id": "pe2",
+               "ne-id": "198.51.100.2",
+               "vpn-network-access": [
+                 {
+                   "id": "2/2/2.5",
+                   "port-id": "2/2/2",
+                   "description": "Interface to CE1",
+                   "status": {
+                     "admin-status": {
+                       "status": "vpn-common:admin-state-up"
+                     }
+                   },
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 142]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+                   "connection": {
+                     "lag-interface": {
+                       "lag-interface": [
+                         {
+                           "lag-interface-number": 1,
+                           "lacp": {
+                             "lacp-state": true,
+                             "system-id": "11:00:11:00:11:11",
+                             "admin-key": 154
+                           }
+                         }
+                       ]
+                     }
+                   },
+                   "group": [
+                     {
+                       "group-id": "gr1",
+                       "ethernet-segment-identifier": "esi1"
+                     }
+                   ]
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     }
+   }
+
+
+    Figure 34: An Example of L2NM Message Body for ESI Auto-Assignement
+
+   The auto-assigned ESI can be retrieved using, e.g., a GET RESTCONF
+   method.  The assigned value will be then returned as shown in the
+   'esi-auto' data node in Figure 35.
+
+{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "auto-esi-lacp",
+        "description": "Sample to illustrate auto-ESI",
+        "vpn-type": "vpn-common:vpls-evpn",
+        "ethernet-segments": {
+          "ethernet-segment": [
+            {
+              "name": "esi1",
+              "esi-type": "esi-type-1",
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 143]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+              "esi-auto": {
+                "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
+                 11:9A:00:00"
+              },
+              "esi-redundancy-mode": "all-active"
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "198.51.100.1",
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+
+
+
+Barguil, et al.         Expires January 10, 2022              [Page 144]
+
+Internet-Draft                    L2NM                         July 2021
+
+
+            "ne-id": "198.51.100.2",
+            "vpn-network-access": [
+              {
+                "id": "2/2/2.5",
+                "port-id": "2/2/2",
+                "description": "Interface to CE1",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "lag-interface": {
+                    "lag-interface": [
+                      {
+                        "lag-interface-number": 1,
+                        "lacp": {
+                          "lacp-state": true,
+                          "system-id": "11:00:11:00:11:11",
+                          "admin-key": 154
+                        }
+                      }
+                    ]
+                  }
+                },
+                "group": [
+                  {
+                    "group-id": "gr1",
+                    "ethernet-segment-identifier": "esi1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
+    Figure 35: An Example of L2NM Message Body to Retrieve the Assigned
+                                    ESI
+
+Appendix B.  Initial BGP Layer 2 Encapsulation Types
 
 
 
@@ -8156,7 +8156,7 @@ Internet-Draft                    L2NM                         July 2021
              44    DS1 (SF) Nx64kbit/s with CAS      [RFC5086]
                    using Structure-aware
 
-Appendix D.  Initial PW Types
+Appendix C.  Initial PW Types
 
 
 
