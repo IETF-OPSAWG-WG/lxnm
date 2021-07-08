@@ -59,7 +59,7 @@ module ietf-l2vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-04-15 {
+  revision 2021-07-08 {
     description
       "Initial version.";
     reference
@@ -416,6 +416,27 @@ module ietf-l2vpn-ntw {
     base precedence-type;
     description
       "Identifies the backup VPN network access.";
+  }
+
+  identity pw-type {
+    description
+      "Identity for allowed LDP-based PW type.";
+    reference
+      "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                 Label Distribution Protocol (LDP) 
+                 Signaling, Section 6.1.1";
+  }
+
+  identity ethernet {
+    base pw-type ;
+    description
+      "Identity for PW Ethernet type.";
+  }
+
+  identity ethernet-tagged {
+    base pw-type ;
+    description
+      "Identity for PW Ethernet tagged mode type.";
   }
 
   /* Typedefs */
@@ -1403,12 +1424,27 @@ module ietf-l2vpn-ntw {
                     description
                       "T-LDP PW type.";
                   }
-                  leaf encapsulation-type {
+                  leaf pw-type {
                     type identityref {
-                      base vpn-common:encapsulation-type;
+                      base pw-type;
                     }
                     description
                       "PW encapsulation type.";
+                    reference
+                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                  Label Distribution Protocol (LDP) 
+                                  Signaling, Section 6.1.1";
+                  }
+                  leaf mac-addr-withdraw {
+                    type boolean;
+                    description
+                      "If set to 'true', then MAC address withdrawal
+                       is enabled.  If 'false', then MAC address withdrawal
+                       is disabled.";
+                    reference
+                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                  Label Distribution Protocol (LDP) 
+                                  Signaling, Section 6.2";
                   }
                   list ac-pw-list {
                     key "peer-addr vc-id";
@@ -1422,14 +1458,7 @@ module ietf-l2vpn-ntw {
                     leaf vc-id {
                       type vpn-common:vpn-id;
                       description
-                        "VC label used to identify PW.";
-                    }
-                    leaf pw-type {
-                      type identityref {
-                        base vpn-common:vpn-topology;
-                      }
-                      description
-                        "PW topology type.";
+                        "VC label used to identify a PW.";
                     }
                     leaf pw-priority {
                       type uint32;
