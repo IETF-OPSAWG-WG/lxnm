@@ -238,15 +238,14 @@
       YANG data model that can be used for Layer 2 Virtual Private Network
       (L2VPN) service ordering matters between customers and service providers
       (SPs). This document complements the L2SM by creating a network-centric
-      view of the service: the L2VPN Network Model (L2NM). </t>
+      view of the service: the L2VPN Network Model (L2NM).</t>
 
       <t>The L2NM can be exposed, for example, by a network to a service
       controller within the service providers network. In particular, the
       model can be used in the communication between the entity that interacts
       directly with the customer, the service orchestrator (either fully
       automated or a human operator), and the entity in charge of network
-      orchestration and control (a.k.a., network controller/orchestrator).
-      </t>
+      orchestration and control (a.k.a., network controller/orchestrator).</t>
 
       <t>The L2NM supports additional capabilities, such as exposing
       operational parameters, transport protocols selection and precedence. It
@@ -510,7 +509,7 @@
       target="iana-pw"></xref>) to identify a layer 2 encapsulation type.
       Relying upon these IANA-maintained modules is meant to provide more
       flexibility in handling new types rather than be limited by a set of
-      identities defined in the L2NM itself. </t>
+      identities defined in the L2NM itself.</t>
 
       <t>As discussed in <xref target="ref"></xref>, the L2NM is meant to
       manage L2VPN services within a service provider network. The module
@@ -1294,7 +1293,10 @@
    |     |     |  +--rw ce-range?
    |     |     |  |       uint16
    |     |     |  +--rw pw-encapsulation-type?
-   |     |     |          identityref
+   |     |     |  |       identityref
+   |     |     |  +--rw vpls-instance
+   |     |     |     +--rw vpls-edge-id?         uint16
+   |     |     |     +--rw vpls-edge-id-range?   uint16
    |     |     +--:(evpn-bgp)
    |     |        +--rw evpn-type?                leafref
    |     |        +--rw service-interface-type?
@@ -1341,25 +1343,21 @@
    |     |              +--rw backbone-src-mac?
    |     |                      yang:mac-address
    |     +--:(ldp)
-   |     |  +--rw t-ldp-pw-type?
-   |     |  |       identityref
-   |     |  +--rw encapsulation-type?
-   |     |  |       identityref
+   |     |  +--rw t-ldp-pw-type?   identityref
+   |     |  +--rw pw-type?         identityref
+   |     |  +--rw mac-addr-withdraw?
+   |     |  |       boolean
    |     |  +--rw ac-pw-list* [peer-addr vc-id]
    |     |  |  +--rw peer-addr      inet:ip-address
    |     |  |  +--rw vc-id          vpn-common:vpn-id
-   |     |  |  +--rw pw-type?       identityref
    |     |  |  +--rw pw-priority?   uint32
    |     |  +--rw qinq
    |     |     +--rw s-tag?   uint32
    |     |     +--rw c-tag?   uint32
    |     +--:(l2tp)
-   |        +--rw router-id?
-   |        |       rt-types:router-id
-   |        +--rw pseudowire-type?
-   |        |       identityref
-   |        +--rw agi?
-   |        |       uint32
+   |        +--rw router-id?       rt-types:router-id
+   |        +--rw pseudowire-type?     identityref
+   |        +--rw agi?                 uint32
    |        +--rw saii?                           uint8
    |        +--rw remote-forwarders* [peer-addr taii]
    |           +--rw peer-addr    inet:ip-address
@@ -1824,7 +1822,7 @@
       <section anchor="iana-bgp" title="IANA BGP Layer 2 Encapsulation Types">
         <t>The "iana-bgp-l2-encaps" YANG module (<xref
         target="iana-bgp"></xref>) is designed to echo the registry available
-        at <xref target="IANA-BGP-L2"></xref>. </t>
+        at <xref target="IANA-BGP-L2"></xref>.</t>
 
         <t><figure>
             <artwork><![CDATA[<CODE BEGINS>file "iana-bgp-l2-encaps@2021-07-05.yang"
@@ -2098,7 +2096,7 @@ module iana-bgp-l2-encaps {
       <section anchor="iana-pw" title="IANA Encapsulation Types">
         <t>The initial version of the "iana-pseudowire-types" YANG module
         (<xref target="iana-pw"></xref>) is designed to echo the registry
-        available at <xref target="IANA-PW-Types"></xref>. </t>
+        available at <xref target="IANA-PW-Types"></xref>.</t>
 
         <t><figure>
             <artwork><![CDATA[<CODE BEGINS>file "iana-pseudowire-types@2021-07-05.yang"
@@ -2445,7 +2443,7 @@ module iana-pseudowire-types {
         target="RFC8294"></xref>.</t>
 
         <figure align="center" anchor="module_YANG">
-          <artwork align="left"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-04-29.yang"
+          <artwork align="left"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-07-08.yang"
 module ietf-l2vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
@@ -2507,7 +2505,7 @@ module ietf-l2vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-04-15 {
+  revision 2021-07-08 {
     description
       "Initial version.";
     reference
@@ -2864,6 +2862,27 @@ module ietf-l2vpn-ntw {
     base precedence-type;
     description
       "Identifies the backup VPN network access.";
+  }
+
+  identity pw-type {
+    description
+      "Identity for allowed LDP-based PW type.";
+    reference
+      "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                 Label Distribution Protocol (LDP) 
+                 Signaling, Section 6.1.1";
+  }
+
+  identity ethernet {
+    base pw-type ;
+    description
+      "Identity for PW Ethernet type.";
+  }
+
+  identity ethernet-tagged {
+    base pw-type ;
+    description
+      "Identity for PW Ethernet tagged mode type.";
   }
 
   /* Typedefs */
@@ -3540,7 +3559,7 @@ module ietf-l2vpn-ntw {
             }
             container signaling-option {
               description
-                "List of VPN signaling options.";
+                "Container for the L2VPN signaling.";
               leaf mtu-pw {
                 type uint16;
                 description
@@ -3607,6 +3626,33 @@ module ietf-l2vpn-ntw {
                         }
                         description
                           "PW encapsulation type.";
+                      }
+                      container vpls-instance {
+                        when "derived-from-or-self(/l2vpn-ntw/vpn-services/vpn-service"
+                           + "/vpn-type, 'vpn-common:vpls')" {
+                          description
+                            "Only applies for VPLS.";
+                        }
+                        description
+                          "VPLS instance.";
+                        leaf vpls-edge-id {
+                          type uint16;
+                          description
+                            "VPLS Edge Identifier (VE ID). VE ID";
+                          reference
+                            "RFC 4761: Virtual Private LAN Service (VPLS)
+                                       Using BGP for Auto-Discovery and Signaling";
+                        }
+                        leaf vpls-edge-id-range {
+                          type uint16;
+                          description
+                            "Specifies the size of the range of VE ID in a VPLS
+                             service. The range controls the size of the label
+                             block advertised in the context of a VPLS instance.";
+                          reference
+                            "RFC 4761: Virtual Private LAN Service (VPLS)
+                                       Using BGP for Auto-Discovery and Signaling";
+                        }
                       }
                     }
                     case evpn-bgp {
@@ -3824,12 +3870,27 @@ module ietf-l2vpn-ntw {
                     description
                       "T-LDP PW type.";
                   }
-                  leaf encapsulation-type {
+                  leaf pw-type {
                     type identityref {
-                      base vpn-common:encapsulation-type;
+                      base pw-type;
                     }
                     description
                       "PW encapsulation type.";
+                    reference
+                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                  Label Distribution Protocol (LDP) 
+                                  Signaling, Section 6.1.1";
+                  }
+                  leaf mac-addr-withdraw {
+                    type boolean;
+                    description
+                      "If set to 'true', then MAC address withdrawal
+                       is enabled.  If 'false', then MAC address withdrawal
+                       is disabled.";
+                    reference
+                       "RFC 4762: Virtual Private LAN Service (VPLS) Using
+                                  Label Distribution Protocol (LDP) 
+                                  Signaling, Section 6.2";
                   }
                   list ac-pw-list {
                     key "peer-addr vc-id";
@@ -3843,14 +3904,7 @@ module ietf-l2vpn-ntw {
                     leaf vc-id {
                       type vpn-common:vpn-id;
                       description
-                        "VC label used to identify PW.";
-                    }
-                    leaf pw-type {
-                      type identityref {
-                        base vpn-common:vpn-topology;
-                      }
-                      description
-                        "PW topology type.";
+                        "VC label used to identify a PW.";
                     }
                     leaf pw-priority {
                       type uint32;
@@ -4581,8 +4635,8 @@ module ietf-l2vpn-ntw {
                         if-feature "vpn-common:qos";
                         type uint8;
                         description
-                          "Identifier of the CoS, indicated by 
-                           DSCP or a CE-CLAN CoS (802.1p) value in 
+                          "Identifier of the CoS, indicated by
+                           DSCP or a CE-CLAN CoS (802.1p) value in
                            the service frame.";
                       }
                       leaf cir {
@@ -5001,7 +5055,7 @@ module ietf-l2vpn-ntw {
       YANG identities for encapsulation/pseudowires types. These identities
       are intended to be referenced by other YANG modules, and by themselves
       do not expose any nodes which are writable, contain read-only state, or
-      RPCs. </t>
+      RPCs.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -5389,12 +5443,250 @@ module ietf-l2vpn-ntw {
         <t></t>
       </section>
 
+      <section anchor="bgp-vpls" title="BGP-based VPLS">
+        <t>This section provides an example to illustrate how the L2NM can be
+        used to mange BGP-based VPLS. We consider the sample VPLS service
+        delivered using the architecture depicted in <xref
+        target="vpls-ex "></xref>. In accordance with <xref
+        target="RFC4761"></xref>, we assume that a full mesh is established
+        between all PEs. The details about such full mesh are not detailed
+        here. </t>
+
+        <t><figure align="center" anchor="vpls-ex" title="An Example of VPLS">
+            <artwork><![CDATA[ 
+                   
+                   +-----+      +--------------+   +-----+    
+      +----+       | PE1 |======|              |===| PE3 |       +----+
+      | CE1+-------+     |      |              |   |     +-------+ CE3|
+      +----+       +-----+      |              |   +-----+       +----+
+                                |     Core     |                 
+      +----+       +-----+      |              |   +-----+       +----+
+      |CE2 +-------+     |      |              |   |     +-------+ CE4|
+      +----+       | PE2 |======|              |===| PE4 |       +----+
+                   +-----+      +--------------+   +-----+          
+ ]]></artwork>
+          </figure><xref target="l2nm-vpls"></xref> show an example of a
+        message body used to configured a VPLS instance using the L2NM. In
+        this example, BGP is used for both auto-discovery and signaling. </t>
+
+        <t><figure align="center" anchor="l2nm-vpls">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "vpls7714825356",
+        "description": "Sample BGP-based VPLS",
+        "customer-name": "customer_7714825356",
+        "vpn-type": "vpn-common:vpls",
+        "bgp-ad-enabled": true,
+        "signaling-type": "vpn-common:l2vpn-bgp",
+        "global-parameters-profiles": {
+          "global-parameters-profile": [
+            {
+              "profile-id": "simple-profile",
+              "local-autonomous-system": 65550,
+              "mtu": 1518,
+              "rd-suffix": "1",
+              "vpn-targets": {
+                "vpn-target": [
+                  {
+                    "id": "1",
+                    "route-targets": [
+                      "0:65550:1"
+                    ],
+                    "route-target-type": "both"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "vpn-node": [
+          {
+            "vpn-node-id": "pe1",
+            "ne-id": "198.51.100.1",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "bgp-auto-discovery": {
+              "vpn-id": "1"
+            },
+            "signaling-option": {
+              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+              "vpls-instance": {
+                "vpls-edge-id": "1",
+                "vpls-edge-id-range": "100"
+              }
+            },
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE1",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "encapsulation": {
+                    "type": "dot1q",
+                    "dot1q": {
+                      "cvlan-id": 1
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe2",
+            "ne-id": "198.51.100.2",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "bgp-auto-discovery": {
+              "vpn-id": "1"
+            },
+            "signaling-option": {
+              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+              "vpls-instance": {
+                "vpls-edge-id": "2",
+                "vpls-edge-id-range": "100"
+              }
+            },
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE2",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "encapsulation": {
+                    "type": "dot1q",
+                    "dot1q": {
+                      "cvlan-id": 1
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe3",
+            "ne-id": "198.51.100.3",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "bgp-auto-discovery": {
+              "vpn-id": "1"
+            },
+            "signaling-option": {
+              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+              "vpls-instance": {
+                "vpls-edge-id": "3",
+                "vpls-edge-id-range": "100"
+              }
+            },
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE3",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "encapsulation": {
+                    "type": "dot1q",
+                    "dot1q": {
+                      "cvlan-id": 1
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "vpn-node-id": "pe4",
+            "ne-id": "198.51.100.4",
+            "active-global-parameters-profile": {
+              "global-parameters-profile": [
+                {
+                  "profile-id": "simple-profile"
+                }
+              ]
+            },
+            "bgp-auto-discovery": {
+              "vpn-id": "1"
+            },
+            "signaling-option": {
+              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+              "vpls-instance": {
+                "vpls-edge-id": "4",
+                "vpls-edge-id-range": "100"
+              }
+            },
+            "vpn-network-access": [
+              {
+                "id": "1/1/1.1",
+                "port-id": "1/1/1",
+                "description": "Interface to CE4",
+                "global-parameters-profile": "simple-profile",
+                "status": {
+                  "admin-status": {
+                    "status": "vpn-common:admin-state-up"
+                  }
+                },
+                "connection": {
+                  "encapsulation": {
+                    "type": "dot1q",
+                    "dot1q": {
+                      "cvlan-id": 1
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+]]></artwork>
+          </figure></t>
+
+        <t></t>
+      </section>
+
       <section anchor="evpn-vpws-app" title="EVPN-VPWS Service Instance">
         <t><xref target="vpws-evpn-ex"></xref> depictes a sample architecture
         to offer VPWS-EVPN service between CE1 and CE2. Both CEs are
         multi-homed. BGP sessions are maintained between these PEs as per
         <xref target="RFC8214"></xref>. In this EVPN instance, an All-Active
-        redundancy mode is used. </t>
+        redundancy mode is used.</t>
 
         <t><figure align="center" anchor="vpws-evpn-ex"
             title="An Example of VPWS-EVPN">
@@ -5416,7 +5708,7 @@ module ietf-l2vpn-ntw {
 
         <t><xref target="vpws-evpn-ex"></xref> shows a simplified
         configuration to illustrate the use of the L2NM to configured
-        VPWS-EVPN instance. </t>
+        VPWS-EVPN instance.</t>
 
         <t><figure align="center" anchor="l2nm-vpws-evpn">
             <artwork><![CDATA[{
