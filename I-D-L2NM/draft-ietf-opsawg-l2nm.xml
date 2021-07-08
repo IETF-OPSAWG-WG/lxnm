@@ -6529,6 +6529,251 @@ module ietf-l2vpn-ntw {
 ]]></artwork>
           </figure></t>
       </section>
+
+  <section anchor="vpls-ldp" title="LDP based VPLS">
+  <t>This section provides an example to illustrate how the L2NM can be
+  used to manage a VPLS with LDP signaling. The connectivity between the 
+  CE and the PE are direct using Dot1Q encapsulation. We consider the sample 
+  service delivered using the architecture depicted in <xref
+  target="vpls-ldp-ex"></xref>.</t>
+
+
+            <t><figure align="center" anchor="vpls-ldp-ex"
+            title="An Example of VPLS topology ">
+            <artwork><![CDATA[ 
+                
+                  +-----------  VPLS "1543" ------------+
+                                                           
+                  +-----+      +--------------+   +-----+    
+      +----+      | PE1 |======|              |===| PE2 |       +----+
+      | CE1 +-----+     |      |     MPLS     |   |     +-------+ CE2|
+      +----+      +-----+      |              |   +-----+       +----+
+                               |     Core     |                 
+                               +--------------+           
+        ]]></artwork>
+    </figure></t>
+
+    <t><xref target="vpls-ldp-call"></xref> shows how the L2NM is used to
+        instruct both PE1 and PE2 to use the targeted LDP session between them
+        to stablish the VPLS "1543" between the ends. A single VPN service is 
+        created for this purpose. Additionally, two VPN Nodes and each with a 
+        corresponding VPN Network Access is also created. </t>
+
+<t><figure>
+          <artwork align="center"><![CDATA[
+"l2vpn-ntw": {
+  "vpn-services": {
+    "vpn-service": {
+      "vpn-id": "450",
+      "vpn-name": "BANCO_EXAMPLE_CORP",
+      "vpn-description": "SEDE_CENTRO_450",
+      "customer-name": "EXAMPLE",
+      "vpn-type": {
+        "vpn-common:vpls"
+      },
+      "vpn-service-topology": {
+        "vpn-common:hub-spoke"
+      },
+      "signaling-type": {
+        "vpn-common:ldp-signaling"
+      },
+      "global-parameters-profiles": {
+        "global-parameters-profile": {
+          "ce-vlan-preservation": "true",
+          "ce-vlan-cos-perservation": "true"
+        }
+      },
+      "underlay-transport": {
+        "protocol": {
+          "vpn-common:ldp"
+        }
+      },
+      "vpn-nodes": [
+      {
+        "vpn-node": {
+          "vpn-node-id": "450",
+          "description": "SEDE_CENTRO_450",
+          "ne-id": "10.220.30.2",
+          "role": {
+            "vpn-common:spoke-role"
+          },
+          "status": {
+            "admin-status": {
+              "status": {
+                "vpn-common:admin-up"
+              }
+            }
+          },
+          "signaling-option":  [
+              {
+           "t-ldp-pw-type": "vpls-type"
+              }
+          ]
+           
+            "ac-pw-list": [
+              {
+            "peer-addr": "10.220.40.2"
+            "vc-id": "1543"
+              }             
+            ]
+          },
+          "vpn-network-accesses": { 
+            "vpn-network-access": {
+              "id": "4508671287",
+              "description": "VPN_450_SNA",
+              "port-id": "gigabithethernet0/0/1",
+              "status": {
+                "admin-status": {
+                  "status": {
+                    "vpn-common:admin-up"
+                  }
+                }
+              },
+              "connection": {
+                "l2-termination-point": "550",
+                "encapsulation": {
+                  "type": {
+                    "vpn-common:dot1q"
+                  },
+                  "dot1q": {
+                    "tag-type": {
+                      "vpn-common:c-vlan"
+                    },
+                    "cvlan-id": "550"
+                  }
+                }
+              },
+              "service": {
+                "mtu": "1550",
+                "svc-input-bandwidth": {
+                  "input-bandwidth": {
+                    "type": {
+                      "vpn-common:bw-per-service"
+                    },
+                    "cir": "20480000",
+                    "cbs": "20480000"
+                  }
+                },
+                "svc-output-bandwidth": {
+                  "output-bandwidth": {
+                    "type": {
+                       "vpn-common:bw-per-port"
+                    },
+                    "cir": "20480000",
+                    "cbs": "20479987"
+                  }
+                },
+                "qos": {
+                  "qos-profile": {
+                    "qos-profile": {
+                      "profile": "QoS_Profile_A",
+                      "direction": { 
+                          "vpn-common:both"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "vpn-node": {
+          "vpn-node-id": "451",
+          "description": "SEDE_CHAPINERO_451",
+          "ne-id": "10.220.40.2",
+          "role": {
+            "vpn-common:spoke-role"
+          },
+          "status": {
+            "admin-status": {
+              "status": {
+                "vpn-common:admin-up"
+              }
+            }
+          },
+          "signaling-option":  [
+              {
+           "t-ldp-pw-type": "vpls-type"
+              }
+          ]
+           
+            "ac-pw-list": [
+              {
+            "peer-addr": "10.220.30.2"
+            "vc-id": "1543"
+              }             
+            ]
+          },
+          "vpn-network-accesses": {
+            "vpn-network-access": {
+              "id": "4508671288",
+              "description": "VPN_450_SNA",
+              "port-id": "gigabithethernet0/0/1",
+              "status": {
+                "admin-status": {
+                  "status": {
+                    "vpn-common:admin-up"
+                  }
+                }
+              },
+              "connection": {
+                "l2-termination-point": "550",
+                "encapsulation": {
+                  "type": {
+                    "vpn-common:dot1q"
+                  },
+                  "dot1q": {
+                    "tag-type": {
+                      "vpn-common:c-vlan"
+                    },
+                    "cvlan-id": "550"
+                  }
+                }
+              },
+              "service": {
+                "mtu": "1550",
+                "svc-input-bandwidth": {
+                  "input-bandwidth": {
+                    "type": {
+                      "vpn-common:bw-per-service"
+                    },
+                    "cir": "20480000",
+                    "cbs": "20480000"
+                  }
+                },
+                "svc-output-bandwidth": {
+                  "output-bandwidth": {
+                    "type": {
+                       "vpn-common:bw-per-port"
+                    },
+                    "cir": "20480000",
+                    "cbs": "20479987"
+                  }
+                },
+                "qos": {
+                  "qos-profile": {
+                    "qos-profile": {
+                      "profile": "QoS_Profile_A",
+                      "direction": { 
+                          "vpn-common:both"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } 
+    ]
+  }
+}
+]]></artwork>
+        </figure></t>
+  </section>
+
     </section>
 
     <section anchor="bet" title="Initial BGP Layer 2 Encapsulation Types">
