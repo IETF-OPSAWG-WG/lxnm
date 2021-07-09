@@ -892,7 +892,8 @@ module ietf-l2vpn-ntw {
                              Forwarder Election Extensibility";
               }
               leaf preference {
-                when "../df-election-method = 'preference'" {
+                when "derived-from-or-self(../df-election-method, "
+                   + "'preference')" {
                   description
                     "The preference value is only applicable
                      to the preference based method.";
@@ -906,7 +907,8 @@ module ietf-l2vpn-ntw {
                              Forwarder Election Extensibility";
               }
               leaf revertive {
-                when "../df-election-method = 'preference'" {
+                when "derived-from-or-self(../df-election-method, "
+                   + "'preference')" {
                   description
                     "The revertive value is only applicable
                      to the preference method.";
@@ -941,6 +943,22 @@ module ietf-l2vpn-ntw {
                  with an MPLS label that identifies the origin ES.";
               reference
                 "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+            }
+            container pbb {
+              description
+                "Provider Backbone Bridging parameters .";
+              reference
+                "IEEE 802.1ah: Provider Backbone Bridge";
+              leaf backbone-src-mac {
+                type yang:mac-address;
+                description
+                  "The PEs connected to the same CE must share the 
+                   same Provider Backbone (B-MAC) address in 
+                   All-Active mode.";
+                reference
+                  "RFC 7623: Provider Backbone Bridging Combined with 
+                             Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
+              }
             }
           }
         }
@@ -1109,7 +1127,8 @@ module ietf-l2vpn-ntw {
                 description
                   "Choice for the signaling-option.";
                 case bgp {
-                  when "./type = 'vpn-common:bgp-signaling'" {
+                  when "derived-from-or-self(./type, "
+                     + "'vpn-common:bgp-signaling')" {
                     description
                       "Only applies when VPN signaling type is BGP.";
                   }
@@ -1368,14 +1387,24 @@ module ietf-l2vpn-ntw {
                           }
                         }
                         container pbb {
+                          when "derived-from-or-self(./evpn-type,"
+                             + " 'evpn-pbb')" {
+                            description
+                              "Only applies for PBB EVPN.";
+                          }
                           description
                             "PBB parameters container.";
                           reference
-                            "IEEE 802.1ah Provider Backbone Bridge";
+                            "IEEE 802.1ah: Provider Backbone Bridge";
                           leaf backbone-src-mac {
                             type yang:mac-address;
                             description
-                              "Includes backbone-src-mac.";
+                              "Includes provider backbone MAC (B-MAC)
+                               address.";
+                            reference
+                              "RFC 7623: Provider Backbone Bridging
+                                         Combined with Ethernet VPN
+                                         (PBB-EVPN), Section 8.1";
                           }
                         }
                       }
@@ -1435,7 +1464,8 @@ module ietf-l2vpn-ntw {
                     description
                       "Choice of LDP or L2TP-signaled PWs";
                     case ldp {
-                      when "./type = 'vpn-common:ldp-signaling'" {
+                      when "derived-from-or-self(../type, "
+                         + "'vpn-common:ldp-signaling')" {
                         description
                           "Only applies when VPN signaling type is Target
                            LDP.";
@@ -1525,7 +1555,8 @@ module ietf-l2vpn-ntw {
                       }
                     }
                     case l2tp {
-                      when "./type = 'vpn-common:l2tp-signaling'" {
+                      when "derived-from-or-self(../type, "
+                         + "'vpn-common:l2tp-signaling')" {
                         description
                           "Applies when VPN signaling type is L2TP.";
                       }
@@ -1592,7 +1623,7 @@ module ietf-l2vpn-ntw {
                 uses vpn-common:service-status;
                 container connection {
                   description
-                    "Container for bearer and AC";
+                    "Container for bearer and AC.";
                   leaf l2-termination-point {
                     type vpn-common:vpn-id;
                     description
@@ -1891,8 +1922,8 @@ module ietf-l2vpn-ntw {
                               leaf enable {
                                 type boolean;
                                 description
-                                  "Indicate whether support oam 802.3 ah
-                                   link";
+                                  "Indicate whether support OAM 802.3 ah
+                                   link.";
                               }
                             }
                           }
