@@ -787,7 +787,7 @@
                     <t hangText="'l2vpn-bgp':">The service is a Multipoint
                     VPLS that uses a BGP control plane as described in <xref
                     target="RFC4761"></xref> and <xref
-                    target="RFC6624"></xref>. </t>
+                    target="RFC6624"></xref>.</t>
 
                     <t hangText="'evpn-bgp':">The service is a Multipoint VPLS
                     that uses also a BGP control plane, but also includes the
@@ -1349,7 +1349,7 @@
             </figure></t>
         </section>
 
-        <section anchor="signaling_options" title="Signaling Option">
+        <section anchor="signaling_options" title="Signaling Options">
           <t>The 'signaling-option' container (<xref target="so"></xref>)
           defines a set of data nodes for a given signaling protocol that is
           used for an L2VPN service. As discussed in <xref
@@ -1410,8 +1410,11 @@
               specific case of VPLS, the VPLS Edge ID (VE ID, 'vpls-edge-id')
               and a VE ID range ('vpls-edge-id-range') are provided as per
               Section 3.2 of <xref target="RFC4761"></xref>. <vspace
-              blankLines="1" />For EVPN-related L2VPNs, a set of policies can
-              be provided such as MAC address learning mode, ingress
+              blankLines="1" />For EVPN-related L2VPNs,
+              'service-interface-type' indicates whether this is VLAN-based,
+              VLAN bundle, or VLAN-aware bundle service interface (Section 6
+              of <xref target="RFC7432"></xref>). Moreover, a set of policies
+              can be provided such as MAC address learning mode, ingress
               replication, Address Resolution Protocol (ARP) and Nighbour
               Discovery (ND) proxy, processing of Broadcast, unknown unicast,
               or multicast (BUM), etc. <figure align="center" anchor="so-bgp"
@@ -1996,8 +1999,14 @@
                 </figure></t>
 
               <t hangText="'mac-policies':">Lists a set of MAC-related
-              policies. When provided, the value of these data nodes take
-              precendence over the one inlcudes at the
+              policies such as MAC ACLs. An ACL can be based on source MAC
+              address, source MAC address mask, destination MAC address , and
+              destination MAC address mask. A data frame that matches an ACL
+              can be dropped, flooded, or trigger an alarm. A rate-limit
+              policy can be defined for handling frames that match an ACL
+              entry with 'flood' action. <vspace blankLines="1" />When
+              'mac-loop-prevention' or 'mac-addr-limit' data nodes are
+              provided, they take precendence over the one inlcudes at the
               'global-parameters-profile' at the VPN service or VPN node
               levels.<figure align="center" anchor="mac-policies-tree"
                   title="MAC Policies Subtree">
@@ -2752,6 +2761,10 @@ module ietf-l2vpn-ntw {
   feature oam-3ah {
     description
       "Indicates the support of OAM 802.3ah.";
+    reference
+      "IEEE Std 802.3ah: Media Access Control Parameters, Physical
+                         Layers, and  Management Parameters for
+                         Subscriber Access Networks";
   }
 
   /* Identities */
@@ -2899,49 +2912,6 @@ module ietf-l2vpn-ntw {
     base vpn-common:multicast-gp-address-mapping;
     description
       "Identity for multicast group mapping type.";
-  }
-
-  identity protection-mode {
-    description
-      "Identity of protection mode";
-  }
-
-  identity oneplusone {
-    base protection-mode;
-    description
-      "Identity for a scheme where the primary circuit will be
-       protected by a backup circuit, typically meeting certain
-       diverse path/fiber/site/node criteria.  Both primary and
-       protection circuits are provisioned to be in the active
-       forward ing state. The subscriber may choose to send the
-       same service frames across both circuits simultaneously.";
-  }
-
-  identity one-to-one {
-    base protection-mode;
-    description
-      "IIdentity for a scheme where a backup circuit to the primary
-       circuit is provisioned.  Depending on the implementation
-       agreement, the protection circuits may either always be
-       in active forwarding state, or may only become active when
-       a faulty state is detected on the primary circuit.";
-  }
-
-  identity policing {
-    description
-      "Identity of policing type.";
-  }
-
-  identity one-rate-two-color {
-    base policing;
-    description
-      "Identity of one-rate, two-color (1R2C).";
-  }
-
-  identity two-rate-three-color {
-    base policing;
-    description
-      "Identity of two-rate, three-color (2R3C).";
   }
 
   identity loop-prevention-type {
@@ -3136,6 +3106,9 @@ module ietf-l2vpn-ntw {
   grouping cfm-802-grouping {
     description
       "Grouping for 802.1ag CFM attributes.";
+    reference
+      "IEEE Std 802-1ag: Virtual Bridged Local Area Networks
+                         Amendment 5: Connectivity Fault Management";
     leaf maid {
       type string;
       description
@@ -3196,6 +3169,10 @@ module ietf-l2vpn-ntw {
   grouping y-1731 {
     description
       "Grouping for y.1731";
+    reference
+      "ITU-T Y-1731:  Operations, administration and maintenance
+                      (OAM) functions and mechanisms for
+                      Ethernet-based networks";
     list y-1731 {
       key "maid";
       description
@@ -5286,6 +5263,7 @@ module ietf-l2vpn-ntw {
     }
   }
 }
+
 <CODE ENDS>           ]]></artwork>
         </figure>
       </section>
@@ -6381,7 +6359,7 @@ module ietf-l2vpn-ntw {
           </figure></t>
       </section>
 
-      <section anchor="evpn-vpws-app" title="EVPN-VPWS Service Instance">
+      <section anchor="evpn-vpws-app" title="VPWS-EVPN Service Instance">
         <t><xref target="vpws-evpn-ex"></xref> depictes a sample architecture
         to offer VPWS-EVPN service between CE1 and CE2. Both CEs are
         multi-homed. BGP sessions are maintained between these PEs as per
@@ -6417,7 +6395,7 @@ module ietf-l2vpn-ntw {
     "vpn-service": [
       {
         "vpn-id": "vpws15432855",
-        "description": "Sample EVPN-VPWS",
+        "description": "Sample VPWS-EVPN",
         "customer-name": "customer_15432855",
         "vpn-type": "vpn-common:vpws-evpn",
         "bgp-ad-enabled": true,
