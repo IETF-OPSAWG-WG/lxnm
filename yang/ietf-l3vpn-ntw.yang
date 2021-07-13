@@ -734,10 +734,14 @@ module ietf-l3vpn-ntw {
                   description
                     "Identifier for the network access.";
                 }
-                leaf port-id {
-                  type vpn-common:vpn-id;
+                leaf interface-id {
+                  type string;
                   description
-                    "Identifier for the interface.";
+                    "Identifier for the physical or logical 
+                     interface.
+                     The identification of the sub-interface
+                     is provided at the connection and/or IP
+                     connection levels.";
                 }
                 leaf description {
                   type string;
@@ -894,6 +898,10 @@ module ietf-l3vpn-ntw {
                           }
                           description
                             "Neighbor reference.";
+                          reference
+                            "RFC 4447: Pseudowire Setup and Maintenance
+                                       Using the Label Distribution Protocol
+                                       (LDP), Section-5.2";
                         }
                       }
                       container vpls {
@@ -950,13 +958,13 @@ module ietf-l3vpn-ntw {
                     }
                   }
                   leaf l2-termination-point {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a reference to a local layer 2
                        termination point such as a layer 2 sub-interface.";
                   }
                   leaf local-bridge-reference {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a local bridge reference to
                        accommodate, for example, implementations
@@ -976,7 +984,7 @@ module ietf-l3vpn-ntw {
                   description
                     "Defines IP connection parameters.";
                   leaf l3-termination-point {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a reference to a local layer 3
                        termination point such as a bridge domain
@@ -1021,15 +1029,10 @@ module ietf-l3vpn-ntw {
                       description
                         "Choice of the IPv4 address allocation.";
                       case provider-dhcp {
-                        when "derived-from-or-self(./address-"
-                           + "allocation-type, 'provider-dhcp')" {
-                          description
-                            "Only applies when addresses are allocated
-                             by DHCP that is operated by the provider.";
-                        }
                         description
-                          "DHCP allocated addresses related
-                           parameters.";
+                          "DHCP allocated addresses related 
+                           parameters. IP addresses are allocated
+                           by DHCP that is operated by the provider";
                         leaf dhcp-service-type {
                           type enumeration {
                             enum server {
@@ -1050,10 +1053,10 @@ module ietf-l3vpn-ntw {
                           description
                             "Choice based on the DHCP service type.";
                           case relay {
-                            when "./dhcp-service-type = 'relay'";
                             description
                               "Container for list of provider's DHCP
-                               servers.";
+                               servers (i.e., dhcp-service-type is set 
+                               to relay).";
                             leaf-list server-ip-address {
                               type inet:ipv4-address;
                               description
@@ -1063,7 +1066,6 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           case server {
-                            when "./dhcp-service-type = 'server'";
                             description
                               "A choice about how addresses are assigned
                                when a local DHCP server is enabled.";
@@ -1130,14 +1132,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case dhcp-relay {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'provider-dhcp-relay')" {
-                          description
-                            "Only applies when the provider is required
-                             to implement a DHCP relay function that
-                             will relay DHCP requests to a customer's
-                             DHCP server.";
-                        }
                         description
                           "DHCP relay is provided by the operator.";
                         container customer-dhcp-servers {
@@ -1153,12 +1147,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case static-addresses {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'static-address')" {
-                          description
-                            "Only applies when address allocation
-                             type is static.";
-                        }
                         description
                           "Lists the IPv4 addresses that are used.";
                         leaf primary-address {
@@ -1250,11 +1238,6 @@ module ietf-l3vpn-ntw {
                           description
                             "Choice based on the DHCPv6 service type.";
                           case provider-dhcp-servers {
-                            when "./dhcp-service-type = 'relay'";
-                            description
-                              "Case where a local DHCPv6 relay is
-                               enabled. This list is used if and only
-                               if a DHCP relay is enabled.";
                             leaf-list server-ip-address {
                               type inet:ipv6-address;
                               description
@@ -1263,10 +1246,6 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           case server {
-                            when "./dhcp-service-type = 'server'";
-                            description
-                              "Case where a local DHCPv6 server is
-                               enabled.";
                             choice address-assign {
                               default "number";
                               description
@@ -1327,14 +1306,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case dhcp-relay {
-                        when "derived-from-or-self(./address-allo"
-                           + "cation-type, 'provider-dhcp-relay')" {
-                          description
-                            "Only applies when the provider is required
-                             to implement DHCP relay function that will
-                             relay DHCPv6 requests to a customer's DHCP
-                             server.";
-                        }
                         description
                           "DHCPv6 relay provided by the operator.";
                         container customer-dhcp-servers {
@@ -1350,12 +1321,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case static-addresses {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'static-address')" {
-                          description
-                            "Only applies when protocol allocation type
-                             is static.";
-                        }
                         description
                           "IPv6-specific parameters for static
                            allocation.";
@@ -1631,7 +1596,7 @@ module ietf-l3vpn-ntw {
                            prepended to the BGP route updates
                            for this access. To disable that
                            behavior, the prepend-global-as
-                           must be set to 'true'. In such a case,
+                           must be set to 'false'. In such a case,
                            the ASN that is provided at
                            the VPN node level is not prepended to
                            the BGP route updates for this access.";
@@ -1951,7 +1916,7 @@ module ietf-l3vpn-ntw {
                           description
                             "Creates a sham link with another site.";
                           leaf target-site {
-                            type vpn-common:vpn-id;
+                            type string;
                             description
                               "Target site for the sham link connection.
                                The site is referred to by its ID.";
@@ -2515,25 +2480,28 @@ module ietf-l3vpn-ntw {
                 container service {
                   description
                     "Service parameters of the attachment.";
-                  leaf input-bandwidth {
-                    if-feature "vpn-common:input-bw";
+                  leaf inbound-bandwidth {
+                    if-feature "vpn-common:inbound-bw";
                     type uint64;
                     units "bps";
                     description
                       "From the customer site's perspective, the
-                       service input bandwidth of the connection
+                       service inbound bandwidth of the connection
                        or download bandwidth from the SP to
-                       the site.";
+                       the site. Note that the L3SM uses 'input-
+                       -bandwidth' to refer to the same concept.";
                   }
-                  leaf output-bandwidth {
-                    if-feature "vpn-common:output-bw";
+                  leaf outbound-bandwidth {
+                    if-feature "vpn-common:outbound-bw";
                     type uint64;
                     units "bps";
                     description
                       "From the customer site's perspective,
-                       the service output bandwidth of the
+                       the service oubound bandwidth of the
                        connection or upload bandwidth from
-                       the site to the SP.";
+                       the site to the SP. Note that the L3SM uses 
+                       'output-bandwidth' to refer to the same 
+                       concept.";
                   }
                   leaf mtu {
                     type uint16;
