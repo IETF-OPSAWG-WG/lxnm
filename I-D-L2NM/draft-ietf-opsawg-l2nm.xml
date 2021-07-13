@@ -212,7 +212,7 @@
 
       <t>Also, the document defines the initial versions of two
       IANA-maintained modules that defines a set of identities of BGP Layer 2
-      encapsulation types and pseudowire types. </t>
+      encapsulation types and pseudowire types.</t>
     </abstract>
 
     <note title="Editorial Note (To be removed by RFC Editor)">
@@ -525,7 +525,7 @@
 
       <t>Also, the L2NM uses the IANA-maintained modules "iana-bgp-l2-encaps"
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
-      target="iana-pw"></xref>) to identify a layer 2 encapsulation type. </t>
+      target="iana-pw"></xref>) to identify a layer 2 encapsulation type.</t>
 
       <t>As discussed in <xref target="ref"></xref>, the L2NM is meant to
       manage L2VPN services within a service provider network. The module
@@ -729,10 +729,10 @@
            +--rw status
            |  +--rw admin-status
            |  |  +--rw status?         identityref
-           |  |  +--rw last-updated?   yang:date-and-time
+           |  |  +--rw last-change?   yang:date-and-time
            |  +--ro oper-status
            |     +--ro status?         identityref
-           |     +--ro last-updated?   yang:date-and-time
+           |     +--ro last-change?   yang:date-and-time
            +--rw vpn-nodes
               ...     ]]></artwork>
         </figure>
@@ -1537,7 +1537,7 @@
    |              |  |       [peer-addr vc-id]
    |              |  |  +--rw peer-addr
    |              |  |  |       inet:ip-address
-   |              |  |  +--rw vc-id   vpn-common:vpn-id
+   |              |  |  +--rw vc-id   string
    |              |  |  +--rw pw-priority?   uint32
    |              |  +--rw qinq
    |              |     +--rw s-tag?   uint32
@@ -1661,7 +1661,7 @@
                     +--rw vpn-network-access* [id]
                        +--rw id                        vpn-common:vpn-id
                        +--rw description?              string
-                       +--rw port-id?                  vpn-common:vpn-id
+                       +--rw interface-id?             string
                        +--rw global-parameters-profile?   leafref
                        +--rw status
                        |  ...
@@ -1706,9 +1706,9 @@
                        ...
                        +--rw connection
                        |  +--rw l2-termination-point?
-                       |  |       vpn-common:vpn-id
+                       |  |       string
                        |  +--rw local-bridge-reference?
-                       |  |       vpn-common:vpn-id
+                       |  |       string
                        |  +--rw bearer-reference?         string
                        |  |       {vpn-common:bearer-reference}?
                        |  +--rw encapsulation
@@ -1909,9 +1909,9 @@
                        ...
                        +--rw service
                           +--rw mtu?            uint32
-                          +--rw svc-input-bandwidth
+                          +--rw svc-inbound-bandwidth
                           |  ...
-                          +--rw svc-output-bandwidth
+                          +--rw svc-outbound-bandwidth
                           |  ...
                           +--rw qos {vpn-common:qos}?
                           |  ...
@@ -1927,7 +1927,7 @@
               access.</t>
 
               <t
-              hangText="'svc-input-bandwidth' and 'svc-output-bandwidth':">Specify
+              hangText="'svc-inbound-bandwidth' and 'svc-outbound-bandwidth':">Specify
               the service bandwidth for the L2VPN service. It can be
               represented using the Committed Information Rate (CIR), the
               Excess Information Rate (EIR), or the Peak Information Rate
@@ -1947,19 +1947,19 @@
 
                   <t hangText="'bw-per-service':">The bandwidth is per L2VPN
                   service.</t>
-                </list><vspace blankLines="1" />'svc-input-bandwidth'
+                </list><vspace blankLines="1" />'svc-inbound-bandwidth'
               indicates the inbound bandwidth of the connection (i.e.,
               download bandwidth from the service provider to the site).
-              <vspace blankLines="1" />'svc-output-bandwidth' indicates the
+              <vspace blankLines="1" />'svc-outbound-bandwidth' indicates the
               outbound bandwidth of the connection (i.e., upload bandwidth
               from the site to the service provider).<vspace
               blankLines="1" /><figure align="center" anchor="bwtree"
                   title="Service Bandwidth Subtree">
                   <artwork align="center"><![CDATA[                       +--rw service
                           ...
-                          +--rw svc-input-bandwidth
-                          |       {vpn-common:input-bw}?
-                          |  +--rw input-bandwidth* [type]
+                          +--rw svc-inbound-bandwidth
+                          |       {vpn-common:inbound-bw}?
+                          |  +--rw inbound-bandwidth* [type]
                           |     +--rw type      identityref
                           |     +--rw cos-id?   uint8
                           |     |       {vpn-common:qos}?
@@ -1969,9 +1969,9 @@
                           |     +--rw ebs?      uint64
                           |     +--rw pir?      uint64
                           |     +--rw pbs?      uint64
-                          +--rw svc-output-bandwidth
-                          |       {vpn-common:output-bw}?
-                          |  +--rw output-bandwidth* [type]
+                          +--rw svc-outbound-bandwidth
+                          |       {vpn-common:outbound-bw}?
+                          |  +--rw outbound-bandwidth* [type]
                           |     +--rw type      identityref
                           |     +--rw cos-id?   uint8
                           |     |       {vpn-common:qos}?
@@ -2911,7 +2911,7 @@ module ietf-l2vpn-ntw {
   }
 
   identity vlan-based-service-interface {
-    base evpn-redundancy-mode;
+    base evpn-service-type;
     description
       "VLAN-Based Service Interface.";
     reference
@@ -2919,7 +2919,7 @@ module ietf-l2vpn-ntw {
   }
 
   identity vlan-bundle-service-interface {
-    base evpn-redundancy-mode;
+    base evpn-service-type;
     description
       "VLAN Bundle Service Interface.";
     reference
@@ -2927,7 +2927,7 @@ module ietf-l2vpn-ntw {
   }
 
   identity vlan-aware-bundle-service-interface {
-    base evpn-redundancy-mode;
+    base evpn-service-type;
     description
       "VLAN-Aware Bundle Service Interface.";
     reference
@@ -3800,7 +3800,7 @@ module ietf-l2vpn-ntw {
                                  Section 7.10.1";
                   }
                   leaf auto-route-target {
-                    when "./auto-rt-enable = 'true'" {
+                    when "../auto-rt-enable = 'true'" {
                       description
                         "Can only be used when auto-RD is enabled.";
                     }
@@ -4103,7 +4103,7 @@ module ietf-l2vpn-ntw {
                           }
                         }
                         container pbb {
-                          when "derived-from-or-self(./evpn-type,"
+                          when "derived-from-or-self(../../evpn-type,"
                              + " 'evpn-pbb')" {
                             description
                               "Only applies for PBB EVPN.";
@@ -4238,7 +4238,7 @@ module ietf-l2vpn-ntw {
                             "Indicates the peer's IP address.";
                         }
                         leaf vc-id {
-                          type vpn-common:vpn-id;
+                          type string;
                           description
                             "VC label used to identify a PW.";
                         }
@@ -4322,10 +4322,10 @@ module ietf-l2vpn-ntw {
                   description
                     "String to describe the element.";
                 }
-                leaf port-id {
-                  type vpn-common:vpn-id;
+                leaf interface-id {
+                  type string;
                   description
-                    "NE Port-id";
+                    "Refers to a physical or logical interface.";
                 }
                 leaf global-parameters-profile {
                   type leafref {
@@ -4341,14 +4341,14 @@ module ietf-l2vpn-ntw {
                   description
                     "Container for bearer and AC.";
                   leaf l2-termination-point {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a reference to a local layer 2
                        termination point such as a layer 2
                        sub-interface.";
                   }
                   leaf local-bridge-reference {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a local bridge reference to
                        accommodate, for example, implementations
@@ -4525,22 +4525,22 @@ module ietf-l2vpn-ntw {
                         type identityref {
                           base vpn-common:tag-type;
                         }
-                        default "vpn-common:c-s-vlan";
+                        default "vpn-common:s-c-vlan";
                         description
                           "Tag type. By default, the tag type is
-                           'c-s-vlan'.";
+                           's-c-vlan'.";
                       }
                       leaf svlan-id {
                         type uint16;
                         mandatory true;
                         description
-                          "SVLAN identifier.";
+                          "S-VLAN identifier.";
                       }
                       leaf cvlan-id {
                         type uint16;
                         mandatory true;
                         description
-                          "CVLAN identifier.";
+                          "C-VLAN identifier.";
                       }
                     }
                   }
@@ -4879,12 +4879,12 @@ module ietf-l2vpn-ntw {
                        network protocol to accommodate the MTU of the
                        network";
                   }
-                  container svc-input-bandwidth {
-                    if-feature "vpn-common:input-bw";
+                  container svc-inbound-bandwidth {
+                    if-feature "vpn-common:inbound-bw";
                     description
-                      "From the PE perspective, the service input
+                      "From the PE perspective, the service inbound
                        bandwidth of the connection.";
-                    list input-bandwidth {
+                    list inbound-bandwidth {
                       key "type";
                       description
                         "List for input bandwidth data nodes.";
@@ -4949,15 +4949,15 @@ module ietf-l2vpn-ntw {
                       }
                     }
                   }
-                  container svc-output-bandwidth {
-                    if-feature "vpn-common:output-bw";
+                  container svc-outbound-bandwidth {
+                    if-feature "vpn-common:outbound-bw";
                     description
-                      "From the PE perspective, the service output
+                      "From the PE perspective, the service outbound
                        bandwidth of the connection.";
-                    list output-bandwidth {
+                    list outbound-bandwidth {
                       key "type";
                       description
-                        "List for output bandwidth";
+                        "List for outbound bandwidth";
                       leaf type {
                         type identityref {
                           base vpn-common:bw-type;
@@ -5178,7 +5178,7 @@ module ietf-l2vpn-ntw {
                           "Specifies the filtering action.";
                       }
                       leaf rate-limit {
-                        when "derived-from-or-self(./action, 'flood')" {
+                        when "derived-from-or-self(../action, 'flood')" {
                           description
                             "Rate-limit is valid only when the action is
                              to accept the matching frame.";
@@ -6248,14 +6248,14 @@ module ietf-l2vpn-ntw {
                 },
                 "service": {
                   "mtu": "1550",
-                  "svc-input-bandwidth": {
-                    "input-bandwidth": {
+                  "svc-inbound-bandwidth": {
+                    "inbound-bandwidth": {
                       "type": "vpn-common:bw-per-service",
                       "cir": "20480000"
                     }
                   },
-                  "svc-output-bandwidth": {
-                    "output-bandwidth": {
+                  "svc-outbound-bandwidth": {
+                    "outbound-bandwidth": {
                       "type": "vpn-common:bw-per-port",
                       "cir": "20480000"
                     }
@@ -6319,14 +6319,14 @@ module ietf-l2vpn-ntw {
                 },
                 "service": {
                   "mtu": "1550",
-                  "svc-input-bandwidth": {
-                    "input-bandwidth": {
+                  "svc-inbound-bandwidth": {
+                    "inbound-bandwidth": {
                       "type": "vpn-common:bw-per-service",
                       "cir": "20480000"
                     }
                   },
-                  "svc-output-bandwidth": {
-                    "output-bandwidth": {
+                  "svc-outbound-bandwidth": {
+                    "outbound-bandwidth": {
                       "type": "vpn-common:bw-per-port",
                       "cir": "20480000"
                     }
@@ -7007,11 +7007,11 @@ module ietf-l2vpn-ntw {
       <t>During the discussions of this work, helpful comments, suggestions,
       and reviews were received from: Sergio Belotti, Italo Busi, Miguel Cros
       Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel, Roque Gagliano,
-      Christian Jacquenet, Kireeti Kompella, Julian Lucek, Erez Segev, and Tom
-      Petch. Many thanks to them.<vspace blankLines="1" />Luay Jalil, Jichun
-      Ma, Daniel King, and Zhang Guiyu contributed to an early version of this
-      document.<vspace blankLines="1" />Thanks to Yingzhen Qu for the rtgdir
-      review.</t>
+      Christian Jacquenet, Kireeti Kompella, Julian Lucek, Moti Morgenstern,
+      Erez Segev, and Tom Petch. Many thanks to them.<vspace
+      blankLines="1" />Luay Jalil, Jichun Ma, Daniel King, and Zhang Guiyu
+      contributed to an early version of this document.<vspace
+      blankLines="1" />Thanks to Yingzhen Qu for the rtgdir review.</t>
     </section>
 
     <section numbered="false" title="Contributors" toc="default">
