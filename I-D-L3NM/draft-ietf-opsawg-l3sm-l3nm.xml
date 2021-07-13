@@ -1282,7 +1282,7 @@
       +--rw vpn-network-accesses
          +--rw vpn-network-access* [id]
             +--rw id                         vpn-common:vpn-id
-            +--rw port-id?                   vpn-common:vpn-id
+            +--rw interface-id?              string
             +--rw description?               string
             +--rw vpn-network-access-type?   identityref
             +--rw vpn-instance-profile?      leafref
@@ -1314,8 +1314,8 @@
             <t hangText="'id':">Is an identifier of the VPN network
             access.</t>
 
-            <t hangText="'port-id':">Indicates the port on which the VPN
-            network access is bound.</t>
+            <t hangText="'interface-id':">Indicates the physical or logical
+            interface on which the VPN network access is bound.</t>
 
             <t hangText="'description':">Includes a textual description of the
             VPN network access.</t>
@@ -1397,18 +1397,19 @@
           relevant tags.</t>
 
           <t>The interface that is attached to the L3VPN is identified by the
-          'port-id' at the 'vpn-network-access' level. From a network model
-          perspective, it is expected that the 'port-id' is sufficient to
-          identify the interface. However, specific layer 2 sub-interfaces may
-          be required to be configured in some implementations/deployments.
-          Such a layer 2 specific interface can be included in
-          'l2-termination-point'.</t>
+          'interface-id' at the 'vpn-network-access' level. From a network
+          model perspective, it is expected that the 'interface-id' is
+          sufficient to identify the interface. However, specific layer 2
+          sub-interfaces may be required to be configured in some
+          implementations/deployments. Such a layer 2 specific interface can
+          be included in 'l2-termination-point'.</t>
 
           <t>If a layer 2 tunnel is needed to terminate the service in the
           CE-PE connection, the 'l2-tunnel-service' container is used to
           specify the required parameters to set such tunneling service (e.g.,
           VPLS, VXLAN). An identity, called 'l2-tunnel-type', is defined for
-          layer 2 tunnel selection.</t>
+          layer 2 tunnel selection. The container can also identify the
+          pseudowire (Section 5.2 of <xref target="RFC4447"></xref>). </t>
 
           <t>As discussed in <xref target="sna"></xref>, 'l2vpn-id' is used to
           identify the L2VPN service that is associated with an IRB
@@ -1461,8 +1462,8 @@
 |  |  |        +--rw peer-ip-address*   inet:ip-address
 |  |  +--:(l2vpn)
 |  |     +--rw l2vpn-id?            vpn-common:vpn-id
-|  +--rw l2-termination-point?      vpn-common:vpn-id
-|  +--rw local-bridge-reference?    vpn-common:vpn-id
+|  +--rw l2-termination-point?      string
+|  +--rw local-bridge-reference?    string
 |  +--rw bearer-reference?         string 
            {vpn-common:bearer-reference}?
 ...
@@ -1491,7 +1492,7 @@
    +--rw vpn-network-access* [id]
       ...
       +--rw ip-connection
-      |  +--rw l3-termination-point?     vpn-common:vpn-id
+      |  +--rw l3-termination-point?     string
       |  +--rw ipv4 {vpn-common:ipv4}?
       |  |  ...
       |  +--rw ipv6 {vpn-common:ipv6}?
@@ -1519,7 +1520,7 @@
               title="IP Connection Subtree Structure (IPv4)">
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
-|  +--rw l3-termination-point?     vpn-common:vpn-id
+|  +--rw l3-termination-point?     string
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  +--rw local-address?             inet:ipv4-address
 |  |  +--rw prefix-length?             uint8
@@ -1566,7 +1567,7 @@
               title="IP Connection Subtree Structure (IPv6)">
               <artwork align="center"><![CDATA[...
 +--rw ip-connection
-|  +--rw l3-termination-point?     vpn-common:vpn-id
+|  +--rw l3-termination-point?     string
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  ...
 |  +--rw ipv6 {vpn-common:ipv6}?
@@ -1613,7 +1614,7 @@
                   title="IP Connection Subtree Structure (Static Mode)">
             <artwork align="center"><![CDATA[...
 +--rw ip-connection
-|  +--rw l3-termination-point?     vpn-common:vpn-id
+|  +--rw l3-termination-point?     string
 |  +--rw ipv4 {vpn-common:ipv4}?
 |  |  +--rw address-allocation-type?         identityref
 |  |  +--rw (allocation-type)?
@@ -2319,8 +2320,8 @@
    +--rw vpn-network-access* [id]
       ...
       +--rw service
-         +--rw input-bandwidth?    uint64 {vpn-common:input-bw}?
-         +--rw output-bandwidth?   uint64 {vpn-common:output-bw}?
+         +--rw inbound-bandwidth?    uint64 {vpn-common:inbound-bw}?
+         +--rw outbound-bandwidth?   uint64 {vpn-common:outbound-bw}?
          +--rw mtu?                uint16
          +--rw qos {vpn-common:qos}?
          |  ...
@@ -2343,11 +2344,11 @@
 ]]></artwork>
             </figure>The following data nodes are defined: <list
               style="hanging">
-              <t hangText="'input-bandwidth':">Indicates the inbound bandwidth
-              of the connection (i.e., download bandwidth from the service
-              provider to the site).</t>
+              <t hangText="'inbound-bandwidth':">Indicates the inbound
+              bandwidth of the connection (i.e., download bandwidth from the
+              service provider to the site).</t>
 
-              <t hangText="'output-bandwidth':">Indicates the outbound
+              <t hangText="'outbound-bandwidth':">Indicates the outbound
               bandwidth of the connection (i.e., upload bandwidth from the
               site to the service provider).</t>
 
@@ -3524,10 +3525,14 @@ module ietf-l3vpn-ntw {
                   description
                     "Identifier for the network access.";
                 }
-                leaf port-id {
-                  type vpn-common:vpn-id;
+                leaf interface-id {
+                  type string;
                   description
-                    "Identifier for the interface.";
+                    "Identifier for the physical or logical 
+                     interface.
+                     The identification of the sub-interface
+                     is provided at the connection and/or IP
+                     connection levels.";
                 }
                 leaf description {
                   type string;
@@ -3684,6 +3689,10 @@ module ietf-l3vpn-ntw {
                           }
                           description
                             "Neighbor reference.";
+                          reference
+                            "RFC 4447: Pseudowire Setup and Maintenance
+                                       Using the Label Distribution Protocol
+                                       (LDP), Section 5.2";
                         }
                       }
                       container vpls {
@@ -3740,13 +3749,13 @@ module ietf-l3vpn-ntw {
                     }
                   }
                   leaf l2-termination-point {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a reference to a local layer 2
                        termination point such as a layer 2 sub-interface.";
                   }
                   leaf local-bridge-reference {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a local bridge reference to
                        accommodate, for example, implementations
@@ -3766,7 +3775,7 @@ module ietf-l3vpn-ntw {
                   description
                     "Defines IP connection parameters.";
                   leaf l3-termination-point {
-                    type vpn-common:vpn-id;
+                    type string;
                     description
                       "Specifies a reference to a local layer 3
                        termination point such as a bridge domain
@@ -3811,15 +3820,10 @@ module ietf-l3vpn-ntw {
                       description
                         "Choice of the IPv4 address allocation.";
                       case provider-dhcp {
-                        when "derived-from-or-self(./address-"
-                           + "allocation-type, 'provider-dhcp')" {
-                          description
-                            "Only applies when addresses are allocated
-                             by DHCP that is operated by the provider.";
-                        }
                         description
-                          "DHCP allocated addresses related
-                           parameters.";
+                          "DHCP allocated addresses related 
+                           parameters. IP addresses are allocated
+                           by DHCP that is operated by the provider";
                         leaf dhcp-service-type {
                           type enumeration {
                             enum server {
@@ -3840,10 +3844,10 @@ module ietf-l3vpn-ntw {
                           description
                             "Choice based on the DHCP service type.";
                           case relay {
-                            when "./dhcp-service-type = 'relay'";
                             description
                               "Container for list of provider's DHCP
-                               servers.";
+                               servers (i.e., dhcp-service-type is set 
+                               to relay).";
                             leaf-list server-ip-address {
                               type inet:ipv4-address;
                               description
@@ -3853,7 +3857,6 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           case server {
-                            when "./dhcp-service-type = 'server'";
                             description
                               "A choice about how addresses are assigned
                                when a local DHCP server is enabled.";
@@ -3920,14 +3923,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case dhcp-relay {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'provider-dhcp-relay')" {
-                          description
-                            "Only applies when the provider is required
-                             to implement a DHCP relay function that
-                             will relay DHCP requests to a customer's
-                             DHCP server.";
-                        }
                         description
                           "DHCP relay is provided by the operator.";
                         container customer-dhcp-servers {
@@ -3943,12 +3938,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case static-addresses {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'static-address')" {
-                          description
-                            "Only applies when address allocation
-                             type is static.";
-                        }
                         description
                           "Lists the IPv4 addresses that are used.";
                         leaf primary-address {
@@ -4040,11 +4029,6 @@ module ietf-l3vpn-ntw {
                           description
                             "Choice based on the DHCPv6 service type.";
                           case provider-dhcp-servers {
-                            when "./dhcp-service-type = 'relay'";
-                            description
-                              "Case where a local DHCPv6 relay is
-                               enabled. This list is used if and only
-                               if a DHCP relay is enabled.";
                             leaf-list server-ip-address {
                               type inet:ipv6-address;
                               description
@@ -4053,10 +4037,6 @@ module ietf-l3vpn-ntw {
                             }
                           }
                           case server {
-                            when "./dhcp-service-type = 'server'";
-                            description
-                              "Case where a local DHCPv6 server is
-                               enabled.";
                             choice address-assign {
                               default "number";
                               description
@@ -4117,14 +4097,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case dhcp-relay {
-                        when "derived-from-or-self(./address-allo"
-                           + "cation-type, 'provider-dhcp-relay')" {
-                          description
-                            "Only applies when the provider is required
-                             to implement DHCP relay function that will
-                             relay DHCPv6 requests to a customer's DHCP
-                             server.";
-                        }
                         description
                           "DHCPv6 relay provided by the operator.";
                         container customer-dhcp-servers {
@@ -4140,12 +4112,6 @@ module ietf-l3vpn-ntw {
                         }
                       }
                       case static-addresses {
-                        when "derived-from-or-self(./address-allocation"
-                           + "-type, 'static-address')" {
-                          description
-                            "Only applies when protocol allocation type
-                             is static.";
-                        }
                         description
                           "IPv6-specific parameters for static
                            allocation.";
@@ -4421,7 +4387,7 @@ module ietf-l3vpn-ntw {
                            prepended to the BGP route updates
                            for this access. To disable that
                            behavior, the prepend-global-as
-                           must be set to 'true'. In such a case,
+                           must be set to 'false'. In such a case,
                            the ASN that is provided at
                            the VPN node level is not prepended to
                            the BGP route updates for this access.";
@@ -4741,7 +4707,7 @@ module ietf-l3vpn-ntw {
                           description
                             "Creates a sham link with another site.";
                           leaf target-site {
-                            type vpn-common:vpn-id;
+                            type string;
                             description
                               "Target site for the sham link connection.
                                The site is referred to by its ID.";
@@ -5305,25 +5271,28 @@ module ietf-l3vpn-ntw {
                 container service {
                   description
                     "Service parameters of the attachment.";
-                  leaf input-bandwidth {
-                    if-feature "vpn-common:input-bw";
+                  leaf inbound-bandwidth {
+                    if-feature "vpn-common:inbound-bw";
                     type uint64;
                     units "bps";
                     description
                       "From the customer site's perspective, the
-                       service input bandwidth of the connection
+                       service inbound bandwidth of the connection
                        or download bandwidth from the SP to
-                       the site.";
+                       the site. Note that the L3SM uses 'input-
+                       -bandwidth' to refer to the same concept.";
                   }
-                  leaf output-bandwidth {
-                    if-feature "vpn-common:output-bw";
+                  leaf outbound-bandwidth {
+                    if-feature "vpn-common:outbound-bw";
                     type uint64;
                     units "bps";
                     description
                       "From the customer site's perspective,
-                       the service output bandwidth of the
+                       the service oubound bandwidth of the
                        connection or upload bandwidth from
-                       the site to the SP.";
+                       the site to the SP. Note that the L3SM uses 
+                       'output-bandwidth' to refer to the same 
+                       concept.";
                   }
                   leaf mtu {
                     type uint16;
@@ -5974,6 +5943,8 @@ module ietf-l3vpn-ntw {
 
       <?rfc include='reference.I-D.ietf-teas-ietf-network-slices'?>
 
+      <?rfc include='reference.RFC.4447'?>
+
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
           <title>pyang</title>
@@ -6107,7 +6078,7 @@ Content-Type: application/yang-data+json
         </figure>
 
         <t>Finally, two VPN network accesses are created using the same
-        physical port ('port-id'=1/1/1). Each 'vpn-network-access' has a
+        physical port ('interface-id'=1/1/1). Each 'vpn-network-access' has a
         particular VLAN (1,2) to differentiate the traffic between: Sync and
         data (<xref target="service-mbh4"></xref>).</t>
 
@@ -6122,7 +6093,7 @@ content-type: application/yang-data+json
     "vpn-network-access": [
       {
         "id": "1/1/1.1",
-        "port-id": "1/1/1",
+        "interface-id": "1/1/1",
         "description": "Interface SYNC to eNODE-B",
         "vpn-network-access-type": "vpn-common:point-to-point",
         "vpn-instance-profile": "simple-profile",
@@ -6178,7 +6149,7 @@ content-type: application/yang-data+json
       },
       {
         "id": "1/1/1.2",
-        "port-id": "1/1/1",
+        "interface-id": "1/1/1",
         "description": "Interface DATA to eNODE-B",
         "vpn-network-access-type": "vpn-common:point-to-point",
         "vpn-instance-profile": "simple-profile",
@@ -6251,7 +6222,7 @@ content-type: application/yang-data+json
     "vpn-network-access": [
       {
         "id": "vpn-access-loopback",
-        "port-id": "Loopback1",
+        "interface-id": "Loopback1",
         "description": "An example of loopback interface.",
         "vpn-network-access-type": "vpn-common:loopback",
         "status": {
@@ -6422,8 +6393,8 @@ content-type: application/yang-data+json
         ]
       },
       "service": {
-        "input-bandwidth": "100000000",
-        "output-bandwidth": "100000000",
+        "inbound-bandwidth": "100000000",
+        "outbound-bandwidth": "100000000",
         "mtu": 1500,
         "multicast": {
           "access-type": "source-only",
