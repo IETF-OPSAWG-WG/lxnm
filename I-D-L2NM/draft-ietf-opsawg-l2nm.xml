@@ -170,7 +170,7 @@
       </address>
     </author>
 
-    <date day="09" month="July" year="2021" />
+    <date day="26" month="July" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -456,7 +456,7 @@
       <t>The customer may use various means to request a service that may
       trigger the instantiation of a L2NM. The customer may use the L2SM or
       may rely upon more abstract models to request a service that relies upon
-      an L3VPN service. For example, the customer may supply an IP
+      an L2VPN service. For example, the customer may supply an IP
       Connectivity Provisioning Profile (CPP) <xref target="RFC7297"></xref>,
       an enhanced VPN (VPN+) service <xref
       target="I-D.ietf-teas-enhanced-vpn"></xref>, or an IETF network slice
@@ -594,24 +594,32 @@
       <section anchor="structure_model"
                title="Overall Structure of the Module">
         <t>The 'ietf-l2vpn-ntw' module uses two main containers:
-        'vpn-services' and 'vpn-profiles' (see <xref
+        'vpn-profiles', 'ethernet-segments', and 'vpn-services' (see <xref
         target="ietf-l2vpn-ntw_tree"></xref>).</t>
 
         <t>The 'vpn-profiles' container is used by the provider to maintain a
         set of common VPN profiles that apply to one or several VPN services
         (<xref target="vpn_profiles"></xref>).</t>
 
-        <t>The 'vpn-services' container maintains the set of L2VPN services
-        managed in the service providers network. The module allows to create
-        a new L2VPN service by adding a new instance of 'vpn-service'. The
-        'vpn-service' is the data structure that abstracts the VPN
-        Service.</t>
+        <t>The 'ethernet-segments' container provides a set of data related to
+        Ethernet Segments (ESs). This container is present only for
+        EVPN-related L2VPN types. More details are provided in <xref
+        target="es"></xref>.</t>
+
+        <t hangText="'ethernet-segments':">The 'vpn-services' container
+        maintains the set of L2VPN services managed in the service providers
+        network. The module allows to create a new L2VPN service by adding a
+        new instance of 'vpn-service'. The 'vpn-service' is the data structure
+        that abstracts the VPN service (<xref
+        target="l2_vpn_service"></xref>).</t>
 
         <figure align="center" anchor="ietf-l2vpn-ntw_tree"
                 title="Overall L2NM Tree Structure">
           <artwork align="center"><![CDATA[module: ietf-l2vpn-ntw
   +--rw l2vpn-ntw
      +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -687,11 +695,113 @@
      |     |  +--rw id    string
      |     +--rw routing-profile-identifier* [id]
      |        +--rw id    string
+     +--rw ethernet-segments
+     |  ...
      +--rw vpn-services
         ...                   ]]></artwork>
         </figure>
 
         <t></t>
+      </section>
+
+      <section anchor="es" title="Ethernet Segments">
+        <t>The 'ethernet-segments' container is used to list a set of ESes
+        that are defined in an EVPN service. In reference to the structure
+        shown in <xref target="es-tree"></xref>, the following data nodes can
+        be included:<list style="hanging">
+            <t hangText="'name':">Sets a name to uniquely identify an ES. This
+            name is called in the VPN network access level to handle
+            multi-homing, for example.</t>
+
+            <t hangText="'esi-type':">Indicates the ESI type as discussed in
+            Section 5 of <xref target="RFC7432"></xref>. ESI can be
+            automatically assigned either with or without indicating a pool
+            from which the ESI should be taken. The following types are
+            supported: <list style="hanging">
+                <t hangText="'esi-type-0':">The ESI is directly configured by
+                the VPN service provider.</t>
+
+                <t hangText="'esi-type-1':">The ESI is auto-generated from the
+                IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
+                target="IEEE802.1AX"></xref>.</t>
+
+                <t hangText="'esi-type-2':">The ESI is auto-generated and
+                determined based on the Layer 2 bridge protocol.</t>
+
+                <t hangText="'esi-type-3':">The ESI is a MAC-based ESI value
+                that can be auto-generated or configured by the VPN service
+                provider.</t>
+
+                <t hangText="'esi-type-4':">The ESI is auto-generated or
+                configured by the VPN service provider based on the Router-ID.
+                The 'router-id' supplied in <xref target="vpn_node"></xref>
+                can be used to auto-derive an ESI when this type is used.</t>
+
+                <t hangText="'esi-type-5':">The ESI is auto-generated or
+                configured by the VPN service provider based on the Autonomous
+                System (AS) number. The 'local-autonomous-system' supplied in
+                <xref target="profile"></xref> can be used to auto-derive an
+                ESI when this type is used.</t>
+              </list></t>
+
+            <t hangText="'esi-redundancy-mode':">Specifies the EVPN redundancy
+            mode for a given ES. The following modes are supported:
+            Single-Active (Section 14.1.1 of <xref target="RFC7432"></xref>)
+            or All-Active (Section 14.1.2 of <xref
+            target="RFC7432"></xref>).</t>
+
+            <t hangText="'df-election':">Specifies a set of parameters related
+            to the Designated Forwarder (DF) election (Section 8.5 of <xref
+            target="RFC7432"></xref>). For example, this data node can be used
+            to indicate an election method (e.g., <xref
+            target="RFC8584"></xref> or <xref
+            target="I-D.ietf-bess-evpn-pref-df"></xref>). If no election
+            method is indicated, the default one defined in Section 8.5 of
+            <xref target="RFC7432"></xref> is used.</t>
+
+            <t hangText="'split-horizon-filtering':">Controls the activation
+            of the split-horizon filtering for an ES (Section 8.3 of <xref
+            target="RFC7432"></xref>).</t>
+
+            <t hangText="'backbone-src-mac':">Associates a Provider Backbone
+            MAC (B-MAC) address with an ES. This is particularly useful for
+            All-Active multihomed ESes (Section 9.1 of <xref
+            target="RFC7623"></xref>).</t>
+          </list></t>
+
+        <t><figure align="center" anchor="es-tree"
+            title="Ethernet Segments Subtree">
+            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
+     |  +--rw ethernet-segment* [name]
+     |     +--rw name                                 string
+     |     +--rw esi-type?                            identityref
+     |     +--rw (esi-choice)?
+     |     |  +--:(directly-assigned)
+     |     |  |  +--rw ethernet-segment-identifier?   yang:hex-string
+     |     |  +--:(auto-assigned)
+     |     |     +--rw esi-auto
+     |     |        +--rw (auto-mode)?
+     |     |        |  +--:(from-pool)
+     |     |        |  |  +--rw esi-pool-name?                string
+     |     |        |  +--:(full-auto)
+     |     |        |     +--rw auto?                         empty
+     |     |        +--ro auto-ethernet-segment-identifier?
+     |     |                yang:hex-string
+     |     +--rw esi-redundancy-mode?                 identityref
+     |     +--rw df-election
+     |     |  +--rw df-election-method?   identityref
+     |     |  +--rw preference?           uint16
+     |     |  +--rw revertive?            boolean
+     |     |  +--rw election-wait-time?   uint32
+     |     +--rw split-horizon-filtering?             boolean
+     |     +--rw pbb
+     |        +--rw backbone-src-mac?   yang:mac-address
+     +--rw vpn-services
+        ...             ]]></artwork>
+          </figure></t>
       </section>
 
       <section anchor="l2_vpn_service" title="VPN Services">
@@ -716,8 +826,6 @@
            +--rw bgp-ad-enabled?               boolean
            +--rw signaling-type?               identityref
            +--rw global-parameters-profiles
-           |  ...
-           +--rw ethernet-segments
            |  ...
            +--rw underlay-transport
            |  +--rw (type)?
@@ -828,11 +936,6 @@
             blankLines="1" />More details are provided in <xref
             target="profile"></xref>.</t>
 
-            <t hangText="'ethernet-segments':">Provides a set of data related
-            to Ethernet Segment (ES). This container is present only for
-            EVPN-related L2VPN types. <vspace blankLines="1" />More details
-            are provided in <xref target="es"></xref>.</t>
-
             <t hangText="'underlay-transport':">Describes the preference for
             the transport technology to carry the traffic of the VPN service.
             This preference is especially useful in networks with multiple
@@ -902,21 +1005,22 @@
 
           <c>bgp-signaling (evpn-bgp)</c>
         </texttable>
+      </section>
 
-        <section anchor="profile" title="Global Parameters Profiles">
-          <t>The 'global-parameters-profile' defines reusable parameters for
-          the same L2VPN service instance ('vpn-service'). Global parameters
-          profile are defined at the VPN service level and then called at the
-          VPN node and VPN network access levels. Each VPN instance profile is
-          identified by 'profile-id'. Some of the data nodes can be adjusted
-          at the VPN node or VPN network access levels. These adjusted values
-          take precedence over the global ones. The subtree of
-          'global-parameters-profile' is depicted in <xref
-          target="global_param_prof_tree"></xref>.</t>
+      <section anchor="profile" title="Global Parameters Profiles">
+        <t>The 'global-parameters-profile' defines reusable parameters for the
+        same L2VPN service instance ('vpn-service'). Global parameters profile
+        are defined at the VPN service level and then called at the VPN node
+        and VPN network access levels. Each VPN instance profile is identified
+        by 'profile-id'. Some of the data nodes can be adjusted at the VPN
+        node or VPN network access levels. These adjusted values take
+        precedence over the global ones. The subtree of
+        'global-parameters-profile' is depicted in <xref
+        target="global_param_prof_tree"></xref>.</t>
 
-          <figure align="center" anchor="global_param_prof_tree"
-                  title="Global Parameters Profiles Subtree">
-            <artwork align="center"><![CDATA[     ...
+        <figure align="center" anchor="global_param_prof_tree"
+                title="Global Parameters Profiles Subtree">
+          <artwork align="center"><![CDATA[     ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
            ...
@@ -977,215 +1081,106 @@
            |        +--rw customer-tree-flavors
            |           +--rw tree-flavor*   identityref
                     ...             ]]></artwork>
-          </figure>
+        </figure>
 
-          <t>The description of the global parameters profile is as
-          follows:</t>
+        <t>The description of the global parameters profile is as follows:</t>
 
-          <t><list style="hanging">
-              <t hangText="'profile-id':">Uniquely identifies a global
-              parameter profile.</t>
+        <t><list style="hanging">
+            <t hangText="'profile-id':">Uniquely identifies a global parameter
+            profile.</t>
 
-              <t hangText="'rd':">As defined in <xref
-              target="I-D.ietf-opsawg-vpn-common"></xref>, these RD assignment
-              modes are supported: direct assignment, automatic assignment
-              from a given pool, automatic assignment, and no assignment. For
-              illustration purposes, the following modes can be used in the
-              deployment cases: <list style="hanging">
-                  <t hangText="'directly-assigned':">The VPN service provider
-                  (service orchestrator) assigns explicitly RDs.</t>
+            <t hangText="'rd':">As defined in <xref
+            target="I-D.ietf-opsawg-vpn-common"></xref>, these RD assignment
+            modes are supported: direct assignment, automatic assignment from
+            a given pool, automatic assignment, and no assignment. For
+            illustration purposes, the following modes can be used in the
+            deployment cases: <list style="hanging">
+                <t hangText="'directly-assigned':">The VPN service provider
+                (service orchestrator) assigns explicitly RDs.</t>
 
-                  <t hangText="'full-auto':">The network controller
-                  auto-assigns RDs.</t>
+                <t hangText="'full-auto':">The network controller auto-assigns
+                RDs.</t>
 
-                  <t hangText="'no-rd':">The VPN service provider (service
-                  orchestrator) explicitly wants no RD to be assigned.</t>
-                </list>Also, the module accommodates deployments where only
-              the Assigned Number subfield of RDs is assigned from a pool
-              while the Administrator subfield is set to, e.g., the Router ID
-              that is assigned to a VPN node. The module supports these modes
-              for managing the Assigned Number subfield: explicit assignment,
-              auto-assignment from a pool, and full auto-assignment.</t>
+                <t hangText="'no-rd':">The VPN service provider (service
+                orchestrator) explicitly wants no RD to be assigned.</t>
+              </list>Also, the module accommodates deployments where only the
+            Assigned Number subfield of RDs is assigned from a pool while the
+            Administrator subfield is set to, e.g., the Router ID that is
+            assigned to a VPN node. The module supports these modes for
+            managing the Assigned Number subfield: explicit assignment,
+            auto-assignment from a pool, and full auto-assignment.</t>
 
-              <t hangText="'vpn-targets':">Specifies RT import/export rules
-              for the VPN service.</t>
+            <t hangText="'vpn-targets':">Specifies RT import/export rules for
+            the VPN service.</t>
 
-              <t hangText="'local-autonomous-system':">Indicates the
-              Autonomous System Number (ASN) that is configured for the VPN
-              node. The ASN can be used to auto-derive some other attributes
-              such as RDs or Ethernet Segment Identifiers (ESIs).</t>
+            <t hangText="'local-autonomous-system':">Indicates the Autonomous
+            System Number (ASN) that is configured for the VPN node. The ASN
+            can be used to auto-derive some other attributes such as RDs or
+            Ethernet Segment Identifiers (ESIs).</t>
 
-              <t hangText="'svc-mtu':">Is the service MTU for an L2VPN
-              service. It is also known as the maximum transmission unit or
-              maximum frame size. When a frame is larger than the MTU, it is
-              fragmented to accommodate the MTU of the network.</t>
+            <t hangText="'svc-mtu':">Is the service MTU for an L2VPN service.
+            It is also known as the maximum transmission unit or maximum frame
+            size. When a frame is larger than the MTU, it is fragmented to
+            accommodate the MTU of the network.</t>
 
-              <t hangText="'ce-vlan-preservation':">Is set to preserve the
-              CE-VLAN ID from ingress to egress, i.e., CE-VLAN tag of the
-              egress frame are identical to those of the ingress frame that
-              yielded this egress service frame. If All-to-One bundling within
-              a site is enabled, then preservation applies to all ingress
-              service frames. If All-to-One bundling is disabled, then
-              preservation applies to tagged Ingress service frames having
-              CE-VLAN ID 1 through 4094.</t>
+            <t hangText="'ce-vlan-preservation':">Is set to preserve the
+            CE-VLAN ID from ingress to egress, i.e., CE-VLAN tag of the egress
+            frame are identical to those of the ingress frame that yielded
+            this egress service frame. If All-to-One bundling within a site is
+            enabled, then preservation applies to all ingress service frames.
+            If All-to-One bundling is disabled, then preservation applies to
+            tagged Ingress service frames having CE-VLAN ID 1 through
+            4094.</t>
 
-              <t hangText="'ce-vlan-cos-perservation':">Controls the CE VLAN
-              CoS preservation. When set, PCP bits in the CE-VLAN tag of the
-              egress frame are identical to those of the ingress frame that
-              yielded this egress service frame.</t>
+            <t hangText="'ce-vlan-cos-perservation':">Controls the CE VLAN CoS
+            preservation. When set, PCP bits in the CE-VLAN tag of the egress
+            frame are identical to those of the ingress frame that yielded
+            this egress service frame.</t>
 
-              <t hangText="'control-word-negotiation':">Controls whether
-              control-word negotiation is enabled (if set to true) or not (if
-              set to false). Refer to Section 7 of <xref
-              target="RFC8077"></xref> for more details.</t>
+            <t hangText="'control-word-negotiation':">Controls whether
+            control-word negotiation is enabled (if set to true) or not (if
+            set to false). Refer to Section 7 of <xref
+            target="RFC8077"></xref> for more details.</t>
 
-              <t hangText="'mac-policies':">Includes a set of MAC policies
-              that apply to the service:<list style="hanging">
-                  <t hangText="'mac-addr-limit':">Is a container of MAC
-                  address limit configuration. It includes the following data
-                  nodes: <list style="hanging">
-                      <t hangText="'mac-num-limit':">Maximum number of MAC
-                      addresses learned from the customer for a single service
-                      instance.</t>
+            <t hangText="'mac-policies':">Includes a set of MAC policies that
+            apply to the service:<list style="hanging">
+                <t hangText="'mac-addr-limit':">Is a container of MAC address
+                limit configuration. It includes the following data nodes:
+                <list style="hanging">
+                    <t hangText="'mac-num-limit':">Maximum number of MAC
+                    addresses learned from the customer for a single service
+                    instance.</t>
 
-                      <t hangText="'time-interval':">The aging time of the mac
-                      address.</t>
+                    <t hangText="'time-interval':">The aging time of the mac
+                    address.</t>
 
-                      <t hangText="'action':">Specifies the action when the
-                      upper limit is exceeded: drop the packet, flood the
-                      packet, or simply send a warning log message.</t>
-                    </list></t>
+                    <t hangText="'action':">Specifies the action when the
+                    upper limit is exceeded: drop the packet, flood the
+                    packet, or simply send a warning log message.</t>
+                  </list></t>
 
-                  <t hangText="'mac-loop-prevention':">Container for MAC loop
-                  prevention.<list style="hanging">
-                      <t hangText="'window':">The timer when a MAC mobility
-                      event is detected.</t>
+                <t hangText="'mac-loop-prevention':">Container for MAC loop
+                prevention.<list style="hanging">
+                    <t hangText="'window':">The timer when a MAC mobility
+                    event is detected.</t>
 
-                      <t hangText="'frequency':">The number of times to detect
-                      MAC duplication, where a 'duplicate MAC address'
-                      situation has occurred and the duplicate MAC address has
-                      been added to a list of duplicate MAC addresses.</t>
+                    <t hangText="'frequency':">The number of times to detect
+                    MAC duplication, where a 'duplicate MAC address' situation
+                    has occurred and the duplicate MAC address has been added
+                    to a list of duplicate MAC addresses.</t>
 
-                      <t hangText="'retry-timer':">The retry timer. When the
-                      retry timer expires, the duplicate MAC address will be
-                      flushed from the MAC-VRF.</t>
+                    <t hangText="'retry-timer':">The retry timer. When the
+                    retry timer expires, the duplicate MAC address will be
+                    flushed from the MAC-VRF.</t>
 
-                      <t hangText="'protection-type':">It defines the
-                      protection type</t>
-                    </list></t>
-                </list></t>
+                    <t hangText="'protection-type':">It defines the protection
+                    type</t>
+                  </list></t>
+              </list></t>
 
-              <t hangText="multicast-like':">Controls whether multicast is
-              allowed in the service.</t>
-            </list></t>
-        </section>
-
-        <section anchor="es" title="Ethernet Segments">
-          <t>The 'ethernet-segments' container is used to list a set of ESes
-          that are defined in an EVPN service. In reference to the structure
-          shown in <xref target="es-tree"></xref>, the following data nodes
-          can be included:<list style="hanging">
-              <t hangText="'name':">Sets a name to uniquely identify an ES.
-              This name is called in the VPN network access level to handle
-              multi-homing, for example.</t>
-
-              <t hangText="'esi-type':">Indicates the ESI type as discussed in
-              Section 5 of <xref target="RFC7432"></xref>. ESI can be
-              automatically assigned either with or without indicating a pool
-              from which the ESI should be taken. The following types are
-              supported: <list style="hanging">
-                  <t hangText="'esi-type-0':">The ESI is directly configured
-                  by the VPN service provider.</t>
-
-                  <t hangText="'esi-type-1':">The ESI is auto-generated from
-                  the IEEE 802.1AX Link Aggregation Control Protocol (LACP)
-                  <xref target="IEEE802.1AX"></xref>.</t>
-
-                  <t hangText="'esi-type-2':">The ESI is auto-generated and
-                  determined based on the Layer 2 bridge protocol.</t>
-
-                  <t hangText="'esi-type-3':">The ESI is a MAC-based ESI value
-                  that can be auto-generated or configured by the VPN service
-                  provider.</t>
-
-                  <t hangText="'esi-type-4':">The ESI is auto-generated or
-                  configured by the VPN service provider based on the
-                  Router-ID. The 'router-id' supplied in <xref
-                  target="vpn_node"></xref> can be used to auto-derive an ESI
-                  when this type is used.</t>
-
-                  <t hangText="'esi-type-5':">The ESI is auto-generated or
-                  configured by the VPN service provider based on the
-                  Autonomous System (AS) number. The 'local-autonomous-system'
-                  supplied in <xref target="profile"></xref> can be used to
-                  auto-derive an ESI when this type is used.</t>
-                </list></t>
-
-              <t hangText="'esi-redundancy-mode':">Specifies the EVPN
-              redundancy mode for a given ES. The following modes are
-              supported: Single-Active (Section 14.1.1 of <xref
-              target="RFC7432"></xref>) or All-Active (Section 14.1.2 of <xref
-              target="RFC7432"></xref>).</t>
-
-              <t hangText="'df-election':">Specifies a set of parameters
-              related to the Designated Forwarder (DF) election (Section 8.5
-              of <xref target="RFC7432"></xref>). For example, this data node
-              can be used to indicate an election method (e.g., <xref
-              target="RFC8584"></xref> or <xref
-              target="I-D.ietf-bess-evpn-pref-df"></xref>). If no election
-              method is indicated, the default one defined in Section 8.5 of
-              <xref target="RFC7432"></xref> is used.</t>
-
-              <t hangText="'split-horizon-filtering':">Controls the activation
-              of the split-horizon filtering for an ES (Section 8.3 of <xref
-              target="RFC7432"></xref>).</t>
-
-              <t hangText="'backbone-src-mac':">Associates a Provider Backbone
-              MAC (B-MAC) address with an ES. This is particularly useful for
-              All-Active multihomed ESes (Section 9.1 of <xref
-              target="RFC7623"></xref>).</t>
-            </list></t>
-
-          <t><figure align="center" anchor="es-tree"
-              title="Ethernet Segments Subtree">
-              <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw vpn-services
-        +--rw vpn-service* [vpn-id]
-           ...
-           +--rw ethernet-segments
-           |  +--rw ethernet-segment* [name]
-           |     +--rw name                                 string
-           |     +--rw esi-type?                       identityref
-           |     +--rw (esi-choice)?
-           |     |  +--:(directly-assigned)
-           |     |  |  +--rw ethernet-segment-identifier?
-           |     |  |          yang:hex-string
-           |     |  +--:(auto-assigned)
-           |     |     +--rw esi-auto
-           |     |        +--rw (auto-mode)?
-           |     |        |  +--:(from-pool)
-           |     |        |  |  +--rw esi-pool-name?
-           |     |        |  |          string
-           |     |        |  +--:(full-auto)
-           |     |        |     +--rw auto?
-           |     |        |             empty
-           |     |        +--ro auto-ethernet-segment-identifier?
-           |     |                yang:hex-string
-           |     +--rw esi-redundancy-mode?
-           |     |       identityref
-           |     +--rw df-election
-           |     |  +--rw df-election-method?   identityref
-           |     |  +--rw preference?           uint16
-           |     |  +--rw revertive?            boolean
-           |     |  +--rw election-wait-time?   uint32
-           |     +--rw split-horizon-filtering?             boolean
-           |     +--rw pbb
-           |        +--rw backbone-src-mac?   yang:mac-address
-                    ...             ]]></artwork>
-            </figure></t>
-        </section>
+            <t hangText="multicast-like':">Controls whether multicast is
+            allowed in the service.</t>
+          </list></t>
       </section>
 
       <section anchor="vpn_node" title="VPN Node">
@@ -1198,6 +1193,8 @@
         <figure align="right" anchor="vpn-node_tree" title="VPN Nodes Subtree">
           <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -1313,6 +1310,8 @@
               title="BGP Auto-Discovery Subtree">
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -1523,7 +1522,7 @@
    |           +--rw agi?
    |           |       rt-types:route-distinguisher
    |           +--rw saii?                      uint32
-   |           +--rw remote-peers* [taii]
+   |           +--rw remote-targets* [taii]
    |           |  +--rw taii         uint32
    |           |  +--rw peer-addr    inet:ip-address
    |           +--rw (ldp-or-l2tp)?
@@ -1570,7 +1569,7 @@
    |           +--rw agi?
    |           |       rt-types:route-distinguisher
    |           +--rw saii?                      uint32
-   |           +--rw remote-peers* [peer-addr taii]
+   |           +--rw remote-target* [peer-addr taii]
    |           |  +--rw peer-addr    inet:ip-address
    |           |  +--rw taii         uint32
    |           +--rw (ldp-or-l2tp)?
@@ -1694,6 +1693,10 @@
           this design is also meant to avoid manipulated global parameters at
           the service level and lower the risk of impacting other services
           sharing the same physical interface.</t>
+
+          <t>Some consistency checks should be ensured by implementations for
+          LAG interface as the same information (e.g., LACP system-id) should
+          be provided to the involved nodes.</t>
 
           <figure align="right" anchor="connection_tree"
                   title="Connection Subtree">
@@ -1831,6 +1834,8 @@
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
+     +--rw ethernet-segments
+     |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
            ...
@@ -1897,6 +1902,8 @@
               title="Service Overall Subtree">
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -3429,6 +3436,192 @@ module ietf-l2vpn-ntw {
         "Container for VPN profiles.";
       uses vpn-common:vpn-profile-cfg;
     }
+    container ethernet-segments {
+      description
+        "Top container for the Ethernet Segment Identifier (ESI).";
+      list ethernet-segment {
+        key "name";
+        description
+          "Top list for ESIs.";
+        leaf name {
+          type string;
+          description
+            "Includes the name of the Ethernet Segment (ES).";
+        }
+        leaf esi-type {
+          type identityref {
+            base esi-type;
+          }
+          default "esi-type-0";
+          description
+            "T-(ESI Type) is a 1-octet field (most significant
+             octet) that specifies the format of the remaining
+             9 octets (ESI Value).";
+          reference
+            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+        }
+        choice esi-choice {
+          description
+            "Ethernet segment choice between several types.
+             For ESI Type 0: The esi is directly configured by the
+                             operator.
+             For ESI Type 1: The auto-mode must be used.
+             For ESI Type 2: The auto-mode must be used.
+             For ESI Type 3: The directly-assigned or auto-mode must
+                             be used.
+             For ESI Type 4: The directly-assigned or auto-mode must
+                             be used.
+             For ESI Type 5: The directly-assigned or auto-mode must
+                             be used.";
+          case directly-assigned {
+            description
+              "Explicitly assign an ESI value.";
+            leaf ethernet-segment-identifier {
+              type yang:hex-string {
+                length "29";
+              }
+              description
+                "10-octet ESI.";
+            }
+          }
+          case auto-assigned {
+            description
+              "The ESI is auto-assigned.";
+            container esi-auto {
+              description
+                "The ESI is auto-assigned.";
+              choice auto-mode {
+                description
+                  "Indicates the auto-assignment mode. ESI can be
+                   automatically assigned either with or without
+                   indicating a pool from which the ESI should be
+                   taken.
+
+                   For both cases, the server will auto-assign an
+                   ESI value 'auto-assigned-ESI' and use that value
+                   operationally.";
+                case from-pool {
+                  leaf esi-pool-name {
+                    type string;
+                    description
+                      "The auto-assignment will be made from the
+                       pool identified by the ESI-pool-name.";
+                  }
+                }
+                case full-auto {
+                  leaf auto {
+                    type empty;
+                    description
+                      "Indicates an ESI is fully auto-assigned.";
+                  }
+                }
+              }
+              leaf auto-ethernet-segment-identifier {
+                type yang:hex-string {
+                  length "29";
+                }
+                config false;
+                description
+                  "The value of the auto-assigned ESI.";
+              }
+            }
+          }
+        }
+        leaf esi-redundancy-mode {
+          type identityref {
+            base evpn-redundancy-mode;
+          }
+          description
+            "Indicates the EVPN redundancy mode for a multihomed
+             CE.";
+          reference
+            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1";
+        }
+        container df-election {
+          description
+            "Top container for the DF election method properties.";
+          leaf df-election-method {
+            type identityref {
+              base df-election-methods;
+            }
+            default "default-7432";
+            description
+              "Specifies the DF election method.";
+            reference
+              "RFC 8584: Framework for Ethernet VPN Designated
+                         Forwarder Election Extensibility";
+          }
+          leaf preference {
+            when "derived-from-or-self(../df-election-method, "
+               + "'preference')" {
+              description
+                "The preference value is only applicable
+                 to the preference based method.";
+            }
+            type uint16;
+            description
+              "Defines a 2-octet value that indicates the PE
+               preference to become the DF in the ES.";
+            reference
+              "RFC 8584: Framework for Ethernet VPN Designated
+                         Forwarder Election Extensibility";
+          }
+          leaf revertive {
+            when "derived-from-or-self(../df-election-method, "
+               + "'preference')" {
+              description
+                "The revertive value is only applicable
+                 to the preference method.";
+            }
+            type boolean;
+            default "true";
+            description
+              "The 'preempt' or 'revertive' behavior. This
+               option allows a non-revertive behavior in the
+               DF election.";
+            reference
+              "RFC 8584: Framework for Ethernet VPN Designated
+                         Forwarder Election Extensibility";
+          }
+          leaf election-wait-time {
+            type uint32;
+            description
+              "Election wait timer.";
+            reference
+              "RFC 8584: Framework for Ethernet VPN Designated
+                         Forwarder Election Extensibility";
+          }
+        }
+        leaf split-horizon-filtering {
+          type boolean;
+          description
+            "Controls split-horizon filtering.
+
+             In order to achieve split-horizon filtering, every
+             Broadcast, unknown unicast, or multicast (BUM)
+             packet originating from a non-DF PE is encapsulated
+             with an MPLS label that identifies the origin ES.";
+          reference
+            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+        }
+        container pbb {
+          description
+            "Provider Backbone Bridging parameters .";
+          reference
+            "IEEE 802.1ah: Provider Backbone Bridge";
+          leaf backbone-src-mac {
+            type yang:mac-address;
+            description
+              "The PEs connected to the same CE must share the
+               same Provider Backbone (B-MAC) address in
+               All-Active mode.";
+            reference
+              "RFC 7623: Provider Backbone Bridging Combined with
+                         Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
+          }
+        }
+      }
+    }
     container vpn-services {
       description
         "Container for L2VPN services.";
@@ -3490,192 +3683,6 @@ module ietf-l2vpn-ntw {
             uses vpn-common:route-distinguisher;
             uses vpn-common:vpn-route-targets;
             uses global-parameters-profile;
-          }
-        }
-        container ethernet-segments {
-          description
-            "Top container for the Ethernet Segment Identifier (ESI).";
-          list ethernet-segment {
-            key "name";
-            description
-              "Top list for ESIs.";
-            leaf name {
-              type string;
-              description
-                "Includes the name of the Ethernet Segment (ES).";
-            }
-            leaf esi-type {
-              type identityref {
-                base esi-type;
-              }
-              default "esi-type-0";
-              description
-                "T-(ESI Type) is a 1-octet field (most significant
-                 octet) that specifies the format of the remaining
-                 9 octets (ESI Value).";
-              reference
-                "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
-            }
-            choice esi-choice {
-              description
-                "Ethernet segment choice between several types.
-                 For ESI Type 0: The esi is directly configured by the
-                                 operator.
-                 For ESI Type 1: The auto-mode must be used.
-                 For ESI Type 2: The auto-mode must be used.
-                 For ESI Type 3: The directly-assigned or auto-mode must
-                                 be used.
-                 For ESI Type 4: The directly-assigned or auto-mode must
-                                 be used.
-                 For ESI Type 5: The directly-assigned or auto-mode must
-                                 be used.";
-              case directly-assigned {
-                description
-                  "Explicitly assign an ESI value.";
-                leaf ethernet-segment-identifier {
-                  type yang:hex-string {
-                    length "29";
-                  }
-                  description
-                    "10-octet ESI.";
-                }
-              }
-              case auto-assigned {
-                description
-                  "The ESI is auto-assigned.";
-                container esi-auto {
-                  description
-                    "The ESI is auto-assigned.";
-                  choice auto-mode {
-                    description
-                      "Indicates the auto-assignment mode. ESI can be
-                       automatically assigned either with or without
-                       indicating a pool from which the ESI should be
-                       taken.
-
-                       For both cases, the server will auto-assign an
-                       ESI value 'auto-assigned-ESI' and use that value
-                       operationally.";
-                    case from-pool {
-                      leaf esi-pool-name {
-                        type string;
-                        description
-                          "The auto-assignment will be made from the
-                           pool identified by the ESI-pool-name.";
-                      }
-                    }
-                    case full-auto {
-                      leaf auto {
-                        type empty;
-                        description
-                          "Indicates an ESI is fully auto-assigned.";
-                      }
-                    }
-                  }
-                  leaf auto-ethernet-segment-identifier {
-                    type yang:hex-string {
-                      length "29";
-                    }
-                    config false;
-                    description
-                      "The value of the auto-assigned ESI.";
-                  }
-                }
-              }
-            }
-            leaf esi-redundancy-mode {
-              type identityref {
-                base evpn-redundancy-mode;
-              }
-              description
-                "Indicates the EVPN redundancy mode for a multihomed
-                 CE.";
-              reference
-                "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1";
-            }
-            container df-election {
-              description
-                "Top container for the DF election method properties.";
-              leaf df-election-method {
-                type identityref {
-                  base df-election-methods;
-                }
-                default "default-7432";
-                description
-                  "Specifies the DF election method.";
-                reference
-                  "RFC 8584: Framework for Ethernet VPN Designated
-                             Forwarder Election Extensibility";
-              }
-              leaf preference {
-                when "derived-from-or-self(../df-election-method, "
-                   + "'preference')" {
-                  description
-                    "The preference value is only applicable
-                     to the preference based method.";
-                }
-                type uint16;
-                description
-                  "Defines a 2-octet value that indicates the PE
-                   preference to become the DF in the ES.";
-                reference
-                  "RFC 8584: Framework for Ethernet VPN Designated
-                             Forwarder Election Extensibility";
-              }
-              leaf revertive {
-                when "derived-from-or-self(../df-election-method, "
-                   + "'preference')" {
-                  description
-                    "The revertive value is only applicable
-                     to the preference method.";
-                }
-                type boolean;
-                default "true";
-                description
-                  "The 'preempt' or 'revertive' behavior. This
-                   option allows a non-revertive behavior in the
-                   DF election.";
-                reference
-                  "RFC 8584: Framework for Ethernet VPN Designated
-                             Forwarder Election Extensibility";
-              }
-              leaf election-wait-time {
-                type uint32;
-                description
-                  "Election wait timer.";
-                reference
-                  "RFC 8584: Framework for Ethernet VPN Designated
-                             Forwarder Election Extensibility";
-              }
-            }
-            leaf split-horizon-filtering {
-              type boolean;
-              description
-                "Controls split-horizon filtering.
-
-                 In order to achieve split-horizon filtering, every
-                 Broadcast, unknown unicast, or multicast (BUM)
-                 packet originating from a non-DF PE is encapsulated
-                 with an MPLS label that identifies the origin ES.";
-              reference
-                "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
-            }
-            container pbb {
-              description
-                "Provider Backbone Bridging parameters .";
-              reference
-                "IEEE 802.1ah: Provider Backbone Bridge";
-              leaf backbone-src-mac {
-                type yang:mac-address;
-                description
-                  "The PEs connected to the same CE must share the 
-                   same Provider Backbone (B-MAC) address in 
-                   All-Active mode.";
-                reference
-                  "RFC 7623: Provider Backbone Bridging Combined with 
-                             Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
-              }
-            }
           }
         }
         container underlay-transport {
@@ -4827,8 +4834,8 @@ module ietf-l2vpn-ntw {
                   }
                   leaf ethernet-segment-identifier {
                     type leafref {
-                      path "/l2vpn-ntw/vpn-services/vpn-service"
-                         + "/ethernet-segments/ethernet-segment/name";
+                      path "/l2vpn-ntw/ethernet-segments"
+                         + "/ethernet-segment/name";
                     }
                     description
                       "Reference to the ESI associated to the VPN
@@ -5794,7 +5801,8 @@ module ietf-l2vpn-ntw {
  ]]></artwork>
           </figure><xref target="l2nm-vpls"></xref> show an example of a
         message body used to configured a VPLS instance using the L2NM. In
-        this example, BGP is used for both auto-discovery and signaling.</t>
+        this example, BGP is used for both auto-discovery and signaling. The
+        'signaling-type' data node is set to 'vpn-common:bgp-signaling'. </t>
 
         <t><figure align="center" anchor="l2nm-vpls"
             title="Example of L2NM Message Body to Configure a BGP-based VPLS">
@@ -5854,7 +5862,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE1",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -5897,7 +5905,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE2",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -5940,7 +5948,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE3",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -5983,7 +5991,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE4",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6076,7 +6084,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE1",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6090,10 +6098,10 @@ module ietf-l2vpn-ntw {
                 "signaling-option": {
                   "mtu-pw": 1500,
                   "ldp-or-l2tp": {
-                    "saii": "site1",
+                    "saii": 1,
                     "remote-targets": [
                       {
-                        "taii": "site2"
+                        "taii": 2
                       }
                     ]
                   },
@@ -6115,7 +6123,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "5/1/1.1",
-                "port-id": "5/1/1",
+                "interface-id": "5/1/1",
                 "description": "Interface to CE2",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6129,10 +6137,10 @@ module ietf-l2vpn-ntw {
                 "signaling-option": {
                   "mtu-pw": 1500,
                   "ldp-or-l2tp": {
-                    "saii": "site2",
+                    "saii": 2,
                     "remote-targets": [
                       {
-                        "taii": "site1"
+                        "taii": 1
                       }
                     ]
                   },
@@ -6206,7 +6214,7 @@ module ietf-l2vpn-ntw {
               "vpn-node-id": "450",
               "description": "SEDE_CENTRO_450",
               "ne-id": "2001:db8:5::1",
-              "role": "vpn-common:spoke-role",
+              "role": "vpn-common:hub-role",
               "status": {
                 "admin-status": {
                   "status": "vpn-common:admin-up"
@@ -6230,7 +6238,7 @@ module ietf-l2vpn-ntw {
               "vpn-network-access": {
                 "id": "4508671287",
                 "description": "VPN_450_SNA",
-                "port-id": "gigabithethernet0/0/1",
+                "interface-id": "gigabithethernet0/0/1",
                 "status": {
                   "admin-status": {
                     "status": "vpn-common:admin-up"
@@ -6301,7 +6309,7 @@ module ietf-l2vpn-ntw {
               "vpn-network-access": {
                 "id": "4508671288",
                 "description": "VPN_450_SNA",
-                "port-id": "gigabithethernet0/0/1",
+                "interface-id": "gigabithethernet0/0/1",
                 "status": {
                   "admin-status": {
                     "status": "vpn-common:admin-up"
@@ -6377,7 +6385,30 @@ module ietf-l2vpn-ntw {
            |<---------------- Emulated Service -------------------->|]]></artwork>
           </figure></t>
 
-        <t><xref target="vpws-evpn-ex"></xref> shows a simplified
+        <t>Let's first suppose that the following ES was created (<xref
+        target="es1"></xref>).</t>
+
+        <t><figure align="center" anchor="es1"
+            title="Example of L2NM Message Body to Configure an Ethernet Segment">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:ethernet-segments": {
+    "ethernet-segment": [
+      {
+        "name": "esi1",
+        "ethernet-segment-identifier": "00:11:11:11:11:11:11:\
+          11:11:11",
+        "esi-redundancy-mode": "all-active"
+      },
+      {
+        "name": "esi2",
+        "ethernet-segment-identifier": "00:22:22:22:22:22:22:\
+          22:22:22",
+        "esi-redundancy-mode": "all-active"
+      }
+    ]
+  }
+}]]></artwork>
+          </figure><xref target="vpws-evpn-ex"></xref> shows a simplified
         configuration to illustrate the use of the L2NM to configured
         VPWS-EVPN instance.</t>
 
@@ -6413,22 +6444,6 @@ module ietf-l2vpn-ntw {
             }
           ]
         },
-        "ethernet-segments": {
-          "ethernet-segment": [
-            {
-              "name": "esi1",
-              "ethernet-segment-identifier": "00:11:11:11:11:11:11:11:\
-               11:11",
-              "esi-redundancy-mode": "all-active"
-            },
-            {
-              "name": "esi2",
-              "ethernet-segment-identifier": "00:22:22:22:22:22:22:22:\
-              22:22",
-              "esi-redundancy-mode": "all-active"
-            }
-          ]
-        },
         "vpn-node": [
           {
             "vpn-node-id": "pe1",
@@ -6443,7 +6458,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE1",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6485,7 +6500,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE1",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6527,7 +6542,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE2",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6569,7 +6584,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE2",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6632,13 +6647,28 @@ module ietf-l2vpn-ntw {
  ]]></artwork>
           </figure></t>
 
-        <t><xref target="auto-lacp"></xref> shows how the L2NM is used to
-        instruct both PE1 and PE2 to auto-assign the ESI to identify the ES
-        used with CE1. In this example, we suppose that LACP is enabled and
-        that a Type 1 (T=0x01) is used as per Section 5 of <xref
-        target="RFC7432"></xref>. Note that this example does not include all
-        the details to configure the EVPN service, but focuses only on the ESI
-        management part.</t>
+        <t><xref target="es2"></xref> and <xref target="auto-lacp"></xref>
+        show how the L2NM is used to instruct both PE1 and PE2 to auto-assign
+        the ESI to identify the ES used with CE1. In this example, we suppose
+        that LACP is enabled and that a Type 1 (T=0x01) is used as per Section
+        5 of <xref target="RFC7432"></xref>. Note that this example does not
+        include all the details to configure the EVPN service, but focuses
+        only on the ESI management part.</t>
+
+        <t><figure align="center" anchor="es2"
+            title="Example of L2NM Message Body to Auto-Assign Ethernet Segment Identifiers">
+            <artwork><![CDATA[{
+  "ietf-l2vpn-ntw:ethernet-segments": {
+    "ethernet-segment": [
+      {
+        "name": "esi1",
+        "ethernet-segment-identifier": "esi-type-1",
+        "esi-redundancy-mode": "all-active"
+      }
+    ]
+  }
+}]]></artwork>
+          </figure></t>
 
         <t><figure align="center" anchor="auto-lacp"
             title="An Example of L2NM Message Body for ESI Auto-Assignement">
@@ -6649,15 +6679,6 @@ module ietf-l2vpn-ntw {
         "vpn-id": "auto-esi-lacp",
         "description": "Sample to illustrate auto-ESI",
         "vpn-type": "vpn-common:vpls-evpn",
-        "ethernet-segments": {
-          "ethernet-segment": [
-            {
-              "name": "esi1",
-              "esi-type": "esi-type-1",
-              "esi-redundancy-mode": "all-active"
-            }
-          ]
-        },
         "vpn-node": [
           {
             "vpn-node-id": "pe1",
@@ -6665,7 +6686,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "1/1/1.1",
-                "port-id": "1/1/1",
+                "interface-id": "1/1/1",
                 "description": "Interface to CE1",
                 "global-parameters-profile": "simple-profile",
                 "status": {
@@ -6702,7 +6723,7 @@ module ietf-l2vpn-ntw {
             "vpn-network-access": [
               {
                 "id": "2/2/2.5",
-                "port-id": "2/2/2",
+                "interface-id": "2/2/2",
                 "description": "Interface to CE1",
                 "status": {
                   "admin-status": {
@@ -6748,100 +6769,16 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="auto-lacp-response"
             title="An Example of L2NM Message Body to Retrieve the Assigned ESI">
             <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
+  "ietf-l2vpn-ntw:ethernet-segments": {
+    "ethernet-segment": [
       {
-        "vpn-id": "auto-esi-lacp",
-        "description": "Sample to illustrate auto-ESI",
-        "vpn-type": "vpn-common:vpls-evpn",
-        "ethernet-segments": {
-          "ethernet-segment": [
-            {
-              "name": "esi1",
-              "esi-type": "esi-type-1",
-              "esi-auto": {
-                "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
-                 11:9A:00:00"
-              },
-              "esi-redundancy-mode": "all-active"
-            }
-          ]
+        "name": "esi1",
+        "ethernet-segment-identifier": "esi-type-1",
+        "esi-auto": {
+          "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
+              11:9A:00:00"
         },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "198.51.100.1",
-            "vpn-network-access": [
-              {
-                "id": "1/1/1.1",
-                "port-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-number": 1,
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
-                        }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "198.51.100.2",
-            "vpn-network-access": [
-              {
-                "id": "2/2/2.5",
-                "port-id": "2/2/2",
-                "description": "Interface to CE1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-number": 1,
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
-                        }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "esi-redundancy-mode": "all-active"
       }
     ]
   }
