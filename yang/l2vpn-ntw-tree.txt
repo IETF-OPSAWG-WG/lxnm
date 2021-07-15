@@ -15,9 +15,34 @@ module: ietf-l2vpn-ntw
      |     |  +--rw id    string
      |     +--rw routing-profile-identifier* [id]
      |        +--rw id    string
+     +--rw ethernet-segments
+     |  +--rw ethernet-segment* [name]
+     |     +--rw name                                 string
+     |     +--rw esi-type?                            identityref
+     |     +--rw (esi-choice)?
+     |     |  +--:(directly-assigned)
+     |     |  |  +--rw ethernet-segment-identifier?   yang:hex-string
+     |     |  +--:(auto-assigned)
+     |     |     +--rw esi-auto
+     |     |        +--rw (auto-mode)?
+     |     |        |  +--:(from-pool)
+     |     |        |  |  +--rw esi-pool-name?                string
+     |     |        |  +--:(full-auto)
+     |     |        |     +--rw auto?                         empty
+     |     |        +--ro auto-ethernet-segment-identifier?
+     |     |                yang:hex-string
+     |     +--rw esi-redundancy-mode?                 identityref
+     |     +--rw df-election
+     |     |  +--rw df-election-method?   identityref
+     |     |  +--rw preference?           uint16
+     |     |  +--rw revertive?            boolean
+     |     |  +--rw election-wait-time?   uint32
+     |     +--rw split-horizon-filtering?             boolean
+     |     +--rw pbb
+     |        +--rw backbone-src-mac?   yang:mac-address
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
-           +--rw vpn-id                        vpn-id
+           +--rw vpn-id                        vpn-common:vpn-id
            +--rw vpn-name?                     string
            +--rw vpn-description?              string
            +--rw customer-name?                string
@@ -82,36 +107,6 @@ module: ietf-l2vpn-ntw
            |        +--rw enabled?                 boolean
            |        +--rw customer-tree-flavors
            |           +--rw tree-flavor*   identityref
-           +--rw ethernet-segments
-           |  +--rw ethernet-segment* [name]
-           |     +--rw name                                 string
-           |     +--rw esi-type?
-           |     |       identityref
-           |     +--rw (esi-choice)?
-           |     |  +--:(directly-assigned)
-           |     |  |  +--rw ethernet-segment-identifier?
-           |     |  |          yang:hex-string
-           |     |  +--:(auto-assigned)
-           |     |     +--rw esi-auto
-           |     |        +--rw (auto-mode)?
-           |     |        |  +--:(from-pool)
-           |     |        |  |  +--rw esi-pool-name?
-           |     |        |  |          string
-           |     |        |  +--:(full-auto)
-           |     |        |     +--rw auto?
-           |     |        |             empty
-           |     |        +--ro auto-ethernet-segment-identifier?
-           |     |                yang:hex-string
-           |     +--rw esi-redundancy-mode?
-           |     |       identityref
-           |     +--rw df-election
-           |     |  +--rw df-election-method?   identityref
-           |     |  +--rw preference?           uint16
-           |     |  +--rw revertive?            boolean
-           |     |  +--rw election-wait-time?   uint32
-           |     +--rw split-horizon-filtering?             boolean
-           |     +--rw pbb
-           |        +--rw backbone-src-mac?   yang:mac-address
            +--rw underlay-transport
            |  +--rw (type)?
            |     +--:(abstract)
@@ -121,11 +116,11 @@ module: ietf-l2vpn-ntw
            |        +--rw protocol*                identityref
            +--rw status
            |  +--rw admin-status
-           |  |  +--rw status?         identityref
-           |  |  +--rw last-updated?   yang:date-and-time
+           |  |  +--rw status?        identityref
+           |  |  +--rw last-change?   yang:date-and-time
            |  +--rw oper-status
-           |     +--ro status?         identityref
-           |     +--ro last-updated?   yang:date-and-time
+           |     +--ro status?        identityref
+           |     +--ro last-change?   yang:date-and-time
            +--rw vpn-nodes
               +--rw vpn-node* [vpn-node-id]
                  +--rw vpn-node-id
@@ -161,11 +156,11 @@ module: ietf-l2vpn-ntw
                  |           +--rw tree-flavor*   identityref
                  +--rw status
                  |  +--rw admin-status
-                 |  |  +--rw status?         identityref
-                 |  |  +--rw last-updated?   yang:date-and-time
+                 |  |  +--rw status?        identityref
+                 |  |  +--rw last-change?   yang:date-and-time
                  |  +--rw oper-status
-                 |     +--ro status?         identityref
-                 |     +--ro last-updated?   yang:date-and-time
+                 |     +--ro status?        identityref
+                 |     +--ro last-change?   yang:date-and-time
                  +--rw bgp-auto-discovery
                  |  +--rw (bgp-type)?
                  |  |  +--:(l2vpn-bgp)
@@ -294,8 +289,7 @@ module: ietf-l2vpn-ntw
                  |              |  |       [peer-addr vc-id]
                  |              |  |  +--rw peer-addr
                  |              |  |  |       inet:ip-address
-                 |              |  |  +--rw vc-id
-                 |              |  |  |       vpn-common:vpn-id
+                 |              |  |  +--rw vc-id          string
                  |              |  |  +--rw pw-priority?   uint32
                  |              |  +--rw qinq
                  |              |     +--rw s-tag?   uint32
@@ -310,21 +304,18 @@ module: ietf-l2vpn-ntw
                        +--rw id
                        |       vpn-common:vpn-id
                        +--rw description?                 string
-                       +--rw port-id?
-                       |       vpn-common:vpn-id
+                       +--rw interface-id?                string
                        +--rw global-parameters-profile?   leafref
                        +--rw status
                        |  +--rw admin-status
-                       |  |  +--rw status?         identityref
-                       |  |  +--rw last-updated?   yang:date-and-time
+                       |  |  +--rw status?        identityref
+                       |  |  +--rw last-change?   yang:date-and-time
                        |  +--rw oper-status
-                       |     +--ro status?         identityref
-                       |     +--ro last-updated?   yang:date-and-time
+                       |     +--ro status?        identityref
+                       |     +--ro last-change?   yang:date-and-time
                        +--rw connection
-                       |  +--rw l2-termination-point?
-                       |  |       vpn-common:vpn-id
-                       |  +--rw local-bridge-reference?
-                       |  |       vpn-common:vpn-id
+                       |  +--rw l2-termination-point?     string
+                       |  +--rw local-bridge-reference?   string
                        |  +--rw bearer-reference?         string
                        |  |       {vpn-common:bearer-reference}?
                        |  +--rw encapsulation
@@ -472,9 +463,9 @@ module: ietf-l2vpn-ntw
                        +--rw service
                           +--rw mtu?
                           |       uint32
-                          +--rw svc-input-bandwidth
-                          |       {vpn-common:input-bw}?
-                          |  +--rw input-bandwidth* [type]
+                          +--rw svc-inbound-bandwidth
+                          |       {vpn-common:inbound-bw}?
+                          |  +--rw inbound-bandwidth* [type]
                           |     +--rw type      identityref
                           |     +--rw cos-id?   uint8
                           |     |       {vpn-common:qos}?
@@ -484,9 +475,9 @@ module: ietf-l2vpn-ntw
                           |     +--rw ebs?      uint64
                           |     +--rw pir?      uint64
                           |     +--rw pbs?      uint64
-                          +--rw svc-output-bandwidth
-                          |       {vpn-common:output-bw}?
-                          |  +--rw output-bandwidth* [type]
+                          +--rw svc-outbound-bandwidth
+                          |       {vpn-common:outbound-bw}?
+                          |  +--rw outbound-bandwidth* [type]
                           |     +--rw type      identityref
                           |     +--rw cos-id?   uint8
                           |     |       {vpn-common:qos}?
