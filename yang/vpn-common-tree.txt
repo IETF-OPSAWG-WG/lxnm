@@ -1,7 +1,7 @@
 module: ietf-vpn-common
 
   grouping vpn-description
-    +-- vpn-id?            vpn-id
+    +-- vpn-id?            vpn-common:vpn-id
     +-- vpn-name?          string
     +-- vpn-description?   string
     +-- customer-name?     string
@@ -19,21 +19,22 @@ module: ietf-vpn-common
        |  +-- id?   string
        +-- routing-profile-identifier* [id]
           +-- id?   string
-  grouping status-timestamp
-    +--ro status?         identityref
-    +--ro last-updated?   yang:date-and-time
+  grouping oper-status-timestamp
+    +--ro status?        identityref
+    +--ro last-change?   yang:date-and-time
   grouping service-status
     +-- status
        +-- admin-status
-       |  +-- status?         identityref
-       |  +-- last-updated?   yang:date-and-time
+       |  +-- status?        identityref
+       |  +-- last-change?   yang:date-and-time
        +-- oper-status
-          +--ro status?         identityref
-          +--ro last-updated?   yang:date-and-time
+          +--ro status?        identityref
+          +--ro last-change?   yang:date-and-time
   grouping underlay-transport
     +-- (type)?
        +--:(abstract)
        |  +-- transport-instance-id?   string
+       |  +-- instance-type?           identityref
        +--:(protocol)
           +-- protocol*                identityref
   grouping vpn-route-targets
@@ -45,27 +46,30 @@ module: ietf-vpn-common
     +-- vpn-policies
        +-- import-policy?   string
        +-- export-policy?   string
-  grouping rt-rd
+  grouping route-distinguisher
     +-- (rd-choice)?
-    |  +--:(directly-assigned)
-    |  |  +-- rd?             rt-types:route-distinguisher
-    |  +--:(pool-assigned)
-    |  |  +-- rd-pool-name?   string
-    |  |  +--ro rd-from-pool?   rt-types:route-distinguisher
-    |  +--:(full-autoasigned)
-    |  |  +-- auto?           empty
-    |  |  +--ro rd-auto?        rt-types:route-distinguisher
-    |  +--:(no-rd)
-    |     +-- no-rd?          empty
-    +-- vpn-targets
-       +-- vpn-target* [id]
-       |  +-- id?                  int8
-       |  +-- route-targets* [route-target]
-       |  |  +-- route-target?   rt-types:route-target
-       |  +-- route-target-type    rt-types:route-target-type
-       +-- vpn-policies
-          +-- import-policy?   string
-          +-- export-policy?   string
+       +--:(directly-assigned)
+       |  +-- rd?               rt-types:route-distinguisher
+       +--:(directly-assigned-suffix)
+       |  +-- rd-suffix?        uint16
+       +--:(auto-assigned)
+       |  +-- rd-auto
+       |     +-- (auto-mode)?
+       |     |  +--:(from-pool)
+       |     |  |  +-- rd-pool-name?   string
+       |     |  +--:(full-auto)
+       |     |     +-- auto?           empty
+       |     +--ro auto-assigned-rd?     rt-types:route-distinguisher
+       +--:(auto-assigned-suffix)
+       |  +-- rd-auto-suffix
+       |     +-- (auto-mode)?
+       |     |  +--:(from-pool)
+       |     |  |  +-- rd-pool-name?        string
+       |     |  +--:(full-auto)
+       |     |     +-- auto?                empty
+       |     +--ro auto-assigned-rd-suffix?   uint16
+       +--:(no-rd)
+          +-- no-rd?            empty
   grouping vpn-components-group
     +-- groups
        +-- group* [group-id]
