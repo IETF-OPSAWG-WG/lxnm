@@ -18,13 +18,13 @@ between a service orchestrator and a network
 ### l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt) or https://tinyurl.com/l3nm-latest
    
 ## L2 VPN Network-Oriented YANG Model
-A L2VPN Network Yang Model
+A L2VPN Network YANG Model
 
 This document defines a YANG Data model (called, L2NM) that can be used to manage the provisioning of Layer 2 VPN services within a Service Provider Network. This YANG module provides representation of the Layer 2 VPN Service from a network standpoint. The module is meant to be used by a Network Controller to derive the configuration information that will be sent to relevant network devices.
 
 The L2SM complements the Layer 2 Service Model (RFC8466) by providing a network-centric view of the service that is internal to a Service Provider.
 
-### l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt)
+### l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt) or https://tinyurl.com/l2nm-latest
 
 ##  A YANG Model for Network and VPN Service Performance Monitoring
 This document defines a YANG model for
@@ -33,7 +33,7 @@ This document defines a YANG model for
    on the topology at higher layer or the service topology between VPN
    sites.
    
-### PM Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-yang-vpn-service-pm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-pm/draft-ietf-opsawg-yang-vpn-service-pm.txt)
+### PM Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-yang-vpn-service-pm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-pm/draft-ietf-opsawg-yang-vpn-service-pm.txt) or https://tinyurl.com/vpn-pm-latest
 
 
 # Contributing
