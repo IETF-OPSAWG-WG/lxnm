@@ -91,7 +91,7 @@ module: ietf-l2vpn-ntw
            |     +--rw local-autonomous-system?    inet:as-number
            |     +--rw svc-mtu?                    uint32
            |     +--rw ce-vlan-preservation?       boolean
-           |     +--rw ce-vlan-cos-perservation?   boolean
+           |     +--rw ce-vlan-cos-preservation?   boolean
            |     +--rw control-word-negotiation?   boolean
            |     +--rw mac-policies
            |     |  +--rw mac-addr-limit
@@ -138,7 +138,7 @@ module: ietf-l2vpn-ntw
                  |     |       inet:as-number
                  |     +--rw svc-mtu?                    uint32
                  |     +--rw ce-vlan-preservation?       boolean
-                 |     +--rw ce-vlan-cos-perservation?   boolean
+                 |     +--rw ce-vlan-cos-preservation?   boolean
                  |     +--rw control-word-negotiation?   boolean
                  |     +--rw mac-policies
                  |     |  +--rw mac-addr-limit
@@ -210,7 +210,7 @@ module: ietf-l2vpn-ntw
                  |  |       uint16
                  |  +--rw mtu-allow-mismatch?
                  |  |       boolean
-                 |  +--rw type?                                 leafref
+                 |  +--rw signaling-type?                       leafref
                  |  +--rw (signaling-option)?
                  |     +--:(bgp)
                  |     |  +--rw (bgp-type)?
@@ -319,7 +319,7 @@ module: ietf-l2vpn-ntw
                        |  +--rw bearer-reference?         string
                        |  |       {vpn-common:bearer-reference}?
                        |  +--rw encapsulation
-                       |  |  +--rw type?              identityref
+                       |  |  +--rw encap-type?        identityref
                        |  |  +--rw dot1q {vpn-common:dot1q}?
                        |  |  |  +--rw tag-type?   identityref
                        |  |  |  +--rw cvlan-id?   uint16
@@ -344,33 +344,31 @@ module: ietf-l2vpn-ntw
                        |  |     +--rw cvlan-id    uint16
                        |  +--rw lag-interface
                        |          {vpn-common:lag-interface}?
-                       |     +--rw lag-interface*
-                       |     |       [lag-interface-number]
-                       |     |  +--rw lag-interface-number    uint32
-                       |     |  +--rw lacp
-                       |     |     +--rw lacp-state?         boolean
-                       |     |     +--rw lacp-mode?          boolean
-                       |     |     +--rw lacp-speed?         boolean
-                       |     |     +--rw mini-link?          uint32
-                       |     |     +--rw system-id?
-                       |     |     |       yang:mac-address
-                       |     |     +--rw admin-key?          uint16
-                       |     |     +--rw system-priority?    uint16
-                       |     |     +--rw member-link-list
-                       |     |     |  +--rw member-link* [name]
-                       |     |     |     +--rw name
-                       |     |     |     |       string
-                       |     |     |     +--rw port-speed?
-                       |     |     |     |       uint32
-                       |     |     |     +--rw mode?
-                       |     |     |     |       identityref
-                       |     |     |     +--rw link-mtu?
-                       |     |     |     |       uint32
-                       |     |     |     +--rw oam-802.3ah-link
-                       |     |     |             {oam-3ah}?
-                       |     |     |        +--rw enable?   boolean
-                       |     |     +--rw flow-control?       string
-                       |     |     +--rw lldp?               boolean
+                       |     +--rw lag-interface-id?   string
+                       |     +--rw lacp
+                       |     |  +--rw lacp-state?         boolean
+                       |     |  +--rw lacp-mode?          boolean
+                       |     |  +--rw lacp-speed?         boolean
+                       |     |  +--rw mini-link?          uint32
+                       |     |  +--rw system-id?
+                       |     |  |       yang:mac-address
+                       |     |  +--rw admin-key?          uint16
+                       |     |  +--rw system-priority?    uint16
+                       |     |  +--rw member-link-list
+                       |     |  |  +--rw member-link* [name]
+                       |     |  |     +--rw name
+                       |     |  |     |       string
+                       |     |  |     +--rw port-speed?
+                       |     |  |     |       uint32
+                       |     |  |     +--rw mode?
+                       |     |  |     |       identityref
+                       |     |  |     +--rw link-mtu?
+                       |     |  |     |       uint32
+                       |     |  |     +--rw oam-802.3ah-link
+                       |     |  |             {oam-3ah}?
+                       |     |  |        +--rw enable?   boolean
+                       |     |  +--rw flow-control?       string
+                       |     |  +--rw lldp?               boolean
                        |     +--rw split-horizon
                        |        +--rw group-name?   string
                        +--rw vpws-service-instance
@@ -404,7 +402,6 @@ module: ietf-l2vpn-ntw
                        |                   uint32
                        +--rw group* [group-id]
                        |  +--rw group-id                       string
-                       |  +--rw group-color?                   string
                        |  +--rw precedence?
                        |  |       identityref
                        |  +--rw ethernet-segment-identifier?   leafref
@@ -439,7 +436,7 @@ module: ietf-l2vpn-ntw
                        |     |       string
                        |     +--rw mep-id?
                        |     |       uint32
-                       |     +--rw type?
+                       |     +--rw pm-type?
                        |     |       identityref
                        |     +--rw remote-mep-id?
                        |     |       uint32
@@ -465,28 +462,28 @@ module: ietf-l2vpn-ntw
                           |       uint32
                           +--rw svc-inbound-bandwidth
                           |       {vpn-common:inbound-bw}?
-                          |  +--rw inbound-bandwidth* [type]
-                          |     +--rw type      identityref
-                          |     +--rw cos-id?   uint8
+                          |  +--rw inbound-bandwidth* [bw-type]
+                          |     +--rw bw-type    identityref
+                          |     +--rw cos-id?    uint8
                           |     |       {vpn-common:qos}?
-                          |     +--rw cir?      uint64
-                          |     +--rw cbs?      uint64
-                          |     +--rw eir?      uint64
-                          |     +--rw ebs?      uint64
-                          |     +--rw pir?      uint64
-                          |     +--rw pbs?      uint64
+                          |     +--rw cir?       uint64
+                          |     +--rw cbs?       uint64
+                          |     +--rw eir?       uint64
+                          |     +--rw ebs?       uint64
+                          |     +--rw pir?       uint64
+                          |     +--rw pbs?       uint64
                           +--rw svc-outbound-bandwidth
                           |       {vpn-common:outbound-bw}?
-                          |  +--rw outbound-bandwidth* [type]
-                          |     +--rw type      identityref
-                          |     +--rw cos-id?   uint8
+                          |  +--rw outbound-bandwidth* [bw-type]
+                          |     +--rw bw-type    identityref
+                          |     +--rw cos-id?    uint8
                           |     |       {vpn-common:qos}?
-                          |     +--rw cir?      uint64
-                          |     +--rw cbs?      uint64
-                          |     +--rw eir?      uint64
-                          |     +--rw ebs?      uint64
-                          |     +--rw pir?      uint64
-                          |     +--rw pbs?      uint64
+                          |     +--rw cir?       uint64
+                          |     +--rw cbs?       uint64
+                          |     +--rw eir?       uint64
+                          |     +--rw ebs?       uint64
+                          |     +--rw pir?       uint64
+                          |     +--rw pbs?       uint64
                           +--rw qos {vpn-common:qos}?
                           |  +--rw qos-classification-policy
                           |  |  +--rw rule* [id]
