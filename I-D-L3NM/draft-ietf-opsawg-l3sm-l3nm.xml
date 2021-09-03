@@ -2220,6 +2220,13 @@
           BFD is supported. The current data nodes can be specified:</t>
 
           <t><list style="hanging">
+              <t hangText="'session-type':">Indicates which BFD flavor is used
+              to setup the session (e.g., classic BFD <xref
+              target="RFC5880"></xref>, Seamless BFD <xref
+              target="RFC7880"></xref>). By default, the BFD session is
+              assumed to follow the behavior specified in <xref
+              target="RFC5880"></xref>.</t>
+
               <t hangText="'desired-min-tx-interval':">Is the minimum
               interval, in microseconds, that a PE would like to use when
               transmitting BFD Control packets less any jitter applied.</t>
@@ -2229,13 +2236,15 @@
               that a PE is capable of supporting, less any jitter applied by
               the sender.</t>
 
-              <t hangText="'detection-multiplier':">The negotiated transmit
+              <t hangText="'local-multiplier':">The negotiated transmit
               interval, multiplied by this value, provides the detection time
               for the PE.</t>
 
               <t hangText="'holdtime':">Is used to indicate the expected BFD
               holddown time. The value can be set by the customer or selected
-              from a profile.</t>
+              from a profile. This value may be inherited from the service
+              request (see Section 6.3.2.2.2 of <xref
+              target="RFC8299"></xref>).</t>
 
               <t hangText="'authentication':">Includes the required
               information to enable the BFD authentication modes discussed in
@@ -2250,9 +2259,10 @@
               <artwork align="left"><![CDATA[...
 +--rw oam
 |  +--rw bfd {vpn-common:bfd}?
+|     +--rw session-type?         identityref
 |     +--rw desired-min-tx-interval?   uint32
 |     +--rw required-min-rx-interval?   uint32
-|     +--rw detection-multiplier?      uint8
+|     +--rw local-multiplier?      uint8
 |     +--rw (holdtime)?
 |     |  +--:(fixed)
 |     |  |  +--rw fixed-value?    uint32
@@ -3528,7 +3538,7 @@ module ietf-l3vpn-ntw {
                 leaf interface-id {
                   type string;
                   description
-                    "Identifier for the physical or logical 
+                    "Identifier for the physical or logical
                      interface.
                      The identification of the sub-interface
                      is provided at the connection and/or IP
@@ -3821,7 +3831,7 @@ module ietf-l3vpn-ntw {
                         "Choice of the IPv4 address allocation.";
                       case provider-dhcp {
                         description
-                          "DHCP allocated addresses related 
+                          "DHCP allocated addresses related
                            parameters. IP addresses are allocated
                            by DHCP that is operated by the provider";
                         leaf dhcp-service-type {
@@ -3846,7 +3856,7 @@ module ietf-l3vpn-ntw {
                           case relay {
                             description
                               "Container for list of provider's DHCP
-                               servers (i.e., dhcp-service-type is set 
+                               servers (i.e., dhcp-service-type is set
                                to relay).";
                             leaf-list server-ip-address {
                               type inet:ipv4-address;
@@ -5101,6 +5111,14 @@ module ietf-l3vpn-ntw {
                     if-feature "vpn-common:bfd";
                     description
                       "Container for BFD.";
+                    leaf session-type {
+                      type identityref {
+                        base vpn-common:bfd-session-type;
+                      }
+                      default "vpn-common:classic-bfd";
+                      description
+                        "Specifies the BFD session type.";
+                    }
                     leaf desired-min-tx-interval {
                       type uint32;
                       units "microseconds";
@@ -5122,10 +5140,11 @@ module ietf-l3vpn-ntw {
                         "RFC 5880: Bidirectional Forwarding Detection
                                    (BFD), Section 6.8.7";
                     }
-                    leaf detection-multiplier {
+                    leaf local-multiplier {
                       type uint8 {
-                        range "1..max";
+                        range "1..255";
                       }
+                      default "3";
                       description
                         "The detection interval for the BFD session
                          is calculated by multiplying the value of
@@ -5154,6 +5173,9 @@ module ietf-l3vpn-ntw {
                              If the provider doesn't allow the
                              customer to use this function,
                              the fixed-value will not be set.";
+                          reference
+                            "RFC 5880: Bidirectional Forwarding Detection
+                                       (BFD), Section 6.8.18";
                         }
                       }
                       case profile {
@@ -5290,8 +5312,8 @@ module ietf-l3vpn-ntw {
                       "From the customer site's perspective,
                        the service oubtound bandwidth of the
                        connection or upload bandwidth from
-                       the site to the SP. Note that the L3SM uses 
-                       'output-bandwidth' to refer to the same 
+                       the site to the SP. Note that the L3SM uses
+                       'output-bandwidth' to refer to the same
                        concept.";
                   }
                   leaf mtu {
@@ -5945,6 +5967,8 @@ module ietf-l3vpn-ntw {
 
       <?rfc include='reference.RFC.4447'?>
 
+      <?rfc include='reference.RFC.7880'?>
+
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
           <title>pyang</title>
@@ -6467,9 +6491,9 @@ content-type: application/yang-data+json
       <t>During the discussions of this work, helpful comments, suggestions,
       and reviews were received from (listed alphabetically): Raul Arco,
       Miguel Cros Cecilia, Joe Clarke, Dhruv Dhody, Adrian Farrel, Roque
-      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, and Tom
-      Petch. Many thanks to them. Thanks to Philip Eardly for the review of an
-      early version of the document.</t>
+      Gagliano, Christian Jacquenet, Kireeti Kompella, Julian Lucek, Greg
+      Mirsky, and Tom Petch. Many thanks to them. Thanks to Philip Eardly for
+      the review of an early version of the document.</t>
 
       <t>Daniel King, Daniel Voyer, Luay Jalil, and Stephane Litkowski
       contributed to early version of the individual submission. <vspace
