@@ -1232,7 +1232,8 @@
             can be used, for example, to configure an IPv6 address as a Router
             ID when such capability is supported by involved routers. <vspace
             blankLines="1" />Values defined in 'active-vpn-instance-profiles'
-            overrides the ones defined in the VPN service level.</t>
+            overrides the ones defined in the VPN service level. An example is
+            shown in <xref target="app-ex"></xref>.</t>
 
             <t hangText="'msdp':">For redundancy purposes, Multicast Source
             Discovery Protocol (MSDP) <xref target="RFC3618"></xref> may be
@@ -6257,6 +6258,146 @@ content-type: application/yang-data+json
   }
 }  ]]></artwork>
         </figure>
+      </section>
+
+      <section anchor="app-ex"
+               title="Overriding VPN Instance Profile Parameters">
+        <t><xref target="override-ex"></xref> shows a simplified example to
+        illustrate how some information that is provided at the VPN service
+        level (particularly as part of the 'vpn-instance-profiles') can be
+        overridden by the one configured at the VPN node level. In this
+        example, PE3 and PE4 inherit the 'vpn-instance-profiles' parameters
+        that are specified at the VPN service level, but PE1 and PE2 are
+        provided with "maximum-routes" values at the VPN node level that
+        override the ones that are specified at the VPN service level.</t>
+
+        <t><figure align="center" anchor="override-ex"
+            title="VPN Instance Profile Example (Message Body)">
+            <artwork><![CDATA[{
+  "ietf-l3vpn-ntw:vpn-services": {
+    "vpn-service": [
+      {
+        "vpn-id": "override-example",
+        "vpn-service-topology": "vpn-common:hub-spoke",
+        "vpn-instance-profiles": {
+          "vpn-instance-profile": [
+            {
+              "profile-id": "HUB",
+              "role": "vpn-common:hub-role",
+              "local-autonomous-system": 64510,
+              "rd-suffix": 1001,
+              "address-family": [
+                {
+                  "address-family": "vpn-common:dual-stack",
+                  "maximum-routes": [
+                    {
+                      "protocol": "vpn-common:any",
+                      "maximum-routes": 100
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "profile-id": "SPOKE",
+              "role": "vpn-common:spoke-role",
+              "local-autonomous-system": 64510,
+              "address-family": [
+                {
+                  "address-family": "vpn-common:dual-stack",
+                  "maximum-routes": [
+                    {
+                      "protocol": "vpn-common:any",
+                      "maximum-routes": 1000
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "vpn-nodes": {
+          "vpn-node": [
+            {
+              "vpn-node-id": "PE1",
+              "ne-id": "pe1",
+              "router-id": "198.51.100.1",
+              "active-vpn-instance-profiles": {
+                "vpn-instance-profile": [
+                  {
+                    "profile-id": "HUB",
+                    "rd": "1:198.51.100.1:1001",
+                    "address-family": [
+                      {
+                        "address-family": "vpn-common:dual-stack",
+                        "maximum-routes": [
+                          {
+                            "protocol": "vpn-common:any",
+                            "maximum-routes": 10
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "vpn-node-id": "PE2",
+              "ne-id": "pe2",
+              "router-id": "198.51.100.2",
+              "active-vpn-instance-profiles": {
+                "vpn-instance-profile": [
+                  {
+                    "profile-id": "SPOKE",
+                    "address-family": [
+                      {
+                        "address-family": "vpn-common:dual-stack",
+                        "maximum-routes": [
+                          {
+                            "protocol": "vpn-common:any",
+                            "maximum-routes": 100
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "vpn-node-id": "PE3",
+              "ne-id": "pe3",
+              "router-id": "198.51.100.3",
+              "active-vpn-instance-profiles": {
+                "vpn-instance-profile": [
+                  {
+                    "profile-id": "SPOKE"
+                  }
+                ]
+              }
+            },
+            {
+              "vpn-node-id": "PE4",
+              "ne-id": "pe4",
+              "router-id": "198.51.100.4",
+              "active-vpn-instance-profiles": {
+                "vpn-instance-profile": [
+                  {
+                    "profile-id": "SPOKE"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}]]></artwork>
+          </figure></t>
+
+        <t></t>
       </section>
 
       <section anchor="multicast_vpn_example"
