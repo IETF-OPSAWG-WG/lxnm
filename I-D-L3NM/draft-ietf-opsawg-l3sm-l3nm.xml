@@ -2243,10 +2243,14 @@
               for the PE.</t>
 
               <t hangText="'holdtime':">Is used to indicate the expected BFD
-              holddown time. The value can be set by the customer or selected
-              from a profile. This value may be inherited from the service
+              holddown time. This value may be inherited from the service
               request (see Section 6.3.2.2.2 of <xref
               target="RFC8299"></xref>).</t>
+
+              <t hangText="'profile':">Refers to a BFD profile (<xref
+              target="vpn_profiles"></xref>). Such a profile can be set by the
+              provider or inherited from the service request (see Section
+              6.3.2.2.2 of <xref target="RFC8299"></xref>).</t>
 
               <t hangText="'authentication':">Includes the required
               information to enable the BFD authentication modes discussed in
@@ -2265,11 +2269,8 @@
 |     +--rw desired-min-tx-interval?   uint32
 |     +--rw required-min-rx-interval?   uint32
 |     +--rw local-multiplier?      uint8
-|     +--rw (holdtime)?
-|     |  +--:(fixed)
-|     |  |  +--rw fixed-value?    uint32
-|     |  +--:(profile)
-|     |  |  +--rw profile-name?   leafref
+|     +--rw holdtime?                   uint32
+|     +--rw profile?                    leafref
 |     +--rw authentication!
 |     |  +--rw key-chain?    key-chain:key-chain-ref
 |     |  +--rw meticulous?   boolean
@@ -2280,7 +2281,7 @@
 |           +--ro oper-status
 |              +--ro status?         identityref
 |              +--ro last-change?   yang:date-and-time 
-...                     ]]></artwork>
+...            ]]></artwork>
             </figure></t>
         </section>
 
@@ -2800,7 +2801,7 @@
       target="RFC8294"></xref>.</t>
 
       <figure align="center">
-        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-07-12.yang"
+        <artwork align="center"><![CDATA[<CODE BEGINS>  file "ietf-l3vpn-ntw@2021-09-06.yang"
 module ietf-l3vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l3vpn-ntw";
@@ -2870,7 +2871,7 @@ module ietf-l3vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-07-12 {
+  revision 2021-09-06 {
     description
       "Initial revision.";
     reference
@@ -5156,48 +5157,37 @@ module ietf-l3vpn-ntw {
                         "RFC 5880: Bidirectional Forwarding Detection
                                    (BFD), Section 6.8.7";
                     }
-                    choice holdtime {
-                      default "fixed";
+                    leaf holdtime {
+                      type uint32;
+                      units "msec";
                       description
-                        "Choice for holdtime flavor.";
-                      case fixed {
-                        leaf fixed-value {
-                          type uint32;
-                          units "msec";
-                          description
-                            "Expected BFD holdtime.
+                        "Expected BFD holdtime.
 
-                             The customer may impose some fixed
-                             values for the holdtime period if the
-                             provider allows the customer use of
-                             this function.
+                         The customer may impose some fixed
+                         values for the holdtime period if the
+                         provider allows the customer use of
+                         this function.
 
-                             If the provider doesn't allow the
-                             customer to use this function,
-                             the fixed-value will not be set.";
-                          reference
-                            "RFC 5880: Bidirectional Forwarding Detection
-                                       (BFD), Section 6.8.18";
-                        }
+                         If the provider doesn't allow the
+                         customer to use this function,
+                         the fixed-value will not be set.";
+                      reference
+                        "RFC 5880: Bidirectional Forwarding Detection
+                                   (BFD), Section 6.8.18";
+                    }
+                    leaf profile {
+                      type leafref {
+                        path "/l3vpn-ntw/vpn-profiles"
+                           + "/valid-provider-identifiers"
+                           + "/bfd-profile-identifier/id";
                       }
-                      case profile {
-                        description
-                          "Well-known SP profile.";
-                        leaf profile-name {
-                          type leafref {
-                            path "/l3vpn-ntw/vpn-profiles"
-                               + "/valid-provider-identifiers"
-                               + "/bfd-profile-identifier/id";
-                          }
-                          description
-                            "Well-known service provider profile name.
+                      description
+                        "Well-known service provider profile name.
 
-                             The provider can propose some profiles
-                             to the customer, depending on the
-                             service level the customer wants to
-                             achieve.";
-                        }
-                      }
+                         The provider can propose some profiles
+                         to the customer, depending on the
+                         service level the customer wants to
+                         achieve.";
                     }
                     container authentication {
                       presence "Enables BFD authentication";
