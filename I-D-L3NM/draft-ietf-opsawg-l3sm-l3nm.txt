@@ -119,7 +119,7 @@ Internet-Draft               L3NM YANG Model              September 2021
        7.6.6.  Services  . . . . . . . . . . . . . . . . . . . . . .  45
      7.7.  Multicast . . . . . . . . . . . . . . . . . . . . . . . .  51
    8.  L3NM YANG Module  . . . . . . . . . . . . . . . . . . . . . .  55
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . . 115
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . . 116
    10. IANA Considerations . . . . . . . . . . . . . . . . . . . . . 117
    11. References  . . . . . . . . . . . . . . . . . . . . . . . . . 117
      11.1.  Normative References . . . . . . . . . . . . . . . . . . 117
@@ -2032,7 +2032,7 @@ Internet-Draft               L3NM YANG Model              September 2021
   |     |  +--rw as-override?               boolean
   |     |  +--rw allow-own-as?              uint8
   |     |  +--rw prepend-global-as?         boolean
-  |     |  +--rw default-route?             boolean
+  |     |  +--rw send-default-route?        boolean
   |     |  +--rw site-of-origin?            rt-types:route-origin
   |     |  +--rw ipv6-site-of-origin?       rt-types:ipv6-route-origin
   |     |  +--rw redistribute-connected* [address-family]
@@ -2415,7 +2415,7 @@ Internet-Draft               L3NM YANG Model              September 2021
       capable of supporting, less any jitter applied by the sender.
 
    'local-multiplier':  The negotiated transmit interval, multiplied by
-      this value, provides the detection time for the PE.
+      this value, provides the detection time for the peer.
 
    'holdtime':  Is used to indicate the expected BFD holddown time.
       This value may be inherited from the service request (see
@@ -4941,7 +4941,7 @@ Internet-Draft               L3NM YANG Model              September 2021
                            the VPN node level is not prepended to
                            the BGP route updates for this access.";
                       }
-                      leaf default-route {
+                      leaf send-default-route {
                         type boolean;
                         default "false";
                         description
@@ -5805,19 +5805,19 @@ Internet-Draft               L3NM YANG Model              September 2021
                       }
                       default "3";
                       description
-                        "The detection interval for the BFD session
-                         is calculated by multiplying the value of
-                         the negotiated transmission interval by
-                         the detection multiplier value.";
+                        "Specifies the detection multiplier that is
+                         transmitted to a BFD peer.
+
+                         The detection interval for the receiving
+                         BFD peer is calculated by multiplying the value
+                         of the negotiated transmission interval by
+                         the received detection multiplier value.";
                       reference
                         "RFC 5880: Bidirectional Forwarding Detection
                                    (BFD), Section 6.8.7";
                     }
                     leaf holdtime {
                       type uint32;
-                      units "msec";
-                      description
-                        "Expected BFD holdtime.
 
 
 
@@ -5825,6 +5825,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 104]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+                      units "msec";
+                      description
+                        "Expected BFD holdtime.
 
                          The customer may impose some fixed
                          values for the holdtime period if the
@@ -5870,10 +5874,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                                      Detection (BFD), Section 6.7";
                       }
                     }
-                    uses vpn-common:service-status;
-                  }
-                }
-                container security {
 
 
 
@@ -5882,6 +5882,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 105]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                    uses vpn-common:service-status;
+                  }
+                }
+                container security {
                   description
                     "Site-specific security parameters.";
                   container encryption {
@@ -5926,10 +5930,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                         "Indicates the layer on which encryption
                          is enabled.";
                     }
-                    description
-                      "Container for encryption profile.";
-                    choice profile {
-                      description
 
 
 
@@ -5938,6 +5938,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 106]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                    description
+                      "Container for encryption profile.";
+                    choice profile {
+                      description
                         "Choice for the encryption profile.";
                       case provider-profile {
                         leaf profile-name {
@@ -5982,10 +5986,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                     description
                       "From the customer site's perspective,
                        the service oubtound bandwidth of the
-                       connection or upload bandwidth from
-                       the site to the SP. Note that the L3SM uses
-                       'output-bandwidth' to refer to the same
-                       concept.";
 
 
 
@@ -5994,6 +5994,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 107]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                       connection or upload bandwidth from
+                       the site to the SP. Note that the L3SM uses
+                       'output-bandwidth' to refer to the same
+                       concept.";
                   }
                   leaf mtu {
                     type uint16;
@@ -6038,10 +6042,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                           type decimal64 {
                             fraction-digits 5;
                             range "0..100";
-                          }
-                          units "percent";
-                          description
-                            "Specifies whether/how to rate-limit the
 
 
 
@@ -6050,6 +6050,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 108]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                          }
+                          units "percent";
+                          description
+                            "Specifies whether/how to rate-limit the
                              inbound traffic matching this QoS policy.
                              It is expressed as a percent of the value
                              that is indicated in 'input-bandwidth'.";
@@ -6094,10 +6098,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                           description
                             "The direction to which the QoS profile
                              is applied.";
-                        }
-                      }
-                    }
-                  }
 
 
 
@@ -6106,6 +6106,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 109]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                        }
+                      }
+                    }
+                  }
                   container carriers-carrier {
                     if-feature "vpn-common:carriers-carrier";
                     description
@@ -6150,10 +6154,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                                  Protocol  and Algorithms
                                  Specification";
                     leaf broadcast {
-                      type enumeration {
-                        enum client {
-                          description
-                            "The VPN node will listen to NTP broadcast
 
 
 
@@ -6162,6 +6162,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 110]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                      type enumeration {
+                        enum client {
+                          description
+                            "The VPN node will listen to NTP broadcast
                              messages on this VPN network access.";
                         }
                         enum server {
@@ -6206,10 +6210,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                             "The peer site has both sources and
                              receivers.";
                         }
-                      }
-                      default "source-receiver";
-                      description
-                        "Type of multicast site.";
 
 
 
@@ -6218,6 +6218,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 111]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                      }
+                      default "source-receiver";
+                      description
+                        "Type of multicast site.";
                     }
                     leaf address-family {
                       type identityref {
@@ -6262,10 +6266,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                       default "false";
                       description
                         "When true, there is no PIM adjacency on
-                         the interface.";
-                    }
-                    container igmp {
-                      when "../protocol-type = 'host' and "
 
 
 
@@ -6274,6 +6274,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 112]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                         the interface.";
+                    }
+                    container igmp {
+                      when "../protocol-type = 'host' and "
                          + "../address-family = 'vpn-common:ipv4' or "
                          + "'vpn-common:dual-stack'";
                       if-feature "vpn-common:igmp";
@@ -6318,10 +6322,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                         description
                           "Version of the IGMP.";
                       }
-                      uses vpn-common:service-status;
-                    }
-                    container mld {
-                      when "../protocol-type = 'host' and "
 
 
 
@@ -6330,6 +6330,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 113]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                      uses vpn-common:service-status;
+                    }
+                    container mld {
+                      when "../protocol-type = 'host' and "
                          + "../address-family = 'vpn-common:ipv6' or "
                          + "'vpn-common:dual-stack'";
                       if-feature "vpn-common:mld";
@@ -6374,10 +6378,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                         description
                           "Version of the MLD protocol.";
                       }
-                      uses vpn-common:service-status;
-                    }
-                    container pim {
-                      when "../protocol-type = 'router'";
 
 
 
@@ -6386,6 +6386,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 114]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                      uses vpn-common:service-status;
+                    }
+                    container pim {
+                      when "../protocol-type = 'router'";
                       if-feature "vpn-common:pim";
                       description
                         "Only applies when protocol type is PIM.";
@@ -6429,11 +6433,7 @@ Internet-Draft               L3NM YANG Model              September 2021
 }
 <CODE ENDS>
 
-9.  Security Considerations
 
-   The YANG module specified in this document defines schema for data
-   that is designed to be accessed via network management protocols such
-   as NETCONF [RFC6241] or RESTCONF [RFC8040].  The lowest NETCONF layer
 
 
 
@@ -6442,6 +6442,11 @@ Barguil, et al.           Expires March 7, 2022               [Page 115]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+9.  Security Considerations
+
+   The YANG module specified in this document defines schema for data
+   that is designed to be accessed via network management protocols such
+   as NETCONF [RFC6241] or RESTCONF [RFC8040].  The lowest NETCONF layer
    is the secure transport layer, and the mandatory-to-implement secure
    transport is Secure Shell (SSH) [RFC6242].  The lowest RESTCONF layer
    is HTTPS, and the mandatory-to-implement secure transport is TLS
@@ -6485,11 +6490,6 @@ Internet-Draft               L3NM YANG Model              September 2021
 
    Several data nodes ('bgp', 'ospf', 'isis', 'rip', and 'bfd') rely
    upon [RFC8177] for authentication purposes.  Therefore, this module
-   inherits the security considerations discussed in Section 5 of
-   [RFC8177].
-
-   As discussed in Section 7.6.3, the module supports MD5 to basically
-   accommodate the installed BGP base.  MD5 suffers from the security
 
 
 
@@ -6498,6 +6498,11 @@ Barguil, et al.           Expires March 7, 2022               [Page 116]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+   inherits the security considerations discussed in Section 5 of
+   [RFC8177].
+
+   As discussed in Section 7.6.3, the module supports MD5 to basically
+   accommodate the installed BGP base.  MD5 suffers from the security
    weaknesses discussed in Section 2 of [RFC6151] or Section 2.1 of
    [RFC6952].
 
@@ -6540,11 +6545,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               RFC 1112, DOI 10.17487/RFC1112, August 1989,
               <https://www.rfc-editor.org/info/rfc1112>.
 
-   [RFC1195]  Callon, R., "Use of OSI IS-IS for routing in TCP/IP and
-              dual environments", RFC 1195, DOI 10.17487/RFC1195,
-              December 1990, <https://www.rfc-editor.org/info/rfc1195>.
-
-
 
 
 
@@ -6553,6 +6553,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 117]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC1195]  Callon, R., "Use of OSI IS-IS for routing in TCP/IP and
+              dual environments", RFC 1195, DOI 10.17487/RFC1195,
+              December 1990, <https://www.rfc-editor.org/info/rfc1195>.
 
    [RFC2080]  Malkin, G. and R. Minnear, "RIPng for IPv6", RFC 2080,
               DOI 10.17487/RFC2080, January 1997,
@@ -6599,16 +6603,16 @@ Internet-Draft               L3NM YANG Model              September 2021
               Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
               2006, <https://www.rfc-editor.org/info/rfc4364>.
 
-   [RFC4552]  Gupta, M. and N. Melam, "Authentication/Confidentiality
-              for OSPFv3", RFC 4552, DOI 10.17487/RFC4552, June 2006,
-              <https://www.rfc-editor.org/info/rfc4552>.
-
 
 
 Barguil, et al.           Expires March 7, 2022               [Page 118]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC4552]  Gupta, M. and N. Melam, "Authentication/Confidentiality
+              for OSPFv3", RFC 4552, DOI 10.17487/RFC4552, June 2006,
+              <https://www.rfc-editor.org/info/rfc4552>.
 
    [RFC4577]  Rosen, E., Psenak, P., and P. Pillay-Esnault, "OSPF as the
               Provider/Customer Edge Protocol for BGP/MPLS IP Virtual
@@ -6651,10 +6655,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               DOI 10.17487/RFC6020, October 2010,
               <https://www.rfc-editor.org/info/rfc6020>.
 
-   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
-              and A. Bierman, Ed., "Network Configuration Protocol
-              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
-              <https://www.rfc-editor.org/info/rfc6241>.
 
 
 
@@ -6665,6 +6665,11 @@ Barguil, et al.           Expires March 7, 2022               [Page 119]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
+              and A. Bierman, Ed., "Network Configuration Protocol
+              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
+              <https://www.rfc-editor.org/info/rfc6241>.
 
    [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
               Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
@@ -6708,11 +6713,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               RFC 7950, DOI 10.17487/RFC7950, August 2016,
               <https://www.rfc-editor.org/info/rfc7950>.
 
-   [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
-              Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
-              <https://www.rfc-editor.org/info/rfc8040>.
-
-
 
 
 
@@ -6721,6 +6721,10 @@ Barguil, et al.           Expires March 7, 2022               [Page 120]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
+              Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
+              <https://www.rfc-editor.org/info/rfc8040>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -6765,10 +6769,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               Even, R., Wu, B., Wu, Q., and YingCheng, "YANG Data Model
               for Composed VPN Service Delivery", draft-evenwu-opsawg-
               yang-composed-vpn-03 (work in progress), March 2019.
-
-
-
-
 
 
 
