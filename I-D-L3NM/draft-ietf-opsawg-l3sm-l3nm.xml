@@ -1026,7 +1026,7 @@
            |  +--rw vpn-instance-profile* [profile-id]
            |     +--rw profile-id                 string
            |     +--rw role?                      identityref
-           |     +--rw local-autonomous-system?   inet:as-number 
+           |     +--rw local-as?                  inet:as-number 
            |     |      {vpn-common:rtg-bgp}?
            |     +--rw (rd-choice)?
            |     |  +--:(directly-assigned)
@@ -1085,8 +1085,8 @@
             target="I-D.ietf-opsawg-vpn-common"></xref> (e.g.,
             any-to-any-role, spoke-role, hub-role).</t>
 
-            <t hangText="'local-autonomous-system':">Indicates the Autonomous
-            System Number (ASN) that is configured for the VPN node.</t>
+            <t hangText="'local-as':">Indicates the Autonomous System Number
+            (ASN) that is configured for the VPN node.</t>
 
             <t hangText="'rd':">As defined in <xref
             target="I-D.ietf-opsawg-vpn-common"></xref>, the following RD
@@ -1159,7 +1159,7 @@
                  +--rw vpn-node-id                vpn-common:vpn-id
                  +--rw description?               string
                  +--rw ne-id?                     string
-                 +--rw local-autonomous-system?   inet:as-number
+                 +--rw local-as?                  inet:as-number
                  |       {vpn-common:rtg-bgp}?
                  +--rw router-id?                 rt-types:router-id
                  +--rw active-vpn-instance-profiles
@@ -1168,7 +1168,7 @@
                  |     +--rw router-id* [address-family]
                  |     |  +--rw address-family    identityref
                  |     |  +--rw router-id?        inet:ip-address
-                 |     +--rw local-autonomous-system?   inet:as-number
+                 |     +--rw local-as?            inet:as-number
                  |     |     {vpn-common:rtg-bgp}?
                  |     +--rw (rd-choice)?
                  |     |  ....
@@ -1806,12 +1806,11 @@
                   <t hangText="'description':">Includes a description of the
                   BGP session.</t>
 
-                  <t hangText="'local-autonomous-system':">Indicates a local
-                  AS Number (ASN) if a distinct ASN is required, other than
-                  the one configured at the VPN node level.</t>
+                  <t hangText="'local-as':">Indicates a local AS Number (ASN)
+                  if a distinct ASN is required, other than the one configured
+                  at the VPN node level.</t>
 
-                  <t hangText="'peer-autonomous-system':">Conveys the
-                  customer's ASN.</t>
+                  <t hangText="'peer-as':">Conveys the customer's ASN.</t>
 
                   <t hangText="'address-family':">Indicates the address-family
                   of the peer. It can be set to IPv4, IPv6, or dual-stack.</t>
@@ -1832,8 +1831,7 @@
                   <t hangText="'as-override':">If set, this parameter
                   indicates whether ASN override is enabled, i.e., replace the
                   ASN of the customer specified in the AS_PATH BGP attribute
-                  with the ASN identified in the 'local-autonomous-system'
-                  attribute.</t>
+                  with the ASN identified in the 'local-as' attribute.</t>
 
                   <t hangText="'allow-own-as':">Is used in some topologies
                   (e.g., hub-and-spoke) to allow the provider's ASN to be
@@ -1910,8 +1908,8 @@
 |     ...
 |     +--rw bgp {vpn-common:rtg-bgp}?
 |     |  +--rw description?               string
-|     |  +--rw local-autonomous-system?   inet:as-number
-|     |  +--rw peer-autonomous-system     inet:as-number
+|     |  +--rw local-as?                  inet:as-number
+|     |  +--rw peer-as                    inet:as-number
 |     |  +--rw address-family?            identityref
 |     |  +--rw local-address?             union
 |     |  +--rw neighbor*                  inet:ip-address
@@ -1929,7 +1927,7 @@
 |     |  |  +--rw max-prefix?          uint32
 |     |  |  +--rw warning-threshold?   decimal64
 |     |  |  +--rw violate-action?      enumeration
-|     |  |  +--rw restart-interval?    uint16
+|     |  |  +--rw restart-timer?    uint16
 |     |  +--rw bgp-timers
 |     |  |  +--rw keepalive?   uint16
 |     |  |  +--rw hold-time?    uint16
@@ -3012,7 +3010,7 @@ module ietf-l3vpn-ntw {
        be used to define generic profiles at the VPN service
        level and then called at the VPN node and VPN network
        access levels.";
-    leaf local-autonomous-system {
+    leaf local-as {
       if-feature "vpn-common:rtg-bgp";
       type inet:as-number;
       description
@@ -3451,7 +3449,7 @@ module ietf-l3vpn-ntw {
                 "Unique identifier of the network element where the VPN
                  node is deployed.";
             }
-            leaf local-autonomous-system {
+            leaf local-as {
               if-feature "vpn-common:rtg-bgp";
               type inet:as-number;
               description
@@ -4325,14 +4323,14 @@ module ietf-l3vpn-ntw {
                            description is local to an
                            implementation.";
                       }
-                      leaf local-autonomous-system {
+                      leaf local-as {
                         type inet:as-number;
                         description
                           "Indicates a local AS Number (ASN) if a
                            distinct ASN than the one configured at
                            the VPN node level is needed.";
                       }
-                      leaf peer-autonomous-system {
+                      leaf peer-as {
                         type inet:as-number;
                         mandatory true;
                         description
@@ -4524,12 +4522,12 @@ module ietf-l3vpn-ntw {
                             "BGP neighbor max-prefix violate
                              action";
                         }
-                        leaf restart-interval {
-                          type uint16;
-                          units "minutes";
+                        leaf restart-timer {
+                          type uint32;
+                          units "seconds";
                           description
-                            "Time interval (min) after which the
-                             BGP session will be reestablished.";
+                            "Time interval after which the BGP
+                             session will be reestablished.";
                         }
                       }
                       container bgp-timers {
@@ -4954,7 +4952,7 @@ module ietf-l3vpn-ntw {
                           description
                             "Indicates the RIP update time.
                              That is, the amount of time for which
-                             routing updates are sent.";
+                             RIP updates are sent.";
                         }
                         leaf invalid-interval {
                           type uint16 {
@@ -6041,7 +6039,7 @@ Content-Type: application/yang-data+json
           "vpn-instance-profile": [
             {
               "profile-id": "simple-profile",
-              "local-autonomous-system": 65550,
+              "local-as": 65550,
               "rd": "0:65550:1",
               "address-family": [
                 {
@@ -6289,7 +6287,7 @@ content-type: application/yang-data+json
             {
               "profile-id": "HUB",
               "role": "vpn-common:hub-role",
-              "local-autonomous-system": 64510,
+              "local-as": 64510,
               "rd-suffix": 1001,
               "address-family": [
                 {
@@ -6306,7 +6304,7 @@ content-type: application/yang-data+json
             {
               "profile-id": "SPOKE",
               "role": "vpn-common:spoke-role",
-              "local-autonomous-system": 64510,
+              "local-as": 64510,
               "address-family": [
                 {
                   "address-family": "vpn-common:dual-stack",
@@ -6447,7 +6445,7 @@ content-type: application/yang-data+json
             {
               "profile-id": "multicast",
               "role": "ietf-vpn-common:hub-role",
-              "local-autonomous-system": 65536,
+              "local-as": 65536,
               "multicast": {
                 "rp": {
                   "rp-group-mappings": {
@@ -6547,7 +6545,7 @@ content-type: application/yang-data+json
             "type": "vpn-common:bgp-routing",
             "bgp": {
               "description": "Connected to CE",
-              "peer-autonomous-system": "65537",
+              "peer-as": "65537",
               "address-family": "vpn-common:ipv4",
               "neighbor": "203.0.113.2"
             }
