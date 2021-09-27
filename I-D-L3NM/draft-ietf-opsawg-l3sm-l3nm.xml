@@ -1448,6 +1448,11 @@
           allow the association between a service request (e.g., L3SM) and
           L3NM.</t>
 
+          <t>The L3NM can be used to create a LAG interface in the context of
+          a given L3VPN service ('lag-interface') <xref
+          target="IEEE802.1AX"></xref>. Such LAG interface can be referenced
+          under 'interface-id' (<xref target="sna"></xref>).</t>
+
           <t><figure align="center" anchor="bearerethencap_tree"
               title="Connection Subtree Structure">
               <artwork align="center"><![CDATA[...
@@ -1482,7 +1487,12 @@
 |  +--rw l2-termination-point?      string
 |  +--rw local-bridge-reference?    string
 |  +--rw bearer-reference?         string 
-           {vpn-common:bearer-reference}?
+|  |       {vpn-common:bearer-reference}?
+|  +--rw lag-interface {vpn-common:lag-interface}?
+|     +--rw lag-interface-id?   string
+|     +--rw member-link-list
+|        +--rw member-link* [name]
+|           +--rw name    string
 ...
 ]]></artwork>
             </figure></t>
@@ -1711,7 +1721,7 @@
           not automatically imply that, from a device configuration
           perspective, there will be parallel instances (e.g., multiple
           processes) running on the PE-CE link. It is up to each
-          implementation (typically, the network orchestrator shown in <xref
+          implementation (typically, network orchestration shown in <xref
           target="xml_happy"></xref>) to decide about the appropriate
           configuration as a function of underlying capabilities and service
           provider operational guidelines. As an example, when multiple BGP
@@ -3091,7 +3101,7 @@ module ietf-l3vpn-ntw {
       "Grouping for data nodes that may be factorized
        among many levels of the model. The grouping can
        be used to define generic profiles at the VPN service
-       level and then referenced at the VPN node and VPN 
+       level and then referenced at the VPN node and VPN
        network access levels.";
     leaf local-as {
       if-feature "vpn-common:rtg-bgp";
@@ -3794,7 +3804,7 @@ module ietf-l3vpn-ntw {
                             "Neighbor reference.";
                           reference
                             "RFC 8077: Pseudowire Setup and Maintenance
-                                       Using the Label Distribution 
+                                       Using the Label Distribution
                                        Protocol (LDP), Section 6.1";
                         }
                       }
@@ -3843,8 +3853,8 @@ module ietf-l3vpn-ntw {
                           }
                           default "vpn-common:static-mode";
                           description
-                            "Specifies the VXLAN access mode. By 
-                             default, the peer mode is set to 
+                            "Specifies the VXLAN access mode. By
+                             default, the peer mode is set to
                              'static-mode'.";
                         }
                         leaf-list peer-ip-address {
@@ -3868,7 +3878,7 @@ module ietf-l3vpn-ntw {
                     type string;
                     description
                       "Specifies a reference to a local layer 2
-                       termination point such as a layer 2 
+                       termination point such as a layer 2
                        sub-interface.";
                   }
                   leaf local-bridge-reference {
@@ -3886,6 +3896,31 @@ module ietf-l3vpn-ntw {
                       "This is an internal reference for the service
                        provider to identify the bearer associated
                        with this VPN.";
+                  }
+                  container lag-interface {
+                    if-feature "vpn-common:lag-interface";
+                    description
+                      "Container of LAG interface attributes
+                       configuration.";
+                    leaf lag-interface-id {
+                      type string;
+                      description
+                        "LAG interface identifier.";
+                    }
+                    container member-link-list {
+                      description
+                        "Container of Member link list.";
+                      list member-link {
+                        key "name";
+                        description
+                          "Member link.";
+                        leaf name {
+                          type string;
+                          description
+                            "Member link name.";
+                        }
+                      }
+                    }
                   }
                 }
                 container ip-connection {
@@ -3905,7 +3940,7 @@ module ietf-l3vpn-ntw {
                     leaf local-address {
                       type inet:ipv4-address;
                       description
-                        "The IP address used at the provider's 
+                        "The IP address used at the provider's
                          interface.";
                     }
                     leaf prefix-length {
@@ -4744,7 +4779,7 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "BGP authentication key in ASCII 
+                                  "BGP authentication key in ASCII
                                    format.";
                               }
                               leaf crypto-algorithm {
@@ -4893,7 +4928,7 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "OSPF authentication key in ASCII 
+                                  "OSPF authentication key in ASCII
                                    format.";
                               }
                               leaf crypto-algorithm {
@@ -5011,7 +5046,7 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "IS-IS authentication key in ASCII 
+                                  "IS-IS authentication key in ASCII
                                    format.";
                               }
                               leaf crypto-algorithm {
@@ -5136,7 +5171,7 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "RIP authentication key in ASCII 
+                                  "RIP authentication key in ASCII
                                    format.";
                               }
                               leaf crypto-algorithm {
@@ -5188,7 +5223,7 @@ module ietf-l3vpn-ntw {
                       leaf-list virtual-ip-address {
                         type inet:ip-address;
                         description
-                          "Virtual IP addresses for a single VRRP 
+                          "Virtual IP addresses for a single VRRP
                            group.";
                         reference
                           "RFC 5798: Virtual Router Redundancy Protocol
@@ -5241,7 +5276,7 @@ module ietf-l3vpn-ntw {
                       default "1000000";
                       description
                         "The minimum interval between transmission of
-                         BFD control packets that the operator 
+                         BFD control packets that the operator
                          desires.";
                       reference
                         "RFC 5880: Bidirectional Forwarding Detection
@@ -5660,7 +5695,7 @@ module ietf-l3vpn-ntw {
                       default "false";
                       description
                         "A remote multicast source is a source that is
-                         not on the same subnet as the 
+                         not on the same subnet as the
                          vpn-network-access. When set to 'true', the
                          multicast traffic from a remote source is
                          accepted.";
@@ -5696,7 +5731,7 @@ module ietf-l3vpn-ntw {
                       leaf max-entries {
                         type uint32;
                         description
-                          "Indicates the maximum number of IGMP 
+                          "Indicates the maximum number of IGMP
                            entries.";
                       }
                       leaf max-group-sources {
@@ -5745,7 +5780,7 @@ module ietf-l3vpn-ntw {
                       leaf max-entries {
                         type uint32;
                         description
-                          "Indicates the maximum number of MLD 
+                          "Indicates the maximum number of MLD
                            entries.";
                       }
                       leaf max-group-sources {
@@ -5839,15 +5874,15 @@ module ietf-l3vpn-ntw {
           attacker who has access to these data nodes may be able to
           manipulate routing policies, QoS policies, or encryption properties.
           These data nodes are defined with "nacm:default-deny-write" tagging
-          <xref target="I-D.ietf-opsawg-vpn-common"></xref>. </t>
+          <xref target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
 
-          <t>''vpn-service': An attacker who is able to access network nodes
+          <t>'vpn-services': An attacker who is able to access network nodes
           can undertake various attacks, such as deleting a running L3VPN
           service, interrupting all the traffic of a client. In addition, an
           attacker may modify the attributes of a running service (e.g., QoS,
           bandwidth, routing protocols), leading to malfunctioning of the
           service and therefore to SLA violations. In addition, an attacker
-          could attempt to create an L3VPN service or adding a new network
+          could attempt to create an L3VPN service or add a new network
           access. In addition to using NACM to prevent authorized access, such
           activity can be detected by adequately monitoring and tracking
           network configuration changes.</t>
@@ -6116,6 +6151,20 @@ module ietf-l3vpn-ntw {
 
           <date month="November" year="2020" />
         </front>
+      </reference>
+
+      <reference anchor="IEEE802.1AX">
+        <front>
+          <title>Link Aggregation</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date month="" year="2020" />
+        </front>
+
+        <seriesInfo name="IEEE" value="Std 802.1AX-2020" />
       </reference>
     </references>
 
