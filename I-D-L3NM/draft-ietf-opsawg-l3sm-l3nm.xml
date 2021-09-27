@@ -189,7 +189,7 @@
       </address>
     </author>
 
-    <date day="20" month="September" year="2021" />
+    <date day="27" month="September" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -540,10 +540,10 @@
       trigger the instantiation of an L3NM. The customer may use the L3SM or
       more abstract models to request a service that relies upon an L3VPN
       service. For example, the customer may supply an IP Connectivity
-      Provisioning Profile (CPP) <xref target="RFC7297"></xref>, an enhanced
-      VPN (VPN+) service <xref target="I-D.ietf-teas-enhanced-vpn"></xref>, or
-      an IETF network slice service <xref
-      target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
+      Provisioning Profile (CPP) that characterizes the requested service
+      <xref target="RFC7297"></xref>, an enhanced VPN (VPN+) service <xref
+      target="I-D.ietf-teas-enhanced-vpn"></xref>, or an IETF network slice
+      service <xref target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
 
       <t>Note also that both the L3SM and the L3NM may be used in the context
       of the Abstraction and Control of TE Networks (ACTN) Framework <xref
@@ -793,7 +793,7 @@
         both IPv4 and IPv6. If, for some reasons, a data node is present for
         both dual-stack and IPv4 (or IPv6), the value that is indicated under
         dual-stack takes precedence over the one that is indicated under IPv4
-        (or IPv6). </t>
+        (or IPv6).</t>
       </section>
 
       <section anchor="vpn_profiles" title="VPN Profiles">
@@ -1285,7 +1285,7 @@
         <t></t>
       </section>
 
-      <section anchor="sna" title="VPN Network Access">
+      <section anchor="sna" title="VPN Network Accesses">
         <t>The 'vpn-network-access' includes a set of data nodes that describe
         the access information for the traffic that belongs to a particular
         L3VPN (<xref target="vpnaccess"></xref>).</t>
@@ -1732,18 +1732,32 @@
           policies of a service provider (e.g., filtering) are implemented as
           part of the device configuration; these are not captured in the
           L3NM, but the model allows local profiles to be associated with
-          routing instances ('routing-profiles').</t>
+          routing instances ('routing-profiles'). Note that these routing
+          profiles can be scoped to capture parameters that are globally
+          applied to all L3VPN services within a service provider network,
+          while customized L3VPN parameters are captured by means of the L3NM.
+          The provisioning of an L3VPN service will, thus, rely upon the
+          instantiation of these global routing profiles and the customized
+          L3NM.</t>
 
           <t>The L3NM supports the configuration of one or more IPv4/IPv6
           static routes. Since the same structure is used for both IPv4 and
           IPv6, it was considered to have one single container to group both
           static entries independently of their address family, but that
           design was abandoned to ease the mapping with the structure in <xref
-          target="RFC8299"></xref>. </t>
+          target="RFC8299"></xref>.</t>
 
-          <t><figure align="center" anchor="routing-static"
-              title="Static Routing Subtree Structure">
-              <artwork align="center"><![CDATA[...  
+          <section title="Static Routing">
+            <t>The L3NM supports the configuration of one or more IPv4/IPv6
+            static routes. Since the same structure is used for both IPv4 and
+            IPv6, it was considered to have one single container to group both
+            static entries independently of their address family, but that
+            design was abandoned to ease the mapping with the structure in
+            <xref target="RFC8299"></xref>.</t>
+
+            <t><figure align="center" anchor="routing-static"
+                title="Static Routing Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -1783,45 +1797,46 @@
 |     |              +--ro last-change?   yang:date-and-time
 ...
 ]]></artwork>
-            </figure></t>
+              </figure></t>
 
-          <t>As depicted in <xref target="routing-static"></xref>, the
-          following data nodes can be defined for a given IP prefix:<list
-              style="hanging">
-              <t hangText="'lan-tag':">Indicates a local tag (e.g.,
-              "myfavourite-lan") that is used to enforce local policies.</t>
+            <t>As depicted in <xref target="routing-static"></xref>, the
+            following data nodes can be defined for a given IP prefix:<list
+                style="hanging">
+                <t hangText="'lan-tag':">Indicates a local tag (e.g.,
+                "myfavourite-lan") that is used to enforce local policies.</t>
 
-              <t hangText="'next-hop':">Indicates the next-hop to be used for
-              the static route. It can be identified by an IP address, an
-              interface, etc.</t>
+                <t hangText="'next-hop':">Indicates the next-hop to be used
+                for the static route. It can be identified by an IP address,
+                an interface, etc.</t>
 
-              <t hangText="'bfd-enable':">Indicates whether BFD is enabled or
-              disabled for this static route entry.</t>
+                <t hangText="'bfd-enable':">Indicates whether BFD is enabled
+                or disabled for this static route entry.</t>
 
-              <t hangText="'metric':">Indicates the metric associated with the
-              static route entry.</t>
+                <t hangText="'metric':">Indicates the metric associated with
+                the static route entry.</t>
 
-              <t hangText="'preference':">Indicates the preference associated
-              with the static route entry. This preference is used to
-              selecting a preferred route among routes to the same destination
-              prefix.</t>
+                <t hangText="'preference':">Indicates the preference
+                associated with the static route entry. This preference is
+                used to selecting a preferred route among routes to the same
+                destination prefix.</t>
 
-              <t hangText="'status':">Used to convey the status of a static
-              route entry. This data node can also be used to control the
-              (de)activation of individual static route entries.</t>
-            </list></t>
+                <t hangText="'status':">Used to convey the status of a static
+                route entry. This data node can also be used to control the
+                (de)activation of individual static route entries.</t>
+              </list></t>
 
-          <t>In addition, the L3NM supports the following CE-PE routing
-          protocols: <list style="hanging">
-              <t hangText="BGP:">The L3NM allows the configuration of a BGP
-              neighbor, including a set for parameters that are pertinent to
-              be tweaked at the network level for service customization
-              purposes. <vspace blankLines="1" />This container does not aim
-              to include every BGP parameter; a comprehensive set of
-              parameters belongs more to the BGP device model. <figure
-                  align="center" anchor="routing-bgp"
-                  title="BGP Routing Subtree Structure">
-                  <artwork align="center"><![CDATA[...  
+            <t></t>
+          </section>
+
+          <section title="BGP">
+            <t>The L3NM allows the configuration of a BGP neighbor, including
+            a set for parameters that are pertinent to be tweaked at the
+            network level for service customization purposes. <vspace
+            blankLines="1" />The 'bgp' container does not aim to include every
+            BGP parameter; a comprehensive set of parameters belongs more to
+            the BGP device model. <figure align="center" anchor="routing-bgp"
+                title="BGP Routing Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -1874,122 +1889,126 @@
 |     |        +--ro last-change?   yang:date-and-time
 ...
 ]]></artwork>
-                </figure><vspace blankLines="1" />The following data nodes are
-              captured in <xref target="routing-bgp"></xref>. It is up to the
-              implementation (e.g., network orchestrator) to derive the
-              corresponding BGP device configuration:<list style="hanging">
-                  <t hangText="'description':">Includes a description of the
-                  BGP session.</t>
+              </figure><vspace blankLines="1" />The following data nodes are
+            captured in <xref target="routing-bgp"></xref>. It is up to the
+            implementation (e.g., network orchestrator) to derive the
+            corresponding BGP device configuration:<list style="hanging">
+                <t hangText="'description':">Includes a description of the BGP
+                session.</t>
 
-                  <t hangText="'local-as':">Indicates a local AS Number (ASN)
-                  if a distinct ASN is required, other than the one configured
-                  at the VPN node level.</t>
+                <t hangText="'local-as':">Indicates a local AS Number (ASN) if
+                a distinct ASN is required, other than the one configured at
+                the VPN node level.</t>
 
-                  <t hangText="'peer-as':">Conveys the customer's ASN.</t>
+                <t hangText="'peer-as':">Conveys the customer's ASN.</t>
 
-                  <t hangText="'address-family':">Indicates the address-family
-                  of the peer. It can be set to IPv4, IPv6, or dual-stack.
-                  <vspace blankLines="1" />This address family will be used
-                  together with the 'vpn-type' to derive the appropriate
-                  Address Family Identifiers (AFIs)/Subsequent Address Family
-                  Identifiers (SAFIs) that will be part of the derived device
-                  configurations (e.g., Unicast IPv4 MPLS L3VPN (AFI,SAFI =
-                  1,128) defined in Section 4.3.4 of <xref
-                  target="RFC4364"></xref>).</t>
+                <t hangText="'address-family':">Indicates the address-family
+                of the peer. It can be set to IPv4, IPv6, or dual-stack.
+                <vspace blankLines="1" />This address family will be used
+                together with the 'vpn-type' to derive the appropriate Address
+                Family Identifiers (AFIs)/Subsequent Address Family
+                Identifiers (SAFIs) that will be part of the derived device
+                configurations (e.g., Unicast IPv4 MPLS L3VPN (AFI,SAFI =
+                1,128) defined in Section 4.3.4 of <xref
+                target="RFC4364"></xref>).</t>
 
-                  <t hangText="'local-address':">Specifies an address or a
-                  reference to an interface to use when establishing the BGP
-                  transport session.</t>
+                <t hangText="'local-address':">Specifies an address or a
+                reference to an interface to use when establishing the BGP
+                transport session.</t>
 
-                  <t hangText="'neighbor':">Can indicate two neighbors (each
-                  for a given address-family) or one neighbor (if
-                  'address-family' attribute is set to dual-stack). A list of
-                  IP address(es) of the BGP neighbors can be then conveyed in
-                  this data node.</t>
+                <t hangText="'neighbor':">Can indicate two neighbors (each for
+                a given address-family) or one neighbor (if 'address-family'
+                attribute is set to dual-stack). A list of IP address(es) of
+                the BGP neighbors can be then conveyed in this data node.</t>
 
-                  <t hangText="'multihop':">Indicates the number of allowed IP
-                  hops between a PE and its BGP peer.</t>
+                <t hangText="'multihop':">Indicates the number of allowed IP
+                hops between a PE and its BGP peer.</t>
 
-                  <t hangText="'as-override':">If set, this parameter
-                  indicates whether ASN override is enabled, i.e., replace the
-                  ASN of the customer specified in the AS_PATH BGP attribute
-                  with the ASN identified in the 'local-as' attribute.</t>
+                <t hangText="'as-override':">If set, this parameter indicates
+                whether ASN override is enabled, i.e., replace the ASN of the
+                customer specified in the AS_PATH BGP attribute with the ASN
+                identified in the 'local-as' attribute.</t>
 
-                  <t hangText="'allow-own-as':">Is used in some topologies
-                  (e.g., hub-and-spoke) to allow the provider's ASN to be
-                  included in the AS_PATH BGP attribute received from a CE.
-                  Loops are prevented by setting 'allow-own-as' to a maximum
-                  number of provider's ASN occurrences. This parameter is set
-                  by default to '0' (that is, reject any AS_PATH attribute
-                  that includes the provider's ASN).</t>
+                <t hangText="'allow-own-as':">Is used in some topologies
+                (e.g., hub-and-spoke) to allow the provider's ASN to be
+                included in the AS_PATH BGP attribute received from a CE.
+                Loops are prevented by setting 'allow-own-as' to a maximum
+                number of provider's ASN occurrences. This parameter is set by
+                default to '0' (that is, reject any AS_PATH attribute that
+                includes the provider's ASN).</t>
 
-                  <t hangText="'prepend-global-as':">When distinct ASNs are
-                  configured in the VPN node and network access levels, this
-                  parameter controls whether the ASN provided at the VPN node
-                  level is prepended to the AS_PATH attribute.</t>
+                <t hangText="'prepend-global-as':">When distinct ASNs are
+                configured in the VPN node and network access levels, this
+                parameter controls whether the ASN provided at the VPN node
+                level is prepended to the AS_PATH attribute.</t>
 
-                  <t hangText="'send-default-route':">Controls whether default
-                  routes can be advertised to the peer.</t>
+                <t hangText="'send-default-route':">Controls whether default
+                routes can be advertised to the peer.</t>
 
-                  <t hangText="'site-of-origin':">Is meant to uniquely
-                  identify the set of routes learned from a site via a
-                  particular CE/PE connection and is used to prevent routing
-                  loops (Section 7 of <xref target="RFC4364"></xref>). The
-                  Site of Origin attribute is encoded as a Route Origin
-                  Extended Community.</t>
+                <t hangText="'site-of-origin':">Is meant to uniquely identify
+                the set of routes learned from a site via a particular CE/PE
+                connection and is used to prevent routing loops (Section 7 of
+                <xref target="RFC4364"></xref>). The Site of Origin attribute
+                is encoded as a Route Origin Extended Community.</t>
 
-                  <t hangText="'ipv6-site-of-origin':">Carries an IPv6 Address
-                  Specific BGP Extended Community that is used to indicate the
-                  Site of Origin for VRF information <xref
-                  target="RFC5701"></xref>. It is used to prevent routing
-                  loops.</t>
+                <t hangText="'ipv6-site-of-origin':">Carries an IPv6 Address
+                Specific BGP Extended Community that is used to indicate the
+                Site of Origin for VRF information <xref
+                target="RFC5701"></xref>. It is used to prevent routing
+                loops.</t>
 
-                  <t hangText="'redistribute-connected':">Controls whether the
-                  PE-CE link is advertised to other PEs.</t>
+                <t hangText="'redistribute-connected':">Controls whether the
+                PE-CE link is advertised to other PEs.</t>
 
-                  <t hangText="'bgp-max-prefix':">Controls the behavior when a
-                  prefix maximum is reached.<list style="hanging">
-                      <t hangText="'max-prefix':">Indicates the maximum number
-                      of BGP prefixes allowed in the BGP session. If the limit
-                      is reached, the action indicated in 'violate-action'
-                      will be followed.</t>
+                <t hangText="'bgp-max-prefix':">Controls the behavior when a
+                prefix maximum is reached.<list style="hanging">
+                    <t hangText="'max-prefix':">Indicates the maximum number
+                    of BGP prefixes allowed in the BGP session. If the limit
+                    is reached, the action indicated in 'violate-action' will
+                    be followed.</t>
 
-                      <t hangText="'warning-threshold':">A warning
-                      notification is triggered when this limit is
-                      reached.</t>
+                    <t hangText="'warning-threshold':">A warning notification
+                    is triggered when this limit is reached.</t>
 
-                      <t hangText="'violate-action':">Indicates which action
-                      to execute when the maximum number of BGP prefixes is
-                      reached. Examples of such actions are: send a warning
-                      message, discard extra paths from the peer, or restart
-                      the session.</t>
-                    </list></t>
+                    <t hangText="'violate-action':">Indicates which action to
+                    execute when the maximum number of BGP prefixes is
+                    reached. Examples of such actions are: send a warning
+                    message, discard extra paths from the peer, or restart the
+                    session.</t>
+                  </list></t>
 
-                  <t hangText="'bgp-timers': ">Two timers can be captured in
-                  this container: (1) 'hold-time' which is the time interval
-                  that will be used for the HoldTimer (Section 4.2 of <xref
-                  target="RFC4271"></xref>) when establishing a BGP session.
-                  (2) 'keepalive' which is the time interval for the KeepAlive
-                  timer between a PE and a BGP peer (Section 4.4 of <xref
-                  target="RFC4271"></xref>).</t>
+                <t hangText="'bgp-timers': ">Two timers can be captured in
+                this container: (1) 'hold-time' which is the time interval
+                that will be used for the HoldTimer (Section 4.2 of <xref
+                target="RFC4271"></xref>) when establishing a BGP session. (2)
+                'keepalive' which is the time interval for the KeepAlive timer
+                between a PE and a BGP peer (Section 4.4 of <xref
+                target="RFC4271"></xref>).</t>
 
-                  <t hangText="'authentication':">The module adheres to the
-                  recommendations in Section 13.2 of <xref
-                  target="RFC4364"></xref> as it allows enabling TCP-AO <xref
-                  target="RFC5925"></xref> and accommodates the installed base
-                  that makes use of MD5. In addition, the module includes a
-                  provision for the use of IPsec.</t>
+                <t hangText="'authentication':">The module adheres to the
+                recommendations in Section 13.2 of <xref
+                target="RFC4364"></xref> as it allows enabling TCP-AO <xref
+                target="RFC5925"></xref> and accommodates the installed base
+                that makes use of MD5. In addition, the module includes a
+                provision for the use of IPsec.<vspace blankLines="1" />This
+                version of the L3NM assumes that TCP-AO specific parameters
+                are preconfigured as part of the key-chain that is referenced
+                in the L3NM. No assumption is made about how such a key-chain
+                is pre-configured. However, the structure of the key-chain
+                should cover data nodes beyond those in <xref
+                target="RFC8177"></xref>, mainly SendID and RecvID (Section
+                3.1 of <xref target="RFC5925"></xref>).</t>
 
-                  <t hangText="'status':">Indicates the status of the BGP
-                  routing instance.</t>
-                </list></t>
+                <t hangText="'status':">Indicates the status of the BGP
+                routing instance.</t>
+              </list></t>
+          </section>
 
-              <t hangText="OSPF:">OSPF can be configured to run as a routing
-              protocol on the 'vpn-network-access'. The following data nodes
-              are captured in <xref target="routing-ospf"></xref>:<figure
-                  align="center" anchor="routing-ospf"
-                  title="OPSF Routing Subtree Structure">
-                  <artwork align="center"><![CDATA[...  
+          <section title="OSPF">
+            <t>OSPF can be configured to run as a routing protocol on the
+            'vpn-network-access'. <figure align="center" anchor="routing-ospf"
+                title="OPSF Routing Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -2026,52 +2045,52 @@
 |     |        +--ro last-change?  yang:date-and-time
 ...
 ]]></artwork>
-                </figure><list style="hanging">
-                  <t hangText="'address-family':">Indicates whether IPv4,
-                  IPv6, or both address families are to be activated. <vspace
-                  blankLines="1" />When the IPv4 or dual-stack address-family
-                  is requested, it is up to the implementation (e.g., network
-                  orchestrator) to decide whether OSPFv2 <xref
-                  target="RFC4577"></xref> or OSPFv3 <xref
-                  target="RFC6565"></xref> is used to announce IPv4 routes.
-                  Such decision will be typically reflected in the device
-                  configurations that will be derived to implement the
-                  L3VPN.</t>
+              </figure>The following data nodes are captured in <xref
+            target="routing-ospf"></xref>:<list style="hanging">
+                <t hangText="'address-family':">Indicates whether IPv4, IPv6,
+                or both address families are to be activated. <vspace
+                blankLines="1" />When the IPv4 or dual-stack address-family is
+                requested, it is up to the implementation (e.g., network
+                orchestrator) to decide whether OSPFv2 <xref
+                target="RFC4577"></xref> or OSPFv3 <xref
+                target="RFC6565"></xref> is used to announce IPv4 routes. Such
+                decision will be typically reflected in the device
+                configurations that will be derived to implement the
+                L3VPN.</t>
 
-                  <t hangText="'area-id':">Indicates the OSPF Area ID.</t>
+                <t hangText="'area-id':">Indicates the OSPF Area ID.</t>
 
-                  <t hangText="'metric':">Associates a metric with OSPF
-                  routes.</t>
+                <t hangText="'metric':">Associates a metric with OSPF
+                routes.</t>
 
-                  <t hangText="'sham-links':">Is used to create OSPF sham
-                  links between two VPN network accesses sharing the same area
-                  and having a backdoor link (Section 4.2.7 of <xref
-                  target="RFC4577"></xref> and Section 5 of <xref
-                  target="RFC6565"></xref>).</t>
+                <t hangText="'sham-links':">Is used to create OSPF sham links
+                between two VPN network accesses sharing the same area and
+                having a backdoor link (Section 4.2.7 of <xref
+                target="RFC4577"></xref> and Section 5 of <xref
+                target="RFC6565"></xref>).</t>
 
-                  <t hangText="'max-lsa':">Sets the maximum number of LSAs
-                  that the OSPF instance will accept.</t>
+                <t hangText="'max-lsa':">Sets the maximum number of LSAs that
+                the OSPF instance will accept.</t>
 
-                  <t hangText="'authentication':">Controls the authentication
-                  schemes to be enabled for the OSPF instance. The following
-                  options are supported: IPsec for OSPFv3 authentication <xref
-                  target="RFC4552"></xref>, authentication trailer for OSPFv2
-                  <xref target="RFC5709"></xref> <xref
-                  target="RFC7474"></xref> and OSPFv3 <xref
-                  target="RFC7166"></xref>.</t>
+                <t hangText="'authentication':">Controls the authentication
+                schemes to be enabled for the OSPF instance. The following
+                options are supported: IPsec for OSPFv3 authentication <xref
+                target="RFC4552"></xref>, authentication trailer for OSPFv2
+                <xref target="RFC5709"></xref> <xref target="RFC7474"></xref>
+                and OSPFv3 <xref target="RFC7166"></xref>.</t>
 
-                  <t hangText="'status':">Indicates the status of the OSPF
-                  routing instance.</t>
-                </list></t>
+                <t hangText="'status':">Indicates the status of the OSPF
+                routing instance.</t>
+              </list></t>
+          </section>
 
-              <t hangText="IS-IS:">The model (<xref
-              target="routing-isis"></xref>) allows the user to configure
-              IS-IS <xref target="ISO10589"></xref><xref
-              target="RFC1195"></xref><xref target="RFC5308"></xref> to run on
-              the 'vpn-network-access' interface.<figure align="center"
-                  anchor="routing-isis"
-                  title="IS-IS Routing Subtree Structure">
-                  <artwork align="center"><![CDATA[...  
+          <section title="IS-IS">
+            <t>The model (<xref target="routing-isis"></xref>) allows the user
+            to configure IS-IS <xref target="ISO10589"></xref><xref
+            target="RFC1195"></xref><xref target="RFC5308"></xref> to run on
+            the 'vpn-network-access' interface.<figure align="center"
+                anchor="routing-isis" title="IS-IS Routing Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -2101,40 +2120,43 @@
 |     |        +--ro last-change?  yang:date-and-time
 ...
 ]]></artwork>
-                </figure><vspace blankLines="1" /> The following IS-IS data
-              nodes are supported:<list style="hanging">
-                  <t hangText="'address-family':">Indicates whether IPv4,
-                  IPv6, or both address families are to be activated.</t>
+              </figure></t>
 
-                  <t hangText="'area-address':">Indicates the IS-IS area
-                  address.</t>
+            <t>The following IS-IS data nodes are supported:<list
+                style="hanging">
+                <t hangText="'address-family':">Indicates whether IPv4, IPv6,
+                or both address families are to be activated.</t>
 
-                  <t hangText="'level':">Indicates the IS-IS level: Level 1,
-                  Level 2, or both.</t>
+                <t hangText="'area-address':">Indicates the IS-IS area
+                address.</t>
 
-                  <t hangText="'metric':">Associates a metric with IS-IS
-                  routes.</t>
+                <t hangText="'level':">Indicates the IS-IS level: Level 1,
+                Level 2, or both.</t>
 
-                  <t hangText="'mode':">Indicates the IS-IS interface mode
-                  type. It can be set to 'active' (that is, send or receive
-                  IS-IS protocol control packets) or 'passive' (that is,
-                  suppress the sending of IS-IS updates through the
-                  interface).</t>
+                <t hangText="'metric':">Associates a metric with IS-IS
+                routes.</t>
 
-                  <t hangText="'authentication':">Controls the authentication
-                  schemes to be enabled for the IS-IS instance. Both the
-                  specification of a key-chain <xref target="RFC8177"></xref>
-                  and the direct specification of key and authentication
-                  algorithm are supported.</t>
+                <t hangText="'mode':">Indicates the IS-IS interface mode type.
+                It can be set to 'active' (that is, send or receive IS-IS
+                protocol control packets) or 'passive' (that is, suppress the
+                sending of IS-IS updates through the interface).</t>
 
-                  <t hangText="'status':">Indicates the status of the OSPF
-                  routing instance.</t>
-                </list></t>
+                <t hangText="'authentication':">Controls the authentication
+                schemes to be enabled for the IS-IS instance. Both the
+                specification of a key-chain <xref target="RFC8177"></xref>
+                and the direct specification of key and authentication
+                algorithm are supported.</t>
 
-              <t hangText="RIP:">The model allows the user to configure RIP to
-              run on the 'vpn-network-access' interface. <figure
-                  align="center" anchor="rip" title="RIP Subtree Structure">
-                  <artwork align="center"><![CDATA[...  
+                <t hangText="'status':">Indicates the status of the OSPF
+                routing instance.</t>
+              </list></t>
+          </section>
+
+          <section title="RIP">
+            <t>The model (<xref target="rip"></xref>) allows the user to
+            configure RIP to run on the 'vpn-network-access' interface.
+            <figure align="center" anchor="rip" title="RIP Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -2166,45 +2188,46 @@
 |     |        +--ro last-change?  yang:date-and-time
 ...
 ]]></artwork>
-                </figure><vspace blankLines="1" />As shown in <xref
-              target="rip"></xref>, the following RIP data nodes are
-              supported:<list style="hanging">
-                  <t hangText="'address-family':">Indicates whether IPv4,
-                  IPv6, or both address families are to be activated. This
-                  parameter is used to determine whether RIPv2 <xref
-                  target="RFC2453"></xref> and/or RIPng are to be enabled
-                  <xref target="RFC2080"></xref>.</t>
+              </figure><vspace blankLines="1" />As shown in <xref
+            target="rip"></xref>, the following RIP data nodes are
+            supported:<list style="hanging">
+                <t hangText="'address-family':">Indicates whether IPv4, IPv6,
+                or both address families are to be activated. This parameter
+                is used to determine whether RIPv2 <xref
+                target="RFC2453"></xref> and/or RIPng are to be enabled <xref
+                target="RFC2080"></xref>.</t>
 
-                  <t hangText="'timers':">Indicates the following timers:<list
-                      style="hanging">
-                      <t hangText="'update-interval':">Is the interval at
-                      which RIP updates are sent.</t>
+                <t hangText="'timers':">Indicates the following timers:<list
+                    style="hanging">
+                    <t hangText="'update-interval':">Is the interval at which
+                    RIP updates are sent.</t>
 
-                      <t hangText="'invalid-interval':">Is the interval before
-                      a RIP route is declared invalid.</t>
+                    <t hangText="'invalid-interval':">Is the interval before a
+                    RIP route is declared invalid.</t>
 
-                      <t hangText="'holddown-interval':">Is the interval
-                      before better RIP routes are released.</t>
+                    <t hangText="'holddown-interval':">Is the interval before
+                    better RIP routes are released.</t>
 
-                      <t hangText="'flush-interval':">Is the interval before a
-                      route is removed from the routing table.</t>
-                    </list></t>
+                    <t hangText="'flush-interval':">Is the interval before a
+                    route is removed from the routing table.</t>
+                  </list></t>
 
-                  <t hangText="'default-metric':">Sets the default RIP
-                  metric.</t>
+                <t hangText="'default-metric':">Sets the default RIP
+                metric.</t>
 
-                  <t hangText="'authentication':">Controls the authentication
-                  schemes to be enabled for the RIP instance.</t>
+                <t hangText="'authentication':">Controls the authentication
+                schemes to be enabled for the RIP instance.</t>
 
-                  <t hangText="'status':">Indicates the status of the RIP
-                  routing instance.</t>
-                </list></t>
+                <t hangText="'status':">Indicates the status of the RIP
+                routing instance.</t>
+              </list></t>
+          </section>
 
-              <t hangText="VRRP:">The model (<xref target="vrrp"></xref>)
-              allows enabling VRRP on the 'vpn-network-access' interface.
-              <figure align="center" anchor="vrrp"
-                  title="VRRP Subtree Structure">
-                  <artwork align="center"><![CDATA[...  
+          <section title="VRRP">
+            <t>The model (<xref target="vrrp"></xref>) allows enabling VRRP on
+            the 'vpn-network-access' interface. <figure align="center"
+                anchor="vrrp" title="VRRP Subtree Structure">
+                <artwork align="center"><![CDATA[...  
 +--rw routing-protocols
 |  +--rw routing-protocol* [id]
 |     ...
@@ -2224,41 +2247,41 @@
 |              +--ro last-change?  yang:date-and-time
 ...
 ]]></artwork>
-                </figure><vspace blankLines="1" />The following data nodes are
-              supported:<list style="hanging">
-                  <t hangText="'address-family':">Indicates whether IPv4,
-                  IPv6, or both address families are to be activated. Note
-                  that VRRP version 3 <xref target="RFC5798"></xref> supports
-                  both IPv4 and IPv6.</t>
+              </figure><vspace blankLines="1" />The following data nodes are
+            supported:<list style="hanging">
+                <t hangText="'address-family':">Indicates whether IPv4, IPv6,
+                or both address families are to be activated. Note that VRRP
+                version 3 <xref target="RFC5798"></xref> supports both IPv4
+                and IPv6.</t>
 
-                  <t hangText="'vrrp-group':">Is used to identify the VRRP
-                  group.</t>
+                <t hangText="'vrrp-group':">Is used to identify the VRRP
+                group.</t>
 
-                  <t hangText="'backup-peer':">Carries the IP address of the
-                  peer.</t>
+                <t hangText="'backup-peer':">Carries the IP address of the
+                peer.</t>
 
-                  <t hangText="'virtual-ip-address':">Includes virtual IP
-                  addresses for a single VRRP group.</t>
+                <t hangText="'virtual-ip-address':">Includes virtual IP
+                addresses for a single VRRP group.</t>
 
-                  <t hangText="'priority':">Assigns the VRRP election priority
-                  for the backup virtual router.</t>
+                <t hangText="'priority':">Assigns the VRRP election priority
+                for the backup virtual router.</t>
 
-                  <t hangText="'ping-reply':">Controls whether ping requests
-                  can be replied to.</t>
+                <t hangText="'ping-reply':">Controls whether ping requests can
+                be replied to.</t>
 
-                  <t hangText="'status':">Indicates the status of the VRRP
-                  instance.</t>
-                </list>Note that no authentication data node is included for
-              VRRP as there isn't currently any type of VRRP authentication
-              (see Section 9 of <xref target="RFC5798"></xref>).</t>
-            </list></t>
+                <t hangText="'status':">Indicates the status of the VRRP
+                instance.</t>
+              </list>Note that no authentication data node is included for
+            VRRP as there isn't currently any type of VRRP authentication (see
+            Section 9 of <xref target="RFC5798"></xref>).</t>
+          </section>
         </section>
 
         <section anchor="sec-oam" title="OAM">
           <t>This container (<xref target="oam"></xref>) defines the
           Operations, Administration, and Maintenance (OAM) mechanisms used
           for a VPN network access. In the current version of the L3NM, only
-          BFD is supported. </t>
+          BFD is supported.</t>
 
           <t><figure align="center" anchor="oam"
               title="IP Connection Subtree Structure (OAM)">
@@ -2282,7 +2305,7 @@
 |              +--ro status?         identityref
 |              +--ro last-change?   yang:date-and-time 
 ...            ]]></artwork>
-            </figure>The current data nodes can be specified:</t>
+            </figure>The following OAM data nodes can be specified:</t>
 
           <t><list style="hanging">
               <t hangText="'session-type':">Indicates which BFD flavor is used
@@ -2633,17 +2656,17 @@
               </list></t>
           </section>
         </section>
-      </section>
 
-      <section anchor="mc" title="Multicast">
-        <t>Multicast may be enabled for a particular VPN at the VPN node and
-        VPN network access levels (see <xref target="all-multicast"></xref>).
-        Some data nodes (e.g., max-groups) can be controlled at various
-        levels: VPN service, VPN node level, or VPN network access.</t>
+        <section anchor="mc" title="Multicast">
+          <t>Multicast may be enabled for a particular VPN at the VPN node and
+          VPN network access levels (see <xref
+          target="all-multicast"></xref>). Some data nodes (e.g., max-groups)
+          can be controlled at various levels: VPN service, VPN node level, or
+          VPN network access.</t>
 
-        <t><figure align="center" anchor="all-multicast"
-            title="Overall Multicast Subtree Structure">
-            <artwork align="center"><![CDATA[     ...
+          <t><figure align="center" anchor="all-multicast"
+              title="Overall Multicast Subtree Structure">
+              <artwork align="center"><![CDATA[     ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
            ...
@@ -2668,12 +2691,12 @@
                           +--rw multicast {vpn-common:multicast}?
                              ...
 ]]></artwork>
-          </figure>Multicast-related data nodes at the VPN instance profile
-        level has the structure that is shown in <xref
-        target="mcast-vpaccess"></xref>. <figure align="center"
-            anchor="mcast-vpn-profile"
-            title="Multicast Subtree Structure (VPN Instance Profile Level)">
-            <artwork align="center"><![CDATA[     ...
+            </figure>Multicast-related data nodes at the VPN instance profile
+          level has the structure that is shown in <xref
+          target="mcast-vpaccess"></xref>. <figure align="center"
+              anchor="mcast-vpn-profile"
+              title="Multicast Subtree Structure (VPN Instance Profile Level)">
+              <artwork align="center"><![CDATA[...
 +--rw vpn-services
    +--rw vpn-service* [vpn-id]
       ...
@@ -2730,46 +2753,46 @@
       |           +--rw dr-priority?      uint32
            ...
 ]]></artwork>
-          </figure></t>
+            </figure></t>
 
-        <t>The model supports a single type of tree per VPN instance:
-        Any-Source Multicast (ASM), Source-Specific Multicast (SSM), or
-        bidirectional.</t>
+          <t>The model supports a single type of tree per VPN access
+          ('tree-flavor'): Any-Source Multicast (ASM), Source-Specific
+          Multicast (SSM), or bidirectional.</t>
 
-        <t>When ASM is used, the model supports the configuration of
-        Rendezvous Points (RPs). RP discovery may be 'static', 'bsr-rp', or
-        'auto-rp'. When set to 'static', RP to multicast grouping mapping MUST
-        be configured as part of the 'rp-group-mappings' container. The RP MAY
-        be a provider node or a customer node. When the RP is a customer node,
-        the RP address must be configured using the 'rp-address' leaf
-        otherwise no RP address is needed.</t>
+          <t>When ASM is used, the model supports the configuration of
+          Rendezvous Points (RPs). RP discovery may be 'static', 'bsr-rp', or
+          'auto-rp'. When set to 'static', RP to multicast grouping mappings
+          MUST be configured as part of the 'rp-group-mappings' container. The
+          RP MAY be a provider node or a customer node. When the RP is a
+          customer node, the RP address must be configured using the
+          'rp-address' leaf.</t>
 
-        <t>The model supports RP redundancy through the 'rp-redundancy' leaf.
-        How the redundancy is achieved is out of scope and is up to the
-        implementation (e.g., network orchestrator).</t>
+          <t>The model supports RP redundancy through the 'rp-redundancy'
+          leaf. How the redundancy is achieved is out of scope.</t>
 
-        <t>When a particular VPN using ASM requires a more optimal traffic
-        delivery, 'optimal-traffic-delivery' can be set. When set to 'true',
-        the implementation must use any mechanism to provide a more optimal
-        traffic delivery for the customer. For example, anycast is one of the
-        mechanisms to enhance RPs redundancy, resilience against failures, and
-        to recover from failures quickly.</t>
+          <t>When a particular VPN using ASM requires a more optimal traffic
+          delivery (e.g., requested using <xref target="RFC8299"></xref>),
+          'optimal-traffic-delivery' can be set. When set to 'true', the
+          implementation must use any mechanism to provide a more optimal
+          traffic delivery for the customer. For example, anycast is one of
+          the mechanisms to enhance RPs redundancy, resilience against
+          failures, and to recover from failures quickly.</t>
 
-        <t>The same structure as the one depicted in <xref
-        target="mcast-vpaccess"></xref> is used when configuring
-        multicast-related parameters at the VPN node level. When defined at
-        the VPN node level (<xref target="mcast-vpn"></xref>), Internet Group
-        Management Protocol (IGMP) <xref target="RFC1112"></xref><xref
-        target="RFC2236"></xref><xref target="RFC3376"></xref>, Multicast
-        Listener Discovery (MLD) <xref target="RFC2710"></xref><xref
-        target="RFC3810"></xref>, and Protocol Independent Multicast (PIM)
-        <xref target="RFC7761"></xref> parameters are applicable to all VPN
-        network accesses of that VPN node unless corresponding nodes are
-        refined at the VPN network access level.</t>
+          <t>The same structure as the one depicted in <xref
+          target="mcast-vpaccess"></xref> is used when configuring
+          multicast-related parameters at the VPN node level. When defined at
+          the VPN node level (<xref target="mcast-vpn"></xref>), Internet
+          Group Management Protocol (IGMP) <xref target="RFC1112"></xref><xref
+          target="RFC2236"></xref><xref target="RFC3376"></xref>, Multicast
+          Listener Discovery (MLD) <xref target="RFC2710"></xref><xref
+          target="RFC3810"></xref>, and Protocol Independent Multicast (PIM)
+          <xref target="RFC7761"></xref> parameters are applicable to all VPN
+          network accesses of that VPN node unless corresponding nodes are
+          overridden at the VPN network access level.</t>
 
-        <t><figure align="center" anchor="mcast-vpn"
-            title="Multicast Subtree Structure (VPN Node Level)">
-            <artwork align="center"><![CDATA[...
+          <t><figure align="center" anchor="mcast-vpn"
+              title="Multicast Subtree Structure (VPN Node Level)">
+              <artwork align="center"><![CDATA[...
 +--rw vpn-nodes
    +--rw vpn-node* [vpn-node-id]
       ...
@@ -2787,15 +2810,15 @@
       |        +--rw pim {vpn-common:pim}?
       |           ...
 ]]></artwork>
-          </figure></t>
+            </figure></t>
 
-        <t>Multicast-related data nodes at the VPN network access level are
-        shown in <xref target="mcast-vpaccess"></xref>. The values configured
-        at the VPN network access level override the values configured for the
-        corresponding data nodes in other levels.<figure align="center"
-            anchor="mcast-vpaccess"
-            title="Multicast Subtree Structure (VPN Network Access Level)">
-            <artwork align="center"><![CDATA[...
+          <t>Multicast-related data nodes at the VPN network access level are
+          shown in <xref target="mcast-vpaccess"></xref>. The values
+          configured at the VPN network access level override the values
+          configured for the corresponding data nodes in other levels.<figure
+              align="center" anchor="mcast-vpaccess"
+              title="Multicast Subtree Structure (VPN Network Access Level)">
+              <artwork align="center"><![CDATA[...
 +--rw vpn-network-accesses
    +--rw vpn-network-access* [id]
       ...
@@ -2851,7 +2874,8 @@
                      +--ro status?         identityref
                      +--ro last-change?   yang:date-and-time
 ]]></artwork>
-          </figure></t>
+            </figure></t>
+        </section>
       </section>
     </section>
 
@@ -3125,7 +3149,7 @@ module ietf-l3vpn-ntw {
           base vpn-common:multicast-tree-type;
         }
         description
-          "Type of tree to be used.";
+          "Type of the multicast tree to be used.";
       }
       container rp {
         description
@@ -3299,12 +3323,12 @@ module ietf-l3vpn-ntw {
         leaf max-groups {
           type uint32;
           description
-            "Indicates the maximum groups.";
+            "Indicates the maximum number of groups.";
         }
         leaf max-entries {
           type uint32;
           description
-            "Indicates the maximum IGMP entries.";
+            "Indicates the maximum number of IGMP entries.";
         }
         leaf version {
           type identityref {
@@ -4712,12 +4736,13 @@ module ietf-l3vpn-ntw {
                               leaf key-id {
                                 type uint32;
                                 description
-                                  "Key Identifier";
+                                  "Key Identifier.";
                               }
                               leaf key {
                                 type string;
                                 description
-                                  "BGP authentication key.";
+                                  "BGP authentication key in ASCII 
+                                   format.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -4865,7 +4890,8 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "OSPF authentication key.";
+                                  "OSPF authentication key in ASCII 
+                                   format.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -4982,7 +5008,8 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "IS-IS authentication key.";
+                                  "IS-IS authentication key in ASCII 
+                                   format.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -5106,7 +5133,8 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "RIP authentication key.";
+                                  "RIP authentication key in ASCII 
+                                   format.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -5174,7 +5202,7 @@ module ietf-l3vpn-ntw {
                       }
                       leaf ping-reply {
                         type boolean;
-                        default "flase";
+                        default "false";
                         description
                           "Controls whether the VRRP speaker should
                            answer to ping requests.";
@@ -5655,12 +5683,12 @@ module ietf-l3vpn-ntw {
                       leaf max-groups {
                         type uint32;
                         description
-                          "Indicates the maximum groups.";
+                          "Indicates the maximum number of groups.";
                       }
                       leaf max-entries {
                         type uint32;
                         description
-                          "Indicates the maximum IGMP entries.";
+                          "Indicates the maximum number of IGMP entries.";
                       }
                       leaf max-group-sources {
                         type uint32;
@@ -5703,7 +5731,7 @@ module ietf-l3vpn-ntw {
                       leaf max-groups {
                         type uint32;
                         description
-                          "Indicates the maximum groups.";
+                          "Indicates the maximum number of groups.";
                       }
                       leaf max-entries {
                         type uint32;
@@ -5825,7 +5853,12 @@ module ietf-l3vpn-ntw {
       <t>Several data nodes ('bgp', 'ospf', 'isis', 'rip', and 'bfd') rely
       upon <xref target="RFC8177"></xref> for authentication purposes.
       Therefore, this module inherits the security considerations discussed in
-      Section 5 of <xref target="RFC8177"></xref>.</t>
+      Section 5 of <xref target="RFC8177"></xref>. Also, these data nodes
+      support supplying explicit keys as strings in ASCII format. The use of
+      keys in hexadecimal string format would afford greater key entropy with
+      the same number of key-string octets. However, such format is not
+      included in this version of the L3NM because it is not supported by the
+      underlying device modules (e.g., <xref target="RFC8695"></xref>).</t>
 
       <t>As discussed in <xref target="rtg"></xref>, the module supports MD5
       to basically accommodate the installed BGP base. MD5 suffers from the
@@ -6054,6 +6087,8 @@ module ietf-l3vpn-ntw {
       <?rfc include='reference.RFC.8915'?>
 
       <?rfc include='reference.RFC.8633'?>
+
+      <?rfc include='reference.RFC.8695'?>
 
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
@@ -6730,9 +6765,10 @@ content-type: application/yang-data+json
       blankLines="1" />Many thanks to Robert Wilton for the AD review. <vspace
       blankLines="1" />Thanks to Andrew Malis for the routing directorate
       review, Rifaat Shekh-Yusef for the security directorate review, and Qin
-      Wu for the opsdir review.<vspace blankLines="1" />Thanks to Martin Duke,
-      Lars Eagert, Zaheduzzaman Sarker, Roman Danyliw, Erik Kline, and
-      Benjamin Kaduk for the IESG review.</t>
+      Wu for the opsdir review. Thanks to Michael Scharf for the discussion on
+      TCP-AO. <vspace blankLines="1" />Thanks to Martin Duke, Lars Eagert,
+      Zaheduzzaman Sarker, Roman Danyliw, Erik Kline, and Benjamin Kaduk for
+      the IESG review.</t>
 
       <t>This work was supported in part by the European Commission funded
       H2020-ICT-2016-2 METRO-HAUL project (G.A. 761727) and Horizon 2020
