@@ -6526,8 +6526,11 @@ Internet-Draft               L3NM YANG Model              September 2021
                       type boolean;
                       default "false";
                       description
-                        "When true, there is no PIM adjacency on
-                         the interface.";
+                        "A remote multicast source is a source that is
+                         not on the same subnet as the
+                         vpn-network-access. When set to 'true', the
+                         multicast traffic from a remote source is
+                         accepted.";
                     }
                     container igmp {
                       when "../protocol-type = 'host' and "
@@ -6543,9 +6546,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                            IGMP session";
                         leaf group-addr {
                           type rt-types:ipv4-multicast-group-address;
-                          description
-                            "Multicast group IPv4 address.";
-                        }
 
 
 
@@ -6554,6 +6554,9 @@ Barguil, et al.          Expires March 31, 2022               [Page 117]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                          description
+                            "Multicast group IPv4 address.";
+                        }
                         leaf source-addr {
                           type rt-types:ipv4-multicast-source-address;
                           description
@@ -6599,9 +6602,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                           "Multicast static source/group associated to
                            the MLD session";
                         leaf group-addr {
-                          type rt-types:ipv6-multicast-group-address;
-                          description
-                            "Multicast group IPv6 address.";
 
 
 
@@ -6610,6 +6610,9 @@ Barguil, et al.          Expires March 31, 2022               [Page 118]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                          type rt-types:ipv6-multicast-group-address;
+                          description
+                            "Multicast group IPv6 address.";
                         }
                         leaf source-addr {
                           type rt-types:ipv6-multicast-source-address;
@@ -6655,9 +6658,6 @@ Internet-Draft               L3NM YANG Model              September 2021
                           "PIM hello-messages interval. If set to
                            'infinity' or 'not-set', no periodic
                            Hello messages are sent.";
-                        reference
-                          "RFC 7761: Protocol Independent Multicast -
-                                     Sparse Mode (PIM-SM): Protocol
 
 
 
@@ -6666,6 +6666,9 @@ Barguil, et al.          Expires March 31, 2022               [Page 119]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+                        reference
+                          "RFC 7761: Protocol Independent Multicast -
+                                     Sparse Mode (PIM-SM): Protocol
                                      Specification (Revised),
                                      Section 4.11";
                       }
@@ -6711,9 +6714,6 @@ Internet-Draft               L3NM YANG Model              September 2021
    RESTCONF users to a preconfigured subset of all available NETCONF or
    RESTCONF protocol operations and content.
 
-   There are a number of data nodes defined in this YANG module that are
-   writable/creatable/deletable (i.e., config true, which is the
-   default).  These data nodes may be considered sensitive or vulnerable
 
 
 
@@ -6722,14 +6722,24 @@ Barguil, et al.          Expires March 31, 2022               [Page 120]
 Internet-Draft               L3NM YANG Model              September 2021
 
 
+   There are a number of data nodes defined in this YANG module that are
+   writable/creatable/deletable (i.e., config true, which is the
+   default).  These data nodes may be considered sensitive or vulnerable
    in some network environments.  Write operations (e.g., edit-config)
    and delete operations to these data nodes without proper protection
    or authentication can have a negative effect on network operations.
    These are the subtrees and data nodes and their sensitivity/
    vulnerability in the "ietf-l3vpn-ntw" module:
 
-   o  'vpn-service': An attacker who is able to access network nodes can
-      undertake various attacks, such as deleting a running L3VPN
+   o  'vpn-profiles': This container includes a set of sensitive data
+      that influence how the L3VPN service is delivered.  For example,
+      an attacker who has access to these data nodes may be able to
+      manipulate routing policies, QoS policies, or encryption
+      properties.  These data nodes are defined with "nacm:default-deny-
+      write" tagging [I-D.ietf-opsawg-vpn-common].
+
+   o  ''vpn-service': An attacker who is able to access network nodes
+      can undertake various attacks, such as deleting a running L3VPN
       service, interrupting all the traffic of a client.  In addition,
       an attacker may modify the attributes of a running service (e.g.,
       QoS, bandwidth, routing protocols), leading to malfunctioning of
@@ -6760,6 +6770,14 @@ Internet-Draft               L3NM YANG Model              September 2021
    of the L3NM because it is not supported by the underlying device
    modules (e.g., [RFC8695]).
 
+
+
+
+Barguil, et al.          Expires March 31, 2022               [Page 121]
+
+Internet-Draft               L3NM YANG Model              September 2021
+
+
    As discussed in Section 7.6.3, the module supports MD5 to basically
    accommodate the installed BGP base.  MD5 suffers from the security
    weaknesses discussed in Section 2 of [RFC6151] or Section 2.1 of
@@ -6768,15 +6786,6 @@ Internet-Draft               L3NM YANG Model              September 2021
    [RFC8633] describes best current practices to be considered in VPNs
    making use of NTP.  Moreover, a mechanism to provide cryptographic
    security for NTP is specified in [RFC8915].
-
-
-
-
-
-Barguil, et al.          Expires March 31, 2022               [Page 121]
-
-Internet-Draft               L3NM YANG Model              September 2021
-
 
 10.  IANA Considerations
 
@@ -6817,15 +6826,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               RFC 1112, DOI 10.17487/RFC1112, August 1989,
               <https://www.rfc-editor.org/info/rfc1112>.
 
-   [RFC1195]  Callon, R., "Use of OSI IS-IS for routing in TCP/IP and
-              dual environments", RFC 1195, DOI 10.17487/RFC1195,
-              December 1990, <https://www.rfc-editor.org/info/rfc1195>.
-
-   [RFC2080]  Malkin, G. and R. Minnear, "RIPng for IPv6", RFC 2080,
-              DOI 10.17487/RFC2080, January 1997,
-              <https://www.rfc-editor.org/info/rfc2080>.
-
-
 
 
 
@@ -6833,6 +6833,14 @@ Barguil, et al.          Expires March 31, 2022               [Page 122]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC1195]  Callon, R., "Use of OSI IS-IS for routing in TCP/IP and
+              dual environments", RFC 1195, DOI 10.17487/RFC1195,
+              December 1990, <https://www.rfc-editor.org/info/rfc1195>.
+
+   [RFC2080]  Malkin, G. and R. Minnear, "RIPng for IPv6", RFC 2080,
+              DOI 10.17487/RFC2080, January 1997,
+              <https://www.rfc-editor.org/info/rfc2080>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -6875,20 +6883,16 @@ Internet-Draft               L3NM YANG Model              September 2021
               Networks (VPNs)", RFC 4364, DOI 10.17487/RFC4364, February
               2006, <https://www.rfc-editor.org/info/rfc4364>.
 
-   [RFC4552]  Gupta, M. and N. Melam, "Authentication/Confidentiality
-              for OSPFv3", RFC 4552, DOI 10.17487/RFC4552, June 2006,
-              <https://www.rfc-editor.org/info/rfc4552>.
-
-
-
-
-
 
 
 Barguil, et al.          Expires March 31, 2022               [Page 123]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC4552]  Gupta, M. and N. Melam, "Authentication/Confidentiality
+              for OSPFv3", RFC 4552, DOI 10.17487/RFC4552, June 2006,
+              <https://www.rfc-editor.org/info/rfc4552>.
 
    [RFC4577]  Rosen, E., Psenak, P., and P. Pillay-Esnault, "OSPF as the
               Provider/Customer Edge Protocol for BGP/MPLS IP Virtual
@@ -6931,10 +6935,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               DOI 10.17487/RFC6020, October 2010,
               <https://www.rfc-editor.org/info/rfc6020>.
 
-   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
-              and A. Bierman, Ed., "Network Configuration Protocol
-              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
-              <https://www.rfc-editor.org/info/rfc6241>.
 
 
 
@@ -6945,6 +6945,11 @@ Barguil, et al.          Expires March 31, 2022               [Page 124]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
+              and A. Bierman, Ed., "Network Configuration Protocol
+              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
+              <https://www.rfc-editor.org/info/rfc6241>.
 
    [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
               Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
@@ -6988,11 +6993,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               RFC 7950, DOI 10.17487/RFC7950, August 2016,
               <https://www.rfc-editor.org/info/rfc7950>.
 
-   [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
-              Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
-              <https://www.rfc-editor.org/info/rfc8040>.
-
-
 
 
 
@@ -7001,6 +7001,10 @@ Barguil, et al.          Expires March 31, 2022               [Page 125]
 
 Internet-Draft               L3NM YANG Model              September 2021
 
+
+   [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
+              Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
+              <https://www.rfc-editor.org/info/rfc8040>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -7045,10 +7049,6 @@ Internet-Draft               L3NM YANG Model              September 2021
               Even, R., Wu, B., Wu, Q., and YingCheng, "YANG Data Model
               for Composed VPN Service Delivery", draft-evenwu-opsawg-
               yang-composed-vpn-03 (work in progress), March 2019.
-
-
-
-
 
 
 
