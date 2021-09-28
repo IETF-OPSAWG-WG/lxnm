@@ -168,7 +168,7 @@
       </address>
     </author>
 
-    <date day="13" month="September" year="2021" />
+    <date day="29" month="September" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -295,9 +295,6 @@
 
       <t>The meaning of the symbols in YANG tree diagrams is <xref
       target="RFC8340"></xref>.</t>
-
-      <t>This document uses the term "network model" defined in Section 2.1 of
-      <xref target="RFC8969"></xref>.</t>
 
       <t>This document makes use of the following terms:</t>
 
@@ -618,7 +615,7 @@
 
         <t hangText="'ethernet-segments':">The 'vpn-services' container
         maintains the set of L2VPN services managed in the service provider's
-        network. The module allows to create a new L2VPN service by adding a
+        network. The module allows creating a new L2VPN service by adding a
         new instance of 'vpn-service'. The 'vpn-service' is the data structure
         that abstracts the VPN service (<xref
         target="l2_vpn_service"></xref>).</t>
@@ -649,6 +646,30 @@
         define and maintain a set of VPN profiles <xref
         target="I-D.ietf-opsawg-vpn-common"></xref> that apply to one or
         several VPN services.</t>
+
+        <t><figure align="center" anchor="vpn_profiles_tree"
+            title="VPN Profiles Subtree Structure">
+            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+     +--rw vpn-profiles
+     |  +--rw valid-provider-identifiers
+     |     +--rw external-connectivity-identifier* [id]
+     |     |       {external-connectivity}?
+     |     |  +--rw id    string
+     |     +--rw encryption-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw qos-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw bfd-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw forwarding-profile-identifier* [id]
+     |     |  +--rw id    string
+     |     +--rw routing-profile-identifier* [id]
+     |        +--rw id    string
+     +--rw ethernet-segments
+     |  ...
+     +--rw vpn-services
+        ...                   ]]></artwork>
+          </figure></t>
 
         <t>This document does not make any assumption about the exact
         definition of these profiles. The exact definition of the profiles is
@@ -687,38 +708,50 @@
             BGP policies) when delivering the VPN service.</t>
           </list></t>
 
-        <figure align="center" anchor="vpn_profiles_tree"
-                title="VPN Profiles Subtree Structure">
-          <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
-     +--rw vpn-profiles
-     |  +--rw valid-provider-identifiers
-     |     +--rw external-connectivity-identifier* [id]
-     |     |       {external-connectivity}?
-     |     |  +--rw id    string
-     |     +--rw encryption-profile-identifier* [id]
-     |     |  +--rw id    string
-     |     +--rw qos-profile-identifier* [id]
-     |     |  +--rw id    string
-     |     +--rw bfd-profile-identifier* [id]
-     |     |  +--rw id    string
-     |     +--rw forwarding-profile-identifier* [id]
-     |     |  +--rw id    string
-     |     +--rw routing-profile-identifier* [id]
-     |        +--rw id    string
-     +--rw ethernet-segments
-     |  ...
-     +--rw vpn-services
-        ...                   ]]></artwork>
-        </figure>
-
         <t></t>
       </section>
 
       <section anchor="es" title="Ethernet Segments">
         <t>The 'ethernet-segments' container is used to list a set of ESes
-        that are defined in an EVPN service. In reference to the structure
-        shown in <xref target="es-tree"></xref>, the following data nodes can
-        be included:<list style="hanging">
+        that are defined in an EVPN service.</t>
+
+        <t><figure align="center" anchor="es-tree"
+            title="Ethernet Segments Subtree">
+            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
+     +--rw vpn-profiles
+     |  ...
+     +--rw ethernet-segments
+     |  +--rw ethernet-segment* [name]
+     |     +--rw name                                 string
+     |     +--rw esi-type?                            identityref
+     |     +--rw (esi-choice)?
+     |     |  +--:(directly-assigned)
+     |     |  |  +--rw ethernet-segment-identifier?   yang:hex-string
+     |     |  +--:(auto-assigned)
+     |     |     +--rw esi-auto
+     |     |        +--rw (auto-mode)?
+     |     |        |  +--:(from-pool)
+     |     |        |  |  +--rw esi-pool-name?                string
+     |     |        |  +--:(full-auto)
+     |     |        |     +--rw auto?                         empty
+     |     |        +--ro auto-ethernet-segment-identifier?
+     |     |                yang:hex-string
+     |     +--rw esi-redundancy-mode?                 identityref
+     |     +--rw df-election
+     |     |  +--rw df-election-method?   identityref
+     |     |  +--rw preference?           uint16
+     |     |  +--rw revertive?            boolean
+     |     |  +--rw election-wait-time?   uint32
+     |     +--rw split-horizon-filtering?             boolean
+     |     +--rw pbb
+     |        +--rw backbone-src-mac?   yang:mac-address
+     +--rw vpn-services
+        ...             ]]></artwork>
+          </figure></t>
+
+        <t>In reference to the structure shown in <xref
+        target="es-tree"></xref>, the following data nodes can be
+        included:<list style="hanging">
             <t hangText="'name':">Sets a name to uniquely identify an ES. This
             name is called in the VPN network access level to handle
             multi-homing, for example.</t>
@@ -779,39 +812,7 @@
             target="RFC7623"></xref>).</t>
           </list></t>
 
-        <t><figure align="center" anchor="es-tree"
-            title="Ethernet Segments Subtree">
-            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw ethernet-segments
-     |  +--rw ethernet-segment* [name]
-     |     +--rw name                                 string
-     |     +--rw esi-type?                            identityref
-     |     +--rw (esi-choice)?
-     |     |  +--:(directly-assigned)
-     |     |  |  +--rw ethernet-segment-identifier?   yang:hex-string
-     |     |  +--:(auto-assigned)
-     |     |     +--rw esi-auto
-     |     |        +--rw (auto-mode)?
-     |     |        |  +--:(from-pool)
-     |     |        |  |  +--rw esi-pool-name?                string
-     |     |        |  +--:(full-auto)
-     |     |        |     +--rw auto?                         empty
-     |     |        +--ro auto-ethernet-segment-identifier?
-     |     |                yang:hex-string
-     |     +--rw esi-redundancy-mode?                 identityref
-     |     +--rw df-election
-     |     |  +--rw df-election-method?   identityref
-     |     |  +--rw preference?           uint16
-     |     |  +--rw revertive?            boolean
-     |     |  +--rw election-wait-time?   uint32
-     |     +--rw split-horizon-filtering?             boolean
-     |     +--rw pbb
-     |        +--rw backbone-src-mac?   yang:mac-address
-     +--rw vpn-services
-        ...             ]]></artwork>
-          </figure></t>
+        <t></t>
       </section>
 
       <section anchor="l2_vpn_service" title="VPN Services">
@@ -1193,7 +1194,7 @@
           </list></t>
       </section>
 
-      <section anchor="vpn_node" title="VPN Node">
+      <section anchor="vpn_node" title="VPN Nodes">
         <t>The 'vpn-node' is an abstraction that represents a set of
         policies/configurations applied to a network node and that belong to a
         single 'vpn-service'. A 'vpn-node' contains 'vpn-network-accesses',
@@ -1428,34 +1429,29 @@
               service level (<xref target="l2_vpn_service"></xref>).</t>
 
               <t hangText="'bgp':">Is provided when BGP is used for L2VPN
-              signaling. The structure of the BGP-related data nodes is
-              provided in <xref target="so-bgp"></xref>. <vspace
-              blankLines="1" />As discussed in Section 2.2.2 of <xref
-              target="RFC6624"></xref>, a CE ID ('ce-id') identifying the CE
-              within the VPN must be provided. Remote CEs that are entitled to
-              connect to the same VPN should fit with the CE range
-              ('ce-range') as discussed in Section 2.2.3 of <xref
-              target="RFC6624"></xref>. 'pw-encapsulation-type' is used to
-              control the PW encapsulation type (Section 3 of <xref
-              target="RFC6624"></xref>). The value of the
-              'pw-encapsulation-type' are taken from the IANA-maintained
-              "iana-bgp-l2-encaps" module. <vspace blankLines="1" />For the
-              specific case of VPLS, the VPLS Edge ID (VE ID, 'vpls-edge-id')
-              and a VE ID range ('vpls-edge-id-range') are provided as per
-              Section 3.2 of <xref target="RFC4761"></xref>. <vspace
-              blankLines="1" />For EVPN-related L2VPNs,
-              'service-interface-type' indicates whether this is VLAN-based,
-              VLAN bundle, or VLAN-aware bundle service interface (Section 6
-              of <xref target="RFC7432"></xref>). Moreover, a set of policies
-              can be provided such as MAC address learning mode (Section 9 of
-              <xref target="RFC7432"></xref>), ingress replication (Section
-              12.1 of <xref target="RFC7432"></xref>), Address Resolution
-              Protocol (ARP) and Nighbour Discovery (ND) proxy (Section 10 of
-              <xref target="RFC7432"></xref>), processing of Broadcast,
-              unknown unicast, or multicast (BUM) (Section 12 of <xref
-              target="RFC7432"></xref>), etc. <figure align="center"
-                  anchor="so-bgp" title="Signaling Option Subtree (BGP)">
-                  <artwork align="center"><![CDATA[   ...
+              signaling. Refer to <xref target="bgp"></xref> for more details.
+              </t>
+
+              <t hangText="'ldp':">The model supports the configuration of the
+              parameters that are discussed in Section 6 of <xref
+              target="RFC4762"></xref>. Refer to <xref target="ldp"></xref>
+              for more details. </t>
+
+              <t hangText="'l2tp':">The model supports the configuration of
+              the parameters that are discussed in Section 4 of <xref
+              target="RFC4667"></xref>. Refer to <xref target="l2tp"></xref>
+              for more details. </t>
+            </list></t>
+
+          <t></t>
+
+          <section anchor="bgp" title="BGP">
+            <t>The structure of the BGP-related data nodes is provided in
+            <xref target="so-bgp"></xref>.</t>
+
+            <t><figure align="center" anchor="so-bgp"
+                title="Signaling Option Subtree (BGP)">
+                <artwork align="center"><![CDATA[   ...
    |  +--rw (signaling-option)?
    |     ...
    |     +--:(bgp)
@@ -1512,22 +1508,49 @@
    |     |                      yang:mac-address
    |     +--:(ldp-or-l2tp)
    |        ...]]></artwork>
-                </figure></t>
+              </figure></t>
 
-              <t hangText="'ldp':">The model supports the configuration of the
-              parameters that are discussed in Section 6 of <xref
-              target="RFC4762"></xref>. Such parameters include a an
-              Attachment Group Identifier (AGI) (a.k.a., VPLS-id), a Source
-              Attachment Individual Identifier (SAII), a list of peers that
-              are associated with a Target Attachment Individual Identifier
-              (TAII), a PW type, and a PW description, (<xref
-              target="so-ldp"></xref>). Unlike BGP, only Ethernet and Ethernet
-              tagged mode are supported. The AGI, SAII, and TAII are encoded
-              following the types defined in Section 3.4 of <xref
-              target="RFC4446"></xref>. <!--Med: May be move the SAII/TAII to the vpn-network-access level as this assoicates the service with the interface--><figure
-                  align="right" anchor="so-ldp"
-                  title="Signaling Option Subtree (LDP)">
-                  <artwork align="center"><![CDATA[   ...
+            <t>As discussed in Section 2.2.2 of <xref
+            target="RFC6624"></xref>, a CE ID ('ce-id') identifying the CE
+            within the VPN must be provided. Remote CEs that are entitled to
+            connect to the same VPN should fit with the CE range ('ce-range')
+            as discussed in Section 2.2.3 of <xref target="RFC6624"></xref>.
+            'pw-encapsulation-type' is used to control the PW encapsulation
+            type (Section 3 of <xref target="RFC6624"></xref>). The value of
+            the 'pw-encapsulation-type' are taken from the IANA-maintained
+            "iana-bgp-l2-encaps" module.</t>
+
+            <t>For the specific case of VPLS, the VPLS Edge ID (VE ID,
+            'vpls-edge-id') and a VE ID range ('vpls-edge-id-range') are
+            provided as per Section 3.2 of <xref target="RFC4761"></xref>.</t>
+
+            <t>For EVPN-related L2VPNs, 'service-interface-type' indicates
+            whether this is VLAN-based, VLAN bundle, or VLAN-aware bundle
+            service interface (Section 6 of <xref target="RFC7432"></xref>).
+            Moreover, a set of policies can be provided such as MAC address
+            learning mode (Section 9 of <xref target="RFC7432"></xref>),
+            ingress replication (Section 12.1 of <xref
+            target="RFC7432"></xref>), Address Resolution Protocol (ARP) and
+            Nighbour Discovery (ND) proxy (Section 10 of <xref
+            target="RFC7432"></xref>), processing of Broadcast, unknown
+            unicast, or multicast (BUM) (Section 12 of <xref
+            target="RFC7432"></xref>), etc.</t>
+          </section>
+
+          <section anchor="ldp" title="LDP">
+            <t>The model supports the configuration of the parameters that are
+            discussed in Section 6 of <xref target="RFC4762"></xref>. Such
+            parameters include a an Attachment Group Identifier (AGI) (a.k.a.,
+            VPLS-id), a Source Attachment Individual Identifier (SAII), a list
+            of peers that are associated with a Target Attachment Individual
+            Identifier (TAII), a PW type, and a PW description, (<xref
+            target="so-ldp"></xref>). Unlike BGP, only Ethernet and Ethernet
+            tagged mode are supported. The AGI, SAII, and TAII are encoded
+            following the types defined in Section 3.4 of <xref
+            target="RFC4446"></xref>. <!--Med: May be move the SAII/TAII to the vpn-network-access level as this assoicates the service with the interface--><figure
+                align="right" anchor="so-ldp"
+                title="Signaling Option Subtree (LDP)">
+                <artwork align="center"><![CDATA[   ...
    |  +--rw (signaling-option)?
    |     ...
    |     +--:(bgp)
@@ -1561,20 +1584,20 @@
    |                 |       rt-types:router-id
    |                 +--rw pseudowire-type?
    |                         identityref
-   ...
-]]></artwork>
-                </figure></t>
+   ...]]></artwork>
+              </figure></t>
+          </section>
 
-              <t hangText="'l2tp':">The model supports the configuration of
-              the parameters that are discussed in Section 4 of <xref
-              target="RFC4667"></xref>. Such parameters include a router-id
-              that is used to uniquely identify a PE, a PW type, an AGI, an
-              SAII, and a list of peers that are associated with a TAII (<xref
-              target="so-l2tp"></xref>). The PW type ('pseudowire-type') value
-              is taken from the IANA-maintained "iana-pseudowire-types"
-              module. <figure align="center" anchor="so-l2tp"
-                  title="Signaling Option Subtree (L2TP)">
-                  <artwork align="center"><![CDATA[   ...
+          <section anchor="l2tp" title="L2TP">
+            <t>The model supports the configuration of the parameters that are
+            discussed in Section 4 of <xref target="RFC4667"></xref>. Such
+            parameters include a router-id that is used to uniquely identify a
+            PE, a PW type, an AGI, an SAII, and a list of peers that are
+            associated with a TAII (<xref target="so-l2tp"></xref>). The PW
+            type ('pseudowire-type') value is taken from the IANA-maintained
+            "iana-pseudowire-types" module. <figure align="center"
+                anchor="so-l2tp" title="Signaling Option Subtree (L2TP)">
+                <artwork align="center"><![CDATA[   ...
    |  +--rw (signaling-option)?
    |     ...
    |     +--:(bgp)
@@ -1596,23 +1619,51 @@
    |                 +--rw pseudowire-type?
    |                         identityref
    ...]]></artwork>
-                </figure></t>
-            </list></t>
-
-          <t></t>
+              </figure></t>
+          </section>
         </section>
       </section>
 
-      <section anchor="sna" title="VPN Network Access">
-        <t>A 'vpn-network-access' represents an entry point to a VPN service .
-        In other words, this container encloses the parameters that describe
-        the access information for the traffic that belongs to a particular
-        L2VPN. As such, every 'vpn-network-access' MUST belong to one and only
-        one 'vpn-node'.</t>
+      <section anchor="sna" title="VPN Network Accesses">
+        <t>A 'vpn-network-access' (<xref
+        target="vpn_network_access_tree"></xref>) represents an entry point to
+        a VPN service . In other words, this container encloses the parameters
+        that describe the access information for the traffic that belongs to a
+        particular L2VPN. As such, every 'vpn-network-access' MUST belong to
+        one and only one 'vpn-node'.</t>
 
         <t>A 'vpn-network-access' includes information such as the connection
         on which the access is defined , the specific layer 2 service
         requirements, etc.</t>
+
+        <t><figure align="right" anchor="vpn_network_access_tree"
+            title="VPN Network Access Subtree">
+            <artwork align="center"><![CDATA[           ...
+           +--rw vpn-nodes
+              +--rw vpn-node* [vpn-node-id]
+                 ...
+                 +--rw vpn-network-accesses
+                    +--rw vpn-network-access* [id]
+                       +--rw id                        vpn-common:vpn-id
+                       +--rw description?              string
+                       +--rw interface-id?             string
+                       +--rw global-parameters-profile?   leafref
+                       +--rw status
+                       |  ...
+                       +--rw connection
+                       |  ... 
+                       +--rw vpws-service-instance
+                       |  ... 
+                       +--rw group* [group-id]
+                       |  +--rw group-id                       string
+                       |  +--rw precedence?
+                       |  |       identityref
+                       |  +--rw ethernet-segment-identifier?   leafref
+                       +--rw ethernet-service-oam
+                       |  ...
+                       +--rw service
+                          ...                      ]]></artwork>
+          </figure></t>
 
         <t>The VPN network access is comprised of:</t>
 
@@ -1665,40 +1716,11 @@
             target="service"></xref>.</t>
           </list></t>
 
-        <figure align="right" anchor="vpn_network_access_tree"
-                title="VPN Network Access Subtree">
-          <artwork align="center"><![CDATA[           ...
-           +--rw vpn-nodes
-              +--rw vpn-node* [vpn-node-id]
-                 ...
-                 +--rw vpn-network-accesses
-                    +--rw vpn-network-access* [id]
-                       +--rw id                        vpn-common:vpn-id
-                       +--rw description?              string
-                       +--rw interface-id?             string
-                       +--rw global-parameters-profile?   leafref
-                       +--rw status
-                       |  ...
-                       +--rw connection
-                       |  ... 
-                       +--rw vpws-service-instance
-                       |  ... 
-                       +--rw group* [group-id]
-                       |  +--rw group-id                       string
-                       |  +--rw precedence?
-                       |  |       identityref
-                       |  +--rw ethernet-segment-identifier?   leafref
-                       +--rw ethernet-service-oam
-                       |  ...
-                       +--rw service
-                          ...                      ]]></artwork>
-        </figure>
-
         <section anchor="connection" title="Connection">
           <t>The 'connection' container (<xref
           target="connection_tree"></xref>) is used to configure the relevant
           properties of the interface to which the L2VPN instance is attached
-          to (e.g., encapsulation type, lag interfaces, split-horizon). The
+          to (e.g., encapsulation type, LAG interfaces, split-horizon). The
           L2NM supports tag manipulation operations (e.g., tag rewrite).</t>
 
           <t>Note that the 'connection' container does not include the
@@ -1730,7 +1752,7 @@
                        |  |       {vpn-common:bearer-reference}?
                        |  +--rw encapsulation
                        |  |  +--rw encap-type?            identityref
-                       |  |  +--rw dot1q {vpn-common:dot1q}?
+                       |  |  +--rw dot1q
                        |  |  |  +--rw tag-type?   identityref
                        |  |  |  +--rw cvlan-id?   uint16
                        |  |  |  +--rw rewrite
@@ -1747,7 +1769,7 @@
                        |  |  |     +--rw mode?         enumeration
                        |  |  +--rw priority-tagged
                        |  |  |  +--rw tag-type?   identityref
-                       |  |  +--rw qinq {vpn-common:qinq}?
+                       |  |  +--rw qinq
                        |  |     +--rw tag-type?   identityref
                        |  |     +--rw svlan-id    uint16
                        |  |     +--rw cvlan-id    uint16
@@ -1929,8 +1951,10 @@
                        +--rw service
                           +--rw mtu?            uint32
                           +--rw svc-inbound-bandwidth
+                          |       {vpn-common:inbound-bw}?
                           |  ...
                           +--rw svc-outbound-bandwidth
+                          |       {vpn-common:outbound-bw}?
                           |  ...
                           +--rw qos {vpn-common:qos}?
                           |  ...
@@ -2003,7 +2027,7 @@
                           ...         ]]></artwork>
                 </figure></t>
 
-              <t hangText="QoS">Is used to define a set of QoS policies to
+              <t hangText="'qos':">Is used to define a set of QoS policies to
               apply on a given VPN network access (<xref
               target="qos-tree"></xref>). The QoS classification can be based
               on many criteria such as source MAC address, destination MAC
@@ -4413,7 +4437,6 @@ module ietf-l2vpn-ntw {
                           "Only applies when the type of the
                            tagged interface is 'dot1q'.";
                       }
-                      if-feature "vpn-common:dot1q";
                       description
                         "Tagged interface.";
                       leaf tag-type {
@@ -4549,7 +4572,6 @@ module ietf-l2vpn-ntw {
                           "Only applies when the type of the tagged
                            interface is QinQ.";
                       }
-                      if-feature "vpn-common:qinq";
                       description
                         "Includes QinQ parameters.";
                       leaf tag-type {
@@ -5372,15 +5394,23 @@ module ietf-l2vpn-ntw {
       operations. These are the subtrees and data nodes and their
       sensitivity/vulnerability in the "ietf-l2vpn-ntw" module: <list
           style="symbols">
-          <t>'vpn-service': An attacker who is able to access network nodes
+          <t>'vpn-profiles': This container includes a set of sensitive data
+          that influence how the L3VPN service is delivered. For example, an
+          attacker who has access to these data nodes may be able to
+          manipulate routing policies, QoS policies, or encryption properties.
+          These data nodes are defined with "nacm:default-deny-write" tagging
+          <xref target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
+
+          <t>'vpn-services': An attacker who is able to access network nodes
           can undertake various attacks, such as deleting a running L2VPN
           service, interrupting all the traffic of a client. In addition, an
           attacker may modify the attributes of a running service (e.g., QoS,
           bandwidth), leading to malfunctioning of the service and therefore
           to SLA violations. In addition, an attacker could attempt to create
-          an L2VPN service or adding a new network access. Such activity can
-          be detected by adequately monitoring and tracking network
-          configuration changes.</t>
+          an L2VPN service or add a new network access. In addition to using
+          NACM to prevent authorized access, such activity can be detected by
+          adequately monitoring and tracking network configuration
+          changes.</t>
         </list></t>
 
       <t>Some of the readable data nodes in the "ietf-l2vpn-ntw" YANG module
@@ -5394,18 +5424,6 @@ module ietf-l2vpn-ntw {
           privacy-related information which can be used to track a customer.
           Disclosing such information may be considered as a violation of the
           customer-provider trust relationship.</t>
-        </list></t>
-
-      <t>The following summarizes the foreseen risks of using the
-      "ietf-l2vpn-ntw" module can be classified into: <list style="symbols">
-          <t>Malicious clients attempting to delete or modify VPN
-          services.</t>
-
-          <t>Unauthorized clients attempting to create/modify/delete a VPN
-          service.</t>
-
-          <t>Unauthorized clients attempting to read VPN service related
-          information.</t>
         </list></t>
 
       <t>Both "iana-bgp-l2-encaps" and "iana-pseudowire-types" modules define
