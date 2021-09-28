@@ -67,7 +67,7 @@ module ietf-l3vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-09-10 {
+  revision 2021-09-28 {
     description
       "Initial revision.";
     reference
@@ -203,7 +203,7 @@ module ietf-l3vpn-ntw {
       "Grouping for data nodes that may be factorized
        among many levels of the model. The grouping can
        be used to define generic profiles at the VPN service
-       level and then referenced at the VPN node and VPN 
+       level and then referenced at the VPN node and VPN
        network access levels.";
     leaf local-as {
       if-feature "vpn-common:rtg-bgp";
@@ -791,7 +791,6 @@ module ietf-l3vpn-ntw {
                           "Only applies when the type of the
                            tagged interface is 'dot1q'.";
                       }
-                      if-feature "vpn-common:dot1q";
                       description
                         "Tagged interface.";
                       leaf tag-type {
@@ -837,7 +836,6 @@ module ietf-l3vpn-ntw {
                           "Only applies when the type of the tagged
                            interface is QinQ.";
                       }
-                      if-feature "vpn-common:qinq";
                       description
                         "Includes QinQ parameters.";
                       leaf tag-type {
@@ -906,7 +904,7 @@ module ietf-l3vpn-ntw {
                             "Neighbor reference.";
                           reference
                             "RFC 8077: Pseudowire Setup and Maintenance
-                                       Using the Label Distribution 
+                                       Using the Label Distribution
                                        Protocol (LDP), Section 6.1";
                         }
                       }
@@ -940,7 +938,6 @@ module ietf-l3vpn-ntw {
                             "Only applies when the type of the layer 2
                              service type is VXLAN.";
                         }
-                        if-feature "vpn-common:vxlan";
                         description
                           "VXLAN termination parameters.";
                         leaf vni-id {
@@ -955,8 +952,8 @@ module ietf-l3vpn-ntw {
                           }
                           default "vpn-common:static-mode";
                           description
-                            "Specifies the VXLAN access mode. By 
-                             default, the peer mode is set to 
+                            "Specifies the VXLAN access mode. By
+                             default, the peer mode is set to
                              'static-mode'.";
                         }
                         leaf-list peer-ip-address {
@@ -980,7 +977,7 @@ module ietf-l3vpn-ntw {
                     type string;
                     description
                       "Specifies a reference to a local layer 2
-                       termination point such as a layer 2 
+                       termination point such as a layer 2
                        sub-interface.";
                   }
                   leaf local-bridge-reference {
@@ -998,6 +995,31 @@ module ietf-l3vpn-ntw {
                       "This is an internal reference for the service
                        provider to identify the bearer associated
                        with this VPN.";
+                  }
+                  container lag-interface {
+                    if-feature "vpn-common:lag-interface";
+                    description
+                      "Container of LAG interface attributes
+                       configuration.";
+                    leaf lag-interface-id {
+                      type string;
+                      description
+                        "LAG interface identifier.";
+                    }
+                    container member-link-list {
+                      description
+                        "Container of Member link list.";
+                      list member-link {
+                        key "name";
+                        description
+                          "Member link.";
+                        leaf name {
+                          type string;
+                          description
+                            "Member link name.";
+                        }
+                      }
+                    }
                   }
                 }
                 container ip-connection {
@@ -1017,7 +1039,7 @@ module ietf-l3vpn-ntw {
                     leaf local-address {
                       type inet:ipv4-address;
                       description
-                        "The IP address used at the provider's 
+                        "The IP address used at the provider's
                          interface.";
                     }
                     leaf prefix-length {
@@ -1527,7 +1549,6 @@ module ietf-l3vpn-ntw {
                         description
                           "Only applies when protocol is BGP.";
                       }
-                      if-feature "vpn-common:rtg-bgp";
                       description
                         "BGP-specific configuration.";
                       leaf description {
@@ -1856,8 +1877,10 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "BGP authentication key in ASCII 
-                                   format.";
+                                  "BGP authentication key. 
+                                   This model only supports the subset
+                                   of keys that are representable as 
+                                   ASCII strings.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -1875,7 +1898,8 @@ module ietf-l3vpn-ntw {
                               leaf sa {
                                 type string;
                                 description
-                                  "Indicates the name of the SA.";
+                                  "Indicates the administrator-assigned 
+                                   name of the SA.";
                               }
                             }
                           }
@@ -1889,7 +1913,6 @@ module ietf-l3vpn-ntw {
                         description
                           "Only applies when protocol is OSPF.";
                       }
-                      if-feature "vpn-common:rtg-ospf";
                       description
                         "OSPF-specific configuration.";
                       leaf address-family {
@@ -2005,8 +2028,10 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "OSPF authentication key in ASCII 
-                                   format.";
+                                  "OSPF authentication key. 
+                                   This model only supports the subset
+                                   of keys that are representable as 
+                                   ASCII strings.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -2021,7 +2046,8 @@ module ietf-l3vpn-ntw {
                               leaf sa {
                                 type string;
                                 description
-                                  "Indicates the name of the SA.";
+                                  "Indicates the administrator-assigned 
+                                   name of the SA.";
                                 reference
                                   "RFC 4552: Authentication
                                              /Confidentiality for
@@ -2039,7 +2065,6 @@ module ietf-l3vpn-ntw {
                         description
                           "Only applies when protocol is IS-IS.";
                       }
-                      if-feature "vpn-common:rtg-isis";
                       description
                         "IS-IS specific configuration.";
                       leaf address-family {
@@ -2123,8 +2148,10 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "IS-IS authentication key in ASCII 
-                                   format.";
+                                  "IS-IS authentication key. 
+                                   This model only supports the subset
+                                   of keys that are representable as 
+                                   ASCII strings.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -2148,7 +2175,6 @@ module ietf-l3vpn-ntw {
                            For IPv4, the model assumes that RIP
                            version 2 is used.";
                       }
-                      if-feature "vpn-common:rtg-rip";
                       description
                         "Configuration specific to RIP routing.";
                       leaf address-family {
@@ -2248,8 +2274,10 @@ module ietf-l3vpn-ntw {
                               leaf key {
                                 type string;
                                 description
-                                  "RIP authentication key in ASCII 
-                                   format.";
+                                  "RIP authentication key. 
+                                   This model only supports the subset
+                                   of keys that are representable as 
+                                   ASCII strings.";
                               }
                               leaf crypto-algorithm {
                                 type identityref {
@@ -2271,7 +2299,6 @@ module ietf-l3vpn-ntw {
                         description
                           "Only applies when protocol is VRRP.";
                       }
-                      if-feature "vpn-common:rtg-vrrp";
                       description
                         "Configuration specific to VRRP.";
                       reference
@@ -2300,7 +2327,7 @@ module ietf-l3vpn-ntw {
                       leaf-list virtual-ip-address {
                         type inet:ip-address;
                         description
-                          "Virtual IP addresses for a single VRRP 
+                          "Virtual IP addresses for a single VRRP
                            group.";
                         reference
                           "RFC 5798: Virtual Router Redundancy Protocol
@@ -2353,7 +2380,7 @@ module ietf-l3vpn-ntw {
                       default "1000000";
                       description
                         "The minimum interval between transmission of
-                         BFD control packets that the operator 
+                         BFD control packets that the operator
                          desires.";
                       reference
                         "RFC 5880: Bidirectional Forwarding Detection
@@ -2772,7 +2799,7 @@ module ietf-l3vpn-ntw {
                       default "false";
                       description
                         "A remote multicast source is a source that is
-                         not on the same subnet as the 
+                         not on the same subnet as the
                          vpn-network-access. When set to 'true', the
                          multicast traffic from a remote source is
                          accepted.";
@@ -2808,7 +2835,7 @@ module ietf-l3vpn-ntw {
                       leaf max-entries {
                         type uint32;
                         description
-                          "Indicates the maximum number of IGMP 
+                          "Indicates the maximum number of IGMP
                            entries.";
                       }
                       leaf max-group-sources {
@@ -2857,7 +2884,7 @@ module ietf-l3vpn-ntw {
                       leaf max-entries {
                         type uint32;
                         description
-                          "Indicates the maximum number of MLD 
+                          "Indicates the maximum number of MLD
                            entries.";
                       }
                       leaf max-group-sources {
