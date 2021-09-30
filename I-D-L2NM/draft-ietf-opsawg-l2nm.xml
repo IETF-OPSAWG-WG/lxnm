@@ -744,7 +744,10 @@
      |     |  +--rw election-wait-time?   uint32
      |     +--rw split-horizon-filtering?             boolean
      |     +--rw pbb
-     |        +--rw backbone-src-mac?   yang:mac-address
+     |     |  +--rw backbone-src-mac?   yang:mac-address
+     |     +--rw member* [ne-id, interface-id] 
+     |        +--rw ne-id            string                        
+     |        +--rw interface-id       string                  
      +--rw vpn-services
         ...             ]]></artwork>
           </figure></t>
@@ -810,9 +813,9 @@
             MAC (B-MAC) address with an ES. This is particularly useful for
             All-Active multihomed ESes (Section 9.1 of <xref
             target="RFC7623"></xref>).</t>
-          </list></t>
 
-        <t></t>
+            <t hangText="'member':">Lists the members of an ES.</t>
+          </list></t>
       </section>
 
       <section anchor="l2_vpn_service" title="VPN Services">
@@ -1064,7 +1067,7 @@
            |     |  +--:(no-rd)
            |     |     +--rw no-rd?                empty
            |     +--rw vpn-target* [id]
-           |     |  +--rw id                   int8
+           |     |  +--rw id                  uint8
            |     |  +--rw route-targets* [route-target]
            |     |  |  +--rw route-target    rt-types:route-target
            |     |  +--rw route-target-type
@@ -1301,21 +1304,7 @@
           <t>'bgp-auto-discovery' container (<xref
           target="bgpad-tree"></xref>) includes the required information for
           the activation of BGP auto-discovery <xref
-          target="RFC4761"></xref><xref target="RFC6624"></xref>. As discussed
-          in Section 1 of <xref target="RFC6624"></xref>, all of BGP-based
-          methods include the notion of a VPN identifier that serves to unify
-          components of a given VPN and the concept of auto-discovery; hence
-          the support of the data node 'vpn-id'.</t>
-
-          <t>For the particular case of EVPN, the L2NM supports RT
-          auto-derivation based on the Ethernet Tag ID specified in Section
-          7.10.1 of <xref target="RFC7432"></xref>. A VPN service provider can
-          enable/disable this functionality by means of 'auto-rt-enable'. The
-          assigned RT can be retrieved using 'auto-route-target'.</t>
-
-          <t>For all BGP-based L2VPN flavors, other data nodes such as RD and
-          RT are used. These data nodes have the same structure as the one
-          discussed in <xref target="profile"></xref>.</t>
+          target="RFC4761"></xref><xref target="RFC6624"></xref>.</t>
 
           <t><figure align="right" anchor="bgpad-tree"
               title="BGP Auto-Discovery Subtree">
@@ -1366,7 +1355,7 @@
                  |  |  +--:(no-rd)
                  |  |     +--rw no-rd?               empty
                  |  +--rw vpn-target* [id]
-                 |  |  +--rw id                   int8
+                 |  |  +--rw id                  uint8
                  |  |  +--rw route-targets* [route-target]
                  |  |  |  +--rw route-target    rt-types:route-target
                  |  |  +--rw route-target-type
@@ -1379,6 +1368,21 @@
                  +--rw vpn-network-accesses
                     ...             ]]></artwork>
             </figure></t>
+
+          <t>As discussed in Section 1 of <xref target="RFC6624"></xref>, all
+          of BGP-based methods include the notion of a VPN identifier that
+          serves to unify components of a given VPN and the concept of
+          auto-discovery; hence the support of the data node 'vpn-id'.</t>
+
+          <t>For the particular case of EVPN, the L2NM supports RT
+          auto-derivation based on the Ethernet Tag ID specified in Section
+          7.10.1 of <xref target="RFC7432"></xref>. A VPN service provider can
+          enable/disable this functionality by means of 'auto-rt-enable'. The
+          assigned RT can be retrieved using 'auto-route-target'.</t>
+
+          <t>For all BGP-based L2VPN flavors, other data nodes such as RD and
+          RT are used. These data nodes have the same structure as the one
+          discussed in <xref target="profile"></xref>.</t>
         </section>
 
         <section anchor="signaling_options" title="Signaling Options">
@@ -1429,18 +1433,18 @@
               service level (<xref target="l2_vpn_service"></xref>).</t>
 
               <t hangText="'bgp':">Is provided when BGP is used for L2VPN
-              signaling. Refer to <xref target="bgp"></xref> for more details.
-              </t>
+              signaling. Refer to <xref target="bgp"></xref> for more
+              details.</t>
 
               <t hangText="'ldp':">The model supports the configuration of the
               parameters that are discussed in Section 6 of <xref
               target="RFC4762"></xref>. Refer to <xref target="ldp"></xref>
-              for more details. </t>
+              for more details.</t>
 
               <t hangText="'l2tp':">The model supports the configuration of
               the parameters that are discussed in Section 4 of <xref
               target="RFC4667"></xref>. Refer to <xref target="l2tp"></xref>
-              for more details. </t>
+              for more details.</t>
             </list></t>
 
           <t></t>
@@ -1595,8 +1599,10 @@
             PE, a PW type, an AGI, an SAII, and a list of peers that are
             associated with a TAII (<xref target="so-l2tp"></xref>). The PW
             type ('pseudowire-type') value is taken from the IANA-maintained
-            "iana-pseudowire-types" module. <figure align="center"
-                anchor="so-l2tp" title="Signaling Option Subtree (L2TP)">
+            "iana-pseudowire-types" module.</t>
+
+            <t><figure align="center" anchor="so-l2tp"
+                title="Signaling Option Subtree (L2TP)">
                 <artwork align="center"><![CDATA[   ...
    |  +--rw (signaling-option)?
    |     ...
@@ -2757,7 +2763,7 @@ module iana-pseudowire-types {
         target="RFC8294"></xref>.</t>
 
         <figure align="center">
-          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-09-13.yang"
+          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-09-30.yang"
 module ietf-l2vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
@@ -2819,7 +2825,7 @@ module ietf-l2vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-09-13 {
+  revision 2021-09-30 {
     description
       "Initial version.";
     reference
@@ -3658,6 +3664,22 @@ module ietf-l2vpn-ntw {
             reference
               "RFC 7623: Provider Backbone Bridging Combined with
                          Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
+          }
+        }
+        list member {
+          key "ne-id interface-id";
+          description
+            "Includes a list of ES members.";
+          leaf ne-id {
+            type string;
+            description
+              "Unique identifier of the network element where the ES
+               is configured.";
+          }
+          leaf interface-id {
+            type string;
+            description
+              "Identifier of a node interface.";
           }
         }
       }
