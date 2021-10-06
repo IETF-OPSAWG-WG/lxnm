@@ -258,7 +258,10 @@
       types (<xref target="iana-bgp"></xref>) and pseudowire types (<xref
       target="iana-pw"></xref>). Relying upon these IANA-maintained modules is
       meant to provide more flexibility in handling new types rather than be
-      limited by a set of identities defined in the L2NM itself.</t>
+      limited by a set of identities defined in the L2NM itself. <xref
+      target="es-yang"></xref> defines a YANG module to manage Ethernet
+      Segments (ESs) that are required for instantiating Ethernet VPNs
+      (EVPNs).</t>
 
       <t>The YANG data models in this document conforms to the Network
       Management Datastore Architecture (NMDA) defined in <xref
@@ -268,9 +271,9 @@
       of Layer 2 Virtual Private Networks such as Virtual Private LAN Service
       (VPLS) <xref target="RFC4761"></xref><xref target="RFC4762"></xref>),
       Virtual Private Wire Service (VPWS) (Section 3.1.1 of <xref
-      target="RFC4664"></xref>) and various flavors of Ethernet VPN (VPWS EVPN
-      <xref target="RFC8214"></xref>, PBB EVPN <xref target="RFC7623"></xref>,
-      EVPN over MPLS<xref target="RFC7432"></xref>, and EVPN over VxLAN <xref
+      target="RFC4664"></xref>) and various flavors of EVPN (VPWS EVPN <xref
+      target="RFC8214"></xref>, PBB EVPN <xref target="RFC7623"></xref>, EVPN
+      over MPLS<xref target="RFC7432"></xref>, and EVPN over VxLAN <xref
       target="RFC8365"></xref>). The module is designed to easily support
       future Layer 2 VPN flavors and procedures.</t>
 
@@ -422,7 +425,7 @@
                           | Orchestration |
                           +-------+-------+
            Network Model          |
-             l2vpn-ntw            |
+l2vpn-ntw + ietf-ethernet-segment |
                           +-------+-------+
                           |   Network     |
                           | Orchestration |
@@ -463,13 +466,14 @@
       trigger the instantiation of an L2NM. The customer may use the L2SM or
       may rely upon more abstract models to request a service that relies upon
       an L2VPN service. For example, the customer may supply an IP
-      Connectivity Provisioning Profile (CPP) <xref target="RFC7297"></xref>,
-      an enhanced VPN (VPN+) service <xref
-      target="I-D.ietf-teas-enhanced-vpn"></xref>, or an IETF network slice
-      <xref target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
+      Connectivity Provisioning Profile (CPP) that characterizes the requested
+      service <xref target="RFC7297"></xref>, an enhanced VPN (VPN+) service
+      <xref target="I-D.ietf-teas-enhanced-vpn"></xref>, or an IETF network
+      slice service <xref
+      target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
 
       <t>Note also that both the L2SM and the L2NM may be used in the context
-      of the Abstraction and Control of TE Networks (ACTN) architecture <xref
+      of the Abstraction and Control of TE Networks (ACTN) framework <xref
       target="RFC8453"></xref>. <xref target="l2sm_actn"></xref> shows the
       Customer Network Controller (CNC), the Multi-Domain Service Coordinator
       (MDSC), and the Provisioning Network Controller (PNC).</t>
@@ -533,6 +537,13 @@
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
       target="iana-pw"></xref>) to identify a layer 2 encapsulation type.</t>
 
+      <t>For the particular case of EVPNs, the L2NM includes a name that
+      refers to an Ethernet Segment that is created by means of
+      "ietf-ethernet-segment" (<xref target="es-yang"></xref>). Some examples
+      are provided in Appendices <xref format="counter"
+      target="evpn-vpws-app"></xref> and <xref format="counter"
+      target="auto-ex"></xref>.</t>
+
       <t>As discussed in <xref target="ref"></xref>, the L2NM is meant to
       manage L2VPN services within a service provider network. The module
       provides a network view of the service. Such a view is only visible
@@ -583,8 +594,111 @@
         </list></t>
     </section>
 
+    <section anchor="es"
+             title="Description of the Ethernet Segment YANG Module">
+      <t>The 'ietf-ethernet-segment' module (<xref target="es-tree"></xref>)
+      is used to manage a set of Ethernet Segments (ESes) in the context of an
+      EVPN service.</t>
+
+      <t><figure align="center" anchor="es-tree"
+          title="Ethernet Segments Tree Structure">
+          <artwork align="center"><![CDATA[module: ietf-ethernet-segment
+  +--rw ethernet-segments
+     +--rw ethernet-segment* [name]
+        +--rw name                                 string
+        +--rw esi-type?                            identityref
+        +--rw (esi-choice)?
+        |  +--:(directly-assigned)
+        |  |  +--rw ethernet-segment-identifier?   yang:hex-string
+        |  +--:(auto-assigned)
+        |     +--rw esi-auto
+        |        +--rw (auto-mode)?
+        |        |  +--:(from-pool)
+        |        |  |  +--rw esi-pool-name?                string
+        |        |  +--:(full-auto)
+        |        |     +--rw auto?                         empty
+        |        +--ro auto-ethernet-segment-identifier?
+        |                yang:hex-string
+        +--rw esi-redundancy-mode?                 identityref
+        +--rw df-election
+        |  +--rw df-election-method?   identityref
+        |  +--rw preference?           uint16
+        |  +--rw revertive?            boolean
+        |  +--rw election-wait-time?   uint32
+        +--rw split-horizon-filtering?             boolean
+        +--rw pbb
+        |  +--rw backbone-src-mac?   yang:mac-address
+        +--rw member* [ne-id interface-id]
+           +--rw ne-id           string
+           +--rw interface-id    string         ]]></artwork>
+        </figure></t>
+
+      <t>In reference to the structure shown in <xref
+      target="es-tree"></xref>, the following data nodes can be included:<list
+          style="hanging">
+          <t hangText="'name':">Sets a name to uniquely identify an ES. This
+          name is called in the VPN network access level to handle
+          multi-homing, for example.</t>
+
+          <t hangText="'esi-type':">Indicates the ESI type as discussed in
+          Section 5 of <xref target="RFC7432"></xref>. ESI can be
+          automatically assigned either with or without indicating a pool from
+          which the ESI should be taken. The following types are supported:
+          <list style="hanging">
+              <t hangText="'esi-type-0':">The ESI is directly configured by
+              the VPN service provider.</t>
+
+              <t hangText="'esi-type-1':">The ESI is auto-generated from the
+              IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
+              target="IEEE802.1AX"></xref>.</t>
+
+              <t hangText="'esi-type-2':">The ESI is auto-generated and
+              determined based on the Layer 2 bridge protocol.</t>
+
+              <t hangText="'esi-type-3':">The ESI is a MAC-based ESI value
+              that can be auto-generated or configured by the VPN service
+              provider.</t>
+
+              <t hangText="'esi-type-4':">The ESI is auto-generated or
+              configured by the VPN service provider based on the Router-ID.
+              The 'router-id' supplied in <xref target="vpn_node"></xref> can
+              be used to auto-derive an ESI when this type is used.</t>
+
+              <t hangText="'esi-type-5':">The ESI is auto-generated or
+              configured by the VPN service provider based on the Autonomous
+              System (AS) number. The 'local-autonomous-system' supplied in
+              <xref target="profile"></xref> can be used to auto-derive an ESI
+              when this type is used.</t>
+            </list></t>
+
+          <t hangText="'esi-redundancy-mode':">Specifies the EVPN redundancy
+          mode for a given ES. The following modes are supported:
+          Single-Active (Section 14.1.1 of <xref target="RFC7432"></xref>) or
+          All-Active (Section 14.1.2 of <xref target="RFC7432"></xref>).</t>
+
+          <t hangText="'df-election':">Specifies a set of parameters related
+          to the Designated Forwarder (DF) election (Section 8.5 of <xref
+          target="RFC7432"></xref>). For example, this data node can be used
+          to indicate an election method (e.g., <xref target="RFC8584"></xref>
+          or <xref target="I-D.ietf-bess-evpn-pref-df"></xref>). If no
+          election method is indicated, the default one defined in Section 8.5
+          of <xref target="RFC7432"></xref> is used.</t>
+
+          <t hangText="'split-horizon-filtering':">Controls the activation of
+          the split-horizon filtering for an ES (Section 8.3 of <xref
+          target="RFC7432"></xref>).</t>
+
+          <t hangText="'backbone-src-mac':">Associates a Provider Backbone MAC
+          (B-MAC) address with an ES. This is particularly useful for
+          All-Active multihomed ESes (Section 9.1 of <xref
+          target="RFC7623"></xref>).</t>
+
+          <t hangText="'member':">Lists the members of an ES.</t>
+        </list></t>
+    </section>
+
     <section anchor="design_data_model"
-             title="Description of the L2NM YANG Module ">
+             title="Description of the L2NM YANG Module">
       <t>The L2NM ('ietf-l2vpn-ntw', <xref target="YANG_module"></xref>) is
       meant to manage L2VPNs within a service provider network. In particular,
       the 'ietf-l2vpn-ntw' module can be used to create, modify, delete and
@@ -600,17 +714,12 @@
       <section anchor="structure_model"
                title="Overall Structure of the Module">
         <t>The 'ietf-l2vpn-ntw' module uses two main containers:
-        'vpn-profiles', 'ethernet-segments', and 'vpn-services' (see <xref
+        'vpn-profiles' and 'vpn-services' (see <xref
         target="ietf-l2vpn-ntw_tree"></xref>).</t>
 
         <t>The 'vpn-profiles' container is used by the provider to maintain a
         set of common VPN profiles that apply to one or several VPN services
         (<xref target="vpn_profiles"></xref>).</t>
-
-        <t>The 'ethernet-segments' container provides a set of data related to
-        Ethernet Segments (ESs). This container is present only for
-        EVPN-related L2VPN types. More details are provided in <xref
-        target="es"></xref>.</t>
 
         <t hangText="'ethernet-segments':">The 'vpn-services' container
         maintains the set of L2VPN services managed in the service provider
@@ -624,8 +733,6 @@
           <artwork align="center"><![CDATA[module: ietf-l2vpn-ntw
   +--rw l2vpn-ntw
      +--rw vpn-profiles
-     |  ...
-     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -664,8 +771,6 @@
      |     |  +--rw id    string
      |     +--rw routing-profile-identifier* [id]
      |        +--rw id    string
-     +--rw ethernet-segments
-     |  ...
      +--rw vpn-services
         ...                   ]]></artwork>
           </figure></t>
@@ -708,113 +813,6 @@
           </list></t>
 
         <t></t>
-      </section>
-
-      <section anchor="es" title="Ethernet Segments">
-        <t>The 'ethernet-segments' container is used to list a set of ESes
-        that are defined in an EVPN service.</t>
-
-        <t><figure align="center" anchor="es-tree"
-            title="Ethernet Segments Subtree">
-            <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
-     +--rw vpn-profiles
-     |  ...
-     +--rw ethernet-segments
-     |  +--rw ethernet-segment* [name]
-     |     +--rw name                                 string
-     |     +--rw esi-type?                            identityref
-     |     +--rw (esi-choice)?
-     |     |  +--:(directly-assigned)
-     |     |  |  +--rw ethernet-segment-identifier?   yang:hex-string
-     |     |  +--:(auto-assigned)
-     |     |     +--rw esi-auto
-     |     |        +--rw (auto-mode)?
-     |     |        |  +--:(from-pool)
-     |     |        |  |  +--rw esi-pool-name?                string
-     |     |        |  +--:(full-auto)
-     |     |        |     +--rw auto?                         empty
-     |     |        +--ro auto-ethernet-segment-identifier?
-     |     |                yang:hex-string
-     |     +--rw esi-redundancy-mode?                 identityref
-     |     +--rw df-election
-     |     |  +--rw df-election-method?   identityref
-     |     |  +--rw preference?           uint16
-     |     |  +--rw revertive?            boolean
-     |     |  +--rw election-wait-time?   uint32
-     |     +--rw split-horizon-filtering?             boolean
-     |     +--rw pbb
-     |     |  +--rw backbone-src-mac?   yang:mac-address
-     |     +--rw member* [ne-id, interface-id] 
-     |        +--rw ne-id            string                        
-     |        +--rw interface-id     string                  
-     +--rw vpn-services
-        ...             ]]></artwork>
-          </figure></t>
-
-        <t>In reference to the structure shown in <xref
-        target="es-tree"></xref>, the following data nodes can be
-        included:<list style="hanging">
-            <t hangText="'name':">Sets a name to uniquely identify an ES. This
-            name is called in the VPN network access level to handle
-            multi-homing, for example.</t>
-
-            <t hangText="'esi-type':">Indicates the ESI type as discussed in
-            Section 5 of <xref target="RFC7432"></xref>. ESI can be
-            automatically assigned either with or without indicating a pool
-            from which the ESI should be taken. The following types are
-            supported: <list style="hanging">
-                <t hangText="'esi-type-0':">The ESI is directly configured by
-                the VPN service provider.</t>
-
-                <t hangText="'esi-type-1':">The ESI is auto-generated from the
-                IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
-                target="IEEE802.1AX"></xref>.</t>
-
-                <t hangText="'esi-type-2':">The ESI is auto-generated and
-                determined based on the Layer 2 bridge protocol.</t>
-
-                <t hangText="'esi-type-3':">The ESI is a MAC-based ESI value
-                that can be auto-generated or configured by the VPN service
-                provider.</t>
-
-                <t hangText="'esi-type-4':">The ESI is auto-generated or
-                configured by the VPN service provider based on the Router-ID.
-                The 'router-id' supplied in <xref target="vpn_node"></xref>
-                can be used to auto-derive an ESI when this type is used.</t>
-
-                <t hangText="'esi-type-5':">The ESI is auto-generated or
-                configured by the VPN service provider based on the Autonomous
-                System (AS) number. The 'local-autonomous-system' supplied in
-                <xref target="profile"></xref> can be used to auto-derive an
-                ESI when this type is used.</t>
-              </list></t>
-
-            <t hangText="'esi-redundancy-mode':">Specifies the EVPN redundancy
-            mode for a given ES. The following modes are supported:
-            Single-Active (Section 14.1.1 of <xref target="RFC7432"></xref>)
-            or All-Active (Section 14.1.2 of <xref
-            target="RFC7432"></xref>).</t>
-
-            <t hangText="'df-election':">Specifies a set of parameters related
-            to the Designated Forwarder (DF) election (Section 8.5 of <xref
-            target="RFC7432"></xref>). For example, this data node can be used
-            to indicate an election method (e.g., <xref
-            target="RFC8584"></xref> or <xref
-            target="I-D.ietf-bess-evpn-pref-df"></xref>). If no election
-            method is indicated, the default one defined in Section 8.5 of
-            <xref target="RFC7432"></xref> is used.</t>
-
-            <t hangText="'split-horizon-filtering':">Controls the activation
-            of the split-horizon filtering for an ES (Section 8.3 of <xref
-            target="RFC7432"></xref>).</t>
-
-            <t hangText="'backbone-src-mac':">Associates a Provider Backbone
-            MAC (B-MAC) address with an ES. This is particularly useful for
-            All-Active multihomed ESes (Section 9.1 of <xref
-            target="RFC7623"></xref>).</t>
-
-            <t hangText="'member':">Lists the members of an ES.</t>
-          </list></t>
       </section>
 
       <section anchor="l2_vpn_service" title="VPN Services">
@@ -1207,8 +1205,6 @@
           <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
-     +--rw ethernet-segments
-     |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
            ...
@@ -1309,8 +1305,6 @@
               title="BGP Auto-Discovery Subtree">
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
-     |  ...
-     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -1663,7 +1657,7 @@
                        |  +--rw group-id                       string
                        |  +--rw precedence?
                        |  |       identityref
-                       |  +--rw ethernet-segment-identifier?   leafref
+                       |  +--rw ethernet-segment-identifier?   string
                        +--rw ethernet-service-oam
                        |  ...
                        +--rw service
@@ -1874,8 +1868,6 @@
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
      |  ...
-     +--rw ethernet-segments
-     |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
            ...
@@ -1942,8 +1934,6 @@
               title="Service Overall Subtree">
               <artwork align="center"><![CDATA[  +--rw l2vpn-ntw
      +--rw vpn-profiles
-     |  ...
-     +--rw ethernet-segments
      |  ...
      +--rw vpn-services
         +--rw vpn-service* [vpn-id]
@@ -2756,44 +2746,21 @@ module iana-pseudowire-types {
           </figure></t>
       </section>
 
-      <section anchor="YANG_module" title="L2NM">
-        <t>The "ietf-l2vpn-ntw" YANG module uses types defined in <xref
-        target="RFC6991"></xref>, <xref
-        target="I-D.ietf-opsawg-vpn-common"></xref>, and <xref
-        target="RFC8294"></xref>.</t>
+      <section anchor="es-yang" title="Ethernet Segments">
+        <t>The "ietf-ethernet-segment" YANG module uses types defined in <xref
+        target="RFC6991"></xref>.</t>
 
-        <figure align="center">
-          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-10-01.yang"
-module ietf-l2vpn-ntw {
+        <t><figure>
+            <artwork><![CDATA[<CODE BEGINS>file "ietf-ethernet-segment@2021-10-01.yang"
+module ietf-ethernet-segment {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
-  prefix l2vpn-ntw;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-ethernet-segment";
+  prefix l2vpn-es;
 
-  import ietf-inet-types {
-    prefix inet;
-    reference
-      "RFC 6991: Common YANG Data Types, Section 4";
-  }
   import ietf-yang-types {
     prefix yang;
     reference
       "RFC 6991: Common YANG Data Types, Section 3";
-  }
-  import ietf-vpn-common {
-    prefix vpn-common;
-    reference
-      "RFC CCCC: A Layer 2/3 VPN Common YANG Model";
-  }
-  import iana-bgp-l2-encaps {
-    prefix iana-bgp-l2-encaps;
-  }
-  import iana-pseudowire-types {
-    prefix iana-pw-types;
-  }
-  import ietf-routing-types {
-    prefix rt-types;
-    reference
-      "RFC 8294: Common YANG Data Types for the Routing Area";
   }
 
   organization
@@ -2809,8 +2776,7 @@ module ietf-l2vpn-ntw {
      Author:    Oscar Gonzalez de Dios
                <mailto:oscar.gonzalezdedios@telefonica.com>";
   description
-    "This YANG module defines a network model for layer 2 VPN
-     services.
+    "This YANG module defines a model for Ethernet Segments.
 
      Copyright (c) 2021 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
@@ -2830,17 +2796,6 @@ module ietf-l2vpn-ntw {
       "Initial version.";
     reference
       "RFC XXXX: A Layer 2 VPN Network YANG Model.";
-  }
-
-  /* Features */
-
-  feature oam-3ah {
-    description
-      "Indicates the support of OAM 802.3ah.";
-    reference
-      "IEEE Std 802.3ah: Media Access Control Parameters, Physical
-                         Layers, and  Management Parameters for
-                         Subscriber Access Networks";
   }
 
   /* Identities */
@@ -2956,6 +2911,334 @@ module ietf-l2vpn-ntw {
     reference
       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1.2";
   }
+
+  identity evpn-service-type {
+    description
+      "Base identity for EVPN service type.";
+  }
+
+  identity vlan-based-service-interface {
+    base evpn-service-type;
+    description
+      "VLAN-Based Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.1";
+  }
+
+  identity vlan-bundle-service-interface {
+    base evpn-service-type;
+    description
+      "VLAN Bundle Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.2";
+  }
+
+  identity vlan-aware-bundle-service-interface {
+    base evpn-service-type;
+    description
+      "VLAN-Aware Bundle Service Interface.";
+    reference
+      "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 6.3";
+  }
+
+  /* Main Ethernet Segment Container */
+
+  container ethernet-segments {
+    description
+      "Top container for the Ethernet Segment Identifier (ESI).";
+    list ethernet-segment {
+      key "name";
+      description
+        "Top list for ESIs.";
+      leaf name {
+        type string;
+        description
+          "Includes the name of the Ethernet Segment (ES).";
+      }
+      leaf esi-type {
+        type identityref {
+          base esi-type;
+        }
+        default "esi-type-0";
+        description
+          "T-(ESI Type) is a 1-octet field (most significant
+           octet) that specifies the format of the remaining
+           9 octets (ESI Value).";
+        reference
+          "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+      }
+      choice esi-choice {
+        description
+          "Ethernet segment choice between several types.
+           For ESI Type 0: The esi is directly configured by the
+                           operator.
+           For ESI Type 1: The auto-mode must be used.
+           For ESI Type 2: The auto-mode must be used.
+           For ESI Type 3: The directly-assigned or auto-mode must
+                           be used.
+           For ESI Type 4: The directly-assigned or auto-mode must
+                           be used.
+           For ESI Type 5: The directly-assigned or auto-mode must
+                           be used.";
+        case directly-assigned {
+          description
+            "Explicitly assign an ESI value.";
+          leaf ethernet-segment-identifier {
+            type yang:hex-string {
+              length "29";
+            }
+            description
+              "10-octet ESI.";
+          }
+        }
+        case auto-assigned {
+          description
+            "The ESI is auto-assigned.";
+          container esi-auto {
+            description
+              "The ESI is auto-assigned.";
+            choice auto-mode {
+              description
+                "Indicates the auto-assignment mode. ESI can be
+                 automatically assigned either with or without
+                 indicating a pool from which the ESI should be
+                 taken.
+
+                 For both cases, the server will auto-assign an
+                 ESI value 'auto-assigned-ESI' and use that value
+                 operationally.";
+              case from-pool {
+                leaf esi-pool-name {
+                  type string;
+                  description
+                    "The auto-assignment will be made from the
+                     pool identified by the ESI-pool-name.";
+                }
+              }
+              case full-auto {
+                leaf auto {
+                  type empty;
+                  description
+                    "Indicates an ESI is fully auto-assigned.";
+                }
+              }
+            }
+            leaf auto-ethernet-segment-identifier {
+              type yang:hex-string {
+                length "29";
+              }
+              config false;
+              description
+                "The value of the auto-assigned ESI.";
+            }
+          }
+        }
+      }
+      leaf esi-redundancy-mode {
+        type identityref {
+          base evpn-redundancy-mode;
+        }
+        description
+          "Indicates the EVPN redundancy mode for a multihomed
+           CE.";
+        reference
+          "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1";
+      }
+      container df-election {
+        description
+          "Top container for the DF election method properties.";
+        leaf df-election-method {
+          type identityref {
+            base df-election-methods;
+          }
+          default "default-7432";
+          description
+            "Specifies the DF election method.";
+          reference
+            "RFC 8584: Framework for Ethernet VPN Designated
+                       Forwarder Election Extensibility";
+        }
+        leaf preference {
+          when "derived-from-or-self(../df-election-method, "
+             + "'preference')" {
+            description
+              "The preference value is only applicable
+               to the preference based method.";
+          }
+          type uint16;
+          description
+            "Defines a 2-octet value that indicates the PE
+             preference to become the DF in the ES.";
+          reference
+            "RFC 8584: Framework for Ethernet VPN Designated
+                       Forwarder Election Extensibility";
+        }
+        leaf revertive {
+          when "derived-from-or-self(../df-election-method, "
+             + "'preference')" {
+            description
+              "The revertive value is only applicable
+               to the preference method.";
+          }
+          type boolean;
+          default "true";
+          description
+            "The 'preempt' or 'revertive' behavior. This
+             option allows a non-revertive behavior in the
+             DF election.";
+          reference
+            "RFC 8584: Framework for Ethernet VPN Designated
+                       Forwarder Election Extensibility";
+        }
+        leaf election-wait-time {
+          type uint32;
+          description
+            "Election wait timer.";
+          reference
+            "RFC 8584: Framework for Ethernet VPN Designated
+                       Forwarder Election Extensibility";
+        }
+      }
+      leaf split-horizon-filtering {
+        type boolean;
+        description
+          "Controls split-horizon filtering.
+
+           In order to achieve split-horizon filtering, every
+           Broadcast, unknown unicast, or multicast (BUM)
+           packet originating from a non-DF PE is encapsulated
+           with an MPLS label that identifies the origin ES.";
+        reference
+          "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
+      }
+      container pbb {
+        description
+          "Provider Backbone Bridging (PBB) parameters .";
+        reference
+          "IEEE 802.1ah: Provider Backbone Bridge";
+        leaf backbone-src-mac {
+          type yang:mac-address;
+          description
+            "The PEs connected to the same CE must share the
+             same Provider Backbone (B-MAC) address in
+             All-Active mode.";
+          reference
+            "RFC 7623: Provider Backbone Bridging Combined with
+                       Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
+        }
+      }
+      list member {
+        key "ne-id interface-id";
+        description
+          "Includes a list of ES members.";
+        leaf ne-id {
+          type string;
+          description
+            "Unique identifier of the network element where the ES
+             is configured.";
+        }
+        leaf interface-id {
+          type string;
+          description
+            "Identifier of a node interface.";
+        }
+      }
+    }
+  }
+}
+<CODE ENDS>
+]]></artwork>
+          </figure></t>
+      </section>
+
+      <section anchor="YANG_module" title="L2NM">
+        <t>The "ietf-l2vpn-ntw" YANG module uses types defined in <xref
+        target="RFC6991"></xref>, <xref
+        target="I-D.ietf-opsawg-vpn-common"></xref>, and <xref
+        target="RFC8294"></xref>.</t>
+
+        <figure align="center">
+          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-10-01.yang"
+module ietf-l2vpn-ntw {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
+  prefix l2vpn-ntw;
+
+  import ietf-inet-types {
+    prefix inet;
+    reference
+      "RFC 6991: Common YANG Data Types, Section 4";
+  }
+  import ietf-yang-types {
+    prefix yang;
+    reference
+      "RFC 6991: Common YANG Data Types, Section 3";
+  }
+  import ietf-vpn-common {
+    prefix vpn-common;
+    reference
+      "RFC CCCC: A Layer 2/3 VPN Common YANG Model";
+  }
+  import iana-bgp-l2-encaps {
+    prefix iana-bgp-l2-encaps;
+  }
+  import iana-pseudowire-types {
+    prefix iana-pw-types;
+  }
+  import ietf-routing-types {
+    prefix rt-types;
+    reference
+      "RFC 8294: Common YANG Data Types for the Routing Area";
+  }
+
+  organization
+    "IETF OPSA (Operations and Management Area) Working Group";
+  contact
+    "WG Web:   <https://datatracker.ietf.org/wg/opsawg/>
+     WG List:  <mailto:opsawg@ietf.org>
+
+     Editor:    Mohamed Boucadair
+               <mailto:mohamed.boucadair@orange.com>
+     Editor:    Samier Barguil
+               <mailto:samier.barguilgiraldo.ext@telefonica.com>
+     Author:    Oscar Gonzalez de Dios
+               <mailto:oscar.gonzalezdedios@telefonica.com>";
+  description
+    "This YANG module defines a network model for layer 2 VPN
+     services.
+
+     Copyright (c) 2021 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject
+     to the license terms contained in, the Simplified BSD License
+     set forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (http://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX; see
+     the RFC itself for full legal notices.";
+
+  revision 2021-10-01 {
+    description
+      "Initial version.";
+    reference
+      "RFC XXXX: A Layer 2 VPN Network YANG Model.";
+  }
+
+  /* Features */
+
+  feature oam-3ah {
+    description
+      "Indicates the support of OAM 802.3ah.";
+    reference
+      "IEEE Std 802.3ah: Media Access Control Parameters, Physical
+                         Layers, and  Management Parameters for
+                         Subscriber Access Networks";
+  }
+
+  /* Identities */
 
   identity evpn-service-type {
     description
@@ -3202,7 +3485,7 @@ module ietf-l2vpn-ntw {
 
   /* Groupings */
 
-  grouping cfm-802-grouping {
+  grouping cfm-802 {
     description
       "Grouping for 802.1ag Connectivity Fault Management (CFM)
        attributes.";
@@ -3343,6 +3626,7 @@ module ietf-l2vpn-ntw {
       }
       leaf frame-size {
         type uint32;
+        units "bytes";
         description
           "Indicates the frame size.";
       }
@@ -3393,7 +3677,7 @@ module ietf-l2vpn-ntw {
     leaf ce-vlan-cos-preservation {
       type boolean;
       description
-        "CE vlan CoS preservation. PCP bits in the CE-VLAN tag
+        "CE VLAN CoS preservation. PCP bits in the CE-VLAN tag
          of the egress frame are identical to those of the ingress
          frame that yielded this egress service frame.";
     }
@@ -3502,208 +3786,6 @@ module ietf-l2vpn-ntw {
       description
         "Container for VPN profiles.";
       uses vpn-common:vpn-profile-cfg;
-    }
-    container ethernet-segments {
-      description
-        "Top container for the Ethernet Segment Identifier (ESI).";
-      list ethernet-segment {
-        key "name";
-        description
-          "Top list for ESIs.";
-        leaf name {
-          type string;
-          description
-            "Includes the name of the Ethernet Segment (ES).";
-        }
-        leaf esi-type {
-          type identityref {
-            base esi-type;
-          }
-          default "esi-type-0";
-          description
-            "T-(ESI Type) is a 1-octet field (most significant
-             octet) that specifies the format of the remaining
-             9 octets (ESI Value).";
-          reference
-            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
-        }
-        choice esi-choice {
-          description
-            "Ethernet segment choice between several types.
-             For ESI Type 0: The esi is directly configured by the
-                             operator.
-             For ESI Type 1: The auto-mode must be used.
-             For ESI Type 2: The auto-mode must be used.
-             For ESI Type 3: The directly-assigned or auto-mode must
-                             be used.
-             For ESI Type 4: The directly-assigned or auto-mode must
-                             be used.
-             For ESI Type 5: The directly-assigned or auto-mode must
-                             be used.";
-          case directly-assigned {
-            description
-              "Explicitly assign an ESI value.";
-            leaf ethernet-segment-identifier {
-              type yang:hex-string {
-                length "29";
-              }
-              description
-                "10-octet ESI.";
-            }
-          }
-          case auto-assigned {
-            description
-              "The ESI is auto-assigned.";
-            container esi-auto {
-              description
-                "The ESI is auto-assigned.";
-              choice auto-mode {
-                description
-                  "Indicates the auto-assignment mode. ESI can be
-                   automatically assigned either with or without
-                   indicating a pool from which the ESI should be
-                   taken.
-
-                   For both cases, the server will auto-assign an
-                   ESI value 'auto-assigned-ESI' and use that value
-                   operationally.";
-                case from-pool {
-                  leaf esi-pool-name {
-                    type string;
-                    description
-                      "The auto-assignment will be made from the
-                       pool identified by the ESI-pool-name.";
-                  }
-                }
-                case full-auto {
-                  leaf auto {
-                    type empty;
-                    description
-                      "Indicates an ESI is fully auto-assigned.";
-                  }
-                }
-              }
-              leaf auto-ethernet-segment-identifier {
-                type yang:hex-string {
-                  length "29";
-                }
-                config false;
-                description
-                  "The value of the auto-assigned ESI.";
-              }
-            }
-          }
-        }
-        leaf esi-redundancy-mode {
-          type identityref {
-            base evpn-redundancy-mode;
-          }
-          description
-            "Indicates the EVPN redundancy mode for a multihomed
-             CE.";
-          reference
-            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 14.1";
-        }
-        container df-election {
-          description
-            "Top container for the DF election method properties.";
-          leaf df-election-method {
-            type identityref {
-              base df-election-methods;
-            }
-            default "default-7432";
-            description
-              "Specifies the DF election method.";
-            reference
-              "RFC 8584: Framework for Ethernet VPN Designated
-                         Forwarder Election Extensibility";
-          }
-          leaf preference {
-            when "derived-from-or-self(../df-election-method, "
-               + "'preference')" {
-              description
-                "The preference value is only applicable
-                 to the preference based method.";
-            }
-            type uint16;
-            description
-              "Defines a 2-octet value that indicates the PE
-               preference to become the DF in the ES.";
-            reference
-              "RFC 8584: Framework for Ethernet VPN Designated
-                         Forwarder Election Extensibility";
-          }
-          leaf revertive {
-            when "derived-from-or-self(../df-election-method, "
-               + "'preference')" {
-              description
-                "The revertive value is only applicable
-                 to the preference method.";
-            }
-            type boolean;
-            default "true";
-            description
-              "The 'preempt' or 'revertive' behavior. This
-               option allows a non-revertive behavior in the
-               DF election.";
-            reference
-              "RFC 8584: Framework for Ethernet VPN Designated
-                         Forwarder Election Extensibility";
-          }
-          leaf election-wait-time {
-            type uint32;
-            description
-              "Election wait timer.";
-            reference
-              "RFC 8584: Framework for Ethernet VPN Designated
-                         Forwarder Election Extensibility";
-          }
-        }
-        leaf split-horizon-filtering {
-          type boolean;
-          description
-            "Controls split-horizon filtering.
-
-             In order to achieve split-horizon filtering, every
-             Broadcast, unknown unicast, or multicast (BUM)
-             packet originating from a non-DF PE is encapsulated
-             with an MPLS label that identifies the origin ES.";
-          reference
-            "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
-        }
-        container pbb {
-          description
-            "Provider Backbone Bridging (PBB) parameters .";
-          reference
-            "IEEE 802.1ah: Provider Backbone Bridge";
-          leaf backbone-src-mac {
-            type yang:mac-address;
-            description
-              "The PEs connected to the same CE must share the
-               same Provider Backbone (B-MAC) address in
-               All-Active mode.";
-            reference
-              "RFC 7623: Provider Backbone Bridging Combined with
-                         Ethernet VPN (PBB-EVPN), Section 6.2.1.1";
-          }
-        }
-        list member {
-          key "ne-id interface-id";
-          description
-            "Includes a list of ES members.";
-          leaf ne-id {
-            type string;
-            description
-              "Unique identifier of the network element where the ES
-               is configured.";
-          }
-          leaf interface-id {
-            type string;
-            description
-              "Identifier of a node interface.";
-          }
-        }
-      }
     }
     container vpn-services {
       description
@@ -3938,11 +4020,6 @@ module ietf-l2vpn-ntw {
                 description
                   "Choice for the signaling-option.";
                 case bgp {
-                  when "derived-from-or-self(./signaling-type, "
-                     + "'vpn-common:bgp-signaling')" {
-                    description
-                      "Only applies when VPN signaling type is BGP.";
-                  }
                   description
                     "BGP is used as the signaling protocol.";
                   choice bgp-type {
@@ -4283,12 +4360,6 @@ module ietf-l2vpn-ntw {
                     description
                       "Choice of LDP or L2TP-signaled PWs.";
                     case ldp {
-                      when "derived-from-or-self(../signaling-type, "
-                         + "'vpn-common:ldp-signaling')" {
-                        description
-                          "Only applies when VPN signaling type is 
-                           Target LDP.";
-                      }
                       description
                         "Container for T-LDP PW configurations.";
                       leaf t-ldp-pw-type {
@@ -4332,7 +4403,7 @@ module ietf-l2vpn-ntw {
                                      Using Label Distribution Protocol 
                                      (LDP) Signaling, Section 6.2";
                       }
-                      list ac-pw-list {
+                      list pw-peer-list {
                         key "peer-addr vc-id";
                         description
                           "List of AC and PW bindings.";
@@ -4378,11 +4449,6 @@ module ietf-l2vpn-ntw {
                       }
                     }
                     case l2tp {
-                      when "derived-from-or-self(../signaling-type, "
-                         + "'vpn-common:l2tp-signaling')" {
-                        description
-                          "Applies when VPN signaling type is L2TP.";
-                      }
                       description
                         "Container for L2TP PWs.";
                       leaf router-id {
@@ -4780,9 +4846,8 @@ module ietf-l2vpn-ntw {
                 }
                 container vpws-service-instance {
                   when "derived-from-or-self(/l2vpn-ntw/vpn-services"
-                     + "/vpn-service/vpn-nodes/vpn-node"
-                     + "/bgp-auto-discovery/evpn-type, "
-                     + "'vpws-evpn')" {
+                     + "/vpn-service/vpn-type, "
+                     + "'vpn-common:vpws-evpn')" {
                     description
                       "Only applies for EVPN-VPWS.";
                   }
@@ -4932,10 +4997,7 @@ module ietf-l2vpn-ntw {
                        network.";
                   }
                   leaf ethernet-segment-identifier {
-                    type leafref {
-                      path "/l2vpn-ntw/ethernet-segments"
-                         + "/ethernet-segment/name";
-                    }
+                    type string;
                     description
                       "Reference to the ESI associated to the VPN
                        network access.";
@@ -4961,13 +5023,13 @@ module ietf-l2vpn-ntw {
                       key "maid";
                       description
                         "List of UNI-N to UNI-C.";
-                      uses cfm-802-grouping;
+                      uses cfm-802;
                     }
                     list n2-uni-n {
                       key "maid";
                       description
                         "List of UNI-N to UNI-N.";
-                      uses cfm-802-grouping;
+                      uses cfm-802;
                     }
                   }
                   uses y-1731;
@@ -5011,6 +5073,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf cir {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Information Rate. The maximum
                            number of bits that a port can receive or
@@ -5018,6 +5081,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf cbs {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Burst Size. CBS controls the bursty
                            nature of the traffic. Traffic that does not
@@ -5026,6 +5090,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf eir {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Information Rate, i.e., excess frame
                            delivery allowed not subject to SLA. The
@@ -5033,6 +5098,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf ebs {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Burst Size. The bandwidth available
                            for burst traffic from the EBS is subject to
@@ -5042,6 +5108,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf pir {
                         type uint64;
+                        units "bps";
                         description
                           "Peak Information Rate, i.e., maximum frame
                            delivery allowed. It is equal to or less
@@ -5049,7 +5116,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf pbs {
                         type uint64;
-                        units "bytes per second";
+                        units "Bytes per Second";
                         description
                           "Peak Burst Size.";
                       }
@@ -5081,6 +5148,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf cir {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Information Rate. The maximum
                            number of bits that a port can receive or
@@ -5088,6 +5156,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf cbs {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Burst Size. CBS controls the bursty
                            nature of the traffic. Traffic that does not
@@ -5096,6 +5165,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf eir {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Information Rate, i.e., excess frame
                            delivery allowed not subject to SLA. The
@@ -5103,6 +5173,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf ebs {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Burst Size. The bandwidth available
                            for burst traffic from the EBS is subject to
@@ -5112,6 +5183,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf pir {
                         type uint64;
+                        units "bps";
                         description
                           "Peak Information Rate, i.e., maximum frame
                            delivery allowed. It is equal to or less than
@@ -5119,7 +5191,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf pbs {
                         type uint64;
-                        units "bytes per second";
+                        units "Bytes per Second";
                         description
                           "Peak Burst Size.";
                       }
@@ -5447,14 +5519,15 @@ module ietf-l2vpn-ntw {
       particular NETCONF or RESTCONF users to a preconfigured subset of all
       available NETCONF or RESTCONF protocol operations and content.</t>
 
-      <t>There are a number of data nodes defined in "ietf-l2vpn-ntw" YANG
-      module that are writable/creatable/deletable (i.e., config true, which
-      is the default). These data nodes may be considered sensitive or
-      vulnerable in some network environments. Write operations (e.g.,
-      edit-config) and delete operations to these data nodes without proper
-      protection or authentication can have a negative effect on network
-      operations. These are the subtrees and data nodes and their
-      sensitivity/vulnerability in the "ietf-l2vpn-ntw" module: <list
+      <t>There are a number of data nodes defined in "ietf-l2vpn-ntw" and
+      "ietf-ethernet-segment" YANG modules that are
+      writable/creatable/deletable (i.e., config true, which is the default).
+      These data nodes may be considered sensitive or vulnerable in some
+      network environments. Write operations (e.g., edit-config) and delete
+      operations to these data nodes without proper protection or
+      authentication can have a negative effect on network operations. These
+      are the subtrees and data nodes and their sensitivity/vulnerability in
+      the "ietf-l2vpn-ntw" and "ietf-ethernet-segment" modules: <list
           style="symbols">
           <t>'vpn-profiles': This container includes a set of sensitive data
           that influence how the L3VPN service is delivered. For example, an
@@ -5510,6 +5583,10 @@ module ietf-l2vpn-ntw {
       Registrant Contact: The IESG.
       XML: N/A; the requested URI is an XML namespace.
 
+      URI: urn:ietf:params:xml:ns:yang:ietf-ethernet-segment
+      Registrant Contact: The IESG.
+      XML: N/A; the requested URI is an XML namespace.
+
       URI: urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw
       Registrant Contact: The IESG.
       XML: N/A; the requested URI is an XML namespace.]]></artwork>
@@ -5530,6 +5607,12 @@ module ietf-l2vpn-ntw {
       namespace: urn:ietf:params:xml:ns:yang:iana-pseudowire-types
       maintained by IANA: Y
       prefix: iana-pw-types
+      reference: RFC XXXX
+
+      name: ietf-l2vpn-ntw
+      namespace: urn:ietf:params:xml:ns:yang:ietf-ethernet-segment
+      maintained by IANA: N
+      prefix: l2vpn-es
       reference: RFC XXXX
 
       name: ietf-l2vpn-ntw
@@ -5836,6 +5919,8 @@ module ietf-l2vpn-ntw {
 
       <?rfc include='reference.RFC.8960'?>
 
+      <?rfc include='reference.I-D.ietf-bess-evpn-yang'?>
+
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
           <title>pyang</title>
@@ -5902,213 +5987,223 @@ module ietf-l2vpn-ntw {
 
         <t><figure align="center" anchor="l2nm-vpls"
             title="Example of L2NM Message Body to Configure a BGP-based VPLS">
-            <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "vpls7714825356",
-        "description": "Sample BGP-based VPLS",
-        "customer-name": "customer-7714825356",
-        "vpn-type": "vpn-common:vpls",
-        "bgp-ad-enabled": true,
-        "signaling-type": "vpn-common:bgp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": [
-            {
-              "profile-id": "simple-profile",
-              "local-autonomous-system": 65550,
-              "mtu": 1518,
-              "rd-suffix": 1,
-              "vpn-targets": {
+            <artwork><![CDATA[=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
+    "vpn-services": {
+      "vpn-service": [
+        {
+          "vpn-id": "vpls7714825356",
+          "vpn-description": "Sample BGP-based VPLS",
+          "customer-name": "customer-7714825356",
+          "vpn-type": "ietf-vpn-common:vpls",
+          "bgp-ad-enabled": true,
+          "signaling-type": "ietf-vpn-common:bgp-signaling",
+          "global-parameters-profiles": {
+            "global-parameters-profile": [
+              {
+                "profile-id": "simple-profile",
+                "local-autonomous-system": 65535,
+                "svc-mtu": 1518,
+                "rd-suffix": 1,
                 "vpn-target": [
                   {
                     "id": 1,
                     "route-targets": [
-                      "0:65550:1"
+                      {
+                        "route-target": "0:65535:1"
+                      }
                     ],
                     "route-target-type": "both"
                   }
                 ]
               }
-            }
-          ]
-        },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "198.51.100.1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "bgp-auto-discovery": {
-              "vpn-id": "1"
-            },
-            "signaling-option": {
-              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-\
-               tagged-mode",
-              "vpls-instance": {
-                "vpls-edge-id": 1,
-                "vpls-edge-id-range": 100
-              }
-            },
-            "vpn-network-access": [
-              {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
-                    }
-                  }
-                }
-              }
             ]
           },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "198.51.100.2",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "bgp-auto-discovery": {
-              "vpn-id": "1"
-            },
-            "signaling-option": {
-              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-\
-               tagged-mode",
-              "vpls-instance": {
-                "vpls-edge-id": 2,
-                "vpls-edge-id-range": 100
-              }
-            },
-            "vpn-network-access": [
+          "vpn-nodes": {
+            "vpn-node": [
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE2",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
+                "vpn-node-id": "pe1",
+                "ne-id": "198.51.100.1",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": "1"
+                },
+                "signaling-option": {
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "vpls-instance": {
+                    "vpls-edge-id": 1,
+                    "vpls-edge-id-range": 100
                   }
                 },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE1",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      }
                     }
-                  }
+                  ]
                 }
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe3",
-            "ne-id": "198.51.100.3",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "bgp-auto-discovery": {
-              "vpn-id": "1"
-            },
-            "signaling-option": {
-              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-\
-               tagged-mode",
-              "vpls-instance": {
-                "vpls-edge-id": 3,
-                "vpls-edge-id-range": 100
-              }
-            },
-            "vpn-network-access": [
+              },
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE3",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
+                "vpn-node-id": "pe2",
+                "ne-id": "198.51.100.2",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": "1"
+                },
+                "signaling-option": {
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "vpls-instance": {
+                    "vpls-edge-id": 2,
+                    "vpls-edge-id-range": 100
                   }
                 },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE2",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      }
                     }
-                  }
+                  ]
                 }
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe4",
-            "ne-id": "198.51.100.4",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "bgp-auto-discovery": {
-              "vpn-id": "1"
-            },
-            "signaling-option": {
-              "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-\
-               tagged-mode",
-              "vpls-instance": {
-                "vpls-edge-id": 4,
-                "vpls-edge-id-range": 100
-              }
-            },
-            "vpn-network-access": [
+              },
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE4",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
+                "vpn-node-id": "pe3",
+                "ne-id": "198.51.100.3",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": "1"
+                },
+                "signaling-option": {
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "vpls-instance": {
+                    "vpls-edge-id": 3,
+                    "vpls-edge-id-range": 100
                   }
                 },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE3",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      }
                     }
+                  ]
+                }
+              },
+              {
+                "vpn-node-id": "pe4",
+                "ne-id": "198.51.100.4",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
+                },
+                "bgp-auto-discovery": {
+                  "vpn-id": "1"
+                },
+                "signaling-option": {
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "vpls-instance": {
+                    "vpls-edge-id": 4,
+                    "vpls-edge-id-range": 100
                   }
+                },
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE4",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
-        ]
-      }
-    ]
+        }
+      ]
+    }
   }
 }
 ]]></artwork>
@@ -6134,123 +6229,131 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="l2nm-vpws-ex"
             title="Example of L2NM Message Body to Configure a BGP-based VPWS with LDP Signaling">
             <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "vpws12345",
-        "description": "Sample VPWS",
-        "customer-name": "customer-12345",
-        "vpn-type": "vpn-common:vpws",
-        "bgp-ad-enabled": true,
-        "signaling-type": "vpn-common:ldp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": [
-            {
-              "profile-id": "simple-profile",
-              "local-autonomous-system": 65550,
-              "rd-auto": {
-                "auto": [
-                  null
-                ]
-              },
-              "vpn-targets": {
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
+    "vpn-services": {
+      "vpn-service": [
+        {
+          "vpn-id": "vpws12345",
+          "vpn-description": "Sample VPWS",
+          "customer-name": "customer-12345",
+          "vpn-type": "ietf-vpn-common:vpws",
+          "bgp-ad-enabled": true,
+          "signaling-type": "ietf-vpn-common:ldp-signaling",
+          "global-parameters-profiles": {
+            "global-parameters-profile": [
+              {
+                "profile-id": "simple-profile",
+                "local-autonomous-system": 65550,
+                "rd-auto": {
+                  "auto": [
+                    null
+                  ]
+                },
                 "vpn-target": [
                   {
                     "id": 1,
                     "route-targets": [
-                      "0:65550:1"
-                    ]
+                      {
+                        "route-target": "0:65535:1"
+                      }
+                    ],
+                    "route-target-type": "both"
                   }
                 ]
               }
-            }
-          ]
-        },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "2001:db8:100::1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
+            ]
+          },
+          "vpn-nodes": {
+            "vpn-node": [
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
+                "vpn-node-id": "pe1",
+                "ne-id": "2001:db8:100::1",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
                 },
                 "bgp-auto-discovery": {
                   "vpn-id": "587"
                 },
                 "signaling-option": {
-                  "mtu-pw": 1500,
+                  "advertise-mtu": true,
                   "ldp-or-l2tp": {
                     "saii": 1,
                     "remote-targets": [
                       {
                         "taii": 2
                       }
-                    ]
-                  },
-                  "pw-type": "ethernet"
-                }
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "2001:db8:200::1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
-              {
-                "id": "5/1/1.1",
-                "interface-id": "5/1/1",
-                "description": "Interface to CE2",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
+                    ],
+                    "pw-type": "ethernet"
                   }
+                },
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE1",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "vpn-node-id": "pe2",
+                "ne-id": "2001:db8:200::1",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
                 },
                 "bgp-auto-discovery": {
                   "vpn-id": "587"
                 },
                 "signaling-option": {
-                  "mtu-pw": 1500,
+                  "advertise-mtu": true,
                   "ldp-or-l2tp": {
                     "saii": 2,
                     "remote-targets": [
                       {
                         "taii": 1
                       }
-                    ]
-                  },
-                  "pw-type": "ethernet"
+                    ],
+                    "pw-type": "ethernet"
+                  }
+                },
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "5/1/1.1",
+                      "interface-id": "5/1/1",
+                      "description": "Interface to CE2",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
-        ]
-      }
-    ]
+        }
+      ]
+    }
   }
 }
-
 ]]></artwork>
           </figure></t>
 
@@ -6287,168 +6390,197 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="vpls-ldp-call"
             title="Example of L2NM Message Body for LDP-based VPLS">
             <artwork align="center"><![CDATA[{
-  "l2vpn-ntw": {
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
     "vpn-services": {
-      "vpn-service": {
-        "vpn-id": "450",
-        "vpn-name": "CORPO-EXAMPLE",
-        "vpn-description": "SEDE_CENTRO_450",
-        "customer-name": "EXAMPLE",
-        "vpn-type": "vpn-common:vpls",
-        "vpn-service-topology": "vpn-common:hub-spoke",
-        "bgp-ad-enabled": false,
-        "signaling-type": "vpn-common:ldp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": {
-            "ce-vlan-preservation": "true",
-            "ce-vlan-cos-preservation": "true"
-          }
-        },
-        "vpn-nodes": [
-          {
-            "vpn-node": {
-              "vpn-node-id": "450",
-              "description": "SEDE_CENTRO_450",
-              "ne-id": "2001:db8:5::1",
-              "role": "vpn-common:hub-role",
-              "status": {
-                "admin-status": {
-                  "status": "vpn-common:admin-up"
-                }
-              },
-              "ldp-or-l2tp": {
-                "signaling-option": [
-                  {
-                    "t-ldp-pw-type": "vpls-type"
-                  }
-                ]
-              },
-              "ac-pw-list": [
-                {
-                  "peer-addr": "2001:db8:50::1",
-                  "vc-id": "1543"
-                }
-              ]
-            },
-            "vpn-network-accesses": {
-              "vpn-network-access": {
-                "id": "4508671287",
-                "description": "VPN_450_SNA",
-                "interface-id": "gigabithethernet0/0/1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-up"
-                  }
-                },
-                "connection": {
-                  "l2-termination-point": "550",
-                  "encapsulation": {
-                    "encap-type": "vpn-common:dot1q",
-                    "dot1q": {
-                      "tag-type": "vpn-common:c-vlan",
-                      "cvlan-id": 550
-                    }
-                  }
-                },
-                "service": {
-                  "mtu": 1550,
-                  "svc-inbound-bandwidth": {
-                    "inbound-bandwidth": {
-                      "bw-type": "vpn-common:bw-per-service",
-                      "cir": "20480000"
-                    }
-                  },
-                  "svc-outbound-bandwidth": {
-                    "outbound-bandwidth": {
-                      "bw-type": "vpn-common:bw-per-port",
-                      "cir": "20480000"
-                    }
-                  },
-                  "qos": {
-                    "qos-profile": {
-                      "qos-profile": {
-                        "profile": "QoS_Profile_A",
-                        "direction": "vpn-common:both"
-                      }
-                    }
-                  }
-                }
+      "vpn-service": [
+        {
+          "vpn-id": "450",
+          "vpn-name": "CORPO-EXAMPLE",
+          "vpn-description": "SEDE_CENTRO_450",
+          "customer-name": "EXAMPLE",
+          "vpn-type": "ietf-vpn-common:vpls",
+          "vpn-service-topology": "ietf-vpn-common:hub-spoke",
+          "bgp-ad-enabled": false,
+          "signaling-type": "ietf-vpn-common:ldp-signaling",
+          "global-parameters-profiles": {
+            "global-parameters-profile": [
+              {
+                "profile-id": "simple-profile",
+                "ce-vlan-preservation": true,
+                "ce-vlan-cos-preservation": true
               }
-            }
+            ]
           },
-          {
-            "vpn-node": {
-              "vpn-node-id": "451",
-              "description": "SEDE_CHAPINERO_451",
-              "ne-id": "2001:db8:50::1",
-              "role": "vpn-common:spoke-role",
-              "status": {
-                "admin-status": {
-                  "status": "vpn-common:admin-up"
-                }
-              },
-              "ldp-or-l2tp": {
-                "signaling-option": [
-                  {
-                    "t-ldp-pw-type": "vpls-type"
-                  }
-                ]
-              },
-              "ac-pw-list": [
-                {
-                  "peer-addr": "2001:db8:5::1",
-                  "vc-id": "1543"
-                }
-              ]
-            },
-            "vpn-network-accesses": {
-              "vpn-network-access": {
-                "id": "4508671288",
-                "description": "VPN_450_SNA",
-                "interface-id": "gigabithethernet0/0/1",
+          "vpn-nodes": {
+            "vpn-node": [
+              {
+                "vpn-node-id": "450",
+                "description": "SEDE_CENTRO_450",
+                "ne-id": "2001:db8:5::1",
+                "role": "ietf-vpn-common:hub-role",
                 "status": {
                   "admin-status": {
-                    "status": "vpn-common:admin-up"
+                    "status": "ietf-vpn-common:admin-up"
                   }
                 },
-                "connection": {
-                  "l2-termination-point": "550",
-                  "encapsulation": {
-                    "encap-type": "vpn-common:dot1q",
-                    "dot1q": {
-                      "tag-type": "vpn-common:c-vlan",
-                      "cvlan-id": 550
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
                     }
+                  ]
+                },
+                "signaling-option": {
+                  "ldp-or-l2tp": {
+                    "t-ldp-pw-type": "vpls-type",
+                    "pw-peer-list": [
+                      {
+                        "peer-addr": "2001:db8:50::1",
+                        "vc-id": "1543"
+                      }
+                    ]
                   }
                 },
-                "service": {
-                  "mtu": 1550,
-                  "svc-inbound-bandwidth": {
-                    "inbound-bandwidth": {
-                      "bw-type": "vpn-common:bw-per-service",
-                      "cir": "20480000"
-                    }
-                  },
-                  "svc-outbound-bandwidth": {
-                    "outbound-bandwidth": {
-                      "bw-type": "vpn-common:bw-per-port",
-                      "cir": "20480000"
-                    }
-                  },
-                  "qos": {
-                    "qos-profile": {
-                      "qos-profile": {
-                        "profile": "QoS_Profile_A",
-                        "direction": "vpn-common:both"
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "4508671287",
+                      "description": "VPN_450_SNA",
+                      "interface-id": "gigabithethernet0/0/1",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "l2-termination-point": "550",
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "tag-type": "ietf-vpn-common:c-vlan",
+                            "cvlan-id": 550
+                          }
+                        }
+                      },
+                      "service": {
+                        "mtu": 1550,
+                        "svc-inbound-bandwidth": {
+                          "inbound-bandwidth": [
+                            {
+                              "bw-type": "ietf-vpn-common:bw-per-service",
+                              "cir": "20480000"
+                            }
+                          ]
+                        },
+                        "svc-outbound-bandwidth": {
+                          "outbound-bandwidth": [
+                            {
+                              "bw-type": "ietf-vpn-common:bw-per-port",
+                              "cir": "20480000"
+                            }
+                          ]
+                        },
+                        "qos": {
+                          "qos-profile": {
+                            "qos-profile": [
+                              {
+                                "profile": "QoS_Profile_A",
+                                "direction": "ietf-vpn-common:both"
+                              }
+                            ]
+                          }
+                        }
                       }
                     }
+                  ]
+                }
+              },
+              {
+                "vpn-node-id": "451",
+                "description": "SEDE_CHAPINERO_451",
+                "ne-id": "2001:db8:50::1",
+                "role": "ietf-vpn-common:spoke-role",
+                "status": {
+                  "admin-status": {
+                    "status": "ietf-vpn-common:admin-up"
                   }
+                },
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
+                },
+                "signaling-option": {
+                  "ldp-or-l2tp": {
+                    "t-ldp-pw-type": "vpls-type",
+                    "pw-peer-list": [
+                      {
+                        "peer-addr": "2001:db8:5::1",
+                        "vc-id": "1543"
+                      }
+                    ]
+                  }
+                },
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "4508671288",
+                      "description": "VPN_450_SNA",
+                      "interface-id": "gigabithethernet0/0/1",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "l2-termination-point": "550",
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "tag-type": "ietf-vpn-common:c-vlan",
+                            "cvlan-id": 550
+                          }
+                        }
+                      },
+                      "service": {
+                        "mtu": 1550,
+                        "svc-inbound-bandwidth": {
+                          "inbound-bandwidth": [
+                            {
+                              "bw-type": "ietf-vpn-common:bw-per-service",
+                              "cir": "20480000"
+                            }
+                          ]
+                        },
+                        "svc-outbound-bandwidth": {
+                          "outbound-bandwidth": [
+                            {
+                              "bw-type": "ietf-vpn-common:bw-per-port",
+                              "cir": "20480000"
+                            }
+                          ]
+                        },
+                        "qos": {
+                          "qos-profile": {
+                            "qos-profile": [
+                              {
+                                "profile": "QoS_Profile_A",
+                                "direction": "ietf-vpn-common:both"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
-            }
+            ]
           }
-        ]
-      }
+        }
+      ]
     }
   }
 }
@@ -6486,8 +6618,10 @@ module ietf-l2vpn-ntw {
 
         <t><figure align="center" anchor="es1"
             title="Example of L2NM Message Body to Configure an Ethernet Segment">
-            <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:ethernet-segments": {
+            <artwork><![CDATA[=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  "ietf-ethernet-segment:ethernet-segments": {
     "ethernet-segment": [
       {
         "name": "esi1",
@@ -6511,210 +6645,221 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="l2nm-vpws-evpn"
             title="Example of L2NM Message Body to Configure a VPWS-EVPN Instance">
             <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "vpws15432855",
-        "description": "Sample VPWS-EVPN",
-        "customer-name": "customer_15432855",
-        "vpn-type": "vpn-common:vpws-evpn",
-        "bgp-ad-enabled": true,
-        "signaling-type": "vpn-common:bgp-signaling",
-        "global-parameters-profiles": {
-          "global-parameters-profile": [
-            {
-              "profile-id": "simple-profile",
-              "local-autonomous-system": 65550,
-              "rd-suffix": 1,
-              "vpn-targets": {
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
+    "vpn-services": {
+      "vpn-service": [
+        {
+          "vpn-id": "vpws15432855",
+          "vpn-description": "Sample VPWS-EVPN",
+          "customer-name": "customer_15432855",
+          "vpn-type": "ietf-vpn-common:vpws-evpn",
+          "bgp-ad-enabled": true,
+          "signaling-type": "ietf-vpn-common:bgp-signaling",
+          "global-parameters-profiles": {
+            "global-parameters-profile": [
+              {
+                "profile-id": "simple-profile",
+                "local-autonomous-system": 65535,
+                "rd-suffix": 1,
                 "vpn-target": [
                   {
                     "id": 1,
                     "route-targets": [
-                      "0:65550:1"
+                      {
+                        "route-target": "0:65535:1"
+                      }
                     ],
                     "route-target-type": "both"
                   }
                 ]
               }
-            }
-          ]
-        },
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "198.51.100.1",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
-              {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
-                    }
-                  }
-                },
-                "vpws-service-instance": {
-                  "local-vpws-service-instance": 1111,
-                  "remote-vpws-service-instance": 1112
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
             ]
           },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "198.51.100.2",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
-                }
-              ]
-            },
-            "vpn-network-access": [
+          "vpn-nodes": {
+            "vpn-node": [
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-node-id": "pe1",
+                "ne-id": "198.51.100.1",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
                     }
-                  }
+                  ]
                 },
-                "vpws-service-instance": {
-                  "local-vpws-service-instance": 1111,
-                  "remote-vpws-service-instance": 1112
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe3",
-            "ne-id": "198.51.100.3",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE1",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      },
+                      "vpws-service-instance": {
+                        "local-vpws-service-instance": 1111,
+                        "remote-vpws-service-instance": 1112
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi1"
+                        }
+                      ]
+                    }
+                  ]
                 }
-              ]
-            },
-            "vpn-network-access": [
+              },
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE2",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-node-id": "pe2",
+                "ne-id": "198.51.100.2",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
                     }
-                  }
+                  ]
                 },
-                "vpws-service-instance": {
-                  "local-vpws-service-instance": 1112,
-                  "remote-vpws-service-instance": 1111
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi2"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe4",
-            "ne-id": "198.51.100.4",
-            "active-global-parameters-profile": {
-              "global-parameters-profile": [
-                {
-                  "profile-id": "simple-profile"
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE1",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      },
+                      "vpws-service-instance": {
+                        "local-vpws-service-instance": 1111,
+                        "remote-vpws-service-instance": 1112
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi1"
+                        }
+                      ]
+                    }
+                  ]
                 }
-              ]
-            },
-            "vpn-network-access": [
+              },
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE2",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "encapsulation": {
-                    "encap-type": "dot1q",
-                    "dot1q": {
-                      "cvlan-id": 1
+                "vpn-node-id": "pe3",
+                "ne-id": "198.51.100.3",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
                     }
-                  }
+                  ]
                 },
-                "vpws-service-instance": {
-                  "local-vpws-service-instance": 1112,
-                  "remote-vpws-service-instance": 1111
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE2",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      },
+                      "vpws-service-instance": {
+                        "local-vpws-service-instance": 1112,
+                        "remote-vpws-service-instance": 1111
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi2"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "vpn-node-id": "pe4",
+                "ne-id": "198.51.100.4",
+                "active-global-parameters-profiles": {
+                  "global-parameters-profile": [
+                    {
+                      "profile-id": "simple-profile"
+                    }
+                  ]
                 },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi2"
-                  }
-                ]
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE2",
+                      "global-parameters-profile": "simple-profile",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
+                        }
+                      },
+                      "connection": {
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
+                          "dot1q": {
+                            "cvlan-id": 1
+                          }
+                        }
+                      },
+                      "vpws-service-instance": {
+                        "local-vpws-service-instance": 1112,
+                        "remote-vpws-service-instance": 1111
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi2"
+                        }
+                      ]
+                    }
+                  ]
+                }
               }
             ]
           }
-        ]
-      }
-    ]
+        }
+      ]
+    }
   }
 }
-
 ]]></artwork>
           </figure></t>
 
@@ -6754,11 +6899,11 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="es2"
             title="Example of L2NM Message Body to Auto-Assign Ethernet Segment Identifiers">
             <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:ethernet-segments": {
+  "ietf-ethernet-segment:ethernet-segments": {
     "ethernet-segment": [
       {
-        "name": "esi1",
-        "ethernet-segment-identifier": "esi-type-1",
+        "name": "esi1", 
+        "esi-type": "esi-type-1",
         "esi-redundancy-mode": "all-active"
       }
     ]
@@ -6769,92 +6914,90 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="auto-lacp"
             title="An Example of L2NM Message Body for ESI Auto-Assignment">
             <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:vpn-services": {
-    "vpn-service": [
-      {
-        "vpn-id": "auto-esi-lacp",
-        "description": "Sample to illustrate auto-ESI",
-        "vpn-type": "vpn-common:vpls-evpn",
-        "vpn-node": [
-          {
-            "vpn-node-id": "pe1",
-            "ne-id": "198.51.100.1",
-            "vpn-network-access": [
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
+    "ietf-l2vpn-ntw:vpn-services": {
+      "vpn-service": [
+        {
+          "vpn-id": "auto-esi-lacp",
+          "vpn-description": "Sample to illustrate auto-ESI",
+          "vpn-type": "ietf-vpn-common:vpws-evpn",
+          "vpn-nodes": {
+            "vpn-node": [
               {
-                "id": "1/1/1.1",
-                "interface-id": "1/1/1",
-                "description": "Interface to CE1",
-                "global-parameters-profile": "simple-profile",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-id": "1",
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
+                "vpn-node-id": "pe1",
+                "ne-id": "198.51.100.1",
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "1/1/1.1",
+                      "interface-id": "1/1/1",
+                      "description": "Interface to CE1",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
                         }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "vpn-node-id": "pe2",
-            "ne-id": "198.51.100.2",
-            "vpn-network-access": [
+                      },
+                      "connection": {
+                        "lag-interface": {
+                          "lag-interface-id": "1",
+                          "lacp": {
+                            "lacp-state": true,
+                            "system-id": "11:00:11:00:11:11",
+                            "admin-key": 154
+                          }
+                        }
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi1"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
               {
-                "id": "2/2/2.5",
-                "interface-id": "2/2/2",
-                "description": "Interface to CE1",
-                "status": {
-                  "admin-status": {
-                    "status": "vpn-common:admin-state-up"
-                  }
-                },
-                "connection": {
-                  "lag-interface": {
-                    "lag-interface": [
-                      {
-                        "lag-interface-id": "1",
-                        "lacp": {
-                          "lacp-state": true,
-                          "system-id": "11:00:11:00:11:11",
-                          "admin-key": 154
+                "vpn-node-id": "pe2",
+                "ne-id": "198.51.100.2",
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "2/2/2.5",
+                      "interface-id": "2/2/2",
+                      "description": "Interface to CE1",
+                      "status": {
+                        "admin-status": {
+                          "status": "ietf-vpn-common:admin-up"
                         }
-                      }
-                    ]
-                  }
-                },
-                "group": [
-                  {
-                    "group-id": "gr1",
-                    "ethernet-segment-identifier": "esi1"
-                  }
-                ]
+                      },
+                      "connection": {
+                        "lag-interface": {
+                          "lag-interface-id": "1",
+                          "lacp": {
+                            "lacp-state": true,
+                            "system-id": "11:00:11:00:11:11",
+                            "admin-key": 154
+                          }
+                        }
+                      },
+                      "group": [
+                        {
+                          "group-id": "gr1",
+                          "ethernet-segment-identifier": "esi1"
+                        }
+                      ]
+                    }
+                  ]
+                }
               }
             ]
           }
-        ]
-      }
-    ]
+        }
+      ]
+    }
   }
 }
-
 ]]></artwork>
           </figure></t>
 
@@ -6864,8 +7007,10 @@ module ietf-l2vpn-ntw {
 
         <t><figure align="center" anchor="auto-lacp-response"
             title="An Example of L2NM Message Body to Retrieve the Assigned ESI">
-            <artwork><![CDATA[{
-  "ietf-l2vpn-ntw:ethernet-segments": {
+            <artwork><![CDATA[=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  "ietf-ethernet-segment:ethernet-segments": {
     "ethernet-segment": [
       {
         "name": "esi1",
@@ -6914,32 +7059,48 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="p2"
             title="Example of Message Body to Associate Priority Levels with VPN Network Accesses">
             <artwork><![CDATA[{
-  "vpn-services": {
-    "vpn-service": {
-      "vpn-id": "Sample-Service",
-      "vpn-nodes": {
-        "vpn-node": {
-          "vpn-node-id": "VPN-NODE",
-          "vpn-network-accesses": {
-            "vpn-network-access": [
+  "ietf-l2vpn-ntw:l2vpn-ntw": {
+    "vpn-services": {
+      "vpn-service": [
+        {
+          "vpn-id": "Sample-Service",
+          "vpn-nodes": {
+            "vpn-node": [
               {
-                "id": "NET-ACC-1",
-                "group": {
-                  "group-id": "1",
-                  "precedence": "primary"
-                }
-              },
-              {
-                "id": "NET-ACC-2",
-                "group": {
-                  "group-id": "1",
-                  "precedence": "secondary"
+                "vpn-node-id": "VPN-NODE",
+                "vpn-network-accesses": {
+                  "vpn-network-access": [
+                    {
+                      "id": "NET-ACC-1",
+                      "connection": {
+                        "bearer-reference": "br1"
+                      },
+                      "group": [
+                        {
+                          "group-id": "1",
+                          "precedence": "primary"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "NET-ACC-2",
+                      "connection": {
+                        "bearer-reference": "br2"
+                      },
+                      "group": [
+                        {
+                          "group-id": "1",
+                          "precedence": "secondary"
+                        }
+                      ]
+                    }
+                  ]
                 }
               }
             ]
           }
         }
-      }
+      ]
     }
   }
 }]]></artwork>
@@ -7050,7 +7211,10 @@ module ietf-l2vpn-ntw {
 
       <t>This work is partially supported by the European Commission under
       Horizon 2020 grant agreement number 101015857 Secured autonomic traffic
-      management for a Tera of SDN flows (Teraflow).</t>
+      management for a Tera of SDN flows (Teraflow). <vspace
+      blankLines="1" />A YANG module for Ethernet Segments was first defined
+      in the context of the EVPN device module <xref
+      target="I-D.ietf-bess-evpn-yang" />.</t>
     </section>
 
     <section numbered="false" title="Contributors" toc="default">
