@@ -5,11 +5,11 @@
 OPSAWG                                                        S. Barguil
 Internet-Draft                                  O. Gonzalez de Dios, Ed.
 Intended status: Standards Track                              Telefonica
-Expires: April 4, 2022                                M. Boucadair , Ed.
+Expires: April 14, 2022                               M. Boucadair , Ed.
                                                                   Orange
                                                                 L. Munoz
                                                                 Vodafone
-                                                        October 01, 2021
+                                                        October 11, 2021
 
 
                     A Layer 2 VPN Network YANG Model
@@ -22,7 +22,7 @@ Abstract
    (VPN) services within a network (e.g., service provider network).
    The L2NM complements the Layer 2 Service Model (L2SM) by providing a
    network-centric view of the service that is internal to a service
-   providers.  As such, the L2NM is meant to be used by a network
+   providers.  The L2NM is particularly meant to be used by a network
    controller to derive the configuration information that will be sent
    to relevant network devices.
 
@@ -53,7 +53,7 @@ Editorial Note (To be removed by RFC Editor)
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 1]
+Barguil, et al.          Expires April 14, 2022                 [Page 1]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -73,7 +73,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 4, 2022.
+   This Internet-Draft will expire on April 14, 2022.
 
 Copyright Notice
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 2]
+Barguil, et al.          Expires April 14, 2022                 [Page 2]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -127,7 +127,7 @@ Internet-Draft                    L2NM                      October 2021
      8.2.  IANA Encapsulation Types  . . . . . . . . . . . . . . . .  49
      8.3.  Ethernet Segments . . . . . . . . . . . . . . . . . . . .  56
      8.4.  L2NM  . . . . . . . . . . . . . . . . . . . . . . . . . .  65
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . . 113
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . . 114
    10. IANA Considerations . . . . . . . . . . . . . . . . . . . . . 115
      10.1.  YANG Modules . . . . . . . . . . . . . . . . . . . . . . 115
      10.2.  BGP Layer 2 Encapsulation Types  . . . . . . . . . . . . 116
@@ -139,10 +139,10 @@ Internet-Draft                    L2NM                      October 2021
      A.1.  BGP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 126
      A.2.  BGP-based VPWS with LDP Signaling . . . . . . . . . . . . 131
      A.3.  LDP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 134
-     A.4.  VPWS-EVPN Service Instance  . . . . . . . . . . . . . . . 138
-     A.5.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 144
-     A.6.  VPN Network Access Precedence . . . . . . . . . . . . . . 147
-   Appendix B.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 149
+     A.4.  VPWS-EVPN Service Instance  . . . . . . . . . . . . . . . 139
+     A.5.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 145
+     A.6.  VPN Network Access Precedence . . . . . . . . . . . . . . 148
+   Appendix B.  Initial BGP Layer 2 Encapsulation Types  . . . . . . 150
    Appendix C.  Initial PW Types . . . . . . . . . . . . . . . . . . 150
    Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . . 152
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . . 152
@@ -165,7 +165,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 3]
+Barguil, et al.          Expires April 14, 2022                 [Page 3]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -177,16 +177,17 @@ Internet-Draft                    L2NM                      October 2021
    parameters, transport protocols selection, and precedence.  It can
    also serve as a multi-domain orchestration interface.
 
+   Also, the document defines the initial versions of two IANA-
+   maintained modules that define a set of identities of BGP Layer 2
+   encapsulation types (Section 8.1) and pseudowire types (Section 8.2).
+   Relying upon these IANA-maintained modules is meant to provide more
+   flexibility in handling new types rather than be limited by a set of
+   identities defined in the L2NM itself.  Section 8.3 defines a YANG
+   module to manage Ethernet Segments (ESs) that are required for
+   instantiating Ethernet VPNs (EVPNs).
+
    This document uses the common Virtual Private Network (VPN) YANG
-   module defined in [I-D.ietf-opsawg-vpn-common].  Also, the document
-   defines the initial versions of two IANA-maintained modules that
-   define a set of identities of BGP Layer 2 encapsulation types
-   (Section 8.1) and pseudowire types (Section 8.2).  Relying upon these
-   IANA-maintained modules is meant to provide more flexibility in
-   handling new types rather than be limited by a set of identities
-   defined in the L2NM itself.  Section 8.3 defines a YANG module to
-   manage Ethernet Segments (ESs) that are required for instantiating
-   Ethernet VPNs (EVPNs).
+   module defined in [I-D.ietf-opsawg-vpn-common].
 
    The YANG data models in this document conforms to the Network
    Management Datastore Architecture (NMDA) defined in [RFC8342].
@@ -210,21 +211,23 @@ Internet-Draft                    L2NM                      October 2021
    14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   This document assumes that the reader is familiar with the contents
-   of [RFC6241], [RFC7950], [RFC8466], [RFC8309], and uses terminology
-   from those documents.
+   This document assumes that the reader is familiar with [RFC6241],
+   [RFC7950], [RFC8466], [RFC8309], and uses terminology from those
+   documents.
 
    This document uses the term "network model" defined in Section 2.1 of
    [RFC8969].
 
-   The meaning of the symbols in YANG tree diagrams is [RFC8340].
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 4]
+Barguil, et al.          Expires April 14, 2022                 [Page 4]
 
 Internet-Draft                    L2NM                      October 2021
 
+
+   The meaning of the symbols in YANG tree diagrams is defined in
+   [RFC8340].
 
    This document makes use of the following terms:
 
@@ -270,17 +273,17 @@ Internet-Draft                    L2NM                      October 2021
    VPN service provider:  Is a service providers that offers L2VPN-
       related services.
 
-   Service Provider Network (SP Network):  Is a network able to provide
-      L2VPN-related services.
 
 
 
 
-
-Barguil, et al.           Expires April 4, 2022                 [Page 5]
+Barguil, et al.          Expires April 14, 2022                 [Page 5]
 
 Internet-Draft                    L2NM                      October 2021
 
+
+   Service Provider Network (SP Network):  Is a network able to provide
+      L2VPN-related services.
 
 3.  Acronyms
 
@@ -330,10 +333,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-
-
-
-Barguil, et al.           Expires April 4, 2022                 [Page 6]
+Barguil, et al.          Expires April 14, 2022                 [Page 6]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -389,7 +389,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 7]
+Barguil, et al.          Expires April 14, 2022                 [Page 7]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -445,7 +445,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 8]
+Barguil, et al.          Expires April 14, 2022                 [Page 8]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -501,7 +501,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                 [Page 9]
+Barguil, et al.          Expires April 14, 2022                 [Page 9]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -514,9 +514,9 @@ Internet-Draft                    L2NM                      October 2021
    layer 2 encapsulation type.
 
    For the particular case of EVPNs, the L2NM includes a name that
-   refers to an Ethernet Segment that is created by means of "ietf-
-   ethernet-segment" (Section 8.3).  Some examples are provided in
-   Appendices A.4 and A.5.
+   refers to an Ethernet Segment that is created using the "ietf-
+   ethernet-segment" module (Section 8.3).  Some ES-realated examples
+   are provided in Appendices A.4 and A.5.
 
    As discussed in Section 4, the L2NM is meant to manage L2VPN services
    within a service provider network.  The module provides a network
@@ -557,7 +557,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 10]
+Barguil, et al.          Expires April 14, 2022                [Page 10]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -613,7 +613,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 11]
+Barguil, et al.          Expires April 14, 2022                [Page 11]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -669,7 +669,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 12]
+Barguil, et al.          Expires April 14, 2022                [Page 12]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -725,7 +725,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 13]
+Barguil, et al.          Expires April 14, 2022                [Page 13]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -781,7 +781,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 14]
+Barguil, et al.          Expires April 14, 2022                [Page 14]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -837,7 +837,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 15]
+Barguil, et al.          Expires April 14, 2022                [Page 15]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -893,7 +893,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 16]
+Barguil, et al.          Expires April 14, 2022                [Page 16]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -949,7 +949,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 17]
+Barguil, et al.          Expires April 14, 2022                [Page 17]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -969,8 +969,8 @@ Internet-Draft                    L2NM                      October 2021
             control plane as described in [RFC4761] and [RFC6624].
 
          'evpn-bgp':  The service is a Multipoint VPLS that uses also a
-            BGP control plane, but also includes the additional features
-            and related parameters [RFC7432] and [RFC7209].
+            BGP control plane, but also includes the additional EVPN
+            features and related parameters [RFC7432] and [RFC7209].
 
       'ldp-signaling':  A Multipoint VPLS that uses a mesh of LDP-
          signaled Pseudowires [RFC6074].
@@ -996,19 +996,22 @@ Internet-Draft                    L2NM                      October 2021
       actual protocols to be enabled in the network.
 
       A rich set of protocol identifiers that can be used to refer to an
-      underlay transport are defined in [I-D.ietf-opsawg-vpn-common].
+      underlay transport (or how such an underlay is set up) are defined
+      in [I-D.ietf-opsawg-vpn-common].
 
    'status':  Is used to track the service status of a given VPN
       service.  Both operational and administrative status are
-      maintained together with a timestamp.  For example, a service can
-      be created, but not put into effect.
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 18]
+
+Barguil, et al.          Expires April 14, 2022                [Page 18]
 
 Internet-Draft                    L2NM                      October 2021
 
+
+      maintained together with a timestamp.  For example, a service can
+      be created, but not put into effect.
 
       Administrative and operational status can be used as a trigger to
       detect service anomalies.  For example, a service that is declared
@@ -1055,17 +1058,17 @@ Internet-Draft                    L2NM                      October 2021
    The 'global-parameters-profile' defines reusable parameters for the
    same L2VPN service instance ('vpn-service').  Global parameters
    profile are defined at the VPN service level and then called at the
-   VPN node and VPN network access levels.  Each VPN instance profile is
-   identified by 'profile-id'.  Some of the data nodes can be adjusted
-   at the VPN node or VPN network access levels.  These adjusted values
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 19]
+Barguil, et al.          Expires April 14, 2022                [Page 19]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+   VPN node and VPN network access levels.  Each VPN instance profile is
+   identified by 'profile-id'.  Some of the data nodes can be adjusted
+   at the VPN node or VPN network access levels.  These adjusted values
    take precedence over the global ones.  The subtree of 'global-
    parameters-profile' is depicted in Figure 7.
 
@@ -1111,17 +1114,17 @@ Internet-Draft                    L2NM                      October 2021
                |     |  +--rw import-policy?   string
                |     |  +--rw export-policy?   string
                |     +--rw local-autonomous-system?    inet:as-number
-               |     +--rw svc-mtu?                    uint32
-               |     +--rw ce-vlan-preservation?       boolean
-               |     +--rw ce-vlan-cos-preservation?   boolean
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 20]
+Barguil, et al.          Expires April 14, 2022                [Page 20]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+               |     +--rw svc-mtu?                    uint32
+               |     +--rw ce-vlan-preservation?       boolean
+               |     +--rw ce-vlan-cos-preservation?   boolean
                |     +--rw control-word-negotiation?   boolean
                |     +--rw mac-policies
                |     |  +--rw mac-addr-limit
@@ -1168,16 +1171,15 @@ Internet-Draft                    L2NM                      October 2021
 
    'vpn-targets':  Specifies RT import/export rules for the VPN service.
 
-   'local-autonomous-system':  Indicates the Autonomous System Number
-      (ASN) that is configured for the VPN node.  The ASN can be used to
 
 
-
-Barguil, et al.           Expires April 4, 2022                [Page 21]
+Barguil, et al.          Expires April 14, 2022                [Page 21]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+   'local-autonomous-system':  Indicates the Autonomous System Number
+      (ASN) that is configured for the VPN node.  The ASN can be used to
       auto-derive some other attributes such as RDs or Ethernet Segment
       Identifiers (ESIs).
 
@@ -1224,15 +1226,16 @@ Internet-Draft                    L2NM                      October 2021
 
          'frequency':  The number of times to detect MAC duplication,
             where a 'duplicate MAC address' situation has occurred and
-            the duplicate MAC address has been added to a list of
-            duplicate MAC addresses.
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 22]
+Barguil, et al.          Expires April 14, 2022                [Page 22]
 
 Internet-Draft                    L2NM                      October 2021
 
+
+            the duplicate MAC address has been added to a list of
+            duplicate MAC addresses.
 
          'retry-timer':  The retry timer.  When the retry timer expires,
             the duplicate MAC address will be flushed from the MAC-VRF.
@@ -1282,10 +1285,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-
-
-
-Barguil, et al.           Expires April 4, 2022                [Page 23]
+Barguil, et al.          Expires April 14, 2022                [Page 23]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1341,7 +1341,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 24]
+Barguil, et al.          Expires April 14, 2022                [Page 24]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1397,7 +1397,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 25]
+Barguil, et al.          Expires April 14, 2022                [Page 25]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1453,7 +1453,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 26]
+Barguil, et al.          Expires April 14, 2022                [Page 26]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1497,7 +1497,7 @@ Internet-Draft                    L2NM                      October 2021
    nodes for a given signaling protocol that is used for an L2VPN
    service.  As discussed in Section 7.3, several signaling options to
    exchange membership information between PEs of an L2VPN are
-   supported.  The signaling type to be used for an L2VPN service is the
+   supported.  The signaling type to be used for an L2VPN service is
    controlled at the VPN service level by means of 'signaling-type'.
 
 
@@ -1509,7 +1509,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 27]
+Barguil, et al.          Expires April 14, 2022                [Page 27]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1565,7 +1565,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 28]
+Barguil, et al.          Expires April 14, 2022                [Page 28]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1607,7 +1607,7 @@ Internet-Draft                    L2NM                      October 2021
          |     |           |  +--rw duplicate-ip-detection-interval?
          |     |           |          uint16
          |     |           +--rw nd-proxy {vpn-common:ipv6}?
-         |     |           |  +--rw enable?  |       boolean
+         |     |           |  +--rw enable?          boolean
          |     |           |  +--rw nd-suppression?
          |     |           |  |       boolean
          |     |           |  +--rw ip-mobility-threshold?
@@ -1621,7 +1621,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 29]
+Barguil, et al.          Expires April 14, 2022                [Page 29]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1677,7 +1677,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 30]
+Barguil, et al.          Expires April 14, 2022                [Page 30]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1733,7 +1733,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 31]
+Barguil, et al.          Expires April 14, 2022                [Page 31]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1789,7 +1789,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 32]
+Barguil, et al.          Expires April 14, 2022                [Page 32]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1845,7 +1845,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 33]
+Barguil, et al.          Expires April 14, 2022                [Page 33]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1901,7 +1901,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 34]
+Barguil, et al.          Expires April 14, 2022                [Page 34]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -1957,7 +1957,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 35]
+Barguil, et al.          Expires April 14, 2022                [Page 35]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2013,7 +2013,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 36]
+Barguil, et al.          Expires April 14, 2022                [Page 36]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2069,7 +2069,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 37]
+Barguil, et al.          Expires April 14, 2022                [Page 37]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2125,7 +2125,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 38]
+Barguil, et al.          Expires April 14, 2022                [Page 38]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2181,7 +2181,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 39]
+Barguil, et al.          Expires April 14, 2022                [Page 39]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2237,7 +2237,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 40]
+Barguil, et al.          Expires April 14, 2022                [Page 40]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2293,7 +2293,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 41]
+Barguil, et al.          Expires April 14, 2022                [Page 41]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2349,7 +2349,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 42]
+Barguil, et al.          Expires April 14, 2022                [Page 42]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2405,7 +2405,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 43]
+Barguil, et al.          Expires April 14, 2022                [Page 43]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2461,7 +2461,7 @@ module iana-bgp-l2-encaps {
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 44]
+Barguil, et al.          Expires April 14, 2022                [Page 44]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2517,7 +2517,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 45]
+Barguil, et al.          Expires April 14, 2022                [Page 45]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2573,7 +2573,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 46]
+Barguil, et al.          Expires April 14, 2022                [Page 46]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2629,7 +2629,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 47]
+Barguil, et al.          Expires April 14, 2022                [Page 47]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2685,7 +2685,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 48]
+Barguil, et al.          Expires April 14, 2022                [Page 48]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2741,7 +2741,7 @@ module iana-pseudowire-types {
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 49]
+Barguil, et al.          Expires April 14, 2022                [Page 49]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2797,7 +2797,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 50]
+Barguil, et al.          Expires April 14, 2022                [Page 50]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2853,7 +2853,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 51]
+Barguil, et al.          Expires April 14, 2022                [Page 51]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2909,7 +2909,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 52]
+Barguil, et al.          Expires April 14, 2022                [Page 52]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -2965,7 +2965,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 53]
+Barguil, et al.          Expires April 14, 2022                [Page 53]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3021,7 +3021,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 54]
+Barguil, et al.          Expires April 14, 2022                [Page 54]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3077,7 +3077,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 55]
+Barguil, et al.          Expires April 14, 2022                [Page 55]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3133,7 +3133,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 56]
+Barguil, et al.          Expires April 14, 2022                [Page 56]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3189,7 +3189,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 57]
+Barguil, et al.          Expires April 14, 2022                [Page 57]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3245,7 +3245,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 58]
+Barguil, et al.          Expires April 14, 2022                [Page 58]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3301,7 +3301,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 59]
+Barguil, et al.          Expires April 14, 2022                [Page 59]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3357,7 +3357,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 60]
+Barguil, et al.          Expires April 14, 2022                [Page 60]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3413,7 +3413,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 61]
+Barguil, et al.          Expires April 14, 2022                [Page 61]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3469,7 +3469,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 62]
+Barguil, et al.          Expires April 14, 2022                [Page 62]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3525,7 +3525,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 63]
+Barguil, et al.          Expires April 14, 2022                [Page 63]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3581,7 +3581,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 64]
+Barguil, et al.          Expires April 14, 2022                [Page 64]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3637,7 +3637,7 @@ module ietf-l2vpn-ntw {
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 65]
+Barguil, et al.          Expires April 14, 2022                [Page 65]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3693,7 +3693,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 66]
+Barguil, et al.          Expires April 14, 2022                [Page 66]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3749,7 +3749,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 67]
+Barguil, et al.          Expires April 14, 2022                [Page 67]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3805,7 +3805,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 68]
+Barguil, et al.          Expires April 14, 2022                [Page 68]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3861,7 +3861,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 69]
+Barguil, et al.          Expires April 14, 2022                [Page 69]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3917,7 +3917,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 70]
+Barguil, et al.          Expires April 14, 2022                [Page 70]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -3973,7 +3973,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 71]
+Barguil, et al.          Expires April 14, 2022                [Page 71]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4029,7 +4029,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 72]
+Barguil, et al.          Expires April 14, 2022                [Page 72]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4085,7 +4085,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 73]
+Barguil, et al.          Expires April 14, 2022                [Page 73]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4141,7 +4141,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 74]
+Barguil, et al.          Expires April 14, 2022                [Page 74]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4197,7 +4197,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 75]
+Barguil, et al.          Expires April 14, 2022                [Page 75]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4253,7 +4253,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 76]
+Barguil, et al.          Expires April 14, 2022                [Page 76]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4309,7 +4309,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 77]
+Barguil, et al.          Expires April 14, 2022                [Page 77]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4365,7 +4365,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 78]
+Barguil, et al.          Expires April 14, 2022                [Page 78]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4421,7 +4421,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 79]
+Barguil, et al.          Expires April 14, 2022                [Page 79]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4477,7 +4477,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 80]
+Barguil, et al.          Expires April 14, 2022                [Page 80]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4533,7 +4533,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 81]
+Barguil, et al.          Expires April 14, 2022                [Page 81]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4589,7 +4589,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 82]
+Barguil, et al.          Expires April 14, 2022                [Page 82]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4645,7 +4645,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 83]
+Barguil, et al.          Expires April 14, 2022                [Page 83]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4701,7 +4701,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 84]
+Barguil, et al.          Expires April 14, 2022                [Page 84]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4757,7 +4757,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 85]
+Barguil, et al.          Expires April 14, 2022                [Page 85]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4813,7 +4813,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 86]
+Barguil, et al.          Expires April 14, 2022                [Page 86]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4869,7 +4869,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 87]
+Barguil, et al.          Expires April 14, 2022                [Page 87]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4925,7 +4925,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 88]
+Barguil, et al.          Expires April 14, 2022                [Page 88]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -4981,7 +4981,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 89]
+Barguil, et al.          Expires April 14, 2022                [Page 89]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5037,7 +5037,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 90]
+Barguil, et al.          Expires April 14, 2022                [Page 90]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5093,7 +5093,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 91]
+Barguil, et al.          Expires April 14, 2022                [Page 91]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5149,7 +5149,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 92]
+Barguil, et al.          Expires April 14, 2022                [Page 92]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5205,7 +5205,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 93]
+Barguil, et al.          Expires April 14, 2022                [Page 93]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5261,7 +5261,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 94]
+Barguil, et al.          Expires April 14, 2022                [Page 94]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5317,7 +5317,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 95]
+Barguil, et al.          Expires April 14, 2022                [Page 95]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5373,7 +5373,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 96]
+Barguil, et al.          Expires April 14, 2022                [Page 96]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5429,7 +5429,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 97]
+Barguil, et al.          Expires April 14, 2022                [Page 97]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5485,7 +5485,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 98]
+Barguil, et al.          Expires April 14, 2022                [Page 98]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5541,7 +5541,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022                [Page 99]
+Barguil, et al.          Expires April 14, 2022                [Page 99]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5597,7 +5597,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 100]
+Barguil, et al.          Expires April 14, 2022               [Page 100]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5653,7 +5653,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 101]
+Barguil, et al.          Expires April 14, 2022               [Page 101]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5709,7 +5709,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 102]
+Barguil, et al.          Expires April 14, 2022               [Page 102]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5765,7 +5765,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 103]
+Barguil, et al.          Expires April 14, 2022               [Page 103]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5821,7 +5821,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 104]
+Barguil, et al.          Expires April 14, 2022               [Page 104]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -5834,6 +5834,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf cir {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Information Rate. The maximum
                            number of bits that a port can receive or
@@ -5841,6 +5842,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf cbs {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Burst Size. CBS controls the bursty
                            nature of the traffic. Traffic that does not
@@ -5849,6 +5851,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf eir {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Information Rate, i.e., excess frame
                            delivery allowed not subject to SLA. The
@@ -5856,6 +5859,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf ebs {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Burst Size. The bandwidth available
                            for burst traffic from the EBS is subject to
@@ -5865,23 +5869,24 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf pir {
                         type uint64;
+                        units "bps";
                         description
                           "Peak Information Rate, i.e., maximum frame
                            delivery allowed. It is equal to or less
                            than sum of CIR and EIR.";
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 105]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                       }
                       leaf pbs {
                         type uint64;
                         units "Bytes per Second";
                         description
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 105]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                           "Peak Burst Size.";
                       }
                     }
@@ -5912,6 +5917,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf cir {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Information Rate. The maximum
                            number of bits that a port can receive or
@@ -5919,29 +5925,32 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf cbs {
                         type uint64;
+                        units "bps";
                         description
                           "Committed Burst Size. CBS controls the bursty
                            nature of the traffic. Traffic that does not
                            use the configured CIR accumulates credits
-                           until the credits reach the configured CBS.";
-                      }
-                      leaf eir {
-                        type uint64;
-                        description
-                          "Excess Information Rate, i.e., excess frame
-                           delivery allowed not subject to SLA. The
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 106]
+Barguil, et al.          Expires April 14, 2022               [Page 106]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                           until the credits reach the configured CBS.";
+                      }
+                      leaf eir {
+                        type uint64;
+                        units "bps";
+                        description
+                          "Excess Information Rate, i.e., excess frame
+                           delivery allowed not subject to SLA. The
                            traffic rate can be limited by EIR.";
                       }
                       leaf ebs {
                         type uint64;
+                        units "bps";
                         description
                           "Excess Burst Size. The bandwidth available
                            for burst traffic from the EBS is subject to
@@ -5951,6 +5960,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf pir {
                         type uint64;
+                        units "bps";
                         description
                           "Peak Information Rate, i.e., maximum frame
                            delivery allowed. It is equal to or less than
@@ -5958,7 +5968,7 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf pbs {
                         type uint64;
-                        units "bytes per second";
+                        units "Bytes per Second";
                         description
                           "Peak Burst Size.";
                       }
@@ -5976,6 +5986,14 @@ Internet-Draft                    L2NM                      October 2021
                         key "id";
                         ordered-by user;
                         description
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 107]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                           "List of classification rules.";
                         leaf id {
                           type string;
@@ -5986,14 +6004,6 @@ Internet-Draft                    L2NM                      October 2021
                         choice match-type {
                           default "match-flow";
                           description
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 107]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                             "Choice for classification.";
                           case match-flow {
                             container match-flow {
@@ -6032,6 +6042,14 @@ Internet-Draft                    L2NM                      October 2021
                                   base color-type;
                                 }
                                 description
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 108]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                                   "Color type.";
                               }
                               leaf any {
@@ -6042,14 +6060,6 @@ Internet-Draft                    L2NM                      October 2021
                             }
                           }
                           case match-application {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 108]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                             leaf match-application {
                               type identityref {
                                 base vpn-common:customer-application;
@@ -6088,6 +6098,14 @@ Internet-Draft                    L2NM                      October 2021
                         }
                         leaf direction {
                           type identityref {
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 109]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                             base vpn-common:qos-profile-direction;
                           }
                           default "vpn-common:both";
@@ -6098,14 +6116,6 @@ Internet-Draft                    L2NM                      October 2021
                       }
                     }
                   }
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 109]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                   container mac-policies {
                     description
                       "Container for MAC-related policies.";
@@ -6144,6 +6154,14 @@ Internet-Draft                    L2NM                      October 2021
                         }
                         default "drop";
                         description
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 110]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                           "Specifies the filtering action.";
                       }
                       leaf rate-limit {
@@ -6154,14 +6172,6 @@ Internet-Draft                    L2NM                      October 2021
                              to accept the matching frame.";
                         }
                         type decimal64 {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 110]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                           fraction-digits 2;
                         }
                         units "bytes per second";
@@ -6200,6 +6210,14 @@ Internet-Draft                    L2NM                      October 2021
                       }
                       leaf protection-type {
                         type identityref {
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 111]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                           base loop-prevention-type;
                         }
                         description
@@ -6210,14 +6228,6 @@ Internet-Draft                    L2NM                      October 2021
                       description
                         "Container of MAC-Addr limit configurations";
                       leaf mac-num-limit {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 111]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                         type uint16;
                         description
                           "maximum number of MAC addresses learned from
@@ -6256,6 +6266,14 @@ Internet-Draft                    L2NM                      October 2021
                           description
                             "The site only has sources.";
                         }
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 112]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                         enum source-receiver {
                           description
                             "The site has both sources and receivers.";
@@ -6266,14 +6284,6 @@ Internet-Draft                    L2NM                      October 2021
                         "Type of the multicast site.";
                     }
                     list multicast-gp-address-mapping {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 112]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                       key "id";
                       description
                         "List of Port to group mappings.";
@@ -6312,6 +6322,14 @@ Internet-Draft                    L2NM                      October 2021
         }
       }
     }
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 113]
+
+Internet-Draft                    L2NM                      October 2021
+
+
   }
 }
 <CODE ENDS>
@@ -6322,14 +6340,6 @@ Internet-Draft                    L2NM                      October 2021
    that is designed to be accessed via network management protocols such
    as NETCONF [RFC6241] or RESTCONF [RFC8040] . The lowest NETCONF layer
    is the secure transport layer, and the mandatory-to-implement secure
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 113]
-
-Internet-Draft                    L2NM                      October 2021
-
-
    transport is Secure Shell (SSH) [RFC6242].  The lowest RESTCONF layer
    is HTTPS, and the mandatory-to-implement secure transport is TLS
    [RFC8446].
@@ -6368,6 +6378,14 @@ Internet-Draft                    L2NM                      October 2021
       authorized access, such activity can be detected by adequately
       monitoring and tracking network configuration changes.
 
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 114]
+
+Internet-Draft                    L2NM                      October 2021
+
+
    Some of the readable data nodes in the "ietf-l2vpn-ntw" YANG module
    may be considered sensitive or vulnerable in some network
    environments.  It is thus important to control read access (e.g., via
@@ -6378,13 +6396,6 @@ Internet-Draft                    L2NM                      October 2021
       privacy-related information which can be used to track a customer.
       Disclosing such information may be considered as a violation of
       the customer-provider trust relationship.
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 114]
-
-Internet-Draft                    L2NM                      October 2021
-
 
    Both "iana-bgp-l2-encaps" and "iana-pseudowire-types" modules define
    YANG identities for encapsulation/pseudowires types.  These
@@ -6426,18 +6437,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 115]
+Barguil, et al.          Expires April 14, 2022               [Page 115]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6493,7 +6493,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 116]
+Barguil, et al.          Expires April 14, 2022               [Page 116]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6549,7 +6549,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 117]
+Barguil, et al.          Expires April 14, 2022               [Page 117]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6605,7 +6605,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 118]
+Barguil, et al.          Expires April 14, 2022               [Page 118]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6661,7 +6661,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 119]
+Barguil, et al.          Expires April 14, 2022               [Page 119]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6717,7 +6717,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 120]
+Barguil, et al.          Expires April 14, 2022               [Page 120]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6773,7 +6773,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 121]
+Barguil, et al.          Expires April 14, 2022               [Page 121]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6829,7 +6829,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 122]
+Barguil, et al.          Expires April 14, 2022               [Page 122]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6885,7 +6885,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 123]
+Barguil, et al.          Expires April 14, 2022               [Page 123]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6941,7 +6941,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 124]
+Barguil, et al.          Expires April 14, 2022               [Page 124]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -6997,7 +6997,7 @@ Appendix A.  Examples
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 125]
+Barguil, et al.          Expires April 14, 2022               [Page 125]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -7053,7 +7053,7 @@ A.1.  BGP-based VPLS
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 126]
+Barguil, et al.          Expires April 14, 2022               [Page 126]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -7089,7 +7089,8 @@ Internet-Draft                    L2NM                      October 2021
                   "vpn-id": "1"
                 },
                 "signaling-option": {
-                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
+-tagged-mode",
                   "vpls-instance": {
                     "vpls-edge-id": 1,
                     "vpls-edge-id-range": 100
@@ -7105,15 +7106,15 @@ Internet-Draft                    L2NM                      October 2021
                       "status": {
                         "admin-status": {
                           "status": "ietf-vpn-common:admin-up"
-                        }
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 127]
+Barguil, et al.          Expires April 14, 2022               [Page 127]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                        }
                       },
                       "connection": {
                         "encapsulation": {
@@ -7141,7 +7142,8 @@ Internet-Draft                    L2NM                      October 2021
                   "vpn-id": "1"
                 },
                 "signaling-option": {
-                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
+-tagged-mode",
                   "vpls-instance": {
                     "vpls-edge-id": 2,
                     "vpls-edge-id-range": 100
@@ -7160,16 +7162,16 @@ Internet-Draft                    L2NM                      October 2021
                         }
                       },
                       "connection": {
-                        "encapsulation": {
-                          "encap-type": "ietf-vpn-common:dot1q",
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 128]
+Barguil, et al.          Expires April 14, 2022               [Page 128]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                        "encapsulation": {
+                          "encap-type": "ietf-vpn-common:dot1q",
                           "dot1q": {
                             "cvlan-id": 1
                           }
@@ -7193,7 +7195,8 @@ Internet-Draft                    L2NM                      October 2021
                   "vpn-id": "1"
                 },
                 "signaling-option": {
-                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
+-tagged-mode",
                   "vpls-instance": {
                     "vpls-edge-id": 3,
                     "vpls-edge-id-range": 100
@@ -7215,17 +7218,17 @@ Internet-Draft                    L2NM                      October 2021
                         "encapsulation": {
                           "encap-type": "ietf-vpn-common:dot1q",
                           "dot1q": {
-                            "cvlan-id": 1
-                          }
-                        }
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 129]
+Barguil, et al.          Expires April 14, 2022               [Page 129]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                            "cvlan-id": 1
+                          }
+                        }
                       }
                     }
                   ]
@@ -7245,7 +7248,8 @@ Internet-Draft                    L2NM                      October 2021
                   "vpn-id": "1"
                 },
                 "signaling-option": {
-                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet-tagged-mode",
+                  "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
+-tagged-mode",
                   "vpls-instance": {
                     "vpls-edge-id": 4,
                     "vpls-edge-id-range": 100
@@ -7270,18 +7274,18 @@ Internet-Draft                    L2NM                      October 2021
                             "cvlan-id": 1
                           }
                         }
-                      }
-                    }
-                  ]
-                }
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 130]
+Barguil, et al.          Expires April 14, 2022               [Page 130]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                      }
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -7326,18 +7330,18 @@ A.2.  BGP-based VPWS with LDP Signaling
                    "rd-auto": {
                      "auto": [
                        null
-                     ]
-                   },
-                   "vpn-target": [
-                     {
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 131]
+Barguil, et al.          Expires April 14, 2022               [Page 131]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                     ]
+                   },
+                   "vpn-target": [
+                     {
                        "id": 1,
                        "route-targets": [
                          {
@@ -7382,18 +7386,18 @@ Internet-Draft                    L2NM                      October 2021
                        {
                          "id": "1/1/1.1",
                          "interface-id": "1/1/1",
-                         "description": "Interface to CE1",
-                         "global-parameters-profile": "simple-profile",
-                         "status": {
-                           "admin-status": {
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 132]
+Barguil, et al.          Expires April 14, 2022               [Page 132]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                         "description": "Interface to CE1",
+                         "global-parameters-profile": "simple-profile",
+                         "status": {
+                           "admin-status": {
                              "status": "ietf-vpn-common:admin-up"
                            }
                          }
@@ -7438,18 +7442,18 @@ Internet-Draft                    L2NM                      October 2021
                              "status": "ietf-vpn-common:admin-up"
                            }
                          }
-                       }
-                     ]
-                   }
-                 }
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 133]
+Barguil, et al.          Expires April 14, 2022               [Page 133]
 
 Internet-Draft                    L2NM                      October 2021
 
 
+                       }
+                     ]
+                   }
+                 }
                ]
              }
            }
@@ -7486,233 +7490,245 @@ A.3.  LDP-based VPLS
    purpose.  Additionally, two VPN Nodes and each with a corresponding
    VPN network access is also created.
 
-{
-  "ietf-l2vpn-ntw:l2vpn-ntw": {
-    "vpn-services": {
-      "vpn-service": [
-        {
-          "vpn-id": "450",
-          "vpn-name": "CORPO-EXAMPLE",
-          "vpn-description": "SEDE_CENTRO_450",
-          "customer-name": "EXAMPLE",
-          "vpn-type": "ietf-vpn-common:vpls",
-          "vpn-service-topology": "ietf-vpn-common:hub-spoke",
-          "bgp-ad-enabled": false,
+ =============== NOTE: '\' line wrapping per RFC 8792 ================
+
+ {
+   "ietf-l2vpn-ntw:l2vpn-ntw": {
+     "vpn-services": {
+       "vpn-service": [
+         {
+           "vpn-id": "450",
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 134]
+Barguil, et al.          Expires April 14, 2022               [Page 134]
 
 Internet-Draft                    L2NM                      October 2021
 
 
-          "signaling-type": "ietf-vpn-common:ldp-signaling",
-          "global-parameters-profiles": {
-            "global-parameters-profile": [
-              {
-                "profile-id": "simple-profile",
-                "ce-vlan-preservation": true,
-                "ce-vlan-cos-preservation": true
-              }
-            ]
-          },
-          "vpn-nodes": {
-            "vpn-node": [
-              {
-                "vpn-node-id": "450",
-                "description": "SEDE_CENTRO_450",
-                "ne-id": "2001:db8:5::1",
-                "role": "ietf-vpn-common:hub-role",
-                "status": {
-                  "admin-status": {
-                    "status": "ietf-vpn-common:admin-up"
-                  }
-                },
-                "active-global-parameters-profiles": {
-                  "global-parameters-profile": [
-                    {
-                      "profile-id": "simple-profile"
-                    }
-                  ]
-                },
-                "signaling-option": {
-                  "ldp-or-l2tp": {
-                    "t-ldp-pw-type": "vpls-type",
-                    "pw-peer-list": [
-                      {
-                        "peer-addr": "2001:db8:50::1",
-                        "vc-id": "1543"
-                      }
-                    ]
-                  }
-                },
-                "vpn-network-accesses": {
-                  "vpn-network-access": [
-                    {
-                      "id": "4508671287",
-                      "description": "VPN_450_SNA",
-                      "interface-id": "gigabithethernet0/0/1",
-                      "status": {
-                        "admin-status": {
+           "vpn-name": "CORPO-EXAMPLE",
+           "vpn-description": "SEDE_CENTRO_450",
+           "customer-name": "EXAMPLE",
+           "vpn-type": "ietf-vpn-common:vpls",
+           "vpn-service-topology": "ietf-vpn-common:hub-spoke",
+           "bgp-ad-enabled": false,
+           "signaling-type": "ietf-vpn-common:ldp-signaling",
+           "global-parameters-profiles": {
+             "global-parameters-profile": [
+               {
+                 "profile-id": "simple-profile",
+                 "ce-vlan-preservation": true,
+                 "ce-vlan-cos-preservation": true
+               }
+             ]
+           },
+           "vpn-nodes": {
+             "vpn-node": [
+               {
+                 "vpn-node-id": "450",
+                 "description": "SEDE_CENTRO_450",
+                 "ne-id": "2001:db8:5::1",
+                 "role": "ietf-vpn-common:hub-role",
+                 "status": {
+                   "admin-status": {
+                     "status": "ietf-vpn-common:admin-up"
+                   }
+                 },
+                 "active-global-parameters-profiles": {
+                   "global-parameters-profile": [
+                     {
+                       "profile-id": "simple-profile"
+                     }
+                   ]
+                 },
+                 "signaling-option": {
+                   "ldp-or-l2tp": {
+                     "t-ldp-pw-type": "vpls-type",
+                     "pw-peer-list": [
+                       {
+                         "peer-addr": "2001:db8:50::1",
+                         "vc-id": "1543"
+                       }
+                     ]
+                   }
+                 },
+                 "vpn-network-accesses": {
+                   "vpn-network-access": [
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 135]
+Barguil, et al.          Expires April 14, 2022               [Page 135]
 
 Internet-Draft                    L2NM                      October 2021
 
 
-                          "status": "ietf-vpn-common:admin-up"
-                        }
-                      },
-                      "connection": {
-                        "l2-termination-point": "550",
-                        "encapsulation": {
-                          "encap-type": "ietf-vpn-common:dot1q",
-                          "dot1q": {
-                            "tag-type": "ietf-vpn-common:c-vlan",
-                            "cvlan-id": 550
-                          }
-                        }
-                      },
-                      "service": {
-                        "mtu": 1550,
-                        "svc-inbound-bandwidth": {
-                          "inbound-bandwidth": [
-                            {
-                              "bw-type": "ietf-vpn-common:bw-per-service",
-                              "cir": "20480000"
-                            }
-                          ]
-                        },
-                        "svc-outbound-bandwidth": {
-                          "outbound-bandwidth": [
-                            {
-                              "bw-type": "ietf-vpn-common:bw-per-port",
-                              "cir": "20480000"
-                            }
-                          ]
-                        },
-                        "qos": {
-                          "qos-profile": {
-                            "qos-profile": [
-                              {
-                                "profile": "QoS_Profile_A",
-                                "direction": "ietf-vpn-common:both"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "vpn-node-id": "451",
+                     {
+                       "id": "4508671287",
+                       "description": "VPN_450_SNA",
+                       "interface-id": "gigabithethernet0/0/1",
+                       "status": {
+                         "admin-status": {
+                           "status": "ietf-vpn-common:admin-up"
+                         }
+                       },
+                       "connection": {
+                         "l2-termination-point": "550",
+                         "encapsulation": {
+                           "encap-type": "ietf-vpn-common:dot1q",
+                           "dot1q": {
+                             "tag-type": "ietf-vpn-common:c-vlan",
+                             "cvlan-id": 550
+                           }
+                         }
+                       },
+                       "service": {
+                         "mtu": 1550,
+                         "svc-inbound-bandwidth": {
+                           "inbound-bandwidth": [
+                             {
+                               "bw-type": "ietf-vpn-common:bw-per-\
+ service",
+                               "cir": "20480000"
+                             }
+                           ]
+                         },
+                         "svc-outbound-bandwidth": {
+                           "outbound-bandwidth": [
+                             {
+                               "bw-type": "ietf-vpn-common:bw-per-port",
+                               "cir": "20480000"
+                             }
+                           ]
+                         },
+                         "qos": {
+                           "qos-profile": {
+                             "qos-profile": [
+                               {
+                                 "profile": "QoS_Profile_A",
+                                 "direction": "ietf-vpn-common:both"
+                               }
+                             ]
+                           }
+                         }
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 136]
+Barguil, et al.          Expires April 14, 2022               [Page 136]
 
 Internet-Draft                    L2NM                      October 2021
 
 
-                "description": "SEDE_CHAPINERO_451",
-                "ne-id": "2001:db8:50::1",
-                "role": "ietf-vpn-common:spoke-role",
-                "status": {
-                  "admin-status": {
-                    "status": "ietf-vpn-common:admin-up"
-                  }
-                },
-                "active-global-parameters-profiles": {
-                  "global-parameters-profile": [
-                    {
-                      "profile-id": "simple-profile"
-                    }
-                  ]
-                },
-                "signaling-option": {
-                  "ldp-or-l2tp": {
-                    "t-ldp-pw-type": "vpls-type",
-                    "pw-peer-list": [
-                      {
-                        "peer-addr": "2001:db8:5::1",
-                        "vc-id": "1543"
-                      }
-                    ]
-                  }
-                },
-                "vpn-network-accesses": {
-                  "vpn-network-access": [
-                    {
-                      "id": "4508671288",
-                      "description": "VPN_450_SNA",
-                      "interface-id": "gigabithethernet0/0/1",
-                      "status": {
-                        "admin-status": {
-                          "status": "ietf-vpn-common:admin-up"
-                        }
-                      },
-                      "connection": {
-                        "l2-termination-point": "550",
-                        "encapsulation": {
-                          "encap-type": "ietf-vpn-common:dot1q",
-                          "dot1q": {
-                            "tag-type": "ietf-vpn-common:c-vlan",
-                            "cvlan-id": 550
-                          }
-                        }
-                      },
-                      "service": {
+                       }
+                     }
+                   ]
+                 }
+               },
+               {
+                 "vpn-node-id": "451",
+                 "description": "SEDE_CHAPINERO_451",
+                 "ne-id": "2001:db8:50::1",
+                 "role": "ietf-vpn-common:spoke-role",
+                 "status": {
+                   "admin-status": {
+                     "status": "ietf-vpn-common:admin-up"
+                   }
+                 },
+                 "active-global-parameters-profiles": {
+                   "global-parameters-profile": [
+                     {
+                       "profile-id": "simple-profile"
+                     }
+                   ]
+                 },
+                 "signaling-option": {
+                   "ldp-or-l2tp": {
+                     "t-ldp-pw-type": "vpls-type",
+                     "pw-peer-list": [
+                       {
+                         "peer-addr": "2001:db8:5::1",
+                         "vc-id": "1543"
+                       }
+                     ]
+                   }
+                 },
+                 "vpn-network-accesses": {
+                   "vpn-network-access": [
+                     {
+                       "id": "4508671288",
+                       "description": "VPN_450_SNA",
+                       "interface-id": "gigabithethernet0/0/1",
+                       "status": {
+                         "admin-status": {
+                           "status": "ietf-vpn-common:admin-up"
+                         }
+                       },
+                       "connection": {
+                         "l2-termination-point": "550",
+                         "encapsulation": {
+                           "encap-type": "ietf-vpn-common:dot1q",
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 137]
+Barguil, et al.          Expires April 14, 2022               [Page 137]
 
 Internet-Draft                    L2NM                      October 2021
 
 
-                        "mtu": 1550,
-                        "svc-inbound-bandwidth": {
-                          "inbound-bandwidth": [
-                            {
-                              "bw-type": "ietf-vpn-common:bw-per-service",
-                              "cir": "20480000"
-                            }
-                          ]
-                        },
-                        "svc-outbound-bandwidth": {
-                          "outbound-bandwidth": [
-                            {
-                              "bw-type": "ietf-vpn-common:bw-per-port",
-                              "cir": "20480000"
-                            }
-                          ]
-                        },
-                        "qos": {
-                          "qos-profile": {
-                            "qos-profile": [
-                              {
-                                "profile": "QoS_Profile_A",
-                                "direction": "ietf-vpn-common:both"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      ]
-    }
-  }
-}
+                           "dot1q": {
+                             "tag-type": "ietf-vpn-common:c-vlan",
+                             "cvlan-id": 550
+                           }
+                         }
+                       },
+                       "service": {
+                         "mtu": 1550,
+                         "svc-inbound-bandwidth": {
+                           "inbound-bandwidth": [
+                             {
+                               "bw-type": "ietf-vpn-common:bw-per-\
+ service",
+                               "cir": "20480000"
+                             }
+                           ]
+                         },
+                         "svc-outbound-bandwidth": {
+                           "outbound-bandwidth": [
+                             {
+                               "bw-type": "ietf-vpn-common:bw-per-port",
+                               "cir": "20480000"
+                             }
+                           ]
+                         },
+                         "qos": {
+                           "qos-profile": {
+                             "qos-profile": [
+                               {
+                                 "profile": "QoS_Profile_A",
+                                 "direction": "ietf-vpn-common:both"
+                               }
+                             ]
+                           }
+                         }
+                       }
+                     }
+                   ]
+                 }
+               }
+             ]
+           }
+         }
+       ]
+     }
+   }
+ }
+
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 138]
+
+Internet-Draft                    L2NM                      October 2021
+
 
         Figure 28: Example of L2NM Message Body for LDP-based VPLS
 
@@ -7722,13 +7738,6 @@ A.4.  VPWS-EVPN Service Instance
    between CE1 and CE2.  Both CEs are multi-homed.  BGP sessions are
    maintained between these PEs as per [RFC8214].  In this EVPN
    instance, an All-Active redundancy mode is used.
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 138]
-
-Internet-Draft                    L2NM                      October 2021
-
 
                     |<--------- EVPN Instance ----------->|
                     |                                     |
@@ -7749,6 +7758,34 @@ Internet-Draft                    L2NM                      October 2021
 
    Let's first suppose that the following ES was created (Figure 30).
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 139]
+
+Internet-Draft                    L2NM                      October 2021
+
+
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
    {
@@ -7757,13 +7794,13 @@ Internet-Draft                    L2NM                      October 2021
          {
            "name": "esi1",
            "ethernet-segment-identifier": "00:11:11:11:11:11:11:\
-             11:11:11",
+   11:11:11",
            "esi-redundancy-mode": "all-active"
          },
          {
            "name": "esi2",
            "ethernet-segment-identifier": "00:22:22:22:22:22:22:\
-             22:22:22",
+   22:22:22",
            "esi-redundancy-mode": "all-active"
          }
        ]
@@ -7778,14 +7815,6 @@ Internet-Draft                    L2NM                      October 2021
 
    {
      "ietf-l2vpn-ntw:l2vpn-ntw": {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 139]
-
-Internet-Draft                    L2NM                      October 2021
-
-
        "vpn-services": {
          "vpn-service": [
            {
@@ -7805,6 +7834,14 @@ Internet-Draft                    L2NM                      October 2021
                      {
                        "id": 1,
                        "route-targets": [
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 140]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                          {
                            "route-target": "0:65535:1"
                          }
@@ -7834,14 +7871,6 @@ Internet-Draft                    L2NM                      October 2021
                          "interface-id": "1/1/1",
                          "description": "Interface to CE1",
                          "global-parameters-profile": "simple-profile",
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 140]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                          "status": {
                            "admin-status": {
                              "status": "ietf-vpn-common:admin-up"
@@ -7861,6 +7890,14 @@ Internet-Draft                    L2NM                      October 2021
                          },
                          "group": [
                            {
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 141]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                              "group-id": "gr1",
                              "ethernet-segment-identifier": "esi1"
                            }
@@ -7890,14 +7927,6 @@ Internet-Draft                    L2NM                      October 2021
                            "admin-status": {
                              "status": "ietf-vpn-common:admin-up"
                            }
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 141]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                          },
                          "connection": {
                            "encapsulation": {
@@ -7917,6 +7946,14 @@ Internet-Draft                    L2NM                      October 2021
                              "ethernet-segment-identifier": "esi1"
                            }
                          ]
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 142]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                        }
                      ]
                    }
@@ -7946,14 +7983,6 @@ Internet-Draft                    L2NM                      October 2021
                          "connection": {
                            "encapsulation": {
                              "encap-type": "ietf-vpn-common:dot1q",
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 142]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                              "dot1q": {
                                "cvlan-id": 1
                              }
@@ -7973,6 +8002,14 @@ Internet-Draft                    L2NM                      October 2021
                      ]
                    }
                  },
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 143]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                  {
                    "vpn-node-id": "pe4",
                    "ne-id": "198.51.100.4",
@@ -8002,14 +8039,6 @@ Internet-Draft                    L2NM                      October 2021
                                "cvlan-id": 1
                              }
                            }
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 143]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                          },
                          "vpws-service-instance": {
                            "local-vpws-service-instance": 1112,
@@ -8029,6 +8058,14 @@ Internet-Draft                    L2NM                      October 2021
              }
            }
          ]
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 144]
+
+Internet-Draft                    L2NM                      October 2021
+
+
        }
      }
    }
@@ -8058,14 +8095,6 @@ A.5.  Automatic ESI Assignment
    Figure 33 and Figure 34 show how the L2NM is used to instruct both
    PE1 and PE2 to auto-assign the ESI to identify the ES used with CE1.
    In this example, we suppose that LACP is enabled and that a Type 1
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 144]
-
-Internet-Draft                    L2NM                      October 2021
-
-
    (T=0x01) is used as per Section 5 of [RFC7432].  Note that this
    example does not include all the details to configure the EVPN
    service, but focuses only on the ESI management part.
@@ -8084,6 +8113,14 @@ Internet-Draft                    L2NM                      October 2021
 
       Figure 33: Example of L2NM Message Body to Auto-Assign Ethernet
                             Segment Identifiers
+
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 145]
+
+Internet-Draft                    L2NM                      October 2021
+
 
    {
      "ietf-l2vpn-ntw:l2vpn-ntw": {
@@ -8114,14 +8151,6 @@ Internet-Draft                    L2NM                      October 2021
                              "lag-interface-id": "1",
                              "lacp": {
                                "lacp-state": true,
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 145]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                                "system-id": "11:00:11:00:11:11",
                                "admin-key": 154
                              }
@@ -8141,6 +8170,14 @@ Internet-Draft                    L2NM                      October 2021
                    "vpn-node-id": "pe2",
                    "ne-id": "198.51.100.2",
                    "vpn-network-accesses": {
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 146]
+
+Internet-Draft                    L2NM                      October 2021
+
+
                      "vpn-network-access": [
                        {
                          "id": "2/2/2.5",
@@ -8170,14 +8207,6 @@ Internet-Draft                    L2NM                      October 2021
                        }
                      ]
                    }
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 146]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                  }
                ]
              }
@@ -8193,6 +8222,18 @@ Internet-Draft                    L2NM                      October 2021
    method.  The assigned value will be then returned as shown in the
    'esi-auto' data node in Figure 35.
 
+
+
+
+
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 147]
+
+Internet-Draft                    L2NM                      October 2021
+
+
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
    {
@@ -8203,7 +8244,7 @@ Internet-Draft                    L2NM                      October 2021
            "ethernet-segment-identifier": "esi-type-1",
            "esi-auto": {
              "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
-                 11:9A:00:00"
+   11:9A:00:00"
            },
            "esi-redundancy-mode": "all-active"
          }
@@ -8219,20 +8260,6 @@ A.6.  VPN Network Access Precedence
    In reference to the example depicted in Figure 36, an L2VPN service
    involves two VPN network accesses to sites that belong to the same
    customer.
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 147]
-
-Internet-Draft                    L2NM                      October 2021
-
 
    +--------------+
    |VPN-NODE      |
@@ -8254,6 +8281,15 @@ Internet-Draft                    L2NM                      October 2021
    the other one as "secondary", Figure 37 shows an excerpt of the
    corresponding L2NM configuration.  In such as configuration, both
    accesses are bound to the same "group-id" and the "precedence" data
+
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 148]
+
+Internet-Draft                    L2NM                      October 2021
+
+
    node set as function of the intended role of each access (primary or
    secondary).
 
@@ -8282,14 +8318,6 @@ Internet-Draft                    L2NM                      October 2021
                          ]
                        },
                        {
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 148]
-
-Internet-Draft                    L2NM                      October 2021
-
-
                          "id": "NET-ACC-2",
                          "connection": {
                            "bearer-reference": "br2"
@@ -8310,41 +8338,20 @@ Internet-Draft                    L2NM                      October 2021
          ]
        }
      }
+
+
+
+Barguil, et al.          Expires April 14, 2022               [Page 149]
+
+Internet-Draft                    L2NM                      October 2021
+
+
    }
 
    Figure 37: Example of Message Body to Associate Priority Levels with
                            VPN Network Accesses
 
 Appendix B.  Initial BGP Layer 2 Encapsulation Types
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 149]
-
-Internet-Draft                    L2NM                      October 2021
-
 
              Value Description                       Reference
              ===== ================================  =========
@@ -8390,14 +8397,7 @@ Appendix C.  Initial PW Types
 
 
 
-
-
-
-
-
-
-
-Barguil, et al.           Expires April 4, 2022               [Page 150]
+Barguil, et al.          Expires April 14, 2022               [Page 150]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -8453,7 +8453,7 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 151]
+Barguil, et al.          Expires April 14, 2022               [Page 151]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -8469,7 +8469,8 @@ Acknowledgements
    Luay Jalil, Jichun Ma, Daniel King, and Zhang Guiyu contributed to an
    early version of this document.
 
-   Thanks to Yingzhen Qu for the rtgdir review.
+   Thanks to Yingzhen Qu for the rtgdir review, Ladislav Lhotka for the
+   yangdoctors review, and Chris Lonvick for the secdir review.
 
    This work is partially supported by the European Commission under
    Horizon 2020 grant agreement number 101015857 Secured autonomic
@@ -8508,8 +8509,7 @@ Authors' Addresses
 
 
 
-
-Barguil, et al.           Expires April 4, 2022               [Page 152]
+Barguil, et al.          Expires April 14, 2022               [Page 152]
 
 Internet-Draft                    L2NM                      October 2021
 
@@ -8565,4 +8565,4 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-Barguil, et al.           Expires April 4, 2022               [Page 153]
+Barguil, et al.          Expires April 14, 2022               [Page 153]
