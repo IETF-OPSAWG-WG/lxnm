@@ -251,6 +251,30 @@
       parameters, transport protocols selection, and precedence. It can also
       serve as a multi-domain orchestration interface.</t>
 
+      <t>The L2NM is scoped for a variety of Layer 2 Virtual Private Networks
+      such as: <?rfc subcompact="yes" ?><list style="symbols">
+          <t>Virtual Private LAN Service (VPLS) <xref
+          target="RFC4761"></xref><xref target="RFC4762"></xref></t>
+
+          <t>Virtual Private Wire Service (VPWS) (Section 3.1.1 of <xref
+          target="RFC4664"></xref>)</t>
+
+          <t>Various flavors of Ethernet VPNs (EVPNs): <list style="symbols">
+              <t>VPWS EVPN <xref target="RFC8214"></xref>, </t>
+
+              <t>Provider Backbone Bridging Ethernet VPNs (PBB EVPNs) <xref
+              target="RFC7623"></xref>, </t>
+
+              <t>EVPN over MPLS <xref target="RFC7432"></xref>, and </t>
+
+              <t>EVPN over VxLAN <xref target="RFC8365"></xref>. </t>
+            </list></t>
+        </list></t>
+
+      <t><?rfc subcompact="no" ?>The L2NM is designed to easily support future
+      Layer 2 VPN flavors and procedures. A set of examples to illustrate the
+      use of the L2NM are provided in <xref target="examples"></xref>. </t>
+
       <t>Also, the document defines the initial versions of two
       IANA-maintained modules that define a set of identities of BGP Layer 2
       encapsulation types (<xref target="iana-bgp"></xref>) and pseudowire
@@ -258,8 +282,8 @@
       IANA-maintained modules is meant to provide more flexibility in handling
       new types rather than be limited by a set of identities defined in the
       L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
-      manage Ethernet Segments (ESs) that are required for instantiating
-      Ethernet VPNs (EVPNs).</t>
+      manage Ethernet Segments (ESes) that are required for instantiating
+      EVPNs.</t>
 
       <t>This document uses the common Virtual Private Network (VPN) YANG
       module defined in <xref target="I-D.ietf-opsawg-vpn-common"></xref>.
@@ -268,19 +292,6 @@
       <t>The YANG data models in this document conforms to the Network
       Management Datastore Architecture (NMDA) defined in <xref
       target="RFC8342"></xref>.</t>
-
-      <t>The L2NM (<xref target="YANG_module"></xref>) is scoped for a variety
-      of Layer 2 Virtual Private Networks such as Virtual Private LAN Service
-      (VPLS) <xref target="RFC4761"></xref><xref target="RFC4762"></xref>),
-      Virtual Private Wire Service (VPWS) (Section 3.1.1 of <xref
-      target="RFC4664"></xref>) and various flavors of EVPN (VPWS EVPN <xref
-      target="RFC8214"></xref>, PBB EVPN <xref target="RFC7623"></xref>, EVPN
-      over MPLS<xref target="RFC7432"></xref>, and EVPN over VxLAN <xref
-      target="RFC8365"></xref>). The module is designed to easily support
-      future Layer 2 VPN flavors and procedures.</t>
-
-      <t>A set of examples to illustrate the use of the L2MN is provided in
-      <xref target="examples"></xref>.</t>
     </section>
 
     <section anchor="terminology" title="Terminology">
@@ -292,8 +303,8 @@
 
       <t>This document assumes that the reader is familiar with <xref
       target="RFC6241"></xref>, <xref target="RFC7950"></xref>, <xref
-      target="RFC8466"></xref>, <xref target="RFC8309"></xref>, and uses
-      terminology from those documents.</t>
+      target="RFC8466"></xref>, and <xref target="RFC8309"></xref>. This
+      document uses terminology from those documents.</t>
 
       <t>This document uses the term "network model" defined in Section 2.1 of
       <xref target="RFC8969"></xref>.</t>
@@ -304,14 +315,14 @@
       <t>This document makes use of the following terms:</t>
 
       <t><list style="hanging">
-          <t hangText="Ethernet Segment (ES)">Refers to the set of the
+          <t hangText="Ethernet Segment (ES):">Refers to the set of the
           Ethernet links that are used by a customer site (device or network)
           to connect to one or more Provider Edges (PEs).</t>
 
           <t hangText="Layer 2 VPN Customer Service Model (L2SM):">Describes
           the service characterization of an L2VPN that interconnects a set of
           sites from the customer's perspective. The customer service model
-          does not provide details on the service provider network. The L2VPN
+          does not provide details on the service provider network. An L2VPN
           customer service model is defined in <xref
           target="RFC8466"></xref>.</t>
 
@@ -325,20 +336,17 @@
           network controller or to expose the list of active L2VPN
           services.</t>
 
+          <t hangText="Network controller:">Denotes a functional entity
+          responsible for the management of the service provider network.</t>
+
           <t hangText="Service orchestrator:">Refers to a functional entity
           that interacts with the customer of an L2VPN relying upon, e.g.,
           L2SM. The service orchestrator is responsible of the CE-PE
           attachment circuits, the PE selection, and requesting the activation
           of the L2VPN service to a network controller.</t>
 
-          <t hangText="Network controller:">Denotes a functional entity
-          responsible for the management of the service provider network.</t>
-
-          <t hangText="VPN node:">Is an abstraction that represents a set of
-          policies applied on a PE and that belong to a single VPN service. A
-          VPN service involves one or more VPN nodes. The VPN node will
-          identify the service providers node on which the VPN is
-          deployed.</t>
+          <t hangText="Service Provider Network:">Is a network able to provide
+          L2VPN-related services.</t>
 
           <t hangText="VPN network access:">Is an abstraction that represents
           the network interfaces that are associated to a given VPN node.
@@ -346,11 +354,14 @@
           attachment circuits (bearers) between Customer Edges (CEs) and
           Provider Edges (PEs) are terminated in the VPN network access.</t>
 
-          <t hangText="VPN service provider:">Is a service providers that
-          offers L2VPN-related services.</t>
+          <t hangText="VPN node:">Is an abstraction that represents a set of
+          policies applied on a PE and that belong to a single VPN service. A
+          VPN service involves one or more VPN nodes. The VPN node will
+          identify the service providers node on which the VPN is
+          deployed.</t>
 
-          <t hangText="Service Provider Network (SP Network):">Is a network
-          able to provide L2VPN-related services.</t>
+          <t hangText="VPN service provider:">Is a service provider that
+          offers L2VPN-related services.</t>
         </list></t>
     </section>
 
@@ -433,7 +444,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                           | Orchestration |
                           +-------+-------+
     Network Configuration Model   |
-                       ___________|___________
+                      +-----------+-----------+
                       |                       |
              +--------+------+       +--------+------+
              |    Domain     |       |     Domain    |
@@ -539,10 +550,10 @@ l2vpn-ntw + ietf-ethernet-segment |
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
       target="iana-pw"></xref>) to identify a layer 2 encapsulation type.</t>
 
-      <t>For the particular case of EVPNs, the L2NM includes a name that
-      refers to an Ethernet Segment that is created using the
-      "ietf-ethernet-segment" module (<xref target="es-yang"></xref>). Some
-      ES-realated examples are provided in Appendices <xref format="counter"
+      <t>For the particular case of EVPN, the L2NM includes a name that refers
+      to an Ethernet segment that is created using the "ietf-ethernet-segment"
+      module (<xref target="es-yang"></xref>). Some ES-related examples are
+      provided in Appendices <xref format="counter"
       target="evpn-vpws-app"></xref> and <xref format="counter"
       target="auto-ex"></xref>.</t>
 
@@ -599,8 +610,8 @@ l2vpn-ntw + ietf-ethernet-segment |
     <section anchor="es"
              title="Description of the Ethernet Segment YANG Module">
       <t>The 'ietf-ethernet-segment' module (<xref target="es-tree"></xref>)
-      is used to manage a set of Ethernet Segments (ESes) in the context of an
-      EVPN service.</t>
+      is used to manage a set of Ethernet segments in the context of an EVPN
+      service.</t>
 
       <t><figure align="center" anchor="es-tree"
           title="Ethernet Segments Tree Structure">
@@ -638,15 +649,15 @@ l2vpn-ntw + ietf-ethernet-segment |
       <t>In reference to the structure shown in <xref
       target="es-tree"></xref>, the following data nodes can be included:<list
           style="hanging">
-          <t hangText="'name':">Sets a name to uniquely identify an ES. This
-          name is called in the VPN network access level to handle
-          multi-homing, for example.</t>
+          <t hangText="'name':">Sets a name to uniquely identify an ES with a
+          service provider network. This name is referenced in the VPN network
+          access level of the L2NM (<xref target="sna"></xref>). </t>
 
-          <t hangText="'esi-type':">Indicates the ESI type as discussed in
-          Section 5 of <xref target="RFC7432"></xref>. ESI can be
-          automatically assigned either with or without indicating a pool from
-          which the ESI should be taken. The following types are supported:
-          <list style="hanging">
+          <t hangText="'esi-type':">Indicates the Ethernet Segment Identifier
+          (ESI) type as discussed in Section 5 of <xref
+          target="RFC7432"></xref>. ESIs can be automatically assigned either
+          with or without indicating a pool from which an ESI should be taken.
+          The following types are supported: <list style="hanging">
               <t hangText="'esi-type-0':">The ESI is directly configured by
               the VPN service provider.</t>
 
@@ -695,7 +706,8 @@ l2vpn-ntw + ietf-ethernet-segment |
           All-Active multihomed ESes (Section 9.1 of <xref
           target="RFC7623"></xref>).</t>
 
-          <t hangText="'member':">Lists the members of an ES.</t>
+          <t hangText="'member':">Lists the members of an ES in a service
+          provider network.</t>
         </list></t>
     </section>
 
@@ -750,8 +762,8 @@ l2vpn-ntw + ietf-ethernet-segment |
 
       <section anchor="vpn_profiles" title="VPN Profiles">
         <t>The 'vpn-profiles' container (<xref
-        target="vpn_profiles_tree"></xref>) allows the VPN service provider to
-        define and maintain a set of VPN profiles <xref
+        target="vpn_profiles_tree"></xref>) is used by a VPN service provider
+        to define and maintain a set of VPN profiles <xref
         target="I-D.ietf-opsawg-vpn-common"></xref> that apply to one or
         several VPN services.</t>
 
@@ -1101,7 +1113,7 @@ l2vpn-ntw + ietf-ethernet-segment |
 
         <t><list style="hanging">
             <t hangText="'profile-id':">Uniquely identifies a global parameter
-            profile.</t>
+            profile in the context of an L2VPN service.</t>
 
             <t hangText="'rd':">As defined in <xref
             target="I-D.ietf-opsawg-vpn-common"></xref>, these RD assignment
@@ -1192,7 +1204,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                   </list></t>
               </list></t>
 
-            <t hangText="multicast-like':">Controls whether multicast is
+            <t hangText="'multicast-like':">Controls whether multicast is
             allowed in the service.</t>
           </list></t>
       </section>
@@ -1264,7 +1276,8 @@ l2vpn-ntw + ietf-ethernet-segment |
             element where the VPN node is deployed.</t>
 
             <t hangText="'router-id':">Indicates a 32-bit number that is used
-            to uniquely identify a router within an Autonomous System.</t>
+            to uniquely identify a router within an Autonomous System
+            (AS).</t>
 
             <t hangText="'active-global-parameters-profiles':">Lists the set
             of active global VPN parameters profiles for this VPN node.
@@ -3138,7 +3151,7 @@ module ietf-ethernet-segment {
           type string;
           description
             "Unique identifier of the network element where the ES
-             is configured.";
+             is configured with a service provider network.";
         }
         leaf interface-id {
           type string;
@@ -5612,7 +5625,7 @@ module ietf-l2vpn-ntw {
       prefix: iana-pw-types
       reference: RFC XXXX
 
-      name: ietf-l2vpn-ntw
+      name: ietf-ethernet-segment
       namespace: urn:ietf:params:xml:ns:yang:ietf-ethernet-segment
       maintained by IANA: N
       prefix: l2vpn-es
@@ -5961,7 +5974,7 @@ module ietf-l2vpn-ntw {
       <t>The examples use the folding defined in <xref
       target="RFC8792"></xref> for long lines.</t>
 
-      <section anchor="bgp-vpls" title="BGP-based VPLS">
+      <section anchor="ex1" title="BGP-based VPLS">
         <t>This section provides an example to illustrate how the L2NM can be
         used to mange BGP-based VPLS. We consider the sample VPLS service
         delivered using the architecture depicted in <xref
@@ -6219,7 +6232,7 @@ module ietf-l2vpn-ntw {
         <t></t>
       </section>
 
-      <section anchor="bgp-vpws-ldp" title="BGP-based VPWS with LDP Signaling">
+      <section anchor="ex2" title="BGP-based VPWS with LDP Signaling">
         <t>Let's consider the simple architecture depicted in <xref
         target="vpws-ex"></xref> to offer a VPWS between CE1 and CE2. The
         service uses BGP for auto-discovery and LDP for signaling.</t>
@@ -6367,7 +6380,7 @@ module ietf-l2vpn-ntw {
         <t></t>
       </section>
 
-      <section anchor="vpls-ldp" title="LDP-based VPLS">
+      <section anchor="ex3" title="LDP-based VPLS">
         <t>This section provides an example to illustrate how the L2NM can be
         used to manage a VPLS with LDP signaling. The connectivity between the
         CE and the PE is direct using Dot1q encapsulation. We consider the
@@ -7219,13 +7232,14 @@ service",
       early version of this document.</t>
 
       <t>Thanks to Yingzhen Qu for the rtgdir review, Ladislav Lhotka for the
-      yangdoctors review, and Chris Lonvick for the secdir review.</t>
+      yangdoctors review, and Chris Lonvick for the secdir review.<vspace
+      blankLines="1" />A YANG module for Ethernet segments was first defined
+      in the context of the EVPN device module <xref
+      target="I-D.ietf-bess-evpn-yang" />.</t>
 
       <t>This work is partially supported by the European Commission under
       Horizon 2020 grant agreement number 101015857 Secured autonomic traffic
-      management for a Tera of SDN flows (Teraflow).<vspace blankLines="1" />A
-      YANG module for Ethernet Segments was first defined in the context of
-      the EVPN device module <xref target="I-D.ietf-bess-evpn-yang" />.</t>
+      management for a Tera of SDN flows (Teraflow).</t>
     </section>
 
     <section numbered="false" title="Contributors" toc="default">

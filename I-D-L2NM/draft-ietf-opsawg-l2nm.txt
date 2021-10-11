@@ -177,31 +177,36 @@ Internet-Draft                    L2NM                      October 2021
    parameters, transport protocols selection, and precedence.  It can
    also serve as a multi-domain orchestration interface.
 
+   The L2NM is scoped for a variety of Layer 2 Virtual Private Networks
+   such as:
+
+   o  Virtual Private LAN Service (VPLS) [RFC4761][RFC4762]
+   o  Virtual Private Wire Service (VPWS) (Section 3.1.1 of [RFC4664])
+   o  Various flavors of Ethernet VPNs (EVPNs):
+
+      *  VPWS EVPN [RFC8214],
+      *  Provider Backbone Bridging Ethernet VPNs (PBB EVPNs) [RFC7623],
+      *  EVPN over MPLS [RFC7432], and
+      *  EVPN over VxLAN [RFC8365].
+
+   The L2NM is designed to easily support future Layer 2 VPN flavors and
+   procedures.  A set of examples to illustrate the use of the L2NM are
+   provided in Appendix A.
+
    Also, the document defines the initial versions of two IANA-
    maintained modules that define a set of identities of BGP Layer 2
    encapsulation types (Section 8.1) and pseudowire types (Section 8.2).
    Relying upon these IANA-maintained modules is meant to provide more
    flexibility in handling new types rather than be limited by a set of
    identities defined in the L2NM itself.  Section 8.3 defines a YANG
-   module to manage Ethernet Segments (ESs) that are required for
-   instantiating Ethernet VPNs (EVPNs).
+   module to manage Ethernet Segments (ESes) that are required for
+   instantiating EVPNs.
 
    This document uses the common Virtual Private Network (VPN) YANG
    module defined in [I-D.ietf-opsawg-vpn-common].
 
    The YANG data models in this document conforms to the Network
    Management Datastore Architecture (NMDA) defined in [RFC8342].
-
-   The L2NM (Section 8.4) is scoped for a variety of Layer 2 Virtual
-   Private Networks such as Virtual Private LAN Service (VPLS)
-   [RFC4761][RFC4762]), Virtual Private Wire Service (VPWS)
-   (Section 3.1.1 of [RFC4664]) and various flavors of EVPN (VPWS EVPN
-   [RFC8214], PBB EVPN [RFC7623], EVPN over MPLS[RFC7432], and EVPN over
-   VxLAN [RFC8365]).  The module is designed to easily support future
-   Layer 2 VPN flavors and procedures.
-
-   A set of examples to illustrate the use of the L2MN is provided in
-   Appendix A.
 
 2.  Terminology
 
@@ -211,12 +216,7 @@ Internet-Draft                    L2NM                      October 2021
    14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   This document assumes that the reader is familiar with [RFC6241],
-   [RFC7950], [RFC8466], [RFC8309], and uses terminology from those
-   documents.
 
-   This document uses the term "network model" defined in Section 2.1 of
-   [RFC8969].
 
 
 
@@ -226,19 +226,26 @@ Barguil, et al.          Expires April 14, 2022                 [Page 4]
 Internet-Draft                    L2NM                      October 2021
 
 
+   This document assumes that the reader is familiar with [RFC6241],
+   [RFC7950], [RFC8466], and [RFC8309].  This document uses terminology
+   from those documents.
+
+   This document uses the term "network model" defined in Section 2.1 of
+   [RFC8969].
+
    The meaning of the symbols in YANG tree diagrams is defined in
    [RFC8340].
 
    This document makes use of the following terms:
 
-   Ethernet Segment (ES)  Refers to the set of the Ethernet links that
+   Ethernet Segment (ES):  Refers to the set of the Ethernet links that
       are used by a customer site (device or network) to connect to one
       or more Provider Edges (PEs).
 
    Layer 2 VPN Customer Service Model (L2SM):  Describes the service
       characterization of an L2VPN that interconnects a set of sites
       from the customer's perspective.  The customer service model does
-      not provide details on the service provider network.  The L2VPN
+      not provide details on the service provider network.  An L2VPN
       customer service model is defined in [RFC8466].
 
    Layer 2 VPN Service Network Model (L2NM):  Refers to the YANG module
@@ -250,30 +257,23 @@ Internet-Draft                    L2NM                      October 2021
       orchestrator to request a VPN service to a network controller or
       to expose the list of active L2VPN services.
 
+   Network controller:  Denotes a functional entity responsible for the
+      management of the service provider network.
+
    Service orchestrator:  Refers to a functional entity that interacts
       with the customer of an L2VPN relying upon, e.g., L2SM.  The
       service orchestrator is responsible of the CE-PE attachment
       circuits, the PE selection, and requesting the activation of the
       L2VPN service to a network controller.
 
-   Network controller:  Denotes a functional entity responsible for the
-      management of the service provider network.
-
-   VPN node:  Is an abstraction that represents a set of policies
-      applied on a PE and that belong to a single VPN service.  A VPN
-      service involves one or more VPN nodes.  The VPN node will
-      identify the service providers node on which the VPN is deployed.
+   Service Provider Network:  Is a network able to provide L2VPN-related
+      services.
 
    VPN network access:  Is an abstraction that represents the network
       interfaces that are associated to a given VPN node.  Traffic
       coming from the VPN network access belongs to the VPN.  The
       attachment circuits (bearers) between Customer Edges (CEs) and
       Provider Edges (PEs) are terminated in the VPN network access.
-
-   VPN service provider:  Is a service providers that offers L2VPN-
-      related services.
-
-
 
 
 
@@ -282,8 +282,13 @@ Barguil, et al.          Expires April 14, 2022                 [Page 5]
 Internet-Draft                    L2NM                      October 2021
 
 
-   Service Provider Network (SP Network):  Is a network able to provide
-      L2VPN-related services.
+   VPN node:  Is an abstraction that represents a set of policies
+      applied on a PE and that belong to a single VPN service.  A VPN
+      service involves one or more VPN nodes.  The VPN node will
+      identify the service providers node on which the VPN is deployed.
+
+   VPN service provider:  Is a service provider that offers L2VPN-
+      related services.
 
 3.  Acronyms
 
@@ -328,11 +333,6 @@ Internet-Draft                    L2NM                      October 2021
 
 
 
-
-
-
-
-
 Barguil, et al.          Expires April 14, 2022                 [Page 6]
 
 Internet-Draft                    L2NM                      October 2021
@@ -354,7 +354,7 @@ Internet-Draft                    L2NM                      October 2021
                              | Orchestration |
                              +-------+-------+
        Network Configuration Model   |
-                          ___________|___________
+                         +-----------+-----------+
                          |                       |
                 +--------+------+       +--------+------+
                 |    Domain     |       |     Domain    |
@@ -513,10 +513,10 @@ Internet-Draft                    L2NM                      October 2021
    (Section 8.1) and "iana-pseudowire-types" (Section 8.2) to identify a
    layer 2 encapsulation type.
 
-   For the particular case of EVPNs, the L2NM includes a name that
-   refers to an Ethernet Segment that is created using the "ietf-
-   ethernet-segment" module (Section 8.3).  Some ES-realated examples
-   are provided in Appendices A.4 and A.5.
+   For the particular case of EVPN, the L2NM includes a name that refers
+   to an Ethernet segment that is created using the "ietf-ethernet-
+   segment" module (Section 8.3).  Some ES-related examples are provided
+   in Appendices A.4 and A.5.
 
    As discussed in Section 4, the L2NM is meant to manage L2VPN services
    within a service provider network.  The module provides a network
@@ -579,7 +579,7 @@ Internet-Draft                    L2NM                      October 2021
 6.  Description of the Ethernet Segment YANG Module
 
    The 'ietf-ethernet-segment' module (Figure 3) is used to manage a set
-   of Ethernet Segments (ESes) in the context of an EVPN service.
+   of Ethernet segments in the context of an EVPN service.
 
 
 
@@ -653,14 +653,14 @@ Internet-Draft                    L2NM                      October 2021
    In reference to the structure shown in Figure 3, the following data
    nodes can be included:
 
-   'name':  Sets a name to uniquely identify an ES.  This name is called
-      in the VPN network access level to handle multi-homing, for
-      example.
+   'name':  Sets a name to uniquely identify an ES with a service
+      provider network.  This name is referenced in the VPN network
+      access level of the L2NM (Section 7.6).
 
-   'esi-type':  Indicates the ESI type as discussed in Section 5 of
-      [RFC7432].  ESI can be automatically assigned either with or
-      without indicating a pool from which the ESI should be taken.  The
-      following types are supported:
+   'esi-type':  Indicates the Ethernet Segment Identifier (ESI) type as
+      discussed in Section 5 of [RFC7432].  ESIs can be automatically
+      assigned either with or without indicating a pool from which an
+      ESI should be taken.  The following types are supported:
 
       'esi-type-0':  The ESI is directly configured by the VPN service
          provider.
@@ -712,7 +712,7 @@ Internet-Draft                    L2NM                      October 2021
       address with an ES.  This is particularly useful for All-Active
       multihomed ESes (Section 9.1 of [RFC7623]).
 
-   'member':  Lists the members of an ES.
+   'member':  Lists the members of an ES in a service provider network.
 
 7.  Description of the L2NM YANG Module
 
@@ -768,7 +768,7 @@ Internet-Draft                    L2NM                      October 2021
 
 7.2.  VPN Profiles
 
-   The 'vpn-profiles' container (Figure 5) allows the VPN service
+   The 'vpn-profiles' container (Figure 5) is used by a VPN service
    provider to define and maintain a set of VPN profiles
    [I-D.ietf-opsawg-vpn-common] that apply to one or several VPN
    services.
@@ -1146,7 +1146,8 @@ Internet-Draft                    L2NM                      October 2021
 
    The description of the global parameters profile is as follows:
 
-   'profile-id':  Uniquely identifies a global parameter profile.
+   'profile-id':  Uniquely identifies a global parameter profile in the
+      context of an L2VPN service.
 
    'rd':  As defined in [I-D.ietf-opsawg-vpn-common], these RD
       assignment modes are supported: direct assignment, automatic
@@ -1169,7 +1170,6 @@ Internet-Draft                    L2NM                      October 2021
       managing the Assigned Number subfield: explicit assignment, auto-
       assignment from a pool, and full auto-assignment.
 
-   'vpn-targets':  Specifies RT import/export rules for the VPN service.
 
 
 
@@ -1177,6 +1177,8 @@ Barguil, et al.          Expires April 14, 2022                [Page 21]
 
 Internet-Draft                    L2NM                      October 2021
 
+
+   'vpn-targets':  Specifies RT import/export rules for the VPN service.
 
    'local-autonomous-system':  Indicates the Autonomous System Number
       (ASN) that is configured for the VPN node.  The ASN can be used to
@@ -1224,8 +1226,6 @@ Internet-Draft                    L2NM                      October 2021
 
          'window':  The timer when a MAC mobility event is detected.
 
-         'frequency':  The number of times to detect MAC duplication,
-            where a 'duplicate MAC address' situation has occurred and
 
 
 
@@ -1234,6 +1234,8 @@ Barguil, et al.          Expires April 14, 2022                [Page 22]
 Internet-Draft                    L2NM                      October 2021
 
 
+         'frequency':  The number of times to detect MAC duplication,
+            where a 'duplicate MAC address' situation has occurred and
             the duplicate MAC address has been added to a list of
             duplicate MAC addresses.
 
@@ -1242,7 +1244,7 @@ Internet-Draft                    L2NM                      October 2021
 
          'protection-type':  It defines the protection type
 
-   multicast-like':  Controls whether multicast is allowed in the
+   'multicast-like':  Controls whether multicast is allowed in the
       service.
 
 7.5.  VPN Nodes
@@ -1252,8 +1254,6 @@ Internet-Draft                    L2NM                      October 2021
    'vpn-service'.  A 'vpn-node' contains 'vpn-network-accesses', which
    are the interfaces involved in the creation of the VPN.  The customer
    sites are connected to the 'vpn-network-accesses'.
-
-
 
 
 
@@ -1358,7 +1358,7 @@ Internet-Draft                    L2NM                      October 2021
       the VPN node is deployed.
 
    'router-id':  Indicates a 32-bit number that is used to uniquely
-      identify a router within an Autonomous System.
+      identify a router within an Autonomous System (AS).
 
    'active-global-parameters-profiles':  Lists the set of active global
       VPN parameters profiles for this VPN node.  Concretely, one or
@@ -3574,7 +3574,7 @@ Internet-Draft                    L2NM                      October 2021
            type string;
            description
              "Unique identifier of the network element where the ES
-              is configured.";
+              is configured with a service provider network.";
          }
          leaf interface-id {
            type string;
@@ -6454,7 +6454,7 @@ Internet-Draft                    L2NM                      October 2021
          prefix: iana-pw-types
          reference: RFC XXXX
 
-         name: ietf-l2vpn-ntw
+         name: ietf-ethernet-segment
          namespace: urn:ietf:params:xml:ns:yang:ietf-ethernet-segment
          maintained by IANA: N
          prefix: l2vpn-es
@@ -8472,12 +8472,12 @@ Acknowledgements
    Thanks to Yingzhen Qu for the rtgdir review, Ladislav Lhotka for the
    yangdoctors review, and Chris Lonvick for the secdir review.
 
+   A YANG module for Ethernet segments was first defined in the context
+   of the EVPN device module [I-D.ietf-bess-evpn-yang].
+
    This work is partially supported by the European Commission under
    Horizon 2020 grant agreement number 101015857 Secured autonomic
    traffic management for a Tera of SDN flows (Teraflow).
-
-   A YANG module for Ethernet Segments was first defined in the context
-   of the EVPN device module [I-D.ietf-bess-evpn-yang].
 
 Contributors
 
