@@ -1469,7 +1469,6 @@ l2vpn-ntw + ietf-ethernet-segment |
    |     +--:(bgp)
    |     |  +--rw (bgp-type)?
    |     |     +--:(l2vpn-bgp)
-   |     |     |  +--rw ce-id?        uint16
    |     |     |  +--rw ce-range?     uint16
    |     |     |  +--rw pw-encapsulation-type?
    |     |     |  |       identityref
@@ -1522,19 +1521,21 @@ l2vpn-ntw + ietf-ethernet-segment |
    |        ...]]></artwork>
               </figure></t>
 
-            <t>As discussed in Section 2.2.2 of <xref
-            target="RFC6624"></xref>, a CE ID ('ce-id') identifying the CE
-            within the VPN must be provided. Remote CEs that are entitled to
-            connect to the same VPN should fit with the CE range ('ce-range')
-            as discussed in Section 2.2.3 of <xref target="RFC6624"></xref>.
-            'pw-encapsulation-type' is used to control the PW encapsulation
-            type (Section 3 of <xref target="RFC6624"></xref>). The value of
-            the 'pw-encapsulation-type' are taken from the IANA-maintained
+            <t>Remote CEs that are entitled to connect to the same VPN should
+            fit with the CE range ('ce-range') as discussed in Section 2.2.3
+            of <xref target="RFC6624"></xref>. 'pw-encapsulation-type' is used
+            to control the PW encapsulation type (Section 3 of <xref
+            target="RFC6624"></xref>). The value of the
+            'pw-encapsulation-type' are taken from the IANA-maintained
             "iana-bgp-l2-encaps" module.</t>
 
             <t>For the specific case of VPLS, the VPLS Edge ID (VE ID,
             'vpls-edge-id') and a VE ID range ('vpls-edge-id-range') are
-            provided as per Section 3.2 of <xref target="RFC4761"></xref>.</t>
+            provided as per Section 3.2 of <xref target="RFC4761"></xref>. If
+            different VE IDs are required (e.g., multihoming as per Section
+            3.5 of <xref target="RFC4761"></xref>), these IDs are configured
+            at the VPN network access (under 'signaling-option' in <xref
+            target="sna"></xref>). </t>
 
             <t>For EVPN-related L2VPNs, 'service-interface-type' indicates
             whether this is VLAN-based, VLAN bundle, or VLAN-aware bundle
@@ -1666,8 +1667,17 @@ l2vpn-ntw + ietf-ethernet-segment |
                        |  ...
                        +--rw connection
                        |  ... 
-                       +--rw vpws-service-instance
-                       |  ... 
+                       +--rw (signaling-option)?
+                       |  +--:(bgp)
+                       |     +--rw (bgp-type)?
+                       |        +--:(l2vpn-bgp)
+                       |        |  +--rw ce-id?             uint16
+                       |        |  +--rw remote-ce-id?      uint16
+                       |        |  +--rw vpls-instance
+                       |        |     +--rw vpls-edge-id?   uint16
+                       |        +--:(evpn-bgp)
+                       |           +--rw vpws-service-instance
+                       |              ...
                        +--rw group* [group-id]
                        |  +--rw group-id                       string
                        |  +--rw precedence?
@@ -1707,9 +1717,14 @@ l2vpn-ntw + ietf-ethernet-segment |
             VPN Network access is coming. See <xref
             target="connection"></xref>.</t>
 
-            <t hangText="'vpws-service-instance':">Includes a set of data
-            nodes that are required for the configuration of a VPWS-EVPN <xref
-            target="RFC8214"></xref>. See <xref target="vsi"></xref>.</t>
+            <t hangText="'signaling-option':">Indicates a set of signaling
+            options that are specific to a given VPN network access, e.g., a
+            CE ID ('ce-id' identifying the CE within the VPN) and a remote CE
+            ID as discussed in Section 2.2.2 of <xref
+            target="RFC6624"></xref>. <vspace blankLines="1" />It can also
+            includes a set of data nodes that are required for the
+            configuration of a VPWS-EVPN <xref target="RFC8214"></xref>. See
+            <xref target="vsi"></xref>.</t>
 
             <t hangText="'group':">Is used for grouping VPN network accesses
             by assigning the same identifier to these accesses. The precedence
@@ -1837,35 +1852,43 @@ l2vpn-ntw + ietf-ethernet-segment |
                  +--rw vpn-network-accesses
                     +--rw vpn-network-access* [id]
                        ...
-                       +--rw vpws-service-instance
-                       |  +--rw (local-vsi-choice)?
-                       |  |  +--:(directly-assigned)
-                       |  |  |  +--rw local-vpws-service-instance?
-                       |  |  |          uint32
-                       |  |  +--:(auto-assigned)
-                       |  |     +--rw local-vsi-auto
-                       |  |        +--rw (auto-mode)?
-                       |  |        |  +--:(from-pool)
-                       |  |        |  |  +--rw vsi-pool-name?
-                       |  |        |  |          string
-                       |  |        |  +--:(full-auto)
-                       |  |        |     +--rw auto?            empty
-                       |  |        +--ro auto-local-vsi?
-                       |  |                uint32
-                       |  +--rw (remote-vsi-choice)?
-                       |     +--:(directly-assigned)
-                       |     |  +--rw remote-vpws-service-instance?
-                       |     |          uint32
-                       |     +--:(auto-assigned)
-                       |        +--rw remote-vsi-auto
-                       |           +--rw (auto-mode)?
-                       |           |  +--:(from-pool)
-                       |           |  |  +--rw vsi-pool-name?
-                       |           |  |          string
-                       |           |  +--:(full-auto)
-                       |           |     +--rw auto?            empty
-                       |           +--ro auto-remote-vsi?
-                       |                   uint32
+                       +--rw (signaling-option)?
+                       |  +--:(bgp)
+                       |     +--rw (bgp-type)?
+                       |        +--:(l2vpn-bgp)
+                       |        |  ...
+                       |        +--:(evpn-bgp)
+                       |           +--rw vpws-service-instance
+                       |              +--rw (local-vsi-choice)?
+                       |              |  +--:(directly-assigned)
+                       |              |  |  +--rw local-vpws-service-instance?
+                       |              |  |          uint32
+                       |              |  +--:(auto-assigned)
+                       |              |     +--rw local-vsi-auto
+                       |              |        +--rw (auto-mode)?
+                       |              |        |  +--:(from-pool)
+                       |              |        |  |  +--rw vsi-pool-name?
+                       |              |        |  |          string
+                       |              |        |  +--:(full-auto)
+                       |              |        |     +--rw auto?
+                       |              |        |             empty
+                       |              |        +--ro auto-local-vsi?
+                       |              |                uint32
+                       |              +--rw (remote-vsi-choice)?
+                       |                 +--:(directly-assigned)
+                       |                 |  +--rw remote-vpws-service-instance?
+                       |                 |          uint32
+                       |                 +--:(auto-assigned)
+                       |                    +--rw remote-vsi-auto
+                       |                       +--rw (auto-mode)?
+                       |                       |  +--:(from-pool)
+                       |                       |  |  +--rw vsi-pool-name?
+                       |                       |  |          string
+                       |                       |  +--:(full-auto)
+                       |                       |     +--rw auto?
+                       |                       |             empty
+                       |                       +--ro auto-remote-vsi?
+                       |                               uint32
                        ...
 ]]></artwork>
             </figure></t>
@@ -4043,17 +4066,6 @@ module ietf-l2vpn-ntw {
                     case l2vpn-bgp {
                       description
                         "Container for BGP L2VPN.";
-                      leaf ce-id {
-                        type uint16;
-                        description
-                          "The PE must know the set of virtual circuits
-                           connecting it to the CE and a CE ID
-                           identifying the CE within the VPN.";
-                        reference
-                          "RFC 6624: Layer 2 Virtual Private Networks
-                                     Using BGP for Auto-Discovery and
-                                     Signaling";
-                      }
                       leaf ce-range {
                         type uint16;
                         description
@@ -4084,11 +4096,14 @@ module ietf-l2vpn-ntw {
                         leaf vpls-edge-id {
                           type uint16;
                           description
-                            "VPLS Edge Identifier (VE ID).";
+                            "VPLS Edge Identifier (VE ID). This is
+                             used when the same VE ID is configured
+                             for the PE.";
                           reference
                             "RFC 4761: Virtual Private LAN Service
                                        (VPLS) Using BGP for Auto-
-                                       Discovery and Signaling";
+                                       Discovery and Signaling,
+                                       Section 3.5";
                         }
                         leaf vpls-edge-id-range {
                           type uint16;
@@ -4399,12 +4414,12 @@ module ietf-l2vpn-ntw {
                         type string;
                         description
                           "Includes an interface description used to
-                           send a human-readable administrative 
-                           string describing the interface to the 
+                           send a human-readable administrative
+                           string describing the interface to the
                            remote.";
                         reference
                           "RFC 4762: Virtual Private LAN Service (VPLS)
-                                     Using Label Distribution Protocol 
+                                     Using Label Distribution Protocol
                                      (LDP) Signaling, Section 6.1.1";
                       }
                       leaf mac-addr-withdraw {
@@ -4415,7 +4430,7 @@ module ietf-l2vpn-ntw {
                            withdrawal is disabled.";
                         reference
                           "RFC 4762: Virtual Private LAN Service (VPLS)
-                                     Using Label Distribution Protocol 
+                                     Using Label Distribution Protocol
                                      (LDP) Signaling, Section 6.2";
                       }
                       list pw-peer-list {
@@ -4444,7 +4459,7 @@ module ietf-l2vpn-ntw {
                         when "derived-from-or-self(../t-ldp-pw-type, "
                            + "'hvpls')" {
                           description
-                            "Only applies when t-ldp pw type is 
+                            "Only applies when t-ldp pw type is
                              h-vpls.";
                         }
                         description
@@ -4470,12 +4485,12 @@ module ietf-l2vpn-ntw {
                         type rt-types:router-id;
                         description
                           "A 32-bit number in the dotted-quad format
-                           that is used to uniquely identify a node 
+                           that is used to uniquely identify a node
                            within an autonomous system.";
                         reference
                           "RFC 4667: Layer 2 Virtual Private Network
-                                     (L2VPN) Extensions for Layer 2 
-                                     Tunneling Protocol (L2TP), 
+                                     (L2VPN) Extensions for Layer 2
+                                     Tunneling Protocol (L2TP),
                                      Section 4.2";
                       }
                       leaf pseudowire-type {
@@ -4486,8 +4501,8 @@ module ietf-l2vpn-ntw {
                           "Encapsulation type.";
                         reference
                           "RFC 4667: Layer 2 Virtual Private Network
-                                     (L2VPN) Extensions for Layer 2 
-                                     Tunneling Protocol (L2TP), 
+                                     (L2VPN) Extensions for Layer 2
+                                     Tunneling Protocol (L2TP),
                                      Section 4.2";
                       }
                     }
@@ -4859,138 +4874,204 @@ module ietf-l2vpn-ntw {
                     }
                   }
                 }
-                container vpws-service-instance {
-                  when "derived-from-or-self(/l2vpn-ntw/vpn-services"
-                     + "/vpn-service/vpn-type, "
-                     + "'vpn-common:vpws-evpn')" {
-                    description
-                      "Only applies for EVPN-VPWS.";
-                  }
+                choice signaling-option {
                   description
-                    "Local and remote VPWS Service Instance (VSI)";
-                  reference
-                    "RFC 8214: Virtual Private Wire Service Support
-                               in Ethernet VPN";
-                  choice local-vsi-choice {
+                    "Choice for the signaling-option.";
+                  case bgp {
                     description
-                      "Choices for assigning local VSI.";
-                    case directly-assigned {
+                      "BGP is used as the signaling protocol.";
+                    choice bgp-type {
                       description
-                        "Explicitly assign a local VSI.";
-                      leaf local-vpws-service-instance {
-                        type uint32 {
-                          range "1..16777215";
-                        }
+                        "Choice for the BGP type.";
+                      case l2vpn-bgp {
                         description
-                          "Indicates the assigned local VSI.";
-                      }
-                    }
-                    case auto-assigned {
-                      description
-                        "The local VSI is auto-assigned.";
-                      container local-vsi-auto {
-                        description
-                          "The local VSI is auto-assigned.";
-                        choice auto-mode {
+                          "Container for BGP L2VPN.";
+                        leaf ce-id {
+                          type uint16;
                           description
-                            "Indicates the auto-assignment mode of
-                             local VSI. VSI can be automatically
-                             assigned either with or without
-                             indicating a pool from which the VSI
-                             should be taken.
+                            "The PE must know the set of virtual circuits
+                             connecting it to the CE and a CE ID
+                             identifying the CE within the VPN.";
+                          reference
+                            "RFC 6624: Layer 2 Virtual Private Networks
+                                       Using BGP for Auto-Discovery and
+                                       Signaling";
+                        }
+                        leaf remote-ce-id {
+                          type uint16;
+                          description
+                            "Indicates the identifier of the remote CE.";
+                        }
+                        container vpls-instance {
+                          when "derived-from-or-self(/l2vpn-ntw"
+                             + "/vpn-services/vpn-service/vpn-type, "
+                             + "'vpn-common:vpls')" {
+                            description
+                              "Only applies for VPLS.";
+                          }
+                          description
+                            "VPLS instance.";
+                          leaf vpls-edge-id {
+                            type uint16;
+                            description
+                              "VPLS Edge Identifier (VE ID).";
+                            reference
+                              "RFC 4761: Virtual Private LAN Service
+                                         (VPLS) Using BGP for Auto-
+                                         Discovery and Signaling,
+                                         Section 3.2.1";
+                          }
+                        }
+                      }
+                      case evpn-bgp {
+                        description
+                          "Used for EVPN.";
+                        container vpws-service-instance {
+                          when "derived-from-or-self(/l2vpn-ntw/vpn-services"
+                             + "/vpn-service/vpn-type, "
+                             + "'vpn-common:vpws-evpn')" {
+                            description
+                              "Only applies for EVPN-VPWS.";
+                          }
+                          description
+                            "Local and remote VPWS Service Instance (VSI)";
+                          reference
+                            "RFC 8214: Virtual Private Wire Service Support
+                                       in Ethernet VPN";
+                          choice local-vsi-choice {
+                            description
+                              "Choices for assigning local VSI.";
+                            case directly-assigned {
+                              description
+                                "Explicitly assign a local VSI.";
+                              leaf local-vpws-service-instance {
+                                type uint32 {
+                                  range "1..16777215";
+                                }
+                                description
+                                  "Indicates the assigned local VSI.";
+                              }
+                            }
+                            case auto-assigned {
+                              description
+                                "The local VSI is auto-assigned.";
+                              container local-vsi-auto {
+                                description
+                                  "The local VSI is auto-assigned.";
+                                choice auto-mode {
+                                  description
+                                    "Indicates the auto-assignment mode of
+                                     local VSI. VSI can be automatically
+                                     assigned either with or without
+                                     indicating a pool from which the VSI
+                                     should be taken.
 
-                             For both cases, the server will
-                             auto-assign a local VSI value and use
-                             that value.";
-                          case from-pool {
-                            leaf vsi-pool-name {
-                              type string;
-                              description
-                                "The auto-assignment will be made
-                                 from this pool.";
+                                     For both cases, the server will
+                                     auto-assign a local VSI value and use
+                                     that value.";
+                                  case from-pool {
+                                    leaf vsi-pool-name {
+                                      type string;
+                                      description
+                                        "The auto-assignment will be made
+                                         from this pool.";
+                                    }
+                                  }
+                                  case full-auto {
+                                    leaf auto {
+                                      type empty;
+                                      description
+                                        "Indicates that a local VSI is
+                                         fully auto-assigned.";
+                                    }
+                                  }
+                                }
+                                leaf auto-local-vsi {
+                                  type uint32 {
+                                    range "1..16777215";
+                                  }
+                                  config false;
+                                  description
+                                    "The value of the auto-assigned local
+                                     VSI.";
+                                }
+                              }
                             }
                           }
-                          case full-auto {
-                            leaf auto {
-                              type empty;
+                          choice remote-vsi-choice {
+                            description
+                              "Choice for assigning the remote VSI.";
+                            case directly-assigned {
                               description
-                                "Indicates that a local VSI is
-                                 fully auto-assigned.";
+                                "Explicitly assign a remote VSI.";
+                              leaf remote-vpws-service-instance {
+                                type uint32 {
+                                  range "1..16777215";
+                                }
+                                description
+                                  "Indicates the value of the remote
+                                   VSI.";
+                              }
                             }
-                          }
-                        }
-                        leaf auto-local-vsi {
-                          type uint32 {
-                            range "1..16777215";
-                          }
-                          config false;
-                          description
-                            "The value of the auto-assigned local
-                             VSI.";
-                        }
-                      }
-                    }
-                  }
-                  choice remote-vsi-choice {
-                    description
-                      "Choice for assigning the remote VSI.";
-                    case directly-assigned {
-                      description
-                        "Explicitly assign a remote VSI.";
-                      leaf remote-vpws-service-instance {
-                        type uint32 {
-                          range "1..16777215";
-                        }
-                        description
-                          "Indicates the value of the remote
-                           VSI.";
-                      }
-                    }
-                    case auto-assigned {
-                      description
-                        "The remote VSI is auto-assigned.";
-                      container remote-vsi-auto {
-                        description
-                          "The remote VSI is auto-assigned.";
-                        choice auto-mode {
-                          description
-                            "Indicates the auto-assignment mode
-                             of remote VSI. VSI can be
-                             automatically assigned either with or
-                             without indicating a pool from which
-                             the VSI should be taken.
+                            case auto-assigned {
+                              description
+                                "The remote VSI is auto-assigned.";
+                              container remote-vsi-auto {
+                                description
+                                  "The remote VSI is auto-assigned.";
+                                choice auto-mode {
+                                  description
+                                    "Indicates the auto-assignment mode
+                                     of remote VSI. VSI can be
+                                     automatically assigned either with or
+                                     without indicating a pool from which
+                                     the VSI should be taken.
 
-                             For both cases, the server will
-                             auto-assign a remote VSI value and use
-                             that value.";
-                          case from-pool {
-                            leaf vsi-pool-name {
-                              type string;
-                              description
-                                "The auto-assignment will be made
-                                 from this pool.";
+                                     For both cases, the server will
+                                     auto-assign a remote VSI value and use
+                                     that value.";
+                                  case from-pool {
+                                    leaf vsi-pool-name {
+                                      type string;
+                                      description
+                                        "The auto-assignment will be made
+                                         from this pool.";
+                                    }
+                                  }
+                                  case full-auto {
+                                    leaf auto {
+                                      type empty;
+                                      description
+                                        "Indicates that a remote VSI is fully
+                                         auto-assigned.";
+                                    }
+                                  }
+                                }
+                                leaf auto-remote-vsi {
+                                  type uint32 {
+                                    range "1..16777215";
+                                  }
+                                  config false;
+                                  description
+                                    "The value of the auto-assigned remote
+                                     VSI.";
+                                }
+                              }
                             }
                           }
-                          case full-auto {
-                            leaf auto {
-                              type empty;
-                              description
-                                "Indicates that a remote VSI is fully
-                                 auto-assigned.";
-                            }
-                          }
-                        }
-                        leaf auto-remote-vsi {
-                          type uint32 {
-                            range "1..16777215";
-                          }
-                          config false;
-                          description
-                            "The value of the auto-assigned remote
-                             VSI.";
                         }
                       }
                     }
+                    /*
+                                     case evpn-bgp {
+                                          description
+                                            "Used for EVPN.";
+                    
+                    
+                    
+                    }
+                    
+                     */
                   }
                 }
                 list group {
@@ -5371,7 +5452,7 @@ module ietf-l2vpn-ntw {
                           "Specifies the filtering action.";
                       }
                       leaf rate-limit {
-                        when "derived-from-or-self(../action, " 
+                        when "derived-from-or-self(../action, "
                            + "'flood')" {
                           description
                             "Rate-limit is valid only when the action is
