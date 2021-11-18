@@ -20,9 +20,13 @@ module ietf-l2vpn-ntw {
   }
   import iana-bgp-l2-encaps {
     prefix iana-bgp-l2-encaps;
+    reference
+      "RFC XXXX: A Layer 2 VPN Network YANG Model.";
   }
   import iana-pseudowire-types {
     prefix iana-pw-types;
+    reference
+      "RFC XXXX: A Layer 2 VPN Network YANG Model.";
   }
   import ietf-routing-types {
     prefix rt-types;
@@ -79,13 +83,13 @@ module ietf-l2vpn-ntw {
 
   /* Identities */
 
-  identity evpn-service-type {
+  identity evpn-service-interface-type {
     description
-      "Base identity for EVPN service type.";
+      "Base identity for EVPN service interface type.";
   }
 
   identity vlan-based-service-interface {
-    base evpn-service-type;
+    base evpn-service-interface-type;
     description
       "VLAN-Based Service Interface.";
     reference
@@ -93,7 +97,7 @@ module ietf-l2vpn-ntw {
   }
 
   identity vlan-bundle-service-interface {
-    base evpn-service-type;
+    base evpn-service-interface-type;
     description
       "VLAN Bundle Service Interface.";
     reference
@@ -101,7 +105,7 @@ module ietf-l2vpn-ntw {
   }
 
   identity vlan-aware-bundle-service-interface {
-    base evpn-service-type;
+    base evpn-service-interface-type;
     description
       "VLAN-Aware Bundle Service Interface.";
     reference
@@ -319,7 +323,8 @@ module ietf-l2vpn-ntw {
     }
     description
       "A 3-bit priority value to be used in the VLAN tag,
-       if present in the transmitted frame.";
+       if present in the transmitted frame. A larger value
+       indicates a higher priority.";
   }
 
   /* Groupings */
@@ -339,7 +344,7 @@ module ietf-l2vpn-ntw {
     leaf mep-id {
       type uint32;
       description
-        "Local Maintenance End Point (MEP) ID.";
+        "Local Maintenance Entity Group End Point (MEP) ID.";
     }
     leaf mep-level {
       type uint32;
@@ -372,11 +377,15 @@ module ietf-l2vpn-ntw {
     }
     leaf ccm-interval {
       type uint32;
+      units "milliseconds";
+      default "10000";
       description
         "Continuity Check Message (CCM) interval.";
     }
     leaf ccm-holdtime {
       type uint32;
+      units "milliseconds";
+      default "35000";
       description
         "CCM hold time.";
     }
@@ -934,7 +943,7 @@ module ietf-l2vpn-ntw {
                       }
                       leaf service-interface-type {
                         type identityref {
-                          base evpn-service-type;
+                          base evpn-service-interface-type;
                         }
                         description
                           "EVPN service interface type.";
@@ -1009,6 +1018,7 @@ module ietf-l2vpn-ntw {
                           }
                           leaf duplicate-ip-detection-interval {
                             type uint16;
+                            units "seconds";
                             description
                               "The time interval used in detecting a
                                duplicate IP address. Duplicate IP
@@ -1061,6 +1071,7 @@ module ietf-l2vpn-ntw {
                           }
                           leaf duplicate-ip-detection-interval {
                             type uint16;
+                            units "seconds";
                             description
                               "The time interval used in detecting a
                                duplicate IP address. Duplicate IP
@@ -1690,9 +1701,9 @@ module ietf-l2vpn-ntw {
                         leaf ce-id {
                           type uint16;
                           description
-                            "The PE must know the set of virtual circuits
-                             connecting it to the CE and a CE ID
-                             identifying the CE within the VPN.";
+                            "The PE must know the set of virtual
+                             circuits connecting it to the CE and a
+                             CE ID identifying the CE within the VPN.";
                           reference
                             "RFC 6624: Layer 2 Virtual Private Networks
                                        Using BGP for Auto-Discovery and
@@ -1701,7 +1712,8 @@ module ietf-l2vpn-ntw {
                         leaf remote-ce-id {
                           type uint16;
                           description
-                            "Indicates the identifier of the remote CE.";
+                            "Indicates the identifier of the remote
+                             CE.";
                         }
                         container vpls-instance {
                           when "derived-from-or-self(/l2vpn-ntw"
@@ -1731,27 +1743,29 @@ module ietf-l2vpn-ntw {
                           type uint16;
                           default "32767";
                           description
-                            "Defines a 2-octet value that indicates the PE
-                             preference to become the DF in the ES.
+                            "Defines a 2-octet value that indicates the
+                             PE preference to become the DF in the ES.
 
                              The preference value is only applicable
                              to the preference based method.";
                           reference
-                            "RFC 8584: Framework for Ethernet VPN Designated
-                                       Forwarder Election Extensibility";
+                            "RFC 8584: Framework for Ethernet VPN
+                                       Designated Forwarder Election
+                                       Extensibility";
                         }
                         container vpws-service-instance {
-                          when "derived-from-or-self(/l2vpn-ntw/vpn-services"
-                             + "/vpn-service/vpn-type, "
+                          when "derived-from-or-self(/l2vpn-ntw"
+                             + "/vpn-services/vpn-service/vpn-type, "
                              + "'vpn-common:vpws-evpn')" {
                             description
                               "Only applies for EVPN-VPWS.";
                           }
                           description
-                            "Local and remote VPWS Service Instance (VSI)";
+                            "Local and remote VPWS Service Instance
+                             (VSI)";
                           reference
-                            "RFC 8214: Virtual Private Wire Service Support
-                                       in Ethernet VPN";
+                            "RFC 8214: Virtual Private Wire Service
+                                       Support in Ethernet VPN";
                           choice local-vsi-choice {
                             description
                               "Choices for assigning local VSI.";
@@ -1774,21 +1788,21 @@ module ietf-l2vpn-ntw {
                                   "The local VSI is auto-assigned.";
                                 choice auto-mode {
                                   description
-                                    "Indicates the auto-assignment mode of
-                                     local VSI. VSI can be automatically
-                                     assigned either with or without
-                                     indicating a pool from which the VSI
-                                     should be taken.
+                                    "Indicates the auto-assignment mode
+                                     of local VSI. VSI can be
+                                     automatically assigned either with
+                                     or without indicating a pool from
+                                     which the VSI should be taken.
 
                                      For both cases, the server will
-                                     auto-assign a local VSI value and use
-                                     that value.";
+                                     auto-assign a local VSI value and
+                                     use that value.";
                                   case from-pool {
                                     leaf vsi-pool-name {
                                       type string;
                                       description
-                                        "The auto-assignment will be made
-                                         from this pool.";
+                                        "The auto-assignment will be
+                                         made from this pool.";
                                     }
                                   }
                                   case full-auto {
@@ -1806,8 +1820,8 @@ module ietf-l2vpn-ntw {
                                   }
                                   config false;
                                   description
-                                    "The value of the auto-assigned local
-                                     VSI.";
+                                    "The value of the auto-assigned
+                                     local VSI.";
                                 }
                               }
                             }
@@ -1837,27 +1851,27 @@ module ietf-l2vpn-ntw {
                                   description
                                     "Indicates the auto-assignment mode
                                      of remote VSI. VSI can be
-                                     automatically assigned either with or
-                                     without indicating a pool from which
-                                     the VSI should be taken.
+                                     automatically assigned either with
+                                     or without indicating a pool from
+                                     which the VSI should be taken.
 
                                      For both cases, the server will
-                                     auto-assign a remote VSI value and use
-                                     that value.";
+                                     auto-assign a remote VSI value and
+                                     use that value.";
                                   case from-pool {
                                     leaf vsi-pool-name {
                                       type string;
                                       description
-                                        "The auto-assignment will be made
-                                         from this pool.";
+                                        "The auto-assignment will be
+                                         made from this pool.";
                                     }
                                   }
                                   case full-auto {
                                     leaf auto {
                                       type empty;
                                       description
-                                        "Indicates that a remote VSI is fully
-                                         auto-assigned.";
+                                        "Indicates that a remote VSI is
+                                         fully auto-assigned.";
                                     }
                                   }
                                 }
@@ -1867,8 +1881,8 @@ module ietf-l2vpn-ntw {
                                   }
                                   config false;
                                   description
-                                    "The value of the auto-assigned remote
-                                     VSI.";
+                                    "The value of the auto-assigned
+                                     remote VSI.";
                                 }
                               }
                             }
@@ -1973,6 +1987,9 @@ module ietf-l2vpn-ntw {
                           "Identifier of the Class of Service (CoS),
                            indicated by DSCP or a CE-CLAN
                            CoS (802.1p) value in the service frame.";
+                        reference
+                          "IEEE Std 802.1Q: Bridges and Bridged
+                                            Networks";
                       }
                       leaf cir {
                         type uint64;
@@ -2052,6 +2069,9 @@ module ietf-l2vpn-ntw {
                           "Identifier of the CoS, indicated by
                            DSCP or a CE-CLAN CoS (802.1p) value in
                            the service frame.";
+                        reference
+                          "IEEE Std 802.1Q: Bridges and Bridged
+                                            Networks";
                       }
                       leaf cir {
                         type uint64;
@@ -2141,13 +2161,17 @@ module ietf-l2vpn-ntw {
                                 description
                                   "802.1Q matching. It is a VLAN tag
                                    added into a frame.";
+                                reference
+                                  "IEEE Std 802.1Q: Bridges and Bridged
+                                                    Networks";
                               }
                               leaf pcp {
                                 type uint8 {
                                   range "0..7";
                                 }
                                 description
-                                  "PCP value.";
+                                  "Priority Code Point (PCP)
+                                   value.";
                               }
                               leaf src-mac-address {
                                 type yang:mac-address;
