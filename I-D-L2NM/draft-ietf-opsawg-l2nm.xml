@@ -200,17 +200,18 @@
 
     <abstract>
       <t>This document defines an L2VPN Network YANG Model (L2NM) that can be
-      used to manage the provisioning of Layer 2 Virtual Private Network (VPN)
+      used to manage the provisioning of Layer 2 Virtual Private Network
       services within a network (e.g., service provider network). The L2NM
       complements the Layer 2 Service Model (L2SM) by providing a
       network-centric view of the service that is internal to a service
-      providers. The L2NM is particularly meant to be used by a network
+      provider. The L2NM is particularly meant to be used by a network
       controller to derive the configuration information that will be sent to
       relevant network devices.</t>
 
-      <t>Also, the document defines the initial versions of two
-      IANA-maintained modules that defines a set of identities of BGP Layer 2
-      encapsulation types and pseudowire types.</t>
+      <t>Also, this document defines a YANG module to manage Ethernet Segments
+      and the initial versions of two IANA-maintained modules that defines a
+      set of identities of BGP Layer 2 encapsulation types and pseudowire
+      types.</t>
     </abstract>
 
     <note title="Editorial Note (To be removed by RFC Editor)">
@@ -233,14 +234,14 @@
   <middle>
     <section title="Introduction">
       <t><xref target="RFC8466"></xref> defines an L2VPN Service Model (L2SM)
-      YANG data model that can be used for Layer 2 Virtual Private Network
-      (L2VPN) service ordering matters between customers and service
-      providers. This document complements the L2SM by creating a
-      network-centric view of the service: the L2VPN Network Model (L2NM).</t>
+      YANG data model that can be used between customers and service providers
+      for ordering Layer 2 Virtual Private Network (L2VPN) services. This
+      document complements the L2SM by creating a network-centric view of the
+      service: the L2VPN Network Model (L2NM).</t>
 
       <t>The L2NM (<xref target="YANG_module"></xref>) can be exposed, for
       example, by a network controller to a service controller within the
-      service providers network. In particular, the model can be used in the
+      service provider's network. In particular, the model can be used in the
       communication interface between the entity that interacts directly with
       the customer, the service orchestrator (either fully automated or a
       human operator), and the entity in charge of network orchestration and
@@ -277,13 +278,13 @@
       target="RFC7267"></xref>). A set of examples to illustrate the use of
       the L2NM are provided in <xref target="examples"></xref>.</t>
 
-      <t>Also, the document defines the initial versions of two
+      <t>Also, this document defines the initial versions of two
       IANA-maintained modules that define a set of identities of BGP Layer 2
       encapsulation types (<xref target="iana-bgp"></xref>) and pseudowire
       types (<xref target="iana-pw"></xref>). Relying upon these
       IANA-maintained modules is meant to provide more flexibility in handling
-      new types rather than be limited by a set of identities defined in the
-      L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
+      new types rather than being limited by a set of identities defined in
+      the L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
       manage Ethernet Segments (ESes) that are required for instantiating
       EVPNs.</t>
 
@@ -332,7 +333,7 @@
           network-centric view. It contains information of the service
           provider network and might include allocated resources. Network
           controllers can use it to manage the Layer 2 VPN service
-          configuration in the service providers network. The YANG module can
+          configuration in the service provider's network. The YANG module can
           be consumed by a service orchestrator to request a VPN service to a
           network controller or to expose the list of active L2VPN
           services.</t>
@@ -342,27 +343,30 @@
 
           <t hangText="Service orchestrator:">Refers to a functional entity
           that interacts with the customer of an L2VPN relying upon, e.g.,
-          L2SM. The service orchestrator is responsible of the CE-PE
+          L2SM. The service orchestrator is responsible for the CE-PE
           attachment circuits, the PE selection, and requesting the activation
           of the L2VPN service to a network controller.</t>
 
           <t hangText="Service Provider Network:">Is a network able to provide
           L2VPN-related services.</t>
 
+          <t hangText="VPN service provider:">Is a service provider that
+          offers L2VPN-related services.</t>
+
           <t hangText="VPN network access:">Is an abstraction that represents
           the network interfaces that are associated to a given VPN node.
           Traffic coming from the VPN network access belongs to the VPN. The
           attachment circuits (bearers) between Customer Edges (CEs) and
-          Provider Edges (PEs) are terminated in the VPN network access.</t>
+          Provider Edges (PEs) are terminated in the VPN network access. A
+          reference to the bearer is maintained to allow keeping the link
+          between L3SM and L3NM when both models are used in a given
+          deployment.</t>
 
           <t hangText="VPN node:">Is an abstraction that represents a set of
           policies applied on a PE and that belong to a single VPN service. A
           VPN service involves one or more VPN nodes. The VPN node will
           identify the service providers node on which the VPN is
           deployed.</t>
-
-          <t hangText="VPN service provider:">Is a service provider that
-          offers L2VPN-related services.</t>
         </list></t>
     </section>
 
@@ -420,6 +424,12 @@
       functional components called "Service Orchestration", "Network
       Orchestration", and "Domain Orchestration".</t>
 
+      <t>Similar to Section 3 of <xref target="RFC8466"></xref>, CE to PE
+      attachment is achieved through a bearer with a Layer 2 connection on
+      top. The bearer refers to properties of the attachment that are below
+      Layer 2, while the connection refers to Layer 2 protocol-oriented
+      properties.</t>
+
       <t>The reader may refer to <xref target="RFC8309"></xref> for the
       distinction between the "Customer Service Model", the "Service Delivery
       Model", the "Network Configuration Model", and the "Device Configuration
@@ -464,9 +474,6 @@ l2vpn-ntw + ietf-ethernet-segment |
           +------------------------------------------------+
                               Network
 
-                         +++++++
-                         + AAA +
-                         +++++++
 
  ++++++++   Bearer    ++++++++           ++++++++      ++++++++
  + CE A + ----------- + PE A +           + PE B + ---- + CE B +
@@ -558,7 +565,7 @@ l2vpn-ntw + ietf-ethernet-segment |
       target="evpn-vpws-app"></xref> and <xref format="counter"
       target="auto-ex"></xref>.</t>
 
-      <t>As discussed in <xref target="ref"></xref>, the L2NM is meant to
+      <t>As discussed in <xref target="ref"></xref>, the L2NM is used to
       manage L2VPN services within a service provider network. The module
       provides a network view of the service. Such a view is only visible
       within the service provider and is not exposed outside (to customers,
@@ -643,23 +650,24 @@ l2vpn-ntw + ietf-ethernet-segment |
         |  +--rw backbone-src-mac?   yang:mac-address
         +--rw member* [ne-id interface-id]
            +--rw ne-id           string
-           +--rw interface-id    string         ]]></artwork>
+           +--rw interface-id    string        ]]></artwork>
         </figure></t>
 
-      <t>In reference to the structure shown in <xref
-      target="es-tree"></xref>, the following data nodes can be included:<list
-          style="hanging">
-          <t hangText="'name':">Sets a name to uniquely identify an ES with a
-          service provider network. This name is referenced in the VPN network
-          access level of the L2NM (<xref target="sna"></xref>).</t>
+      <t>The description of the data nodes depicted in <xref
+      target="es-tree"></xref> is as follows:<list style="hanging">
+          <t hangText="'name':">Sets a name to uniquely identify an ES within
+          a service provider network. This name is referenced in the VPN
+          network access level of the L2NM (<xref target="sna"></xref>).</t>
 
           <t hangText="'esi-type':">Indicates the Ethernet Segment Identifier
           (ESI) type as discussed in Section 5 of <xref
           target="RFC7432"></xref>. ESIs can be automatically assigned either
-          with or without indicating a pool from which an ESI should be taken.
-          The following types are supported: <list style="hanging">
+          with or without indicating a pool from which an ESI should be taken
+          ('esi-pool-name'). The following types are supported: <list
+              style="hanging">
               <t hangText="'esi-type-0':">The ESI is directly configured by
-              the VPN service provider.</t>
+              the VPN service provider. The configured value is provided in
+              'ethernet-segment-identifier'.</t>
 
               <t hangText="'esi-type-1':">The ESI is auto-generated from the
               IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
@@ -682,7 +690,8 @@ l2vpn-ntw + ietf-ethernet-segment |
               System (AS) number. The 'local-autonomous-system' supplied in
               <xref target="profile"></xref> can be used to auto-derive an ESI
               when this type is used.</t>
-            </list></t>
+            </list><vspace blankLines="1" />Auto-generated values can be
+          retrieved in 'auto-ethernet-segment-identifier'.</t>
 
           <t hangText="'esi-redundancy-mode':">Specifies the EVPN redundancy
           mode for a given ES. The following modes are supported:
@@ -717,7 +726,7 @@ l2vpn-ntw + ietf-ethernet-segment |
     <section anchor="design_data_model"
              title="Description of the L2NM YANG Module">
       <t>The L2NM ('ietf-l2vpn-ntw', <xref target="YANG_module"></xref>) is
-      meant to manage L2VPNs within a service provider network. In particular,
+      used to manage L2VPNs within a service provider network. In particular,
       the 'ietf-l2vpn-ntw' module can be used to create, modify, delete and
       retrieve L2VPN services in a network controller. The module is designed
       to minimize the amount of customer-related information.</t>
@@ -822,7 +831,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             <t hangText="'forwarding-profile-identifier':">A forwarding
             profile refers to the policies that apply to the forwarding of
             packets conveyed within a VPN. Such policies may consist, for
-            example, at applying Access Control Lists (ACLs).</t>
+            example, of applying Access Control Lists (ACLs).</t>
 
             <t hangText="'routing-profile-identifier':">A routing profile
             refers to a set of routing policies that will be invoked (e.g.,
@@ -934,7 +943,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             auto-discovery is enabled. If so, additional data nodes are
             included (<xref target="bgpad"></xref>).</t>
 
-            <t hangText="'signaling-type':">Indicates the signaling that is
+            <t hangText="'signaling-type': up">Indicates the signaling that is
             used for setting pseudowires. Signaling type values are taken from
             <xref target="I-D.ietf-opsawg-vpn-common"></xref>. The following
             signaling options are supported:<list style="hanging">
@@ -956,7 +965,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                 mesh of LDP-signaled Pseudowires <xref
                 target="RFC6074"></xref>.</t>
 
-                <t hangText="l2tp-signaling':">The L2NM uses L2TP-signaled
+                <t hangText="'l2tp-signaling':">The L2NM uses L2TP-signaled
                 Pseudowires as described in <xref
                 target="RFC6074"></xref>.</t>
               </list>Table 1 summarizes the allowed signaling types for each
@@ -993,8 +1002,8 @@ l2vpn-ntw + ietf-ethernet-segment |
             as a trigger to detect service anomalies. For example, a service
             that is declared at the service layer as being active but still
             inactive at the network layer is an indication that network
-            provision actions are needed to align the observed service status
-            with the expected service status.</t>
+            provisioning actions are needed to align the observed service
+            status with the expected service status.</t>
 
             <t hangText="'vpn-node':">Is an abstraction that represents a set
             of policies applied to a network node and that belong to a single
@@ -1007,7 +1016,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             as this is a network data model, the information about customers
             sites is not required in the model. Such information is rather
             relevant in the L2SM. Whether that information is included in the
-            L2NM, e.g., to populate the various 'description' data node is
+            L2NM, e.g., to populate the various 'description' data nodes is
             implementation-specific. <vspace blankLines="1" />More details are
             provided in <xref target="vpn_node"></xref>.</t>
           </list></t>
@@ -1031,7 +1040,7 @@ l2vpn-ntw + ietf-ethernet-segment |
 | vxlan-evpn | bgp-signaling (evpn-bgp)       |
 +------------+--------------------------------+
 
-    Table 1: Valid Signaling Options per VPN
+    Table 1: Signaling Options per VPN
                   Service Type]]></artwork>
           </figure></t>
       </section>
@@ -1162,9 +1171,9 @@ l2vpn-ntw + ietf-ethernet-segment |
             4094.</t>
 
             <t hangText="'ce-vlan-cos-preservation':">Controls the CE VLAN CoS
-            preservation. When set, PCP bits in the CE-VLAN tag of the egress
-            frame are identical to those of the ingress frame that yielded
-            this egress service frame.</t>
+            preservation. When set, Priority Code Point (PCP) bits in the
+            CE-VLAN tag of the egress frame are identical to those of the
+            ingress frame that yielded this egress service frame.</t>
 
             <t hangText="'control-word-negotiation':">Controls whether
             control-word negotiation is enabled (if set to true) or not (if
@@ -1275,7 +1284,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             <t hangText="'description':">Provides a textual description of the
             VPN node.</t>
 
-            <t hangText="'ne-id':">Includes a unique identifier of the network
+            <t hangText="'ne-id':">Includes an identifier of the network
             element where the VPN node is deployed.</t>
 
             <t hangText="'router-id':">Indicates a 32-bit number that is used
@@ -1315,7 +1324,7 @@ l2vpn-ntw + ietf-ethernet-segment |
           </list></t>
 
         <section anchor="bgpad" title="BGP Auto-Discovery">
-          <t>'bgp-auto-discovery' container (<xref
+          <t>The 'bgp-auto-discovery' container (<xref
           target="bgpad-tree"></xref>) includes the required information for
           the activation of BGP auto-discovery <xref
           target="RFC4761"></xref><xref target="RFC6624"></xref>.</t>
@@ -1531,7 +1540,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             to control the PW encapsulation type (Section 3 of <xref
             target="RFC6624"></xref>). The value of the
             'pw-encapsulation-type' are taken from the IANA-maintained
-            "iana-bgp-l2-encaps" module.</t>
+            "iana-bgp-l2-encaps" module (<xref target="iana-bgp"></xref>).</t>
 
             <t>For the specific case of VPLS, the VPLS Edge ID (VE ID,
             'vpls-edge-id') and a VE ID range ('vpls-edge-id-range') are
@@ -1542,7 +1551,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             target="sna"></xref>).</t>
 
             <t>For EVPN-related L2VPNs, 'service-interface-type' indicates
-            whether this is VLAN-based, VLAN bundle, or VLAN-aware bundle
+            whether this is a VLAN-based, VLAN bundle, or VLAN-aware bundle
             service interface (Section 6 of <xref target="RFC7432"></xref>).
             Moreover, a set of policies can be provided such as MAC address
             learning mode (Section 9 of <xref target="RFC7432"></xref>),
@@ -1557,15 +1566,16 @@ l2vpn-ntw + ietf-ethernet-segment |
           <section anchor="ldp" title="LDP">
             <t>The model supports the configuration of the parameters that are
             discussed in Section 6 of <xref target="RFC4762"></xref>. Such
-            parameters include a Attachment Group Identifier (AGI) (a.k.a.,
+            parameters include an Attachment Group Identifier (AGI) (a.k.a.,
             VPLS-id), a Source Attachment Individual Identifier (SAII), a list
             of peers that are associated with a Target Attachment Individual
             Identifier (TAII), a PW type, and a PW description (<xref
             target="so-ldp"></xref>). Unlike BGP, only Ethernet and Ethernet
             tagged mode are supported. The AGI, SAII, and TAII are encoded
             following the types defined in Section 3.4 of <xref
-            target="RFC4446"></xref>. <!--Med: May be move the SAII/TAII to the vpn-network-access level as this assoicates the service with the interface--><figure
-                align="right" anchor="so-ldp"
+            target="RFC4446"></xref>.</t>
+
+            <t><figure align="right" anchor="so-ldp"
                 title="Signaling Option Subtree (LDP)">
                 <artwork align="center"><![CDATA[   ...
    |  +--rw (signaling-option)?
@@ -1609,7 +1619,8 @@ l2vpn-ntw + ietf-ethernet-segment |
             PE, a PW type, an AGI, an SAII, and a list of peers that are
             associated with a TAII (<xref target="so-l2tp"></xref>). The PW
             type ('pseudowire-type') value is taken from the IANA-maintained
-            "iana-pseudowire-types" module.</t>
+            "iana-pseudowire-types" module (<xref
+            target="iana-pw"></xref>).</t>
 
             <t><figure align="center" anchor="so-l2tp"
                 title="Signaling Option Subtree (L2TP)">
@@ -1645,8 +1656,7 @@ l2vpn-ntw + ietf-ethernet-segment |
         target="vpn_network_access_tree"></xref>) represents an entry point to
         a VPN service . In other words, this container encloses the parameters
         that describe the access information for the traffic that belongs to a
-        particular L2VPN. As such, every 'vpn-network-access' MUST belong to
-        one and only one 'vpn-node'.</t>
+        particular L2VPN. </t>
 
         <t>A 'vpn-network-access' includes information such as the connection
         on which the access is defined , the specific layer 2 service
@@ -1703,7 +1713,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             <t hangText="'interface-id':">Indicates the interface on which the
             VPN network access is bound.</t>
 
-            <t hangText="' global-parameters-profile':">Provides a pointer to
+            <t hangText="'global-parameters-profile':">Provides a pointer to
             an active 'global-parameters-profile' at the VPN node level.
             Referencing an active 'global-parameters-profile' implies that all
             associated data nodes will be inherited by the VPN network access.
@@ -1766,8 +1776,8 @@ l2vpn-ntw + ietf-ethernet-segment |
           information (e.g., LACP system-id) should be provided to the
           involved nodes.</t>
 
-          <t>The L2NM inherits the 'member-link-list' structure from the L3SM
-          (including indication of OAM 802.3 ah support <xref
+          <t>The L2NM inherits the 'member-link-list' structure from the L2SM
+          (including indication of OAM 802.3ah support <xref
           target="IEEE-802-3ah"></xref>.</t>
 
           <figure align="right" anchor="connection_tree"
@@ -1802,7 +1812,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                        |  |  |     |     +--rw translate?
                        |  |  |     |             enumeration
                        |  |  |     +--rw cvlan-id?          uint16
-                       |  |  |     +--rw mode?         enumeration
+                       |  |  |     +--rw direction?    enumeration
                        |  |  +--rw priority-tagged
                        |  |  |  +--rw tag-type?   identityref
                        |  |  +--rw qinq
@@ -1824,7 +1834,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                        |     |  +--rw member-link-list
                        |     |  |  +--rw member-link* [name]
                        |     |  |     +--rw name         string
-                       |     |  |     +--rw port-speed?  uint32
+                       |     |  |     +--rw speed?       uint32
                        |     |  |     +--rw mode?   identityref
                        |     |  |     +--rw link-mtu?    uint32
                        |     |  |     +--rw oam-802.3ah-link
@@ -2007,12 +2017,18 @@ l2vpn-ntw + ietf-ethernet-segment |
 
               <t
               hangText="'svc-pe-to-ce-bandwidth' and 'svc-ce-to-pe-bandwidth':">Specify
-              the service bandwidth for the L2VPN service. It can be
-              represented using the Committed Information Rate (CIR), the
-              Excess Information Rate (EIR), or the Peak Information Rate
-              (PIR). As shown in <xref target="bwtree"></xref>, the structure
-              of service bandwidth data nodes is inherited from the L2SM <xref
-              target="RFC8466"></xref>. The following types, defined in <xref
+              the service bandwidth for the L2VPN service.
+              'svc-pe-to-ce-bandwidth' indicates the inbound bandwidth of the
+              connection (i.e., download bandwidth from the service provider
+              to the site). 'svc-ce-to-pe-bandwidth' indicates the outbound
+              bandwidth of the connection (i.e., upload bandwidth from the
+              site to the service provider). 'svc-pe-to-ce-bandwidth' and
+              'svc-ce-to-pe-bandwidth' can be represented using the Committed
+              Information Rate (CIR), the Excess Information Rate (EIR), or
+              the Peak Information Rate (PIR). As shown in <xref
+              target="bwtree"></xref>, the structure of service bandwidth data
+              nodes is inherited from the L2SM <xref target="RFC8466"></xref>.
+              The following types, defined in <xref
               target="I-D.ietf-opsawg-vpn-common"></xref>, can be used to
               indicate the bandwidth type: <list style="hanging">
                   <t hangText="'bw-per-cos':">The bandwidth is per Class of
@@ -2026,14 +2042,8 @@ l2vpn-ntw + ietf-ethernet-segment |
 
                   <t hangText="'bw-per-service':">The bandwidth is per L2VPN
                   service.</t>
-                </list><vspace blankLines="1" />'svc-pe-to-ce-bandwidth'
-              indicates the inbound bandwidth of the connection (i.e.,
-              download bandwidth from the service provider to the site).
-              <vspace blankLines="1" />'svc-ce-to-pe-bandwidth' indicates the
-              outbound bandwidth of the connection (i.e., upload bandwidth
-              from the site to the service provider).<vspace
-              blankLines="1" /><figure align="center" anchor="bwtree"
-                  title="Service Bandwidth Subtree">
+                </list><vspace blankLines="1" /><figure align="center"
+                  anchor="bwtree" title="Service Bandwidth Subtree">
                   <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw svc-pe-to-ce-bandwidth
@@ -2166,8 +2176,7 @@ l2vpn-ntw + ietf-ethernet-segment |
       <t></t>
 
       <section anchor="iana-bgp" title="IANA BGP Layer 2 Encapsulation Types">
-        <t>The "iana-bgp-l2-encaps" YANG module (<xref
-        target="iana-bgp"></xref>) is designed to echo the registry available
+        <t>The "iana-bgp-l2-encaps" YANG module echoes the registry available
         at <xref target="IANA-BGP-L2"></xref>. <xref target="bet"></xref>
         lists the initial values included in the "iana-bgp-l2-encaps" YANG
         module.</t>
@@ -2447,9 +2456,8 @@ module iana-bgp-l2-encaps {
 
       <section anchor="iana-pw" title="IANA Encapsulation Types">
         <t>The initial version of the "iana-pseudowire-types" YANG module
-        (<xref target="iana-pw"></xref>) is designed to echo the registry
-        available at <xref target="IANA-PW-Types"></xref>. <xref
-        target="pwt"></xref> lists the initial values included in the
+        echoes the registry available at <xref target="IANA-PW-Types"></xref>.
+        <xref target="pwt"></xref> lists the initial values included in the
         "iana-bgp-l2-encaps" YANG module.</t>
 
         <t><figure align="center">
@@ -3147,8 +3155,8 @@ module ietf-ethernet-segment {
         leaf ne-id {
           type string;
           description
-            "Unique identifier of the network element where the ES
-             is configured with a service provider network.";
+            "An identifier of the network element where the ES
+             is configured within a service provider network.";
         }
         leaf interface-id {
           type string;
@@ -3687,11 +3695,11 @@ module ietf-l2vpn-ntw {
     leaf ce-vlan-preservation {
       type boolean;
       description
-        "Preserve the CE-VLAN ID from ingress to egress,i.e.,
-         CE-VLAN tag of the egress frame are identical to
-         those of the ingress frame that yielded this egress
+        "Preserve the CE-VLAN ID from ingress to egress, i.e.,
+         CE-VLAN tag of the egress frame is identical to
+         that of the ingress frame that yielded this egress
          service frame. If All-to-One bundling within a site
-         is Enabled, then preservation applies to all Ingress
+         is enabled, then preservation applies to all Ingress
          service frames. If All-to-One bundling is disabled,
          then preservation applies to tagged Ingress service
          frames having CE-VLAN ID 1 through 4094.";
@@ -3898,7 +3906,10 @@ module ietf-l2vpn-ntw {
             leaf ne-id {
               type string;
               description
-                "Indicates the node's IP address.";
+                "An identifier of the network element where
+                 the VPN node is deployed. This identifier
+                 uniquely identifies the network element within
+                 an administrative domain."
             }
             leaf role {
               type identityref {
@@ -4399,10 +4410,9 @@ module ietf-l2vpn-ntw {
                       leaf pw-description {
                         type string;
                         description
-                          "Includes an interface description used to
-                           send a human-readable administrative
-                           string describing the interface to the
-                           remote.";
+                          "Includes a human-readable description of 
+                           the interface. This may be used when 
+                           communicating with a remote peer."
                         reference
                           "RFC 4762: Virtual Private LAN Service (VPLS)
                                      Using Label Distribution Protocol
@@ -4806,8 +4816,10 @@ module ietf-l2vpn-ntw {
                             description
                               "Member link name.";
                           }
-                          leaf port-speed {
+                          leaf speed {
                             type uint32;
+                            units "mbps";
+                            default "10";
                             description
                               "Port speed.";
                           }
@@ -4826,11 +4838,11 @@ module ietf-l2vpn-ntw {
                           container oam-802.3ah-link {
                             if-feature "oam-3ah";
                             description
-                              "Container for oam 802.3 ah link.";
+                              "Container for oam 802.3ah link.";
                             leaf enable {
                               type boolean;
                               description
-                                "Indicates support of OAM 802.3 ah
+                                "Indicates support of OAM 802.3ah
                                  link.";
                             }
                           }
@@ -4875,9 +4887,7 @@ module ietf-l2vpn-ntw {
                         leaf ce-id {
                           type uint16;
                           description
-                            "The PE must know the set of virtual
-                             circuits connecting it to the CE and a
-                             CE ID identifying the CE within the VPN.";
+                            "Identifies the CE within the VPN.";
                           reference
                             "RFC 6624: Layer 2 Virtual Private Networks
                                        Using BGP for Auto-Discovery and
@@ -4939,7 +4949,7 @@ module ietf-l2vpn-ntw {
                              (VSI)";
                           reference
                             "RFC 8214: Virtual Private Wire Service
-                                       in Ethernet VPN";
+                                       Support in Ethernet VPN";
                           choice local-vsi-choice {
                             description
                               "Choices for assigning local VSI.";
@@ -5610,10 +5620,10 @@ module ietf-l2vpn-ntw {
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>The YANG modules specified in this document defines schema for data
-      that is designed to be accessed via network management protocols such as
-      NETCONF <xref target="RFC6241"></xref> or RESTCONF <xref
-      target="RFC8040"></xref> . The lowest NETCONF layer is the secure
+      <t>The YANG modules specified in this document defines schemas for data
+      that are designed to be accessed via network management protocols such
+      as NETCONF <xref target="RFC6241"></xref> or RESTCONF <xref
+      target="RFC8040"></xref>. The lowest NETCONF layer is the secure
       transport layer, and the mandatory-to-implement secure transport is
       Secure Shell (SSH) <xref target="RFC6242"></xref>. The lowest RESTCONF
       layer is HTTPS, and the mandatory-to-implement secure transport is TLS
@@ -6104,6 +6114,21 @@ module ietf-l2vpn-ntw {
 
         <seriesInfo name="IEEE" value="Std 802.1Q-2018" />
       </reference>
+
+      <reference anchor="MFA">
+        <front>
+          <title>The Use of Virtual Trunks for ATM/MPLS Control Plane
+          Interworking Specification</title>
+
+          <author fullname="MFA Forum">
+            <organization></organization>
+          </author>
+
+          <date day="" month="February" year="2006" />
+        </front>
+
+        <seriesInfo name="MFA Forum" value="MFA Forum 9.0.0" />
+      </reference>
     </references>
 
     <section anchor="examples" title="Examples">
@@ -6128,19 +6153,19 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="vpls-ex" title="An Example of VPLS">
             <artwork><![CDATA[ 
                    
-                   +-----+      +--------------+   +-----+    
-      +----+       | PE1 |======|              |===| PE3 |       +----+
-      | CE1+-------+     |      |              |   |     +-------+ CE3|
-      +----+       +-----+      |              |   +-----+       +----+
-                                |     Core     |                 
-      +----+       +-----+      |              |   +-----+       +----+
-      |CE2 +-------+     |      |              |   |     +-------+ CE4|
-      +----+       | PE2 |======|              |===| PE4 |       +----+
-                   +-----+      +--------------+   +-----+          
+                   +-----+   +--------------+   +-----+    
+      +----+       | PE1 |===|              |===| PE3 |       +----+
+      | CE1+-------+     |   |              |   |     +-------+ CE3|
+      +----+       +-----+   |              |   +-----+       +----+
+                             |     Core     |                 
+      +----+       +-----+   |              |   +-----+       +----+
+      |CE2 +-------+     |   |              |   |     +-------+ CE4|
+      +----+       | PE2 |===|              |===| PE4 |       +----+
+                   +-----+   +--------------+   +-----+          
  ]]></artwork>
           </figure><xref target="l2nm-vpls"></xref> show an example of a
-        message body used to configured a VPLS instance using the L2NM. In
-        this example, BGP is used for both auto-discovery and signaling. The
+        message body used to configure a VPLS instance using the L2NM. In this
+        example, BGP is used for both auto-discovery and signaling. The
         'signaling-type' data node is set to 'vpn-common:bgp-signaling'.</t>
 
         <t><figure align="center" anchor="l2nm-vpls"
@@ -6381,11 +6406,11 @@ module ietf-l2vpn-ntw {
 
         <t><figure align="center" anchor="vpws-ex" title="An Example of VPLS">
             <artwork><![CDATA[                   
-                   +-----+      +--------------+   +-----+    
-      +----+       | PE1 |======|              |===| PE2 |       +----+
-      | CE1+-------+     |      |     Core     |   |     +-------+ CE2|
-      +----+       +-----+      +--------------+   +-----+       +----+
-             site1                                          site2 ]]></artwork>
+                   +-----+   +--------------+   +-----+    
+      +----+       | PE1 |===|              |===| PE2 |       +----+
+      | CE1+-------+     |   |     Core     |   |     +-------+ CE2|
+      +----+       +-----+   +--------------+   +-----+       +----+
+             site1                                      site2 ]]></artwork>
           </figure></t>
 
         <t><figure align="center" anchor="l2nm-vpws-ex"
@@ -6533,14 +6558,14 @@ module ietf-l2vpn-ntw {
         <t><figure align="center" anchor="vpls-ldp-ex"
             title="An Example of VPLS topology ">
             <artwork><![CDATA[                
-                  +-----------  VPLS "1543" ------------+
+                  +----------  VPLS "1543" ----------+
                                                            
-                  +-----+      +--------------+   +-----+    
-      +----+      | PE1 |======|              |===| PE2 |       +----+
-      | CE1 +-----+"450"|      |     MPLS     |   |"451"+-------+ CE2|
-      +----+      +-----+      |              |   +-----+       +----+
-                               |     Core     |                 
-                               +--------------+           
+                  +-----+   +--------------+   +-----+    
+      +----+      | PE1 |===|              |===| PE2 |       +----+
+      | CE1 +-----+"450"|   |     MPLS     |   |"451"+-------+ CE2|
+      +----+      +-----+   |              |   +-----+       +----+
+                            |     Core     |                 
+                            +--------------+           
         ]]></artwork>
           </figure></t>
 
@@ -6756,7 +6781,7 @@ service",
       </section>
 
       <section anchor="evpn-vpws-app" title="VPWS-EVPN Service Instance">
-        <t><xref target="vpws-evpn-ex"></xref> depictes a sample architecture
+        <t><xref target="vpws-evpn-ex"></xref> depicts a sample architecture
         to offer VPWS-EVPN service between CE1 and CE2. Both CEs are
         multi-homed. BGP sessions are maintained between these PEs as per
         <xref target="RFC8214"></xref>. In this EVPN instance, an All-Active
@@ -6764,20 +6789,20 @@ service",
 
         <t><figure align="center" anchor="vpws-evpn-ex"
             title="An Example of VPWS-EVPN">
-            <artwork><![CDATA[                   |<--------- EVPN Instance ----------->|   
-                   |                                     |  
-             |     V                                     V  |
-             |     +-----+      +--------------+   +-----+  |
-      +----+ |     | PE1 |======|              |===| PE3 |  |    +----+
-      |    +-------+     |      |              |   |     +-------+    |
-      |    | |     +-----+      |              |   +-----+  |    |    |
-      | CE1| |                  |     Core     |            |    |CE2 |
-      |    | |     +-----+      |              |   +-----+  |    |    |
-      |    +-------+     |      |              |   |     +-------+    |
-      +----+ |     | PE2 |======|              |===| PE4 |  |    +----+
-           ^  ESI1 +-----+      +--------------+   +-----+  ESI2    ^
-           |                                                        |
-           |<---------------- Emulated Service -------------------->|]]></artwork>
+            <artwork><![CDATA[                   |<-------- EVPN Instance --------->|   
+                   |                                  |  
+             |     V                                  V  |
+             |     +-----+   +--------------+   +-----+  |
+      +----+ |     | PE1 |===|              |===| PE3 |  |    +----+
+      |    +-------+     |   |              |   |     +-------+    |
+      |    | |     +-----+   |              |   +-----+  |    |    |
+      | CE1| |               |     Core     |            |    |CE2 |
+      |    | |     +-----+   |              |   +-----+  |    |    |
+      |    +-------+     |   |              |   |     +-------+    |
+      +----+ |     | PE2 |===|              |===| PE4 |  |    +----+
+           ^  ESI1 +-----+   +--------------+   +-----+  ESI2 ^
+           |                                                  |
+           |<-------------- Emulated Service ---------------->|]]></artwork>
           </figure></t>
 
         <t>Let's first suppose that the following ES was created (<xref
@@ -7218,7 +7243,7 @@ service",
 ]]></artwork>
           </figure>In order to tag one of these VPN network accesses as
         "primary" and the other one as "secondary", <xref target="p2"></xref>
-        shows an excerpt of the corresponding L2NM configuration. In such as
+        shows an excerpt of the corresponding L2NM configuration. In such a
         configuration, both accesses are bound to the same "group-id" and the
         "precedence" data node set as function of the intended role of each
         access (primary or secondary).</t>
@@ -7358,7 +7383,7 @@ service",
         Packets
 0x001D  cRTP Transport Header-compressed  [RFC2508][RFC4901]
         Packets
-0x001E  ATM VP Virtual Trunk 
+0x001E  ATM VP Virtual Trunk              [MFA]
 0x001F  FC Port Mode                      [RFC6307]
 0x7FFF  Wildcard                          [RFC4863]]]></artwork>
         </figure></t>
