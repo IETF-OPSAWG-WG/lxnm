@@ -137,25 +137,35 @@ module ietf-l2vpn-ntw {
 
   identity color-type {
     description
-      "Identity of color types.";
+      "Identity of color types. A type is assigned 
+       to a service frame to identify its QoS
+       profile conformance.";
   }
 
   identity green {
     base color-type;
     description
-      "'green' color type.";
+      "'green' color type.  A service frame is 
+       'green' if it is conformant with the 
+       committed rate of the bandwidth profile.";
   }
 
   identity yellow {
     base color-type;
     description
-      "'yellow' color type.";
+      "'yellow' color type. A service frame is 
+       'yellow' if it exceeds the committed rate
+       but is conformant with the excess rate
+       of the bandwidth profile."; 
   }
 
   identity red {
     base color-type;
     description
-      "'red' color type.";
+      "'red' color type. A service famre is
+       'red' if it is not conformant with both
+       the committed and excess rates of the
+       bandwidth profile."; 
   }
 
   identity t-ldp-pw-type {
@@ -362,6 +372,7 @@ module ietf-l2vpn-ntw {
             "MEP is down.";
         }
       }
+      default "up";
       description
         "MEP up/down.";
     }
@@ -399,7 +410,7 @@ module ietf-l2vpn-ntw {
 
   grouping y-1731 {
     description
-      "Grouping for y.1731";
+      "Grouping for Y-1731";
     reference
       "ITU-T Y-1731:  Operations, administration and maintenance
                       (OAM) functions and mechanisms for
@@ -407,7 +418,7 @@ module ietf-l2vpn-ntw {
     list y-1731 {
       key "maid";
       description
-        "List for y-1731.";
+        "List of configured Y-1731 instances.";
       leaf maid {
         type string;
         description
@@ -422,6 +433,7 @@ module ietf-l2vpn-ntw {
         type identityref {
           base pm-type;
         }
+        default "delay";
         description
           "Performance monitor types.";
       }
@@ -433,6 +445,7 @@ module ietf-l2vpn-ntw {
       leaf message-period {
         type uint32;
         units "milliseconds";
+        default "10000";
         description
           "Defines the interval between OAM messages.";
       }
@@ -449,11 +462,13 @@ module ietf-l2vpn-ntw {
       }
       leaf loss-measurement {
         type boolean;
+        default "false";
         description
           "Controls whether loss measurement is enabled/disabled.";
       }
       leaf synthethic-loss-measurement {
         type boolean;
+        default "false";
         description
           "Indicates whether synthetic loss measurement is enabled.";
       }
@@ -462,11 +477,13 @@ module ietf-l2vpn-ntw {
           "Container for delay measurement";
         leaf enable-dm {
           type boolean;
+          default "false";
           description
             "Controls whether delay measurement is enabled/disabled.";
         }
         leaf two-way {
           type boolean;
+          default "false";
           description
             "Whether delay measurement is two-way ('true') of one-
              way ('false').";
@@ -489,13 +506,14 @@ module ietf-l2vpn-ntw {
               "On-demand mode.";
           }
         }
+        default "on-demand";
         description
           "Specifies the session type.";
       }
     }
   }
 
-  grouping global-parameters-profile {
+  grouping parameters-profile {
     description
       "Container for per-service parameters.";
     leaf local-autonomous-system {
@@ -513,12 +531,12 @@ module ietf-l2vpn-ntw {
     leaf ce-vlan-preservation {
       type boolean;
       description
-        "Preserve the CE-VLAN ID from ingress to egress,i.e.,
-         CE-VLAN tag of the egress frame are identical to
-         those of the ingress frame that yielded this egress
-         service frame. If All-to-One bundling within a site
-         is Enabled, then preservation applies to all Ingress
-         service frames. If All-to-One bundling is disabled,
+        "Preserve the CE-VLAN ID from ingress to egress, i.e.,
+         CE-VLAN tag of the egress frame is identical to
+         that of the ingress frame that yielded this egress
+         service frame. If all-to-one bundling within a site
+         is enabled, then preservation applies to all Ingress
+         service frames. If all-to-one bundling is disabled,
          then preservation applies to tagged Ingress service
          frames having CE-VLAN ID 1 through 4094.";
     }
@@ -545,6 +563,7 @@ module ietf-l2vpn-ntw {
           "Container of MAC-Addr limit configuration.";
         leaf mac-num-limit {
           type uint16;
+          default "2";
           description
             "Maximum number of MAC addresses learned from
              the customer for a single service instance.";
@@ -552,6 +571,7 @@ module ietf-l2vpn-ntw {
         leaf time-interval {
           type uint32;
           units "milliseconds";
+          default "300";
           description
             "The aging time of the mac address.";
         }
@@ -559,6 +579,7 @@ module ietf-l2vpn-ntw {
           type identityref {
             base mac-action;
           }
+          default "warning";
           description
             "Specifies the action when the upper limit is
              exceeded: drop the packet, flood the
@@ -596,6 +617,7 @@ module ietf-l2vpn-ntw {
           type identityref {
             base loop-prevention-type;
           }
+          default "trap";
           description
             "Protection type.";
         }
@@ -695,7 +717,7 @@ module ietf-l2vpn-ntw {
             }
             uses vpn-common:route-distinguisher;
             uses vpn-common:vpn-route-targets;
-            uses global-parameters-profile;
+            uses parameters-profile;
           }
         }
         container underlay-transport {
@@ -724,7 +746,10 @@ module ietf-l2vpn-ntw {
             leaf ne-id {
               type string;
               description
-                "Indicates the node's IP address.";
+                "An identifier of the network element where
+                 the VPN node is deployed. This identifier
+                 uniquely identifies the network element within
+                 an administrative domain."
             }
             leaf role {
               type identityref {
@@ -758,7 +783,7 @@ module ietf-l2vpn-ntw {
                     "Points to a global profile defined at the
                      service level.";
                 }
-                uses global-parameters-profile;
+                uses parameters-profile;
               }
             }
             uses vpn-common:service-status;
@@ -1225,10 +1250,9 @@ module ietf-l2vpn-ntw {
                       leaf pw-description {
                         type string;
                         description
-                          "Includes an interface description used to
-                           send a human-readable administrative
-                           string describing the interface to the
-                           remote.";
+                          "Includes a human-readable description of 
+                           the interface. This may be used when 
+                           communicating with a remote peer."
                         reference
                           "RFC 4762: Virtual Private LAN Service (VPLS)
                                      Using Label Distribution Protocol
@@ -1441,15 +1465,12 @@ module ietf-l2vpn-ntw {
                               }
                             }
                             description
-                              "Standard tag removal.
-                               The number of 802.1Q VLAN tags to pop.";
+                              "Standard tag removal.";
                           }
                           leaf push {
                             type empty;
                             description
-                              "Standard tag Push.
-                               The number of 802.1Q tags to push on the
-                               front of the frame.";
+                              "Standard tag Push.";
                           }
                           leaf translate {
                             type enumeration {
@@ -1487,7 +1508,7 @@ module ietf-l2vpn-ntw {
                           when 'not(../pop)';
                           type uint16;
                           description
-                            "Push/Translate vlan tags";
+                            "Push (or Translate) vlan tags";
                         }
                         leaf direction {
                           type enumeration {
@@ -1632,8 +1653,10 @@ module ietf-l2vpn-ntw {
                             description
                               "Member link name.";
                           }
-                          leaf port-speed {
+                          leaf speed {
                             type uint32;
+                            units "mbps";
+                            default "10";
                             description
                               "Port speed.";
                           }
@@ -1652,24 +1675,27 @@ module ietf-l2vpn-ntw {
                           container oam-802.3ah-link {
                             if-feature "oam-3ah";
                             description
-                              "Container for oam 802.3 ah link.";
+                              "Container for oam 802.3ah link.";
                             leaf enable {
                               type boolean;
+                              default "false";
                               description
-                                "Indicates support of OAM 802.3 ah
+                                "Indicates support of OAM 802.3ah
                                  link.";
                             }
                           }
                         }
                       }
                       leaf flow-control {
-                        type string;
+                        type boolean;
+                        default "false";
                         description
-                          "Indicates whtehr flow control is
+                          "Indicates whether flow control is
                            supported.";
                       }
                       leaf lldp {
                         type boolean;
+                        default "false";
                         description
                           "Indicates whether Link Layer Discovery
                            Protocol (LLDP) is supported.";
@@ -1701,9 +1727,7 @@ module ietf-l2vpn-ntw {
                         leaf ce-id {
                           type uint16;
                           description
-                            "The PE must know the set of virtual
-                             circuits connecting it to the CE and a
-                             CE ID identifying the CE within the VPN.";
+                            "Identifies the CE within the VPN.";
                           reference
                             "RFC 6624: Layer 2 Virtual Private Networks
                                        Using BGP for Auto-Discovery and
@@ -2334,6 +2358,7 @@ module ietf-l2vpn-ntw {
                         type identityref {
                           base loop-prevention-type;
                         }
+                        default "trap";
                         description
                           "Protection type";
                       }
@@ -2343,6 +2368,7 @@ module ietf-l2vpn-ntw {
                         "Container of MAC-Addr limit configurations";
                       leaf mac-num-limit {
                         type uint16;
+                        default "2";
                         description
                           "maximum number of MAC addresses learned from
                            the subscriber for a single service
@@ -2351,6 +2377,7 @@ module ietf-l2vpn-ntw {
                       leaf time-interval {
                         type uint32;
                         units "milliseconds";
+                        default "300";
                         description
                           "The aging time of the mac address.";
                       }
@@ -2358,6 +2385,7 @@ module ietf-l2vpn-ntw {
                         type identityref {
                           base mac-action;
                         }
+                        default "warning";
                         description
                           "specify the action when the upper limit is
                            exceeded: drop the packet, flood the
@@ -2400,11 +2428,13 @@ module ietf-l2vpn-ntw {
                       }
                       leaf vlan-id {
                         type uint32;
+                        mandatory true;
                         description
                           "The VLAN ID of the Multicast group.";
                       }
                       leaf mac-gp-address {
                         type yang:mac-address;
+                        mandatory true;
                         description
                           "The MAC address of the Multicast group.";
                       }
@@ -2417,6 +2447,7 @@ module ietf-l2vpn-ntw {
                     }
                     leaf bum-overall-rate {
                       type uint32;
+                      units "bps";
                       description
                         "Overall rate for BUM.";
                     }
