@@ -168,7 +168,7 @@
       </address>
     </author>
 
-    <date day="16" month="November" year="2021" />
+    <date day="22" month="November" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -297,12 +297,6 @@
     </section>
 
     <section anchor="terminology" title="Terminology">
-      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-      "OPTIONAL" in this document are to be interpreted as described in BCP 14
-      <xref target="RFC2119"></xref> <xref target="RFC8174"></xref> when, and
-      only when, they appear in all capitals, as shown here.</t>
-
       <t>This document assumes that the reader is familiar with <xref
       target="RFC6241"></xref>, <xref target="RFC7950"></xref>, <xref
       target="RFC8466"></xref>, and <xref target="RFC8309"></xref>. This
@@ -474,12 +468,11 @@ l2vpn-ntw + ietf-ethernet-segment |
           +------------------------------------------------+
                               Network
 
+ +------+  Bearer    +------+      +------+         +------+
+ | CE A + ---------- + PE A +      + PE B + ------- + CE B |
+ +------+ Connection +------+      +------+         +------+
 
- ++++++++   Bearer    ++++++++           ++++++++      ++++++++
- + CE A + ----------- + PE A +           + PE B + ---- + CE B +
- ++++++++  Connection ++++++++           ++++++++      ++++++++
-
-            Site A                               Site B
+            Site A                           Site B
             ]]></artwork>
       </figure>
 
@@ -1164,9 +1157,9 @@ l2vpn-ntw + ietf-ethernet-segment |
             <t hangText="'ce-vlan-preservation':">Is set to preserve the
             CE-VLAN ID from ingress to egress, i.e., CE-VLAN tag of the egress
             frame are identical to those of the ingress frame that yielded
-            this egress service frame. If All-to-One bundling within a site is
+            this egress service frame. If all-to-one bundling within a site is
             enabled, then preservation applies to all ingress service frames.
-            If All-to-One bundling is disabled, then preservation applies to
+            If all-to-one bundling is disabled, then preservation applies to
             tagged Ingress service frames having CE-VLAN ID 1 through
             4094.</t>
 
@@ -1302,14 +1295,17 @@ l2vpn-ntw + ietf-ethernet-segment |
             'active-global-parameters-profiles' overrides the ones defined in
             the VPN service level.</t>
 
-            <t hangText="'signaling-option':">See <xref
-            target="signaling_options"></xref>.</t>
-
             <t hangText="'status':">Tracks the status of a node involved in a
             VPN service. Both operational and administrative status are
             maintained. A mismatch between the administrative status vs. the
             operational status can be used as a trigger to detect
             anomalies.</t>
+
+            <t hangText="'bgp-auto-discovery':">See <xref
+            target="bgpad"></xref>.</t>
+
+            <t hangText="'signaling-option':">See <xref
+            target="signaling_options"></xref>.</t>
 
             <t hangText="'vpn-network-accesses':">Represents the point to
             which sites are connected. <vspace blankLines="1" />Note that,
@@ -1376,14 +1372,14 @@ l2vpn-ntw + ietf-ethernet-segment |
                  |  |  +--:(no-rd)
                  |  |     +--rw no-rd?               empty
                  |  +--rw vpn-target* [id]
-                 |  |  +--rw id                  uint8
+                 |  |  +--rw id                   uint8
                  |  |  +--rw route-targets* [route-target]
                  |  |  |  +--rw route-target    rt-types:route-target
                  |  |  +--rw route-target-type
                  |  |          rt-types:route-target-type
                  |  +--rw vpn-policies
                  |     +--rw import-policy?   string
-                 |     +--rw export-policy?   string
+                 |     +--rw export-policy?   string    
                  +--rw signaling-option
                  |  ...
                  +--rw vpn-network-accesses
@@ -1656,7 +1652,7 @@ l2vpn-ntw + ietf-ethernet-segment |
         target="vpn_network_access_tree"></xref>) represents an entry point to
         a VPN service . In other words, this container encloses the parameters
         that describe the access information for the traffic that belongs to a
-        particular L2VPN. </t>
+        particular L2VPN.</t>
 
         <t>A 'vpn-network-access' includes information such as the connection
         on which the access is defined , the specific layer 2 service
@@ -1698,7 +1694,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                        +--rw ethernet-service-oam
                        |  ...
                        +--rw service
-                          ...                      ]]></artwork>
+                          ...]]></artwork>
           </figure></t>
 
         <t>The VPN network access is comprised of:</t>
@@ -1840,7 +1836,7 @@ l2vpn-ntw + ietf-ethernet-segment |
                        |     |  |     +--rw oam-802.3ah-link
                        |     |  |        |    {oam-3ah}?
                        |     |  |        +--rw enable?   boolean
-                       |     |  +--rw flow-control?       string
+                       |     |  +--rw flow-control?       boolean
                        |     |  +--rw lldp?               boolean
                        |     +--rw split-horizon
                        |        +--rw group-name?   string
@@ -1901,7 +1897,7 @@ l2vpn-ntw + ietf-ethernet-segment |
             |                       |  +--:(full-auto)
             |                       |     +--rw auto?       empty
             |                       +--ro auto-remote-vsi?  uint32
-                       ...
+            ...
 ]]></artwork>
             </figure></t>
         </section>
@@ -2078,8 +2074,9 @@ l2vpn-ntw + ietf-ethernet-segment |
               target="qos-tree"></xref>). The QoS classification can be based
               on many criteria such as source MAC address, destination MAC
               address, etc. See also Section 5.10.2.1 of <xref
-              target="RFC8466"></xref>.<figure align="center"
-                  anchor="qos-tree" title="QoS Subtree">
+              target="RFC8466"></xref> for more discussion of QoS
+              classification including the use of color types.<figure
+                  align="center" anchor="qos-tree" title="QoS Subtree">
                   <artwork align="center"><![CDATA[                       +--rw service
                           ...
                           +--rw qos {vpn-common:qos}?
@@ -2161,8 +2158,8 @@ l2vpn-ntw + ietf-ethernet-segment |
                              |       enumeration
                              +--rw multicast-gp-address-mapping* [id]
                              |  +--rw id                 uint16
-                             |  +--rw vlan-id?           uint32
-                             |  +--rw mac-gp-address?
+                             |  +--rw vlan-id            uint32
+                             |  +--rw mac-gp-address
                              |  |       yang:mac-address
                              |  +--rw port-lag-number?   uint32
                              +--rw bum-overall-rate?     uint32         ]]></artwork>
@@ -2177,9 +2174,9 @@ l2vpn-ntw + ietf-ethernet-segment |
 
       <section anchor="iana-bgp" title="IANA BGP Layer 2 Encapsulation Types">
         <t>The "iana-bgp-l2-encaps" YANG module echoes the registry available
-        at <xref target="IANA-BGP-L2"></xref>. <xref target="bet"></xref>
-        lists the initial values included in the "iana-bgp-l2-encaps" YANG
-        module.</t>
+        at <xref target="IANA-BGP-L2"></xref>. This module references
+        [RFC3032], [RFC4446], [RFC4448], [RFC4553], [RFC4618], [RFC4619],
+        [RFC4717], [RFC4761], [RFC4816], [RFC4842], and [RFC5086].</t>
 
         <t><figure align="center">
             <artwork><![CDATA[<CODE BEGINS>file "iana-bgp-l2-encaps@2021-07-05.yang"
@@ -2423,7 +2420,7 @@ module iana-bgp-l2-encaps {
   identity cas {
     base bgp-l2-encaps-type;
     description
-      "DS1 (ESF) Nx64kbit/s with CAS using Structure-aware.";
+      "E1 Nx64kbit/s with CAS using Structure-aware.";
     reference
       "RFC 5086: Structure-Aware Time Division Multiplexed (TDM)
                  Circuit Emulation Service over Packet Switched
@@ -2457,8 +2454,10 @@ module iana-bgp-l2-encaps {
       <section anchor="iana-pw" title="IANA Encapsulation Types">
         <t>The initial version of the "iana-pseudowire-types" YANG module
         echoes the registry available at <xref target="IANA-PW-Types"></xref>.
-        <xref target="pwt"></xref> lists the initial values included in the
-        "iana-bgp-l2-encaps" YANG module.</t>
+        This module references [MFA], [RFC2507], [RFC2508], [RFC3032],
+        [RFC3545], [RFC4448], [RFC4553], [RFC4618], [RFC4619], [RFC4717],
+        [RFC4842], [RFC4863], [RFC4901], [RFC5086], [RFC5087], [RFC5143],
+        [RFC5795], and [RFC6307].</t>
 
         <t><figure align="center">
             <artwork><![CDATA[<CODE BEGINS>file "iana-pseudowire-types@2021-07-05.yang"
@@ -2510,7 +2509,7 @@ module iana-pseudowire-types {
   identity frame-relay {
     base iana-pw-types;
     description
-      "Frame Relay.";
+      "Frame Relay DLCI (Martini Mode).";
     reference
       "RFC 4619: Encapsulation Methods for Transport of Frame Relay 
                  over Multiprotocol Label Switching (MPLS) 
@@ -2521,6 +2520,10 @@ module iana-pseudowire-types {
     base iana-pw-types;
     description
       "ATM AAL5 SDU VCC transport.";
+    reference
+      "RFC 4717: Encapsulation Methods for Transport of
+                 Asynchronous Transfer Mode (ATM) over MPLS 
+                 Networks";
   }
 
   identity atm-cell {
@@ -2554,7 +2557,7 @@ module iana-pseudowire-types {
   identity hdlc {
     base iana-pw-types;
     description
-      "Cisco HDLC.";
+      "HDLC.";
     reference
       "RFC 4618: Encapsulation Methods for Transport of
                  PPP/High-Level Data Link Control (HDLC)
@@ -2787,6 +2790,9 @@ module iana-pseudowire-types {
     base iana-pw-types;
     description
       "ATM VP Virtual Trunk.";
+    reference
+      "MFA Forum: The Use of Virtual Trunks for ATM/MPLS 
+                  Control Plane Interworking Specification";
   }
 
   identity fc-port-mode {
@@ -3556,6 +3562,7 @@ module ietf-l2vpn-ntw {
             "MEP is down.";
         }
       }
+      default "up";
       description
         "MEP up/down.";
     }
@@ -3593,7 +3600,7 @@ module ietf-l2vpn-ntw {
 
   grouping y-1731 {
     description
-      "Grouping for y.1731";
+      "Grouping for Y-1731";
     reference
       "ITU-T Y-1731:  Operations, administration and maintenance
                       (OAM) functions and mechanisms for
@@ -3601,7 +3608,7 @@ module ietf-l2vpn-ntw {
     list y-1731 {
       key "maid";
       description
-        "List for y-1731.";
+        "List of configured Y-1731 instances.";
       leaf maid {
         type string;
         description
@@ -3616,6 +3623,7 @@ module ietf-l2vpn-ntw {
         type identityref {
           base pm-type;
         }
+        default "delay";
         description
           "Performance monitor types.";
       }
@@ -3688,13 +3696,14 @@ module ietf-l2vpn-ntw {
               "On-demand mode.";
           }
         }
+        default "on-demand";
         description
           "Specifies the session type.";
       }
     }
   }
 
-  grouping global-parameters-profile {
+  grouping parameters-profile {
     description
       "Container for per-service parameters.";
     leaf local-autonomous-system {
@@ -3715,9 +3724,9 @@ module ietf-l2vpn-ntw {
         "Preserve the CE-VLAN ID from ingress to egress, i.e.,
          CE-VLAN tag of the egress frame is identical to
          that of the ingress frame that yielded this egress
-         service frame. If All-to-One bundling within a site
+         service frame. If all-to-one bundling within a site
          is enabled, then preservation applies to all Ingress
-         service frames. If All-to-One bundling is disabled,
+         service frames. If all-to-one bundling is disabled,
          then preservation applies to tagged Ingress service
          frames having CE-VLAN ID 1 through 4094.";
     }
@@ -3798,6 +3807,7 @@ module ietf-l2vpn-ntw {
           type identityref {
             base loop-prevention-type;
           }
+          default "trap";
           description
             "Protection type.";
         }
@@ -3897,7 +3907,7 @@ module ietf-l2vpn-ntw {
             }
             uses vpn-common:route-distinguisher;
             uses vpn-common:vpn-route-targets;
-            uses global-parameters-profile;
+            uses parameters-profile;
           }
         }
         container underlay-transport {
@@ -3929,7 +3939,7 @@ module ietf-l2vpn-ntw {
                 "An identifier of the network element where
                  the VPN node is deployed. This identifier
                  uniquely identifies the network element within
-                 an administrative domain."
+                 an administrative domain.";
             }
             leaf role {
               type identityref {
@@ -3963,7 +3973,7 @@ module ietf-l2vpn-ntw {
                     "Points to a global profile defined at the
                      service level.";
                 }
-                uses global-parameters-profile;
+                uses parameters-profile;
               }
             }
             uses vpn-common:service-status;
@@ -4432,7 +4442,7 @@ module ietf-l2vpn-ntw {
                         description
                           "Includes a human-readable description of 
                            the interface. This may be used when 
-                           communicating with a remote peer."
+                           communicating with a remote peer.";
                         reference
                           "RFC 4762: Virtual Private LAN Service (VPLS)
                                      Using Label Distribution Protocol
@@ -4645,15 +4655,12 @@ module ietf-l2vpn-ntw {
                               }
                             }
                             description
-                              "Standard tag removal.
-                               The number of 802.1Q VLAN tags to pop.";
+                              "Standard tag removal.";
                           }
                           leaf push {
                             type empty;
                             description
-                              "Standard tag Push.
-                               The number of 802.1Q tags to push on the
-                               front of the frame.";
+                              "Standard tag Push.";
                           }
                           leaf translate {
                             type enumeration {
@@ -4691,7 +4698,7 @@ module ietf-l2vpn-ntw {
                           when 'not(../pop)';
                           type uint16;
                           description
-                            "Push/Translate vlan tags";
+                            "Push (or Translate) vlan tags";
                         }
                         leaf direction {
                           type enumeration {
@@ -4861,6 +4868,7 @@ module ietf-l2vpn-ntw {
                               "Container for oam 802.3ah link.";
                             leaf enable {
                               type boolean;
+                              default "false";
                               description
                                 "Indicates support of OAM 802.3ah
                                  link.";
@@ -4869,13 +4877,15 @@ module ietf-l2vpn-ntw {
                         }
                       }
                       leaf flow-control {
-                        type string;
+                        type boolean;
+                        default "false";
                         description
-                          "Indicates whtehr flow control is
+                          "Indicates whether flow control is
                            supported.";
                       }
                       leaf lldp {
                         type boolean;
+                        default "false";
                         description
                           "Indicates whether Link Layer Discovery
                            Protocol (LLDP) is supported.";
@@ -5608,11 +5618,13 @@ module ietf-l2vpn-ntw {
                       }
                       leaf vlan-id {
                         type uint32;
+                        mandatory true;
                         description
                           "The VLAN ID of the Multicast group.";
                       }
                       leaf mac-gp-address {
                         type yang:mac-address;
+                        mandatory true;
                         description
                           "The MAC address of the Multicast group.";
                       }
@@ -5625,6 +5637,7 @@ module ietf-l2vpn-ntw {
                     }
                     leaf bum-overall-rate {
                       type uint32;
+                      units "bps";
                       description
                         "Overall rate for BUM.";
                     }
@@ -5869,8 +5882,6 @@ module ietf-l2vpn-ntw {
     <references title="Normative References">
       <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
 
-      &RFC2119;
-
       &RFC3688;
 
       &RFC6242;
@@ -5886,8 +5897,6 @@ module ietf-l2vpn-ntw {
       &RFC8040;
 
       &RFC8466;
-
-      &RFC8174;
 
       &RFC8214;
 
@@ -7324,93 +7333,6 @@ service",
 
         <t></t>
       </section>
-    </section>
-
-    <section anchor="bet" title="Initial BGP Layer 2 Encapsulation Types">
-      <t><figure>
-          <artwork align="center"><![CDATA[Value Description                       Reference
-===== ================================  =========
-1     Frame Relay                       [RFC4446]
-2     ATM AAL5 SDU VCC transport        [RFC4446]
-3     ATM transparent cell transport    [RFC4816]
-4     Ethernet (VLAN) Tagged Mode       [RFC4448]
-5     Ethernet Raw Mode                 [RFC4448]
-6     Cisco HDLC                        [RFC4618]
-7     PPP                               [RFC4618]
-8     SONET/SDH Circuit Emulation       [RFC4842]
-      Service
-9     ATM n-to-one VCC cell transport   [RFC4717]
-10    ATM n-to-one VPC cell transport   [RFC4717]
-11    IP Layer 2 Transport              [RFC3032]
-15    Frame Relay Port mode             [RFC4619]
-17    Structure-agnostic E1 over packet [RFC4553]
-18    Structure-agnostic T1 (DS1) over  [RFC4553]
-      packet
-19    VPLS                              [RFC4761]
-20    Structure-agnostic T3 (DS3) over  [RFC4553]
-      packet
-21    Nx64kbit/s Basic Service using    [RFC5086]
-      Structure-aware
-25    Frame Relay DLCI                  [RFC4619]
-40    Structure-agnostic E3 over packet [RFC4553]
-41    Octet-aligned payload for         [RFC4553]
-      Structure-agnostic DS1 circuits
-42    E1 Nx64kbit/s with CAS using      [RFC5086]
-      Structure-aware
-43    DS1 (ESF) Nx64kbit/s with CAS     [RFC5086]
-      using Structure-aware
-44    DS1 (SF) Nx64kbit/s with CAS      [RFC5086]
-      using Structure-aware]]></artwork>
-        </figure></t>
-    </section>
-
-    <section anchor="pwt" title="Initial PW Types">
-      <t><figure align="center">
-          <artwork align="center"><![CDATA[PW Type Description                       Reference
-======= ================================  =========
-0x0001  Frame Relay DLCI                  [RFC4619]
-0x0002  ATM AAL5 SDU VCC transport 
-0x0003  ATM transparent cell transport    [RFC4717]
-0x0004  Ethernet Tagged Mode              [RFC4448]
-0x0005  Ethernet                          [RFC4448]
-0x0006  HDLC                              [RFC4618]
-0x0007  PPP                               [RFC4618]
-0x0008  SONET/SDH Circuit Emulation 
-        Service Over MPLS Encapsulation   [RFC5143]
-0x0009  ATM n-to-one VCC cell transport   [RFC4717]
-0x000A  ATM n-to-one VPC cell transport   [RFC4717]
-0x000B  IP Layer2 Transport               [RFC3032]
-0x000C  ATM one-to-one VCC Cell Mode      [RFC4717]
-0x000D  ATM one-to-one VPC Cell Mode      [RFC4717]
-0x000E  ATM AAL5 PDU VCC transport        [RFC4717]
-0x000F  Frame-Relay Port mode             [RFC4619]
-0x0010  SONET/SDH Circuit Emulation       [RFC4842]
-        Reference Packet                         
-0x0011  Structure-agnostic E1 over        [RFC4553]
-        Packet
-0x0012  Structure-agnostic T1 (DS1)       [RFC4553]
-        over Packet
-0x0013  Structure-agnostic E3 over        [RFC4553]
-        Packet
-0x0014  Structure-agnostic T3 (DS3)       [RFC4553]
-        over Packet
-0x0015  CESoPSN basic mode                [RFC5086]
-0x0016  TDMoIP AAL1 Mode                  [RFC5087]
-0x0017  CESoPSN TDM with CAS              [RFC5086]
-0x0018  TDMoIP AAL2 Mode                  [RFC5087]
-0x0019  Frame Relay DLCI                  [RFC4619]
-0x001A  ROHC Transport Header-compressed  [RFC5795][RFC4901]
-        Packets
-0x001B  ECRTP Transport Header-compressed [RFC3545][RFC4901]
-        Packets
-0x001C  IPHC Transport Header-compressed  [RFC2507][RFC4901]
-        Packets
-0x001D  cRTP Transport Header-compressed  [RFC2508][RFC4901]
-        Packets
-0x001E  ATM VP Virtual Trunk              [MFA]
-0x001F  FC Port Mode                      [RFC6307]
-0x7FFF  Wildcard                          [RFC4863]]]></artwork>
-        </figure></t>
     </section>
 
     <section numbered="false" title="Acknowledgements" toc="default">
