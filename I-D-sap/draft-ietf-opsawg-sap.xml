@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-sap-00" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-sap-latest" ipr="trust200902">
   <front>
     <title abbrev="SAP Network YANG">A Network YANG Model for Service
     Attachment Points</title>
@@ -280,24 +280,24 @@
       <t>Management operations of a service provider network can be automated
       using a variety of means such as interfaces based on YANG modules <xref
       target="RFC8969"></xref>. From that standpoint, and considering the
-      architecture depicted in <xref target="fi1"></xref>, the goal of this
+      architecture depicted in <xref target="fi1"></xref>, a goal of this
       document is to provide a mechanism to show via a YANG-based interface an
       abstracted network view from the network controller to the service
-      orchestration layer with a focus on where a service can be delivered to
-      customers.</t>
+      orchestration layer with a focus on where a service can be (or is)
+      delivered to customers.</t>
 
       <figure align="center" anchor="fi1" title="SAP Network Model Usage">
         <artwork align="left"><![CDATA[                            +-----------------+
                             |     Customer    |
                             +--------+--------+
             Customer Service Models  |
-                                     |
+               (e.g., L3SM, L2SM)    |
                             +--------+--------+
                             |    Service      |
                             |  Orchestration  |
                             +------+---+------+
-            Service Network Models |   | SAP Network Model
-                                   |   |
+                Network Models     |   | SAP Network Model
+              (e.g., L3NM, L2NM)   |   |
                             +------+---+------+
                             |     Network     |
                             |   Controller    |
@@ -562,7 +562,7 @@ module ietf-sap-ntw {
   import ietf-vpn-common {
     prefix vpn-common;
     reference
-      "RFC UUUU: A Layer 2/3 VPN Common YANG Model";
+      "RFC 9181: A Layer 2/3 VPN Common YANG Model";
   }
 
   organization
@@ -858,6 +858,8 @@ module ietf-sap-ntw {
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>Thanks to Adrian Farrell and Daniel King for the suggestions on the
       names used in a previous version.</t>
+
+      <t>TBC: Dhrub, Benoit, Bo, ...</t>
     </section>
   </middle>
 
@@ -935,5 +937,106 @@ module ietf-sap-ntw {
 
       <?rfc include='reference.RFC.8453'?>
     </references>
+
+    <section title="A Simple Example of SAP Network Model: Node Filter">
+      <t>In the example shown in <xref target="app-ex"></xref>, PE#1 has two
+      physical interfaces GE0/6/1 and GE0/6/4. Two subinterfaces GE0/6/4.1 and
+      GE0/6/4.2 are associated with the physical interface GE0/6/4. Let's
+      consider that four service attachment points are exposed to the service
+      orchestrator and mapped to these physical interfaces and subinterfaces.
+      For the service attachment point associated with the first physical
+      interface (GE0/6/1), no service is enabled yet. For the service
+      attachment points associated with the second physical interface GE0/6/4,
+      L2VPN and L3VPN services are activated on the two subinterfaces
+      GE0/6/4.1 and GE0/6/4.2, respectively.</t>
+
+      <t><figure align="center" anchor="app-ex"
+          title="An Example of PE and Associated Physical Interfaces">
+          <artwork><![CDATA[   +-------------------------+
+   |                 GE0/6/4 |
+   | PE#1               +----+----+GE0/6/4.1
+   |                    |      +--+--+
+   |                    |      +--+--+
+   |                    |         |GE0/6/4.2
+   |                    |      +--+--+
+   |                    |      +--+--+
+   |                    |         |
+   |                    +----+----+
+   |                         |
+   |                  GE0/6/1|
+   |                    +----+----+
+   |                    |         |
+   |                    |         |
+   |                    |         |
+   |                    |         |
+   |                    +----+----+
+   |                         |
+   +-------------------------+
+]]></artwork>
+        </figure></t>
+
+      <t>A service orchestrator can query what services are provided in which
+      service attachment points of PE#1 from the network controller by
+      sending, e.g., a GET RESTCONF request. <xref
+      target="app-ex-res-body"></xref> shows the body of the RESTCONF response
+      that will be received from the network controller.</t>
+
+      <t><list style="numbers">
+          <t>NOTE: define if:Ether-sub-interface?</t>
+        </list><figure anchor="app-ex-res-body">
+          <artwork><![CDATA[{
+  "ietf-sap-ntw:service-attachment-point": [
+    {
+      "attachment-id": "GE0/6/1",
+      "interface-type": "if:gigabitEthernet",
+      "admin-status": false,
+      "operation-status": false,
+      "encapsulation-type": "ietf-vpn-common:ethernet",
+      "sap-type": [],
+      "service-description": "No service is enabled via GE0/6/1."
+    },
+    {
+      "attachment-id": "GE0/6/4",
+      "interface-type": "if:gigabitEthernet",
+      "admin-status": true,
+      "operation-status": true,
+      "encapsulation-type": "ietf-vpn-common:ethernet",
+      "sap-type": [
+        "l3vpn",
+        "l2vpn"
+      ],
+      "service-description": "Enable L3VPN and L2VPN services via GE0/6/4"
+    },
+    {
+      "attachment-id": "GE0/6/4.1",
+      "interface-type": "if:Ether-sub-interface",
+      "admin-status": true,
+      "operation-status": true,
+      "encapsulation-type": "ietf-vpn-common:vlan",
+      "sap-type": [
+        "l3vpn",
+        "l2vpn"
+      ],
+      "service-description": "L3VPN service has been activated via GE0/6/4.1"
+    },
+    {
+      "attachment-id": "GE0/6/4.2",
+      "interface-type": "if:Ether-sub-interface",
+      "admin-status": true,
+      "operation-status": true,
+      "encapsulation-type": "ietf-vpn-common:vlan",
+      "sap-type": [
+        "l3vpn",
+        "l2vpn"
+      ],
+      "service-description": "L2VPN service has been deactivated via GE0/6/4.2"
+    }
+  ]
+}
+]]></artwork>
+        </figure></t>
+
+      <t></t>
+    </section>
   </back>
 </rfc>
