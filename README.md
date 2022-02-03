@@ -1,5 +1,14 @@
-# OPSAWG repo for LxNM-related specifications: VPN-COMMON, L3NM, L2NM, and PM
+# OPSAWG repo for LxNM-related specifications: VPN-COMMON, L3NM, L2NM, PM, and SAP
 
+##  A Network YANG Model for Service Attachment Points
+
+This document defines a YANG data model for representing an abstract
+   view of the provider network topology containing the points from
+   which its services can be attached (e.g., basic connectivity, VPN,
+   network slices).
+
+### [Public version](https://datatracker.ietf.org/doc/draft-ietf-opsawg-sap/)
+   
 ##  A Layer 2/3 VPN Common YANG Model
 This document defines a common YANG module that is meant to be reused
    by various VPN-related modules such as Layer 3 VPN and Layer 2 VPN
