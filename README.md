@@ -8,6 +8,7 @@ This document defines a YANG data model for representing an abstract
    network slices).
 
 ### [Public version](https://datatracker.ietf.org/doc/draft-ietf-opsawg-sap/)
+### [Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-sap&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-sap/draft-ietf-opsawg-sap.txt)
    
 ##  A Layer 2/3 VPN Common YANG Model
 This document defines a common YANG module that is meant to be reused
