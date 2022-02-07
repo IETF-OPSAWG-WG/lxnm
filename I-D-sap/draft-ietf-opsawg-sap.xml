@@ -45,7 +45,7 @@
 <rfc category="std" docName="draft-ietf-opsawg-sap-latest" ipr="trust200902">
   <front>
     <title abbrev="SAP Network YANG">A Network YANG Model for Service
-    Attachment Points</title>
+    Attachment Points (SAPs)</title>
 
     <author fullname="Oscar Gonzalez de Dios" initials="O"
             surname="Gonzalez de Dios">
@@ -177,33 +177,43 @@
       view of the provider network topology containing the points from which
       its services can be attached (e.g., basic connectivity, VPN, network
       slices). The data model augments the 'ietf-network' data model by adding
-      the concept of service attachment points (SAPs). The service attachment
-      points are the points to which network services (such as L3VPN or L2VPN)
-      can be attached. The customer endpoint of an attachment circuits are not
-      covered in the SAP network topology.</t>
+      the concept of Service Attachment Points (SAPs). The Service Attachment
+      Points are the points to which network services (such as Layer 3 Virtual
+      Private Network (L3VPN) or Layer 2 Virtual Private Network (L2VPN)) can
+      be attached.</t>
+
+      <t>The customer endpoints of an attachment circuit (Customer Edges
+      (CEs), topically) are not covered in the SAP network topology.</t>
     </abstract>
   </front>
 
   <middle>
     <section anchor="Introduction" title="Introduction">
-      <t>The service attachment point (SAP) is an important architectural
+      <t>The Service Attachment Point (SAP) is an important architectural
       concept in many implementations and deployments of services such as
-      VPNs, SDWAN, or managed VoIP services. It has already been used to
-      decide where to attach and, thus, deliver the service in the L3SM <xref
-      target="RFC8299"></xref> and the L2SM <xref
-      target="RFC8466"></xref>.</t>
+      Virtual Private Networks (VPNs), Software-Defined Wide Area Network
+      (SDWAN), or managed Voice over IP (VoIP) services. It is used to decide
+      where to attach and, thus, deliver the service in the Layer 3 VPN
+      Service Model (L3SM) <xref target="RFC8299"></xref> and the Layer 2 VPN
+      Service Model (L2SM) <xref target="RFC8466"></xref>. It can also be used
+      to retrieve where services, such as the Layer 3 VPN Network Model (L3NM)
+      <xref target="I-D.ietf-opsawg-l3sm-l3nm"></xref>, and the Layer 2 VPN
+      Network Model (L2NM) <xref target="I-D.ietf-opsawg-l2nm"></xref>, are
+      delivered.</t>
 
       <t>This document defines a YANG network model for representing,
-      managing, and controlling the service attachment points (SAPs). The data
-      model augments the 'ietf-network' module <xref target="RFC8345"></xref>
-      by adding the concept of service attachment points. The service
-      attachment points are abstraction of the points where network services
-      such as L3VPNs or L2VPNs can be attached.</t>
+      managing, and controlling the Service Attachment Points. The data model
+      augments the 'ietf-network' module <xref target="RFC8345"></xref> by
+      adding the concept of Service Attachment Points. The Service Attachment
+      Points are abstraction of the points where network services can be
+      attached.</t>
 
-      <t>This document does not make any assumption about the service provided
-      by the network to the users. VPN services are used for illustration
-      purposes. This concept can also be used to decide network slice SAPs
-      <xref target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
+      <t>This document does not make any assumption about the service(s)
+      provided by the network to the users. VPN services (such as Layer 3
+      Virtual Private Network (L3VPN) or Layer 2 Virtual Private Network
+      (L2VPN)) are used for illustration purposes. The SAP concept can be used
+      to decide network slice SAPs <xref
+      target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
 
       <t>In the context of Software-Defined Networking (SDN) <xref
       target="RFC7149"></xref><xref target="RFC7426"></xref>, the defined YANG
@@ -213,20 +223,17 @@
       target="I-D.ietf-opsawg-l3sm-l3nm"></xref><xref
       target="I-D.ietf-opsawg-l2nm"></xref>. Through this data model, the
       service orchestration layer can learn the available endpoints (i.e.,
-      SAPs) of interconnection resource of the underlying network.</t>
-
-      <t>The service orchestration layer can determine which endpoint of
-      interconnection to add to L2VPN or L3VPN service. With the help of other
-      data models (e.g., L3SM <xref target="RFC8299"></xref> or L2SM <xref
-      target="RFC8466"></xref>), hierarchical control elements could determine
+      SAPs) of interconnection resource of the underlying network. The service
+      orchestration layer can determine which interconnection endpoints to add
+      to an L2VPN or L3VPN service. With the help of other data models (e.g.,
+      L3SM <xref target="RFC8299"></xref> or L2SM <xref
+      target="RFC8466"></xref>), hierarchical control elements can also assess
       the feasibility of an end-to-end IP connectivity or L2VPN connectivity
-      and therefore derive the sequence of domains and the points of
+      and, therefore, derive the sequence of domains and the points of
       interconnection to use.</t>
 
       <t>This document explains the scope and purpose of a SAP network model
-      and its relation with the service models and describes how it can be
-      used by a network operator. The document also shows how the topology and
-      service models fit together.</t>
+      and its relation with the service models.</t>
 
       <t>The YANG data model in this document conforms to the Network
       Management Datastore Architecture (NMDA) <xref
@@ -245,14 +252,14 @@
       <xref target="RFC8309"></xref>. The document uses terms from those
       documents.</t>
 
-      <t>Tree diagrams used in this document follow the notation defined in
-      [RFC8340].</t>
+      <t>The meanings of the symbols in tree diagrams are defined in <xref
+      target="RFC8340"></xref>.</t>
 
       <t>This document uses the term "network model" defined in Section 2.1 of
       <xref target="RFC8969"></xref>.</t>
 
       <t>This document uses the following terms:<list style="hanging">
-          <t hangText="Service Provider (SP): ">The organization responsible
+          <t hangText="Service povider (SP): ">The organization responsible
           for operating the network that offers a service (e.g., a VPN) to
           customers.</t>
 
@@ -267,12 +274,11 @@
           <t hangText="Provider Edge (PE): ">An equipment owned and managed by
           the SP that can support multiple services (e.g., VPNs) for different
           customers. A PE is directly connected to one or more CEs via
-          attachment circuits. A PE is usually located at an SP point of
-          presence (PoP).</t>
+          attachment circuits.</t>
 
-          <t hangText="Attachment point (AP):  ">Describes a service's end
-          point characteristics and its reference to a Termination Point (TP)
-          of the PE; used as service access point for service.</t>
+          <t hangText="Attachment point (AP):  ">Describes a service's
+          endpoint characteristics and its reference to a Termination Point
+          (TP) of the PE; used as service access point for service.</t>
         </list></t>
     </section>
 
@@ -326,7 +332,7 @@
 +---------+         +---------+]]></artwork>
         </figure></t>
 
-      <t>The Service Orchestration layer does not need to know about the
+      <t>The Service orchestration layer does not need to know about the
       internals of the underlying network (e.g., P nodes). <xref
       target="fi2a"></xref> shows the abstract network view as seen by the
       Service Orchestrator. However, this view is not enough to provide to the
@@ -378,13 +384,14 @@
       </figure>
 
       <t>A single SAP network topology can be used for one of multiple service
-      types (e.g., L3VPN, EVPN). The network controller can then expose the
-      service type(s) and associated interfaces via the SAPs.</t>
+      types (e.g., L3VPN, Ethernet VPN (EVPN)). The network controller can
+      then expose the service type(s) and associated interfaces via the
+      SAPs.</t>
 
       <t>As shown in <xref target="fi3a"></xref>, the Service Orchestration
       layer will have also access to a set of Customer Service Model, e.g., an
       L3SM or L2SM data model in the customer-facing interface and a set of
-      network models, e.g., L3NM and Network topology data models in the
+      network models, e.g., the L3NM and Network topology data models in the
       resource-facing interface. In this use case, it is assumed that the
       network controller is unaware of what happens beyond the PEs towards the
       CEs; it is only responsible for the management and control of the
@@ -427,7 +434,7 @@
     <section title="SAP Module Tree Structure">
       <t>The SAP network model builds on the network data model defined in the
       'ietf-network' module <xref target="RFC8345"></xref>, augmenting the
-      nodes with service attachment points, which anchor the links and are
+      nodes with Service Attachment Points, which anchor the links and are
       contained in nodes. The 'service-attachment-point' attribute defined in
       the SAP network model is not a tunnel termination point (TTP) nor a
       link, but an abstraction of the termination point defined in <xref
@@ -442,14 +449,22 @@
     +--rw sap-network!
        +--rw sap-type*   identityref
   augment /nw:networks/nw:network/nw:node:
-    +--rw service-attachment-point* [attachment-id]
-       +--rw attachment-id          nt:tp-id
-       +--ro interface-type?        identityref
-       +--rw admin-status?          boolean
-       +--rw oper-status?           boolean
-       +--rw encapsulation-type?    identityref
-       +--rw sap-type*              identityref
-       +--rw service-description?   string]]></artwork>
+    +--rw service* [sap-type]
+       +--rw sap-type                    identityref
+       +--rw service-attachment-point* [attachment-id]
+          +--rw attachment-id               nt:tp-id
+          +--rw parent-termination-point?   nt:tp-id
+          +--ro interface-type?             identityref
+          +--rw status
+          |  +--rw admin-status
+          |  |  +--rw status?        identityref
+          |  |  +--rw last-change?   yang:date-and-time
+          |  +--ro oper-status
+          |     +--ro status?        identityref
+          |     +--ro last-change?   yang:date-and-time
+          +--rw encapsulation-type?         identityref
+          +--rw interface-role?             identityref
+          +--rw description?                string]]></artwork>
       </figure>
 
       <t>A SAP network topology can be used for one single service type or
@@ -484,17 +499,22 @@
           target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
         </list></t>
 
-      <t>A service attachment point is identified by an interface name
-      ("attachment-id"), an interface type ("type"), a status ("admin-status",
+      <t>A Service Attachment Point is identified by an interface name
+      ("attachment-id"), an interface type ("type"), a status ("admin-status"
       and "oper-status"), an encapsulation type ("encapsulation-type"), one or
-      a list of service types ("sap-type") such as L3VPN or network slice, a
-      description of the service(s) ("service-description").</t>
+      a list of service types ("sap-type"), a description of the service(s)
+      ("service-description").</t>
+
+      <t>"attachment-id" may include a reference to a physical or a logical
+      interface. For example, an "attachment-id" may be the interface
+      identifier of a VPN network access used in Section 7.6 of <xref
+      target="I-D.ietf-opsawg-l3sm-l3nm"></xref>.</t>
     </section>
 
-    <section title="Relation with other Models">
+    <section title="Relationship to Other YANG Data Models">
       <t>The SAP network model can be seen as an inventory data associated
-      with service attachment points. The model maintains an inventory of
-      nodes contained in a network based on [RFC8345].</t>
+      with SAPs. The model maintains an inventory of nodes contained in a
+      network based on <xref target="RFC8345"></xref>.</t>
 
       <figure anchor="fig5"
               title="Relation of SAP Network Model to Other Models">
@@ -562,7 +582,8 @@ module ietf-sap-ntw {
   import ietf-vpn-common {
     prefix vpn-common;
     reference
-      "RFC 9181: A Layer 2/3 VPN Common YANG Model";
+      "RFC 9181: A Common YANG Data Model for Layer 2 and Layer 3
+                 VPNs";
   }
 
   organization
@@ -581,7 +602,7 @@ module ietf-sap-ntw {
      and controlling the Service Attachment Points (SAPs) in the
      network topology.
 
-     Copyright (c) 2021 IETF Trust and the persons identified as
+     Copyright (c) 2022 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
 
      Redistribution and use in source and binary forms, with or
@@ -600,7 +621,7 @@ module ietf-sap-ntw {
       "Initial version";
     reference
       "RFC XXXX: A Network YANG Model for Service Attachment
-                 Point (SAP)";
+                 Points (SAPs)";
   }
 
   identity service-type {
@@ -632,7 +653,7 @@ module ietf-sap-ntw {
   identity network-slice {
     base service-type;
     description
-      "IETF network slice. An IETF network slice
+      "IETF network slice.  An IETF network slice
        is a logical network topology connecting a number of
        endpoints using a set of shared or dedicated network
        resources that are used to satisfy specific service
@@ -645,7 +666,7 @@ module ietf-sap-ntw {
   identity vpls {
     base service-type;
     description
-      "VPLS service.";
+      "Virtual Private LAN Service (VPLS).";
     reference
       "RFC 4761: Virtual Private LAN Service (VPLS) Using BGP for
                  Auto-Discovery and Signaling
@@ -656,7 +677,7 @@ module ietf-sap-ntw {
   identity vpws {
     base service-type;
     description
-      "Virtual Private Wire Service (VPWS) service.";
+      "Virtual Private Wire Service (VPWS).";
     reference
       "RFC 4664: Framework for Layer 2 Virtual Private Networks
                  (L2VPNs), Section 3.1.1";
@@ -665,7 +686,7 @@ module ietf-sap-ntw {
   identity vpws-evpn {
     base service-type;
     description
-      "EVPN used to support VPWS service.";
+      "EVPN used to support VPWS.";
     reference
       "RFC 8214: Virtual Private Wire Service Support in Ethernet VPN";
   }
@@ -673,7 +694,7 @@ module ietf-sap-ntw {
   identity pbb-evpn {
     base service-type;
     description
-      "Provider Backbone Bridging (PBB) EVPNs service.";
+      "Provider Backbone Bridging (PBB) EVPN service.";
     reference
       "RFC 7623: Provider Backbone Bridging Combined with Ethernet VPN
                  (PBB-EVPN)";
@@ -705,6 +726,32 @@ module ietf-sap-ntw {
                  Networks (ACTN)";
   }
 
+  identity sdwan {
+    base service-type;
+    description
+      "PE-based Software-Defined Wide Area Network (SDWAN).";
+    reference
+      "I-D.ietf-bess-bgp-sdwan-usage: BGP Usage for SDWAN 
+             Overlay Network";
+  }
+
+  identity interface-role {
+    description
+      "Base identity for the network role of an interface.";
+  }
+
+  identity uni {
+    base interface-role;
+    description
+      "User-Network Interface (UNI).";
+  }
+
+  identity nni {
+    base interface-role;
+    description
+      "Network-to-Network Interface (NNI).";
+  }
+
   /*
    Other network service types may be added.      
    */
@@ -715,13 +762,22 @@ module ietf-sap-ntw {
     list service-attachment-point {
       key "attachment-id";
       description
-        "The service attachment points are abstraction of
+        "The Service Attachment Points are abstraction of
          the points where network services such as L3VPNs,
-         L2VPNs, or network slices can be attached.";
+         L2VPNs, or network slices can be attached to.";
       leaf attachment-id {
         type nt:tp-id;
         description
-          "Indicates the name of the interface.";
+          "Indicates the identifier of the interface to 
+           which the SAP is attached. This interface can 
+           be a physical or logical interface.";
+      }
+      leaf parent-termination-point {
+        type nt:tp-id;
+        description
+          "Indicates the parent termination point to 
+           which the SAP is attached to. A termination
+           point can be a physical port, an interface, etc.";
       }
       leaf interface-type {
         type identityref {
@@ -731,34 +787,25 @@ module ietf-sap-ntw {
         description
           "The type of the interface.";
       }
-      leaf admin-status {
-        type boolean;
-        description
-          "Indicates the administrative status of the SAP.";
-      }
-      leaf oper-status {
-        type boolean;
-        description
-          "Indicates the operational status.";
-      } 
+      uses vpn-common:service-status;
       leaf encapsulation-type {
         type identityref {
           base vpn-common:encapsulation-type;
         }
         description
-          "Encapsulation type.";
+          "Encapsulation type of the interface.";
       }
-      leaf-list sap-type {
+      leaf interface-role {
         type identityref {
-          base service-type;
+          base interface-role;
         }
         description
-          "SAP type.";
+          "Indicates whether the SAP is an UNI or a NNI.";
       }
-      leaf service-description {
+      leaf description {
         type string;
         description
-          "A textual description of the service(s).";
+          "A textual description of the SAP.";
       }
     }
   }
@@ -776,15 +823,27 @@ module ietf-sap-ntw {
           base service-type;
         }
         description
-          "Indicates a service type.";
+          "Indicates the set of supported service types.";
       }
     }
   }
 
   augment "/nw:networks/nw:network/nw:node" {
     description
-      "Parameters for the service attachment point level.";
-    uses sap-information;
+      "Parameters for the SAP level.";
+    list service {
+      key "sap-type";
+      description
+        "Indicates a list of services.";
+      leaf sap-type {
+        type identityref {
+          base service-type;
+        }
+        description
+          "SAP type.";
+      }
+      uses sap-information;
+   }
   }
 }
 <CODE ENDS>]]></artwork>
@@ -804,7 +863,7 @@ module ietf-sap-ntw {
       Names registry [RFC6020] within the "YANG Parameters" registry: <figure>
           <artwork><![CDATA[    name: ietf-sap-ntw
     namespace: urn:ietf:params:xml:ns:yang:ietf-sap-ntw
-    maintained by IANA: N
+    maintained by IANA? N
     prefix: sap
     reference: RFC XXXX
 ]]></artwork>
@@ -857,9 +916,9 @@ module ietf-sap-ntw {
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>Thanks to Adrian Farrell and Daniel King for the suggestions on the
-      names used in a previous version.</t>
+      name used in a previous version.</t>
 
-      <t>TBC: Dhrub, Benoit, Bo, ...</t>
+      <t>Thanks to Dhruv Dhody, Benoit Claise, and Bo Wu for the comments.</t>
     </section>
   </middle>
 
@@ -942,9 +1001,9 @@ module ietf-sap-ntw {
       <t>In the example shown in <xref target="app-ex"></xref>, PE#1 has two
       physical interfaces GE0/6/1 and GE0/6/4. Two subinterfaces GE0/6/4.1 and
       GE0/6/4.2 are associated with the physical interface GE0/6/4. Let's
-      consider that four service attachment points are exposed to the service
-      orchestrator and mapped to these physical interfaces and subinterfaces.
-      </t>
+      consider that four Service Attachment Points are exposed to the service
+      orchestrator and mapped to these physical interfaces and
+      subinterfaces.</t>
 
       <t><figure align="center" anchor="app-ex"
           title="An Example of PE and Associated Physical Interfaces">
@@ -971,15 +1030,15 @@ module ietf-sap-ntw {
 ]]></artwork>
         </figure></t>
 
-      <t>Let us assume that for the service attachment point associated with
+      <t>Let us assume that for the Service Attachment Point associated with
       the first physical interface (GE0/6/1), no service is enabled yet. Also,
-      let us assume that for the service attachment points associated with the
+      let us assume that for the Service Attachment Points associated with the
       second physical interface GE0/6/4, L2VPN and L3VPN services are
       activated on the two subinterfaces GE0/6/4.1 and GE0/6/4.2,
       respectively.</t>
 
       <t>A service orchestrator can query what services are provided in which
-      service attachment points of PE#1 from the network controller by
+      Service Attachment Points of PE#1 from the network controller by
       sending, e.g., a GET RESTCONF request. <xref
       target="app-ex-res-body"></xref> shows the body of the RESTCONF response
       that will be received from the network controller.</t>
