@@ -455,6 +455,9 @@
           +--rw attachment-id               nt:tp-id
           +--rw parent-termination-point?   nt:tp-id
           +--rw interface-type?             identityref
+          +--rw encapsulation-type?         identityref
+          +--rw interface-role?             identityref
+          +--rw description?                string
           +--rw status
           |  +--rw admin-status
           |  |  +--rw status?        identityref
@@ -462,9 +465,9 @@
           |  +--ro oper-status
           |     +--ro status?        identityref
           |     +--ro last-change?   yang:date-and-time
-          +--rw encapsulation-type?         identityref
-          +--rw interface-role?             identityref
-          +--rw description?                string]]></artwork>
+          +--ro service-status
+             +--ro status?        identityref
+             +--ro last-change?   yang:date-and-time]]></artwork>
       </figure>
 
       <t>A SAP network topology can be used for one single service type or
@@ -556,17 +559,12 @@
       target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
 
       <figure>
-        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2021-10-16.yang"
+        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-02-07.yang"
 module ietf-sap-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-sap-ntw";
   prefix sap;
 
-  /*import ietf-interfaces {
-    prefix if;
-    reference
-      "RFC 8343: A YANG Data Model for Interface Management";
-  }*/
   import ietf-network-topology {
     prefix nt;
     reference
@@ -589,14 +587,23 @@ module ietf-sap-ntw {
   organization
     "IETF OPSA (Operations and Management Area) Working Group ";
   contact
-    "Editor:   Oscar Gonzalez de Dios
+    "WG Web:   <https://datatracker.ietf.org/wg/opsawg/>
+     WG List:  <mailto:opsawg@ietf.org>
+
+     Author:   Oscar Gonzalez de Dios
                <mailto:oscar.gonzalezdedios@telefonica.com>
-     Editor:   Samier Barguil
+
+     Author:   Samier Barguil
                <mailto:samier.barguilgiraldo.ext@telefonica.com>
-     Editor:   Qin Wu
+
+     Author:   Qin Wu
                <mailto:bill.wu@huawei.com>
+
      Editor:   Mohamed Boucadair
-               <mailto:mohamed.boucadair@orange.com>";
+               <mailto:mohamed.boucadair@orange.com>
+
+     Author:   Victor Lopez
+               <victor.lopez@nokia.com>";
   description
     "This YANG module defines a model for representing, managing,
      and controlling the Service Attachment Points (SAPs) in the
@@ -616,7 +623,7 @@ module ietf-sap-ntw {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2021-10-16 {
+  revision 2022-02-07 {
     description
       "Initial version";
     reference
@@ -847,6 +854,13 @@ module ietf-sap-ntw {
         type string;
         description
           "A textual description of the SAP.";
+ 
+      uses vpn-common:service-status;
+      container service-status {
+        description
+          "Service status.";
+        config "false"; 
+        uses vpn-common:oper-status-timestamp;
       }
     }
   }
@@ -958,7 +972,8 @@ module ietf-sap-ntw {
       <t>Thanks to Adrian Farrell and Daniel King for the suggestions on the
       name used in a previous version.</t>
 
-      <t>Thanks to Dhruv Dhody, Benoit Claise, and Bo Wu for the comments.</t>
+      <t>Thanks to Dhruv Dhody, Benoit Claise, Bo Wu, and Erez Segev for the
+      comments.</t>
     </section>
   </middle>
 
@@ -1049,7 +1064,8 @@ module ietf-sap-ntw {
           title="An Example of PE and Associated Physical Interfaces">
           <artwork><![CDATA[   +-------------------------+
    |                 GE0/6/4 |
-   | PE#1               +----+----+GE0/6/4.1
+   | PE#1               +----+----+
+   |                    |         |GE0/6/4.1
    |                    |      +--+--+
    |                    |      +--+--+
    |                    |         |GE0/6/4.2
