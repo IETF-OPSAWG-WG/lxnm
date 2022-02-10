@@ -181,9 +181,6 @@
       Points are the points to which network services (such as Layer 3 Virtual
       Private Network (L3VPN) or Layer 2 Virtual Private Network (L2VPN)) can
       be attached.</t>
-
-      <t>The customer endpoints of an attachment circuit (Customer Edges
-      (CEs), topically) are not covered in the SAP network topology.</t>
     </abstract>
   </front>
 
@@ -223,10 +220,10 @@
       target="I-D.ietf-opsawg-l3sm-l3nm"></xref><xref
       target="I-D.ietf-opsawg-l2nm"></xref>. Through this data model, the
       service orchestration layer can learn the available endpoints (i.e.,
-      SAPs) of interconnection resource of the underlying network. The service
-      orchestration layer can determine which interconnection endpoints to add
-      to an L2VPN or L3VPN service. With the help of other data models (e.g.,
-      L3SM <xref target="RFC8299"></xref> or L2SM <xref
+      SAPs) of interconnection resources of the underlying network. The
+      service orchestration layer can determine which interconnection
+      endpoints to add to an L2VPN or L3VPN service. With the help of other
+      data models (e.g., L3SM <xref target="RFC8299"></xref> or L2SM <xref
       target="RFC8466"></xref>), hierarchical control elements can also assess
       the feasibility of an end-to-end IP connectivity or L2VPN connectivity
       and, therefore, derive the sequence of domains and the points of
@@ -244,8 +241,8 @@
       <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
       "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
       "OPTIONAL" in this document are to be interpreted as described in BCP 14
-      [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as
-      shown here.</t>
+      <xref target="RFC2119"></xref><xref target="RFC8174"></xref> when, and
+      only when, they appear in all capitals, as shown here.</t>
 
       <t>This document assumes that the reader is familiar with the contents
       of <xref target="RFC6241"></xref>, <xref target="RFC7950"></xref>, and
@@ -469,7 +466,6 @@
           |  +--ro status?        identityref
           |  +--ro last-change?   yang:date-and-time
           +--rw peer-customer-sap-id?       string]]></artwork>
-
       </figure>
 
       <t>A SAP network topology can be used for one single service type or
@@ -837,8 +833,6 @@ module ietf-sap-ntw {
         description
           "The type of the interface.";
       }
-      uses vpn-common:service-status;
-
       leaf encapsulation-type {
         type identityref {
           base vpn-common:encapsulation-type;
@@ -912,7 +906,8 @@ module ietf-sap-ntw {
       uses sap-information;
    }
   }
-}]]></artwork>
+}
+<CODE ENDS>]]></artwork>
       </figure>
     </section>
 
@@ -1111,55 +1106,122 @@ module ietf-sap-ntw {
       target="app-ex-res-body"></xref> shows the body of the RESTCONF response
       that will be received from the network controller.</t>
 
-      <t><list style="numbers">
-          <t>DISCUSSION NOTE: define if:Ether-sub-interface?</t>
-        </list><figure anchor="app-ex-res-body">
+      <t><figure anchor="app-ex-res-body">
           <artwork><![CDATA[{
-  "ietf-sap-ntw:service-attachment-point": [
+  "ietf-sap-ntw:service": [
     {
-      "attachment-id": "GE0/6/1",
-      "interface-type": "if:gigabitEthernet",
-      "admin-status": false,
-      "operation-status": false,
-      "encapsulation-type": "ietf-vpn-common:ethernet",
-      "sap-type": [],
-      "service-description": "No service is enabled via GE0/6/1."
+      "sap-type": "l3vpn",
+      "service-attachment-point": [
+        {
+          "attachment-id": "GE0/6/1",
+          "interface-type": "ietf-sap-ntw:phy",
+          "interface-role": "ietf-sap-ntw:uni",
+          "description": "Ready to host SAPs",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        },
+        {
+          "attachment-id": "GE0/6/4",
+          "interface-type": "ietf-sap-ntw:phy",
+          "interface-role": "ietf-sap-ntw:uni",
+          "description": "Ready to host SAPs",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        },
+        {
+          "attachment-id": "GE0/6/4.1",
+          "interface-type": "ietf-sap-ntw:logical",
+          "parent-termination-point": "GE0/6/4",
+          "encapsulation-type": "ietf-vpn-common:vlan",
+          "description": "A first SAP description",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        }
+      ]
     },
     {
-      "attachment-id": "GE0/6/4",
-      "interface-type": "if:gigabitEthernet",
-      "admin-status": true,
-      "operation-status": true,
-      "encapsulation-type": "ietf-vpn-common:ethernet",
-      "sap-type": [
-        "l3vpn",
-        "l2vpn"
-      ],
-      "service-description": "Enable L3VPN and L2VPN services via GE0/6/4"
-    },
-    {
-      "attachment-id": "GE0/6/4.1",
-      "interface-type": "if:Ether-sub-interface",
-      "admin-status": true,
-      "operation-status": true,
-      "encapsulation-type": "ietf-vpn-common:vlan",
-      "sap-type": [
-        "l3vpn",
-        "l2vpn"
-      ],
-      "service-description": "L3VPN service has been activated via GE0/6/4.1"
-    },
-    {
-      "attachment-id": "GE0/6/4.2",
-      "interface-type": "if:Ether-sub-interface",
-      "admin-status": true,
-      "operation-status": true,
-      "encapsulation-type": "ietf-vpn-common:vlan",
-      "sap-type": [
-        "l3vpn",
-        "l2vpn"
-      ],
-      "service-description": "L2VPN service has been deactivated via GE0/6/4.2"
+      "sap-type": "l2vpn",
+      "service-attachment-point": [
+        {
+          "attachment-id": "GE0/6/1",
+          "interface-type": "ietf-sap-ntw:phy",
+          "interface-role": "ietf-sap-ntw:uni",
+          "description": "Ready to host SAPs",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        },
+        {
+          "attachment-id": "GE0/6/4",
+          "interface-type": "ietf-sap-ntw:phy",
+          "interface-role": "ietf-sap-ntw:uni",
+          "description": "Ready to host SAPs",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        },
+        {
+          "attachment-id": "GE0/6/4.2",
+          "interface-type": "ietf-sap-ntw:logical",
+          "parent-termination-point": "GE0/6/4",
+          "encapsulation-type": "ietf-vpn-common:vlan",
+          "description": "Another description",
+          "status": {
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
+            }
+          },
+          "service-status": {
+            "status": "ietf-vpn-common:op-up"
+          }
+        }
+      ]
     }
   ]
 }
