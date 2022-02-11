@@ -44,7 +44,7 @@
 <!-- end of list of popular I-D processing instructions -->
 <rfc category="std" docName="draft-ietf-opsawg-sap-latest" ipr="trust200902">
   <front>
-    <title abbrev="SAP Network YANG">A Network YANG Model for Service
+    <title abbrev="Network YANG for SAPs">A Network YANG Model for Service
     Attachment Points (SAPs)</title>
 
     <author fullname="Mohamed Boucadair" initials="M." role="editor"
@@ -238,9 +238,9 @@
       only when, they appear in all capitals, as shown here.</t>
 
       <t>This document assumes that the reader is familiar with the contents
-      of <xref target="RFC6241"></xref>, <xref target="RFC7950"></xref>, and
-      <xref target="RFC8309"></xref>. The document uses terms from those
-      documents.</t>
+      of <xref target="RFC6241"></xref>, <xref target="RFC7950"></xref>, <xref
+      target="RFC8345"></xref>, and <xref target="RFC8309"></xref>. The
+      document uses terms from those documents.</t>
 
       <t>The meanings of the symbols in tree diagrams are defined in <xref
       target="RFC8340"></xref>.</t>
@@ -264,11 +264,11 @@
           <t hangText="Provider Edge (PE): ">An equipment owned and managed by
           the service provider that can support multiple services (e.g., VPNs)
           for different customers. A PE is directly connected to one or more
-          CEs via attachment circuits.</t>
+          CEs via ACs.</t>
 
-          <t hangText="Service Attachment Point (SAP):  ">Describes a
+          <t hangText="Service Attachment Point (SAP):  ">Describes the
           service's endpoint characteristics and its reference to a
-          Termination Point (TP) of the PE.</t>
+          Termination Point (TP) of a PE.</t>
         </list></t>
     </section>
 
@@ -374,7 +374,7 @@
 ]]></artwork>
       </figure>
 
-      <t>A single SAP network topology can be used for one of multiple service
+      <t>A single SAP network topology can be used for one or multiple service
       types (e.g., L3VPN, Ethernet VPN (EVPN)). The network controller can,
       then, expose the service type(s) and associated interfaces via the
       SAPs.</t>
@@ -444,7 +444,7 @@
             +------V------+     +------V------+
             |  Abstract   |     |  Inventory  |
             |  Network    |     |   Model(s)  |
-            |  Topology   |     |   e.g.,SAP  |
+            |  Topology   |     |   e.g., SAP |
             |   Model     |     |   Network   |
             |             |     |    Model    |
             +-----+-------+     +-------------+
@@ -502,7 +502,7 @@
     +--rw service* [sap-type]
        +--rw sap-type                    identityref
        +--rw service-attachment-point* [attachment-id]
-          +--rw attachment-id               nt:tp-id
+          +--rw attachment-id               string
           +--rw description?                string
           +--rw parent-termination-point?   nt:tp-id
           +--rw interface-type?             identityref
@@ -573,17 +573,18 @@
           sub-interfaces, and already instantiated sub-interfaces are
           listed.</t>
 
-          <t hangText="'description':">Includes a textual description of a
+          <t hangText="'description':">Includes a textual description of the
           SAP.</t>
 
           <t hangText="'parent-termination-point':">Includes a reference to
-          the parent interface to which the SAP is bound (e.g., physical
+          the parent interface to which the SAP is bound (e.g., a physical
           port). This attribute is used to associate an interface with its
-          sub-interfaces as all may be present in the model. <vspace
-          blankLines="1" />For example, this data node can be used to map the
-          IETF Network Slice endpoints to the service/tunnel/path endpoints in
-          the underlay network as per Section 5.4 of <xref
-          target="I-D.ietf-teas-ietf-network-slices"></xref>. </t>
+          sub-interfaces as all these interfaces may be listed under the SAPs
+          of a node. <vspace blankLines="1" />For example, this data node can
+          be used to map the IETF Network Slice endpoints to the
+          service/tunnel/path endpoints in the underlay network as per Section
+          5.4 of <xref target="I-D.ietf-teas-ietf-network-slices"></xref>.
+          </t>
 
           <t hangText="'interface-type':">Indicates whether a SAP is a
           physical port, a loopback interface, a Link Aggregation Group (LAG)
@@ -893,7 +894,7 @@ module ietf-sap-ntw {
          the points where network services such as L3VPNs,
          L2VPNs, or network slices can be attached to.";
       leaf attachment-id {
-        type nt:tp-id;
+        type string;
         description
           "Indicates the identifier of the interface to 
            which the SAP is attached. This interface can 
@@ -1146,8 +1147,10 @@ module ietf-sap-ntw {
     </references>
 
     <section anchor="app1" title="A Simplified SAP Network Example">
-      <t>An example of a SAP topology is depicted in <xref
-      target="ex1"></xref>.</t>
+      <t>An example of a SAP topology that is reported by a network controller
+      is depicted in <xref target="ex1"></xref>. This example echoes the
+      topology shown in <xref target="fi3a"></xref>. Only a minimum set of
+      information is provided for each SAP.</t>
 
       <t><figure anchor="ex1" title="SAP Example">
           <artwork><![CDATA[{
@@ -1155,7 +1158,7 @@ module ietf-sap-ntw {
     "network": [
       {
         "network-types": {
-          "service-type": [
+          "sap-type": [
             "l3vpn",
             "vpls-bgp"
           ]
@@ -1170,7 +1173,10 @@ module ietf-sap-ntw {
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#11",
-                    "peer-customer-sap-id": "ce-1"
+                    "peer-customer-sap-id": "ce-1",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
                   },
                   {
                     "attachment-id": "sap#12"
@@ -1196,7 +1202,10 @@ module ietf-sap-ntw {
                   },
                   {
                     "attachment-id": "sap#22",
-                    "peer-customer-sap-id": "ce-2"
+                    "peer-customer-sap-id": "ce-2",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
                   }
                 ]
               }
@@ -1216,7 +1225,10 @@ module ietf-sap-ntw {
                   },
                   {
                     "attachment-id": "sap#33",
-                    "peer-customer-sap-id": "ce-3"
+                    "peer-customer-sap-id": "ce-3",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
                   }
                 ]
               }
@@ -1233,14 +1245,20 @@ module ietf-sap-ntw {
                   },
                   {
                     "attachment-id": "sap#42",
-                    "peer-customer-sap-id": "ce-4"
+                    "peer-customer-sap-id": "ce-4",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
                   },
                   {
                     "attachment-id": "sap#43"
                   },
                   {
                     "attachment-id": "sap#44",
-                    "peer-customer-sap-id": "ce-5"
+                    "peer-customer-sap-id": "ce-5",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
                   }
                 ]
               }
@@ -1259,11 +1277,11 @@ module ietf-sap-ntw {
     <section anchor="sample"
              title="A Simple Example of SAP Network Model: Node Filter">
       <t>In the example shown in <xref target="app-ex"></xref>, PE#2 has two
-      physical interfaces "GE0/6/1" and "GE0/6/4". Two subinterfaces
+      physical interfaces "GE0/6/1" and "GE0/6/4". Two sub-interfaces
       "GE0/6/4.1" and "GE0/6/4.2" are associated with the physical interface
       "GE0/6/4". Let us consider that four SAPs are exposed to the service
       orchestrator and mapped to these physical interfaces and
-      subinterfaces.</t>
+      sub-interfaces.</t>
 
       <t><figure align="center" anchor="app-ex"
           title="An Example of PE and Associated Physical Interfaces">
@@ -1294,7 +1312,7 @@ module ietf-sap-ntw {
       <t>Let us assume that no servie is enabled yet for the SAP associated
       with the first physical interface "GE0/6/1". Also, let us assume that
       for the SAPs associated with the second physical interface "GE0/6/4",
-      VPLS and L3VPN services are activated on the two subinterfaces
+      VPLS and L3VPN services are activated on the two sub-interfaces
       "GE0/6/4.1" and "GE0/6/4.2", respectively.</t>
 
       <t>A service orchestrator can query what services are provided on which
@@ -1303,7 +1321,8 @@ module ietf-sap-ntw {
       of the RESTCONF response that is received from the network
       controller.</t>
 
-      <t><figure anchor="app-ex-res-body">
+      <t><figure anchor="app-ex-res-body"
+          title="Example of a Response Body to a Request with a Node Filter">
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
@@ -1332,7 +1351,7 @@ module ietf-sap-ntw {
           "description": "A first SAP description",
           "interface-type": "ietf-sap-ntw:logical",
           "parent-termination-point": "GE0/6/4",
-          "encapsulation-type": "ietf-vpn-common:vlan",
+          "encapsulation-type": "ietf-vpn-common:vlan-type",
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           },
@@ -1368,7 +1387,7 @@ module ietf-sap-ntw {
           "description": "Another description",
           "interface-type": "ietf-sap-ntw:logical",
           "parent-termination-point": "GE0/6/4",
-          "encapsulation-type": "ietf-vpn-common:vlan",
+          "encapsulation-type": "ietf-vpn-common:vlan-type",
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           },
@@ -1388,7 +1407,8 @@ module ietf-sap-ntw {
       request includes a filter on the service type for a particular node:
       </t>
 
-      <t><figure anchor="app-ex-res-body-filter">
+      <t><figure anchor="app-ex-res-body-filter"
+          title="Example of a Response Body to a Request with a Service Filter">
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
@@ -1417,7 +1437,7 @@ module ietf-sap-ntw {
           "description": "A first SAP description",
           "interface-type": "ietf-sap-ntw:logical",
           "parent-termination-point": "GE0/6/4",
-          "encapsulation-type": "ietf-vpn-common:vlan",
+          "encapsulation-type": "ietf-vpn-common:vlan-type",
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           },

@@ -55,7 +55,7 @@ Status of This Memo
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 1]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
 Copyright Notice
@@ -89,7 +89,7 @@ Table of Contents
    Appendix A.  A Simplified SAP Network Example . . . . . . . . . .  25
    Appendix B.  A Simple Example of SAP Network Model: Node
            Filter  . . . . . . . . . . . . . . . . . . . . . . . . .  27
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  30
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  31
 
 1.  Introduction
 
@@ -111,7 +111,7 @@ Table of Contents
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 2]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    This document explains the scope and purpose of a SAP network model
@@ -144,8 +144,8 @@ Internet-Draft              SAP Network YANG               February 2022
    capitals, as shown here.
 
    This document assumes that the reader is familiar with the contents
-   of [RFC6241], [RFC7950], and [RFC8309].  The document uses terms from
-   those documents.
+   of [RFC6241], [RFC7950], [RFC8345], and [RFC8309].  The document uses
+   terms from those documents.
 
    The meanings of the symbols in tree diagrams are defined in
    [RFC8340].
@@ -167,7 +167,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 3]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
       (e.g., L3VPN), although it may support multiple VPNs if each one
@@ -177,11 +177,11 @@ Internet-Draft              SAP Network YANG               February 2022
    Provider Edge (PE):  An equipment owned and managed by the service
       provider that can support multiple services (e.g., VPNs) for
       different customers.  A PE is directly connected to one or more
-      CEs via attachment circuits.
+      CEs via ACs.
 
-   Service Attachment Point (SAP):  Describes a service's endpoint
-      characteristics and its reference to a Termination Point (TP) of
-      the PE.
+   Service Attachment Point (SAP):  Describes the service's endpoint
+      characteristics and its reference to a Termination Point (TP) of a
+      PE.
 
 3.  SAP Network Model Usage
 
@@ -223,7 +223,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 4]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    Let us consider the example of a typical service provider network
@@ -279,7 +279,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 5]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
                  .---. .---. .---.              .---.       .---.
@@ -303,7 +303,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
                        Figure 4: SAP Network Topology
 
-   A single SAP network topology can be used for one of multiple service
+   A single SAP network topology can be used for one or multiple service
    types (e.g., L3VPN, Ethernet VPN (EVPN)).  The network controller
    can, then, expose the service type(s) and associated interfaces via
    the SAPs.
@@ -335,7 +335,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 6]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
                                                         .---.
@@ -391,7 +391,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 7]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
                    +-------------------------+
@@ -405,7 +405,7 @@ Internet-Draft              SAP Network YANG               February 2022
                +------V------+     +------V------+
                |  Abstract   |     |  Inventory  |
                |  Network    |     |   Model(s)  |
-               |  Topology   |     |   e.g.,SAP  |
+               |  Topology   |     |   e.g., SAP |
                |   Model     |     |   Network   |
                |             |     |    Model    |
                +-----+-------+     +-------------+
@@ -447,7 +447,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 8]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
 5.  SAP Module Tree Structure
@@ -469,7 +469,7 @@ Internet-Draft              SAP Network YANG               February 2022
        +--rw service* [sap-type]
           +--rw sap-type                    identityref
           +--rw service-attachment-point* [attachment-id]
-             +--rw attachment-id               nt:tp-id
+             +--rw attachment-id               string
              +--rw description?                string
              +--rw parent-termination-point?   nt:tp-id
              +--rw interface-type?             identityref
@@ -503,7 +503,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                 [Page 9]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    *  BGP MPLS-Based Ethernet VPN [RFC7432],
@@ -542,12 +542,13 @@ Internet-Draft              SAP Network YANG               February 2022
       that are ready to host per-service sub-interfaces, and already
       instantiated sub-interfaces are listed.
 
-   'description':  Includes a textual description of a SAP.
+   'description':  Includes a textual description of the SAP.
 
    'parent-termination-point':  Includes a reference to the parent
-      interface to which the SAP is bound (e.g., physical port).  This
+      interface to which the SAP is bound (e.g., a physical port).  This
       attribute is used to associate an interface with its sub-
-      interfaces as all may be present in the model.
+      interfaces as all these interfaces may be listed under the SAPs of
+      a node.
 
       For example, this data node can be used to map the IETF Network
       Slice endpoints to the service/tunnel/path endpoints in the
@@ -556,10 +557,9 @@ Internet-Draft              SAP Network YANG               February 2022
 
 
 
-
 Boucadair, et al.        Expires 15 August 2022                [Page 10]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    'interface-type':  Indicates whether a SAP is a physical port, a
@@ -615,7 +615,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 11]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
      import ietf-network {
@@ -671,7 +671,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 12]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
         This version of this YANG module is part of RFC XXXX
@@ -727,7 +727,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 13]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
          "RFC 4664: Framework for Layer 2 Virtual Private Networks
@@ -783,7 +783,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 14]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
        base service-type;
@@ -839,7 +839,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 15]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
          "User-Network Interface (UNI).";
@@ -895,7 +895,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 16]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
        base interface-type;
@@ -915,7 +915,7 @@ Internet-Draft              SAP Network YANG               February 2022
             the points where network services such as L3VPNs,
             L2VPNs, or network slices can be attached to.";
          leaf attachment-id {
-           type nt:tp-id;
+           type string;
            description
              "Indicates the identifier of the interface to
               which the SAP is attached. This interface can
@@ -951,7 +951,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 17]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
          }
@@ -1007,7 +1007,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 18]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
      }
@@ -1063,7 +1063,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 19]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    [RFC8446].
@@ -1119,7 +1119,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 20]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    [I-D.ietf-opsawg-vpn-common]
@@ -1175,7 +1175,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 21]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    [RFC8345]  Clemm, A., Medved, J., Varga, R., Bahadur, N.,
@@ -1231,7 +1231,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 22]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
               teas-enhanced-vpn-09, 25 October 2021,
@@ -1287,7 +1287,7 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 23]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    [RFC8214]  Boutros, S., Sajassi, A., Salam, S., Drake, J., and J.
@@ -1343,19 +1343,22 @@ Internet-Draft              SAP Network YANG               February 2022
 
 Boucadair, et al.        Expires 15 August 2022                [Page 24]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
 Appendix A.  A Simplified SAP Network Example
 
-   An example of a SAP topology is depicted in Figure 8.
+   An example of a SAP topology that is reported by a network controller
+   is depicted in Figure 8.  This example echoes the topology shown in
+   Figure 5.  Only a minimum set of information is provided for each
+   SAP.
 
    {
      "ietf-network:networks": {
        "network": [
          {
            "network-types": {
-             "service-type": [
+             "sap-type": [
                "l3vpn",
                "vpls-bgp"
              ]
@@ -1370,7 +1373,10 @@ Appendix A.  A Simplified SAP Network Example
                    "service-attachment-point": [
                      {
                        "attachment-id": "sap#11",
-                       "peer-customer-sap-id": "ce-1"
+                       "peer-customer-sap-id": "ce-1",
+                       "service-status": {
+                         "status": "ietf-vpn-common:op-up"
+                       }
                      },
                      {
                        "attachment-id": "sap#12"
@@ -1388,23 +1394,26 @@ Appendix A.  A Simplified SAP Network Example
              {
                "node-id": "PE2",
                "ietf-sap-ntw:service": [
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 25]
+
+Internet-Draft            Network YANG for SAPs            February 2022
+
+
                  {
                    "sap-type": "l3vpn",
                    "service-attachment-point": [
                      {
                        "attachment-id": "sap#21"
                      },
-
-
-
-Boucadair, et al.        Expires 15 August 2022                [Page 25]
-
-Internet-Draft              SAP Network YANG               February 2022
-
-
                      {
                        "attachment-id": "sap#22",
-                       "peer-customer-sap-id": "ce-2"
+                       "peer-customer-sap-id": "ce-2",
+                       "service-status": {
+                         "status": "ietf-vpn-common:op-up"
+                       }
                      }
                    ]
                  }
@@ -1424,7 +1433,10 @@ Internet-Draft              SAP Network YANG               February 2022
                      },
                      {
                        "attachment-id": "sap#33",
-                       "peer-customer-sap-id": "ce-3"
+                       "peer-customer-sap-id": "ce-3",
+                       "service-status": {
+                         "status": "ietf-vpn-common:op-up"
+                       }
                      }
                    ]
                  }
@@ -1438,26 +1450,32 @@ Internet-Draft              SAP Network YANG               February 2022
                    "service-attachment-point": [
                      {
                        "attachment-id": "sap#41"
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 26]
+
+Internet-Draft            Network YANG for SAPs            February 2022
+
+
                      },
                      {
                        "attachment-id": "sap#42",
-                       "peer-customer-sap-id": "ce-4"
+                       "peer-customer-sap-id": "ce-4",
+                       "service-status": {
+                         "status": "ietf-vpn-common:op-up"
+                       }
                      },
                      {
                        "attachment-id": "sap#43"
                      },
                      {
                        "attachment-id": "sap#44",
-                       "peer-customer-sap-id": "ce-5"
+                       "peer-customer-sap-id": "ce-5",
+                       "service-status": {
+                         "status": "ietf-vpn-common:op-up"
+                       }
                      }
-
-
-
-Boucadair, et al.        Expires 15 August 2022                [Page 26]
-
-Internet-Draft              SAP Network YANG               February 2022
-
-
                    ]
                  }
                ]
@@ -1474,11 +1492,27 @@ Internet-Draft              SAP Network YANG               February 2022
 Appendix B.  A Simple Example of SAP Network Model: Node Filter
 
    In the example shown in Figure 9, PE#2 has two physical interfaces
-   "GE0/6/1" and "GE0/6/4".  Two subinterfaces "GE0/6/4.1" and
+   "GE0/6/1" and "GE0/6/4".  Two sub-interfaces "GE0/6/4.1" and
    "GE0/6/4.2" are associated with the physical interface "GE0/6/4".
    Let us consider that four SAPs are exposed to the service
-   orchestrator and mapped to these physical interfaces and
-   subinterfaces.
+   orchestrator and mapped to these physical interfaces and sub-
+   interfaces.
+
+
+
+
+
+
+
+
+
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 27]
+
+Internet-Draft            Network YANG for SAPs            February 2022
+
 
       +-------------------------+
       |                 GE0/6/4 |
@@ -1504,21 +1538,11 @@ Appendix B.  A Simple Example of SAP Network Model: Node Filter
 
        Figure 9: An Example of PE and Associated Physical Interfaces
 
-
-
-
-
-
-Boucadair, et al.        Expires 15 August 2022                [Page 27]
-
-Internet-Draft              SAP Network YANG               February 2022
-
-
    Let us assume that no servie is enabled yet for the SAP associated
    with the first physical interface "GE0/6/1".  Also, let us assume
    that for the SAPs associated with the second physical interface
-   "GE0/6/4", VPLS and L3VPN services are activated on the two
-   subinterfaces "GE0/6/4.1" and "GE0/6/4.2", respectively.
+   "GE0/6/4", VPLS and L3VPN services are activated on the two sub-
+   interfaces "GE0/6/4.1" and "GE0/6/4.2", respectively.
 
    A service orchestrator can query what services are provided on which
    SAPs of PE#1 from the network controller by sending, e.g., a GET
@@ -1538,6 +1562,14 @@ Internet-Draft              SAP Network YANG               February 2022
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 28]
+
+Internet-Draft            Network YANG for SAPs            February 2022
+
+
            },
            {
              "attachment-id": "GE0/6/4",
@@ -1553,7 +1585,7 @@ Internet-Draft              SAP Network YANG               February 2022
              "description": "A first SAP description",
              "interface-type": "ietf-sap-ntw:logical",
              "parent-termination-point": "GE0/6/4",
-             "encapsulation-type": "ietf-vpn-common:vlan",
+             "encapsulation-type": "ietf-vpn-common:vlan-type",
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              },
@@ -1562,14 +1594,6 @@ Internet-Draft              SAP Network YANG               February 2022
              }
            }
          ]
-
-
-
-Boucadair, et al.        Expires 15 August 2022                [Page 28]
-
-Internet-Draft              SAP Network YANG               February 2022
-
-
        },
        {
          "sap-type": "vpls-bgp",
@@ -1594,10 +1618,18 @@ Internet-Draft              SAP Network YANG               February 2022
            },
            {
              "attachment-id": "GE0/6/4.2",
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 29]
+
+Internet-Draft            Network YANG for SAPs            February 2022
+
+
              "description": "Another description",
              "interface-type": "ietf-sap-ntw:logical",
              "parent-termination-point": "GE0/6/4",
-             "encapsulation-type": "ietf-vpn-common:vlan",
+             "encapsulation-type": "ietf-vpn-common:vlan-type",
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              },
@@ -1610,7 +1642,7 @@ Internet-Draft              SAP Network YANG               February 2022
      ]
    }
 
-                                 Figure 10
+   Figure 10: Example of a Response Body to a Request with a Node Filter
 
    Figure 11 shows the message body of a response that is received from
    the network controller if the request includes a filter on the
@@ -1621,9 +1653,33 @@ Internet-Draft              SAP Network YANG               February 2022
 
 
 
-Boucadair, et al.        Expires 15 August 2022                [Page 29]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Boucadair, et al.        Expires 15 August 2022                [Page 30]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    {
@@ -1654,7 +1710,7 @@ Internet-Draft              SAP Network YANG               February 2022
              "description": "A first SAP description",
              "interface-type": "ietf-sap-ntw:logical",
              "parent-termination-point": "GE0/6/4",
-             "encapsulation-type": "ietf-vpn-common:vlan",
+             "encapsulation-type": "ietf-vpn-common:vlan-type",
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              },
@@ -1667,7 +1723,8 @@ Internet-Draft              SAP Network YANG               February 2022
      ]
    }
 
-                                 Figure 11
+     Figure 11: Example of a Response Body to a Request with a Service
+                                   Filter
 
 
 Authors' Addresses
@@ -1676,10 +1733,9 @@ Authors' Addresses
 
 
 
-
-Boucadair, et al.        Expires 15 August 2022                [Page 30]
+Boucadair, et al.        Expires 15 August 2022                [Page 31]
 
-Internet-Draft              SAP Network YANG               February 2022
+Internet-Draft            Network YANG for SAPs            February 2022
 
 
    Mohamed Boucadair (editor)
@@ -1733,4 +1789,4 @@ Internet-Draft              SAP Network YANG               February 2022
 
 
 
-Boucadair, et al.        Expires 15 August 2022                [Page 31]
+Boucadair, et al.        Expires 15 August 2022                [Page 32]
