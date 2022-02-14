@@ -230,7 +230,8 @@
       target="sample"></xref>).</t>
 
       <t>Both User-Network Interface (UNI) and Network-to-Network Interface
-      (NNI) SAPs are supported in the document.</t>
+      (NNI) SAPs are supported in the document. An example is provided in
+      <xref target="nniapp"></xref>.</t>
 
       <t>The YANG data model in <xref target="mod"></xref> conforms to the
       Network Management Datastore Architecture (NMDA) <xref
@@ -1491,6 +1492,163 @@ module ietf-sap-ntw {
   ]
 }
 ]]></artwork>
+        </figure></t>
+
+      <t></t>
+    </section>
+
+    <section anchor="nniapp" title="An NNI SAP Example: Inter-AS VPN Option A">
+      <t>Section 10 of <xref target="RFC4364"></xref> discuses several option
+      to extend the scope of a VPN service beyond the scope of a single
+      Autonomous System (AS). For illustration purposes, this section focuses
+      on the so called "option a" but similar examples can be considered for
+      other options. </t>
+
+      <t>In option a, a PE in an AS attaches directly to a PE in the peer AS.
+      These two PEs are attached by multiple sub-interfaces, at least one for
+      each of the VPNs whose routes need to be passed from AS to AS. Each PE
+      treats the other as if it were a CE. </t>
+
+      <t><xref target="optiona"></xref> shows a simplified (excerpt) topology
+      of two ASes with a focus on the interconnection links between these two
+      ASes.</t>
+
+      <t><figure anchor="optiona">
+          <artwork><![CDATA[.--------------------.                      .--------------------.
+|                    |                      |                    |
+|                 .--+--.                .--+--.                 |
+|              A  |     +================+     |  A              |
+|              S  | (VRF1)----(VPN1)----(VRF1) |  S              |
+|              B  |     |                |     |  B              |
+|              R  | (VRF2)----(VPN2)----(VRF2) |  R              |
+|              1  |     +================+     |  1              |
+|                 '--+--'                '--+--'                 |
+|     AS A           |                      |         AS B       |
+|                 .--+--.                .--+--.                 |
+|              A  |     +================+     |  A              |
+|              S  | (VRF1)----(VPN1)----(VRF1) |  S              |
+|              B  |     |                |     |  B              |
+|              R  | (VRF2)----(VPN2)----(VRF2) |  R              |
+|              2  |     +================+     |  2              |
+|                 '--+--'                '--+--'                 |
+|                    |                      |                    |
+'--------------------'                      '--------------------']]></artwork>
+        </figure></t>
+
+      <t><xref target="nniex1"></xref> shows an example of a message body that
+      is received from the network controller of AS A (with a focus on the
+      NNIs shown in <xref target="optiona"></xref>). Note that only a subset
+      of the SAP-related data is included in the example. </t>
+
+      <t><figure anchor="nniex1" title="SAP for NNI Usage">
+          <artwork><![CDATA[{
+  "ietf-network:networks": {
+    "network": [
+      {
+        "network-types": {
+          "sap-type": [
+            "l3vpn"
+          ]
+        },
+        "network-id": "an-id",
+        "node": [
+          {
+            "node-id": "asbr1",
+            "ietf-sap-ntw:service": [
+              {
+                "sap-type": "l3vpn",
+                "service-attachment-point": [
+                  {
+                    "attachment-id": "sap#11",
+                    "description": "parent inter-as link#1",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-1",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#12",
+                    "description": "parent inter-as link#2",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-1",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#13",
+                    "description": "vpn1",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-1",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#14",
+                    "description": "vpn2",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-1",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "node-id": "asbra2",
+            "ietf-sap-ntw:service": [
+              {
+                "sap-type": "l3vpn",
+                "service-attachment-point": [
+                  {
+                    "attachment-id": "sap#11",
+                    "description": "parent inter-as link#1",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-2",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#12",
+                    "description": "parent inter-as link#2",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-2",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#21",
+                    "description": "vpn1",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-2",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  },
+                  {
+                    "attachment-id": "sap#22",
+                    "description": "vpn2",
+                    "interface-role": "nni",
+                    "peer-customer-sap-id": "asbr-b-2",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-up"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}]]></artwork>
         </figure></t>
 
       <t></t>
