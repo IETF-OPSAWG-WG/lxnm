@@ -205,9 +205,8 @@
       target="RFC8299"></xref> and the Layer 2 VPN Service Model (L2SM) <xref
       target="RFC8466"></xref>. It can also be used to retrieve where
       services, such as the Layer 3 VPN Network Model (L3NM) <xref
-      target="I-D.ietf-opsawg-l3sm-l3nm"></xref>, and the Layer 2 VPN Network
-      Model (L2NM) <xref target="I-D.ietf-opsawg-l2nm"></xref>, are delivered
-      to customers.</t>
+      target="RFC9182"></xref>, and the Layer 2 VPN Network Model (L2NM) <xref
+      target="I-D.ietf-opsawg-l2nm"></xref>, are delivered to customers.</t>
 
       <t>This document defines a YANG network model (<xref
       target="mod"></xref>) for representing, managing, and controlling the
@@ -479,7 +478,7 @@
       target="RFC7149"></xref><xref target="RFC7426"></xref>, the SAP YANG
       data model can be used to exchange information between control elements,
       so as to support VPN service provision and resource management discussed
-      in <xref target="I-D.ietf-opsawg-l3sm-l3nm"></xref><xref
+      in <xref target="RFC9182"></xref><xref
       target="I-D.ietf-opsawg-l2nm"></xref>. Through this data model, the
       service orchestration layer can learn the available endpoints (i.e.,
       SAPs) of interconnection resources of the underlying network. The
@@ -532,27 +531,24 @@
       <t></t>
 
       <t>A SAP network topology can be used for one or multiple service types
-      ('sap-type'). When a SAP topology is used for many service types, the
-      underlying (network) nodes must support at least one of these service
-      types. Examples of supported service types are as follows:<list
+      ('sap-type'). Examples of supported service types are as follows:<list
           style="symbols">
           <t>L3VPN <xref target="RFC4364"></xref>,</t>
 
-          <t>Virtual Private LAN Service (VPLS) using BGP <xref
-          target="RFC4761"></xref>,</t>
-
-          <t><xref target="RFC4762">VPLS using Label Distribution Protocol
-          (LDP)</xref>,</t>
+          <t>Virtual Private LAN Service (VPLS) <xref
+          target="RFC4761"></xref><xref target="RFC4762"></xref>,</t>
 
           <t><xref target="RFC8214">Virtual Private Wire Service
           (VPWS)</xref>,</t>
 
           <t><xref target="RFC7432">BGP MPLS-Based Ethernet VPN</xref>,</t>
 
-          <t><xref target="RFC8365">Ethernet VPN (EVPN)</xref>,</t>
+          <t><xref target="RFC8214">VPWS in Ethernet VPN</xref>,</t>
 
           <t><xref target="RFC7623">Provider Backbone Bridging Combined with
           Ethernet VPN (PBB-EVPN)</xref>,</t>
+
+          <t>VXLAN-based EVPN <xref target="RFC8365"></xref>,</t>
 
           <t>Virtual Networks <xref target="RFC8453"></xref>,</t>
 
@@ -579,12 +575,11 @@
           other nodes.<vspace blankLines="1" />'attachment-id' may include a
           reference to a physical or a logical interface. For example,
           'attachment-id' may be the interface identifier of a VPN network
-          access used in Section 7.6 of <xref
-          target="I-D.ietf-opsawg-l3sm-l3nm"></xref>. <vspace
-          blankLines="1" />SAPs that are associated with the interfaces that
-          are directly hosting services, interfaces that are ready to host
-          per-service sub-interfaces, and already instantiated on
-          sub-interfaces are listed as SAPs.</t>
+          access used in Section 7.6 of <xref target="RFC9182"></xref>.
+          <vspace blankLines="1" />SAPs that are associated with the
+          interfaces that are directly hosting services, interfaces that are
+          ready to host per-service sub-interfaces, and already instantiated
+          on sub-interfaces are listed as SAPs.</t>
 
           <t hangText="'description':">Includes a textual description of the
           SAP.</t>
@@ -612,8 +607,7 @@
 
           <t hangText="'encapsulation-type':">Indicates the encapsulation type
           for the interface indicated in the 'attachment-interface' attribute.
-          The types are taken from <xref
-          target="I-D.ietf-opsawg-vpn-common"></xref>. <vspace
+          The types are taken from <xref target="RFC9181"></xref>. <vspace
           blankLines="1" />This data node can be used, for example, to decide
           whether an existing SAP to be used to host a service or if a new
           sub-interface has to be instantiated.</t>
@@ -641,8 +635,7 @@
 
     <section anchor="mod" title="SAP YANG Module">
       <t>This module imports types from <xref target="RFC8343"></xref>, <xref
-      target="RFC8345"></xref>, and <xref
-      target="I-D.ietf-opsawg-vpn-common"></xref>.</t>
+      target="RFC8345"></xref>, and <xref target="RFC9181"></xref>.</t>
 
       <figure>
         <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-02-07.yang"
@@ -717,93 +710,9 @@ module ietf-sap-ntw {
                  Points (SAPs)";
   }
 
-  identity service-type {
-    description
-      "Base identity for the service type.";
-  }
-
-  identity l3vpn {
-    base service-type;
-    description
-      "L3VPN service.";
-    reference
-      "RFC 4364: BGP/MPLS IP Virtual Private Networks (VPNs)";
-  }
-
-  identity vpls {
-    base service-type;
-    description
-      "Virtual Private LAN Service (VPLS).";
-    reference
-      "RFC 4761: Virtual Private LAN Service (VPLS) Using BGP for
-                 Auto-Discovery and Signaling
-       RFC 4762: Virtual Private LAN Service (VPLS) Using Label
-                 Distribution Protocol (LDP) Signaling";
-  }
-
-  identity vpls-bgp {
-    base service-type;
-    description
-      "VPLS using BGP.";
-    reference
-      "RFC 4761: Virtual Private LAN Service (VPLS) Using BGP for
-                 Auto-Discovery and Signaling";
-  }
-
-  identity vpls-ldp {
-    base service-type;
-    description
-      "VPLS using Label Distribution Protocol (LDP).";
-    reference
-      "RFC 4762: Virtual Private LAN Service (VPLS) Using Label
-                 Distribution Protocol (LDP) Signaling";
-  }
-
-  identity vpws {
-    base service-type;
-    description
-      "Virtual Private Wire Service (VPWS).";
-    reference
-      "RFC 4664: Framework for Layer 2 Virtual Private Networks
-                 (L2VPNs), Section 3.1.1";
-  }
-  
-  identity vpws-evpn {
-    base service-type;
-    description
-      "EVPN used to support VPWS.";
-    reference
-      "RFC 8214: Virtual Private Wire Service Support in Ethernet VPN";
-  }
-
-  identity pbb-evpn {
-    base service-type;
-    description
-      "Provider Backbone Bridging (PBB) EVPN service.";
-    reference
-      "RFC 7623: Provider Backbone Bridging Combined with Ethernet VPN
-                 (PBB-EVPN)";
-  }
-
-  identity mpls-evpn {
-    base service-type;
-    description
-      "MPLS-based EVPN service.";
-    reference
-      "RFC 7432: BGP MPLS-Based Ethernet VPN";
-  }
-
-  identity vxlan-evpn {
-    base service-type;
-    description
-      "VXLAN-based EVPN service.";
-    reference
-      "RFC 8365: A Network Virtualization Overlay Solution Using
-                 Ethernet VPN (EVPN)";
-  }
 
   identity virtual-network {
-    base service-type;
+    base vpn-common:service-type;
     description
       "Virtual network.";
     reference
@@ -812,7 +721,7 @@ module ietf-sap-ntw {
   }
 
   identity enhanced-vpn {
-    base service-type;
+    base vpn-common:service-type;
     description
       "Enhanced VPN (VPN+). VPN+ is an approach that is
        based on existing VPN and Traffic Engineering (TE) 
@@ -825,7 +734,7 @@ module ietf-sap-ntw {
   }
 
   identity network-slice {
-    base service-type;
+    base vpn-common:service-type;
     description
       "IETF network slice.  An IETF network slice
        is a logical network topology connecting a number of
@@ -838,7 +747,7 @@ module ietf-sap-ntw {
   }
 
   identity sdwan {
-    base service-type;
+    base vpn-common:service-type;
     description
       "PE-based Software-Defined Wide Area Network (SDWAN).";
     reference
@@ -847,7 +756,7 @@ module ietf-sap-ntw {
   }
 
   identity basic-connectivty {
-    base service-type;
+    base vpn-common:service-type;
     description
       "Basic IP connectivity.";
   }
@@ -1003,7 +912,7 @@ module ietf-sap-ntw {
          SAP network type.";
       leaf-list sap-type {
         type identityref {
-          base service-type;
+          base vpn-common:service-type;
         }
         description
           "Indicates the set of supported service types.";
@@ -1020,7 +929,7 @@ module ietf-sap-ntw {
         "A list of supported service type for the node.";
       leaf sap-type {
         type identityref {
-          base service-type;
+          base vpn-common:service-type;
         }
         description
           "Indicates a service type.";
@@ -1134,7 +1043,7 @@ module ietf-sap-ntw {
 
       <?rfc include="reference.RFC.8795"?>
 
-      <?rfc include='reference.I-D.ietf-opsawg-vpn-common'?>
+      <?rfc include='reference.RFC.9181'?>
     </references>
 
     <references title="Informative References">
@@ -1154,7 +1063,7 @@ module ietf-sap-ntw {
 
       <?rfc include="reference.RFC.8343"?>
 
-      <?rfc include='reference.I-D.ietf-opsawg-l3sm-l3nm'?>
+      <?rfc include='reference.RFC.9182'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-l2nm'?>
 
@@ -1196,8 +1105,8 @@ module ietf-sap-ntw {
       {
         "network-types": {
           "sap-type": [
-            "l3vpn",
-            "vpls"
+            "ietf-vpn-common:l3vpn",
+            "ietf-vpn-common:vpls"
           ]
         },
         "network-id": "an-id",
@@ -1206,7 +1115,7 @@ module ietf-sap-ntw {
             "node-id": "PE1",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#11",
@@ -1232,7 +1141,7 @@ module ietf-sap-ntw {
             "node-id": "PE2",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#21"
@@ -1252,7 +1161,7 @@ module ietf-sap-ntw {
             "node-id": "PE3",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#31"
@@ -1275,7 +1184,7 @@ module ietf-sap-ntw {
             "node-id": "PE4",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#41"
@@ -1361,7 +1270,7 @@ module ietf-sap-ntw {
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
-      "sap-type": "l3vpn",
+      "sap-type": "ietf-vpn-common:l3vpn",
       "service-attachment-point": [
         {
           "attachment-id": "sap#1",
@@ -1400,7 +1309,7 @@ module ietf-sap-ntw {
       ]
     },
     {
-      "sap-type": "vpls",
+      "sap-type": "ietf-vpn-common:vpls",
       "service-attachment-point": [
           "attachment-id": "sap#1",
           "description": "Ready to host SAPs",
@@ -1451,7 +1360,7 @@ module ietf-sap-ntw {
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
-      "sap-type": "l3vpn",
+      "sap-type": "ietf-vpn-common:l3vpn",
       "service-attachment-point": [
         {
           "attachment-id": "sap#1",
@@ -1547,7 +1456,7 @@ module ietf-sap-ntw {
       {
         "network-types": {
           "sap-type": [
-            "l3vpn"
+            "ietf-vpn-common:l3vpn"
           ]
         },
         "network-id": "an-id",
@@ -1556,7 +1465,7 @@ module ietf-sap-ntw {
             "node-id": "asbr-a1",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#11",
@@ -1602,7 +1511,7 @@ module ietf-sap-ntw {
             "node-id": "asbr-a2",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "l3vpn",
+                "sap-type": "ietf-vpn-common:l3vpn",
                 "service-attachment-point": [
                   {
                     "attachment-id": "sap#11",
