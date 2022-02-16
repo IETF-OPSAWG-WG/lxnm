@@ -15,9 +15,9 @@ This document defines a common YANG module that is meant to be reused
    by various VPN-related modules such as Layer 3 VPN and Layer 2 VPN
    Network Models.
 
-### Common Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-vpn-common&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-vpn-common/draft-ietf-opsawg-vpn-common.txt) or https://tinyurl.com/vpn-common-latest
+### Final version of the Common Module: [RFC9181](https://www.rfc-editor.org/rfc/rfc9181.html)
 
-## L3 VPN Network-Oriented YANG Model
+## Layer 3 VPN Network YANG Model
 
 The L3NM document specifies a L3VPN Network YANG Model (L3NM) to facilitate communication 
 between a service orchestrator and a network
@@ -25,18 +25,16 @@ between a service orchestrator and a network
    view of the L3VPN services.  The Yang model proposed is limited to
    BGP PE-based VPNs as described in RFCs 4026, 4110, and 4364.
   
-### l3nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l3sm-l3nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L3NM/draft-ietf-opsawg-l3sm-l3nm.txt) or https://tinyurl.com/l3nm-latest
+### Final version of the L3NM [RFC9182](https://www.rfc-editor.org/rfc/rfc9182.html)
    
-## L2 VPN Network-Oriented YANG Model
-A L2VPN Network YANG Model
+## A L2VPN Network YANG Model
 
 This document defines a YANG Data model (called, L2NM) that can be used to manage the provisioning of Layer 2 VPN services within a Service Provider Network. This YANG module provides representation of the Layer 2 VPN Service from a network standpoint. The module is meant to be used by a Network Controller to derive the configuration information that will be sent to relevant network devices.
-
-The L2SM complements the Layer 2 Service Model (RFC8466) by providing a network-centric view of the service that is internal to a Service Provider.
 
 ### l2nm Module :[Diff editor copy vs published version](https://www.ietf.org/rfcdiff?url1=draft-ietf-opsawg-l2nm&url2=https://raw.githubusercontent.com/IETF-OPSAWG-WG/lxnm/master/I-D-L2NM/draft-ietf-opsawg-l2nm.txt) or https://tinyurl.com/l2nm-latest
 
 ##  A YANG Model for Network and VPN Service Performance Monitoring
+
 This document defines a YANG model for
    both Network Performance Monitoring and VPN Service Performance
    Monitoring that can be used to monitor and manage network performance
