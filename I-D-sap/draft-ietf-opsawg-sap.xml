@@ -44,7 +44,7 @@
 <!-- end of list of popular I-D processing instructions -->
 <rfc category="std" docName="draft-ietf-opsawg-sap-latest" ipr="trust200902">
   <front>
-    <title abbrev="Network YANG for SAPs">A Network YANG Model for Service
+    <title abbrev="A Network YANG for SAPs">A Network YANG Model for Service
     Attachment Points (SAPs)</title>
 
     <author fullname="Mohamed Boucadair" initials="M." role="editor"
@@ -472,8 +472,9 @@
       network model to other models. The SAP network model augments the
       Network model <xref target="RFC8345"></xref> and imports Network
       Topology model, while other technology-specific topology models (e.g.,
-      TE Topologies model <xref target="RFC8795"></xref> or L3 Topology model
-      <xref target="RFC8346"></xref>) augment the Network Topology.</t>
+      Traffic Engineering (TE) Topologies model <xref target="RFC8795"></xref>
+      or Layer 3 Topologies model <xref target="RFC8346"></xref>) augment the
+      Network Topology.</t>
 
       <t>In the context of Software-Defined Networking (SDN) <xref
       target="RFC7149"></xref><xref target="RFC7426"></xref>, the SAP YANG
@@ -490,18 +491,23 @@
       the feasibility of an end-to-end IP connectivity or L2VPN connectivity
       and, therefore, derive the sequence of domains and the points of
       interconnection to use.</t>
+
+      <t>Advanced low-level interface-specific data are not exposed in the SAP
+      model. Filters based on the interface identifiers listed in the SAP
+      model can used together with dedicated device models to set or get such
+      data.</t>
     </section>
 
     <section anchor="tree" title="SAP Module Tree Structure">
-      <t>The SAP network model builds on the network data model defined in the
-      'ietf-network' module <xref target="RFC8345"></xref>, augmenting the
-      nodes with Service Attachment Points, which anchor the links and are
-      contained in nodes. </t>
+      <t>The SAP network model 'ietf-sap-ntw' builds on the 'ietf-network'
+      module <xref target="RFC8345"></xref> by augmenting the nodes with
+      Service Attachment Points, which anchor the links and are contained in
+      nodes.</t>
 
       <t>The 'service-attachment-point' attribute defined in the SAP network
-      model is not a tunnel termination point (TTP) nor a link, but an
-      abstraction of the termination point defined in <xref
-      target="RFC8345"></xref>.</t>
+      model is not a tunnel termination point (TTP) (Section 3.6 of <xref
+      target="RFC8795"></xref>) nor a link, but an abstraction of the
+      termination point defined in <xref target="RFC8345"></xref>.</t>
 
       <t>The structure of the 'ietf-sap-ntw' module is shown in <xref
       target="fi4"></xref>.</t>
@@ -571,7 +577,11 @@
       <t>These service types build on the types that are already defined in
       <xref target="RFC9181"></xref> and additional types that are defined in
       this document. Other service types can be defined in future YANG
-      modules, if needed.</t>
+      modules, if needed. </t>
+
+      <t>Filters based on the service type can be used to access per-service
+      SAP topology. A example is depicted in <xref
+      target="app-ex-res-body-filter"></xref>.</t>
 
       <t>A node in the topology can support one or multiple service types
       ('sap-type') among those listed under the 'sap-network' container. A
@@ -587,7 +597,7 @@
           activated), or service that are already instantiated on
           sub-interfaces are listed as SAPs.<vspace blankLines="1" />For
           example, 'attachment-id' may be the VPN network access identifier in
-          Section 7.6 of <xref target="RFC9182"></xref>. </t>
+          Section 7.6 of <xref target="RFC9182"></xref>.</t>
 
           <t hangText="'description':">Includes a textual description of the
           SAP.</t>
@@ -631,7 +641,7 @@
           (Section 6.3 of <xref target="RFC8299"></xref>), a CE identifier
           (Section 2.1 of <xref
           target="I-D.ietf-teas-ietf-network-slices"></xref>), the IP address
-          of a peer Autonomous System Border Router (ASBR). </t>
+          of a peer Autonomous System Border Router (ASBR).</t>
 
           <t hangText="'sap-status':">Indicates the operational status of a
           SAP. Values are taken from the values defined in <xref
@@ -654,7 +664,7 @@
       target="RFC8345"></xref>, and <xref target="RFC9181"></xref>.</t>
 
       <figure>
-        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-02-07.yang"
+        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-02-17.yang"
 module ietf-sap-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-sap-ntw";
@@ -718,7 +728,7 @@ module ietf-sap-ntw {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2022-02-07 {
+  revision 2022-02-17 {
     description
       "Initial version";
     reference
@@ -774,7 +784,9 @@ module ietf-sap-ntw {
   identity basic-connectivty {
     base vpn-common:service-type;
     description
-      "Basic IP connectivity.";
+      "Basic IP connectivity. This is, for example, a plain
+       connectivity offered to Enterprises over a dedicated
+       or shared MPLS infrastructure.";
   }
 
   identity interface-role {
@@ -1430,14 +1442,14 @@ module ietf-sap-ntw {
       on the so called "option a" but similar examples can be considered for
       other options.</t>
 
-      <t>In option a, a PE in an AS attaches directly to a PE in the peer AS.
-      These two PEs are attached by multiple sub-interfaces, at least one for
-      each of the VPNs whose routes need to be passed from AS to AS. Each PE
-      treats the other as if it were a CE.</t>
+      <t>A PE in an AS attaches directly to a PE in a peer AS. These two PEs
+      are attached by multiple sub-interfaces, at least one for each of the
+      VPNs whose routes need to be passed from AS to AS. Each PE treats the
+      other as if it were a CE.</t>
 
       <t><xref target="optiona"></xref> shows a simplified (excerpt) topology
-      of two ASes with a focus on the interconnection links between these two
-      ASes.</t>
+      of two ASes A and B with a focus on the interconnection links between
+      these two ASes.</t>
 
       <t><figure align="center" anchor="optiona"
           title="An Example of Inter-AS VPN (Option A)">
