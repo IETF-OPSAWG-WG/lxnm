@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-sap-01" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-sap-02" ipr="trust200902">
   <front>
     <title abbrev="A Network YANG for SAPs">A Network YANG Model for Service
     Attachment Points (SAPs)</title>
@@ -526,10 +526,10 @@
       Service Attachment Points, which anchor the links and are contained in
       nodes.</t>
 
-      <t>The 'service-attachment-point' attribute defined in the SAP network
-      model is not a tunnel termination point (TTP) (Section 3.6 of <xref
-      target="RFC8795"></xref>) nor a link, but an abstraction of the
-      termination point defined in <xref target="RFC8345"></xref>.</t>
+      <t>The 'sap' attribute defined in the SAP network model is not a tunnel
+      termination point (TTP) (Section 3.6 of <xref target="RFC8795"></xref>)
+      nor a link, but an abstraction of the termination point defined in <xref
+      target="RFC8345"></xref>.</t>
 
       <t>The structure of the 'ietf-sap-ntw' module is shown in <xref
       target="fi4"></xref>.</t>
@@ -539,32 +539,35 @@
         <artwork align="center"><![CDATA[module: ietf-sap-ntw
   augment /nw:networks/nw:network/nw:network-types:
     +--rw sap-network!
-       +--rw sap-type*   identityref
+       +--rw service-type*   identityref
   augment /nw:networks/nw:network/nw:node:
-    +--rw service* [sap-type]
-       +--rw sap-type                    identityref
-       +--rw service-attachment-point* [attachment-id]
-          +--rw attachment-id               string
+    +--rw service* [service-type]
+       +--rw service-type                   identityref
+       +--rw sap* [sap-id]
+          +--rw sap-id                      string
           +--rw description?                string
-          +--rw attachment-interface?       string
           +--rw parent-termination-point?   nt:tp-id
+          +--rw attachment-interface?       string
           +--rw interface-type?             identityref
           +--rw encapsulation-type?         identityref
           +--rw role?                       identityref
-          +--rw peer-customer-sap-id?       string
+          +--rw peer-sap-id?                string
           +--ro sap-status
           |  +--ro status?        identityref
           |  +--ro last-change?   yang:date-and-time
           +--ro service-status
              +--ro status?        identityref
-             +--ro last-change?   yang:date-and-time]]></artwork>
+             +--ro last-change?   yang:date-and-time
+
+
+]]></artwork>
       </figure>
 
       <t></t>
 
       <t>A SAP network topology can be used for one or multiple service types
-      ('sap-type'). Examples of supported service types are as follows:<list
-          style="symbols">
+      ('service-type'). Examples of supported service types are as
+      follows:<list style="symbols">
           <t>L3VPN <xref target="RFC4364"></xref>,</t>
 
           <t>Virtual Private LAN Service (VPLS) <xref
@@ -606,10 +609,10 @@
       target="app-ex-res-body-filter"></xref>.</t>
 
       <t>A node in the topology can support one or multiple service types
-      ('sap-type') among those listed under the 'sap-network' container. A
+      ('service-type') among those listed under the 'sap-network' container. A
       list of SAPs are then bound to each service type supported by a given
       node. Each SAP is characterized as follows:<list style="hanging">
-          <t hangText="'attachment-id':">Includes an identifier that uniquely
+          <t hangText="'sap-id':">Includes an identifier that uniquely
           identifies a SAP within a node. <vspace blankLines="1" />The same
           SAP may appear under distinct service types. In such a case, the
           same identifier is used for these service types in
@@ -618,17 +621,11 @@
           are ready to host per-service sub-interfaces (but not yet
           activated), or service that are already instantiated on
           sub-interfaces are listed as SAPs.<vspace blankLines="1" />For
-          example, 'attachment-id' may be the VPN network access identifier in
+          example, 'sap-id' may be the VPN network access identifier in
           Section 7.6 of <xref target="RFC9182"></xref>.</t>
 
           <t hangText="'description':">Includes a textual description of the
           SAP.</t>
-
-          <t hangText="'attachment-interface':">Indicates a reference to the
-          interface to which the SAP is bound. The same interface may host
-          multiple services. <vspace blankLines="1" />Whether the attachment
-          identifier echoes the content of the attachment interface is
-          deployment specific.</t>
 
           <t hangText="'parent-termination-point':">Includes a reference to
           the parent interface to which the SAP is bound (e.g., a physical
@@ -640,6 +637,12 @@
           IETF Network Slice endpoints to the service/tunnel/path endpoints in
           the underlay network as per Section 5.4 of <xref
           target="I-D.ietf-teas-ietf-network-slices"></xref>.</t>
+
+          <t hangText="'attachment-interface':">Indicates a reference to the
+          interface to which the SAP is bound. The same interface may host
+          multiple services. <vspace blankLines="1" />Whether the attachment
+          identifier echoes the content of the attachment interface is
+          deployment specific.</t>
 
           <t hangText="'interface-type':">Indicates whether a SAP is bound to
           a physical port, a loopback interface, a Link Aggregation Group
@@ -653,15 +656,14 @@
           whether an existing SAP can be (re)used to host a service or if a
           new sub-interface has to be instantiated.</t>
 
-          <t hangText="'role':">Specifies whether a SAP is a UNI or NNI.
-          <vspace blankLines="1" />A SAP inherits the role of its parent
+          <t hangText="'role':">Specifies the role of a SAP (e.g., a UNI or
+          NNI). <vspace blankLines="1" />A SAP inherits the role of its parent
           interface ('parent-termination-point').</t>
 
-          <t hangText="'peer-customer-sap-id':">Includes a reference to the
-          remote endpoint of an attachment circuit. <vspace
-          blankLines="1" />Examples of such a reference are: a site identifier
-          (Section 6.3 of <xref target="RFC8299"></xref>), a CE identifier
-          (Section 2.1 of <xref
+          <t hangText="'peer-sap-id':">Includes a reference to the remote
+          endpoint of an attachment circuit. <vspace blankLines="1" />Examples
+          of such a reference are: a site identifier (Section 6.3 of <xref
+          target="RFC8299"></xref>), a CE identifier (Section 2.1 of <xref
           target="I-D.ietf-teas-ietf-network-slices"></xref>), the IP address
           of a peer Autonomous System Border Router (ASBR).</t>
 
@@ -744,7 +746,7 @@ module ietf-sap-ntw {
 
      Redistribution and use in source and binary forms, with or
      without modification, is permitted pursuant to, and subject to
-     the license terms contained in, the Simplified BSD License set
+     the license terms contained in, the Revised BSD License set
      forth in Section 4.c of the IETF Trust's Legal Provisions
      Relating to IETF Documents
      (https://trustee.ietf.org/license-info).
@@ -879,13 +881,13 @@ module ietf-sap-ntw {
   grouping sap-information {
     description
       "Service Attachment Point (SAP) information.";
-    list service-attachment-point {
-      key "attachment-id";
+    list sap {
+      key "sap-id";
       description
         "The Service Attachment Points are abstraction of
          the points where network services such as L3VPNs,
          L2VPNs, or network slices can be attached to.";
-      leaf attachment-id {
+      leaf sap-id {
         type string;
         description
           "Indicates an identifier that uniquely identifies
@@ -896,17 +898,17 @@ module ietf-sap-ntw {
         description
           "A textual description of the SAP.";
       }
-      leaf attachment-interface {
-        type string;
-        description
-          "Indicates the interface to which the SAP is bound.";
-      }
       leaf parent-termination-point {
         type nt:tp-id;
         description
           "Indicates the parent termination point to 
            which the SAP is attached to. A termination
            point can be a physical port, an interface, etc.";
+      }
+      leaf attachment-interface {
+        type string;
+        description
+          "Indicates the interface to which the SAP is bound.";
       }
       leaf interface-type {
         type identityref {
@@ -928,9 +930,9 @@ module ietf-sap-ntw {
           base interface-role;
         }
         description
-          "Indicates whether the SAP is an UNI or a NNI.";
+          "Indicates the role of a SAP.";
       }
-      leaf peer-customer-sap-id {
+      leaf peer-sap-id {
         type string;
         description
           "Indicates an identifier of the peer's termination
@@ -962,7 +964,7 @@ module ietf-sap-ntw {
       description
         "The presence of the container node indicates the 
          SAP network type.";
-      leaf-list sap-type {
+      leaf-list service-type {
         type identityref {
           base vpn-common:service-type;
         }
@@ -976,10 +978,10 @@ module ietf-sap-ntw {
     description
       "Parameters for the SAP level.";
     list service {
-      key "sap-type";
+      key "service-type";
       description
         "A list of supported service type for the node.";
-      leaf sap-type {
+      leaf service-type {
         type identityref {
           base vpn-common:service-type;
         }
@@ -1036,7 +1038,7 @@ module ietf-sap-ntw {
       nodes without proper protection can have a negative effect on network
       operations. These are the subtrees and data nodes and their
       sensitivity/vulnerability: <list style="symbols">
-          <t>/nw:networks/nw:network/nw:node/sap:sap-type/sap:service-attachment-point<vspace
+          <t>/nw:networks/nw:network/nw:node/sap:service-type/sap:sap<vspace
           blankLines="1" />This subtree specifies the configurations of the
           nodes in a SAP network model. Unexpected changes to this subtree
           (e.g., associating a SAP with another parent termination interface)
@@ -1048,11 +1050,10 @@ module ietf-sap-ntw {
       important to control read access (e.g., via get, get-config, or
       notification) to these data nodes. These are the subtrees and data nodes
       and their sensitivity/vulnerability:<list style="symbols">
-          <t>/nw:networks/nw:network/nw:node/sap:sap-type/sap:service-attachment-point<vspace
+          <t>/nw:networks/nw:network/nw:node/sap:service-type/sap:sap<vspace
           blankLines="1" />Unauthorized access to this subtree can disclose
           the operational state information of the nodes in a SAP network
-          model (e.g., disclose the identity of a customer
-          'peer-customer-sap-id').</t>
+          model (e.g., disclose the identity of a customer 'peer-sap-id').</t>
         </list></t>
 
       <t></t>
@@ -1064,6 +1065,8 @@ module ietf-sap-ntw {
 
       <t>Thanks to Dhruv Dhody, Benoit Claise, Bo Wu, Erez Segev, and Raul
       Arco for the comments.</t>
+
+      <t>Thanks to Martin Bj&ouml;rklund for yang-doctors review.</t>
     </section>
   </middle>
 
@@ -1156,34 +1159,34 @@ module ietf-sap-ntw {
     "network": [
       {
         "network-types": {
-          "sap-type": [
+          "service-type": [
             "ietf-vpn-common:l3vpn",
             "ietf-vpn-common:vpls"
           ]
         },
-        "network-id": "an-id",
+        "network-id": "foo:an-id",
         "node": [
           {
             "node-id": "PE1",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#11",
-                    "peer-customer-sap-id": "ce-1",
+                    "sap-id": "sap#11",
+                    "peer-sap-id": "ce-1",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#12"
+                    "sap-id": "sap#12"
                   },
                   {
-                    "attachment-id": "sap#13"
+                    "sap-id": "sap#13"
                   },
                   {
-                    "attachment-id": "sap#14"
+                    "sap-id": "sap#14"
                   }
                 ]
               }
@@ -1193,14 +1196,14 @@ module ietf-sap-ntw {
             "node-id": "PE2",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#21"
+                    "sap-id": "sap#21"
                   },
                   {
-                    "attachment-id": "sap#22",
-                    "peer-customer-sap-id": "ce-2",
+                    "sap-id": "sap#22",
+                    "peer-sap-id": "ce-2",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1213,17 +1216,17 @@ module ietf-sap-ntw {
             "node-id": "PE3",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#31"
+                    "sap-id": "sap#31"
                   },
                   {
-                    "attachment-id": "sap#32"
+                    "sap-id": "sap#32"
                   },
                   {
-                    "attachment-id": "sap#33",
-                    "peer-customer-sap-id": "ce-3",
+                    "sap-id": "sap#33",
+                    "peer-sap-id": "ce-3",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1236,24 +1239,24 @@ module ietf-sap-ntw {
             "node-id": "PE4",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#41"
+                    "sap-id": "sap#41"
                   },
                   {
-                    "attachment-id": "sap#42",
-                    "peer-customer-sap-id": "ce-4",
+                    "sap-id": "sap#42",
+                    "peer-sap-id": "ce-4",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#43"
+                    "sap-id": "sap#43"
                   },
                   {
-                    "attachment-id": "sap#44",
-                    "peer-customer-sap-id": "ce-5",
+                    "sap-id": "sap#44",
+                    "peer-sap-id": "ce-5",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1322,10 +1325,10 @@ module ietf-sap-ntw {
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
-      "sap-type": "ietf-vpn-common:l3vpn",
-      "service-attachment-point": [
+      "service-type": "ietf-vpn-common:l3vpn",
+      "sap": [
         {
-          "attachment-id": "sap#1",
+          "sap-id": "sap#1",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1335,7 +1338,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#2",
+          "sap-id": "sap#2",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1345,7 +1348,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#3",
+          "sap-id": "sap#3",
           "description": "A first SAP description",
           "attachment-interface": "GE0/6/4.1",
           "interface-type": "ietf-sap-ntw:logical",
@@ -1361,9 +1364,9 @@ module ietf-sap-ntw {
       ]
     },
     {
-      "sap-type": "ietf-vpn-common:vpls",
-      "service-attachment-point": [
-          "attachment-id": "sap#1",
+      "service-type": "ietf-vpn-common:vpls",
+      "sap": [
+          "sap-id": "sap#1",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1373,7 +1376,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#2",
+          "sap-id": "sap#2",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1383,7 +1386,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#4",
+          "sap-id": "sap#4",
           "description": "Another description",
           "attachment-interface": "GE0/6/4.2",
           "interface-type": "ietf-sap-ntw:logical",
@@ -1412,10 +1415,10 @@ module ietf-sap-ntw {
           <artwork><![CDATA[{
   "ietf-sap-ntw:service": [
     {
-      "sap-type": "ietf-vpn-common:l3vpn",
-      "service-attachment-point": [
+      "service-type": "ietf-vpn-common:l3vpn",
+      "sap": [
         {
-          "attachment-id": "sap#1",
+          "sap-id": "sap#1",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1425,7 +1428,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#2",
+          "sap-id": "sap#2",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
@@ -1435,7 +1438,7 @@ module ietf-sap-ntw {
           }
         },
         {
-          "attachment-id": "sap#3",
+          "sap-id": "sap#3",
           "description": "A first SAP description",
           "attachment-interface": "GE0/6/4.1",
           "interface-type": "ietf-sap-ntw:logical",
@@ -1510,50 +1513,50 @@ module ietf-sap-ntw {
     "network": [
       {
         "network-types": {
-          "sap-type": [
+          "service-type": [
             "ietf-vpn-common:l3vpn"
           ]
         },
-        "network-id": "an-id",
+        "network-id": "foo:an-id",
         "node": [
           {
             "node-id": "asbr-a1",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#11",
+                    "sap-id": "sap#11",
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b1",
+                    "peer-sap-id": "asbr-b1",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#12",
+                    "sap-id": "sap#12",
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b1",
+                    "peer-sap-id": "asbr-b1",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#13",
+                    "sap-id": "sap#13",
                     "description": "vpn1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b1",
+                    "peer-sap-id": "asbr-b1",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#14",
+                    "sap-id": "sap#14",
                     "description": "vpn2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b1",
+                    "peer-sap-id": "asbr-b1",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1566,40 +1569,40 @@ module ietf-sap-ntw {
             "node-id": "asbr-a2",
             "ietf-sap-ntw:service": [
               {
-                "sap-type": "ietf-vpn-common:l3vpn",
-                "service-attachment-point": [
+                "service-type": "ietf-vpn-common:l3vpn",
+                "sap": [
                   {
-                    "attachment-id": "sap#11",
+                    "sap-id": "sap#11",
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b2",
+                    "peer-sap-id": "asbr-b2",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#12",
+                    "sap-id": "sap#12",
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b2",
+                    "peer-sap-id": "asbr-b2",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#21",
+                    "sap-id": "sap#21",
                     "description": "vpn1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b2",
+                    "peer-sap-id": "asbr-b2",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
                   {
-                    "attachment-id": "sap#22",
+                    "sap-id": "sap#22",
                     "description": "vpn2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-customer-sap-id": "asbr-b2",
+                    "peer-sap-id": "asbr-b2",
                     "service-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
