@@ -618,7 +618,9 @@
           activated), or service that are already instantiated on
           sub-interfaces are listed as SAPs.<vspace blankLines="1" />For
           example, 'sap-id' may be the VPN network access identifier in
-          Section 7.6 of <xref target="RFC9182"></xref>.</t>
+          Section 7.6 of <xref target="RFC9182"></xref>. An example to
+          illustrate the use of this attribute during service creation is
+          provided in <xref target="servicesap"></xref>.</t>
 
           <t hangText="'description':">Includes a textual description of the
           SAP.</t>
@@ -643,7 +645,9 @@
           'local-bridge-reference', 'bearer-reference', or 'lag-interface-id')
           defined in Section 7.6.1 of <xref target="RFC9182"></xref> or
           'l3-termination-point' defined in Section 7.6.2 of <xref
-          target="RFC9182"></xref>. </t>
+          target="RFC9182"></xref>. It is responsibility of the controller to
+          ensure that consistent references are used in the SAP and underlying
+          device modes or any other device inventory mechanism.</t>
 
           <t hangText="'interface-type':">Indicates whether a SAP is bound to
           a physical port, a loopback interface, a Link Aggregation Group
@@ -651,8 +655,8 @@
           reference, etc. <vspace blankLines="1" />The mapping to the detailed
           interface types as per <xref target="RFC7224"></xref> is maintained
           by the controller. That mapping is used, for example, when the
-          controller translates this SAP network module into device modules.
-          </t>
+          controller translates this SAP network module into device
+          modules.</t>
 
           <t hangText="'encapsulation-type':">Indicates the encapsulation type
           for the interface indicated in the 'attachment-interface' attribute.
@@ -1625,6 +1629,37 @@ module ietf-sap-ntw {
         </figure></t>
 
       <t></t>
+    </section>
+
+    <section anchor="servicesap"
+             title="An Example of Using the SAP Network Model in Service Creation">
+      <t>This section describes an example to illustrate the use of the SAP
+      model for service creation purposes.</t>
+
+      <t>An example of a SAP topology is presented in <xref
+      target="ex1"></xref>. This example includes four PEs with their SAPs, as
+      well as the customer information. </t>
+
+      <t>Let us assume that an operator wants to create an L3VPN service
+      between two PEs (PE3 and PE4) that are servicing two CEs (CE6 and CE7).
+      To that aim, the operator would query the SAP topology and would obtain
+      a response similar to what is depicted in <xref target="ex1"></xref>.
+      That response indicates that the SAPs having "sap#31" and "sap#43" as
+      attachment identifiers do not have any installed services. Once the
+      "free" SAPs are identified, the 'interface-type' and
+      'encapsulation-type' are checked to see if the requested L3VPN service
+      is compatible with the SAP characteristics. If they are compatible, as
+      proposed in <xref target="tree"></xref>, the 'attachment-id' value can
+      be used as the VPN network access identifier in an L3NM create query.
+      </t>
+
+      <t>Let us now assume that instead of the L3VPN service, the operator
+      wants to set up an L2VPN service. If the 'interface-type' is a physical
+      port, a new logical SAP can be created using the SAP model to cope with
+      the service needs (e.g., the "encapsulation-type" attribute can be set
+      to "ietf-vpn-common:vlan-type"). Once the logical SAP is created, the
+      'attachment-id' of the new SAP is used to create an L2NM instance
+      (Section 7.6 of <xref target="I-D.ietf-opsawg-l2nm"></xref>).</t>
     </section>
   </back>
 </rfc>
