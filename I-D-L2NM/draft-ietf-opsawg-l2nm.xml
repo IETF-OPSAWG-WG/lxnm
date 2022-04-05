@@ -652,27 +652,27 @@ CLI:  Command-Line Interface            ]]></artwork>
           with or without indicating a pool from which an ESI should be taken
           ('esi-pool-name'). The following types are supported: <list
               style="hanging">
-              <t hangText="'esi-type-0':">The ESI is directly configured by
-              the VPN service provider. The configured value is provided in
-              'ethernet-segment-identifier'.</t>
+              <t hangText="'esi-type-0-operator':">The ESI is directly
+              configured by the VPN service provider. The configured value is
+              provided in 'ethernet-segment-identifier'.</t>
 
-              <t hangText="'esi-type-1':">The ESI is auto-generated from the
-              IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
+              <t hangText="'esi-type-1-lacp':">The ESI is auto-generated from
+              the IEEE 802.1AX Link Aggregation Control Protocol (LACP) <xref
               target="IEEE802.1AX"></xref>.</t>
 
-              <t hangText="'esi-type-2':">The ESI is auto-generated and
+              <t hangText="'esi-type-2-bridge':">The ESI is auto-generated and
               determined based on the Layer 2 bridge protocol.</t>
 
-              <t hangText="'esi-type-3':">The ESI is a MAC-based ESI value
+              <t hangText="'esi-type-3-mac':">The ESI is a MAC-based ESI value
               that can be auto-generated or configured by the VPN service
               provider.</t>
 
-              <t hangText="'esi-type-4':">The ESI is auto-generated or
-              configured by the VPN service provider based on the Router ID.
-              The 'router-id' supplied in <xref target="vpn_node"></xref> can
-              be used to auto-derive an ESI when this type is used.</t>
+              <t hangText="'esi-type-4-router-id':">The ESI is auto-generated
+              or configured by the VPN service provider based on the Router
+              ID. The 'router-id' supplied in <xref target="vpn_node"></xref>
+              can be used to auto-derive an ESI when this type is used.</t>
 
-              <t hangText="'esi-type-5':">The ESI is auto-generated or
+              <t hangText="'esi-type-5-asn':">The ESI is auto-generated or
               configured by the VPN service provider based on the Autonomous
               System (AS) number. The 'local-autonomous-system' supplied in
               <xref target="profile"></xref> can be used to auto-derive an ESI
@@ -1131,10 +1131,10 @@ CLI:  Command-Line Interface            ]]></artwork>
             can be used to auto-derive some other attributes such as RDs or
             Ethernet Segment Identifiers (ESIs).</t>
 
-            <t hangText="'svc-mtu':">Is the service MTU for an L2VPN service.
-            It is also known as the maximum transmission unit or maximum frame
-            size. When a frame is larger than the MTU, it is fragmented to
-            accommodate the MTU of the network.</t>
+            <t hangText="'svc-mtu':">Is the service MTU for an L2VPN service
+            (i.e., Layer 2 MTU). It is also known as the maximum transmission
+            unit or maximum frame size. When a frame is larger than the MTU,
+            it is fragmented to accommodate the MTU of the network.</t>
 
             <t hangText="'ce-vlan-preservation':">Is set to preserve the
             Customer Edge VLAN IDs (CE-VLAN IDs) from ingress to egress, i.e.,
@@ -1169,7 +1169,7 @@ CLI:  Command-Line Interface            ]]></artwork>
 
                     <t hangText="'action':">Specifies the action when the
                     upper limit is exceeded: drop the packet, flood the
-                    packet, or simply send a warning log message.</t>
+                    packet, or simply send a warning message.</t>
                   </list></t>
 
                 <t hangText="'mac-loop-prevention':">Container for MAC loop
@@ -2034,28 +2034,48 @@ CLI:  Command-Line Interface            ]]></artwork>
                           +--rw svc-pe-to-ce-bandwidth
                           |       {vpn-common:inbound-bw}?
                           |  +--rw pe-to-ce-bandwidth* [bw-type]
-                          |     +--rw bw-type   identityref
-                          |     +--rw cos-id?   uint8
-                          |     |       {vpn-common:qos}?
-                          |     +--rw cir?      uint64
-                          |     +--rw cbs?      uint64
-                          |     +--rw eir?      uint64
-                          |     +--rw ebs?      uint64
-                          |     +--rw pir?      uint64
-                          |     +--rw pbs?      uint64
+                          |     +--rw bw-type      identityref
+                          |     +--rw (type)?
+                          |        +--:(per-cos)
+                          |        |  +--rw cos* [cos-id]
+                          |        |     +--rw cos-id    uint8
+                          |        |     +--rw cir?      uint64
+                          |        |     +--rw cbs?      uint64
+                          |        |     +--rw eir?      uint64
+                          |        |     +--rw ebs?      uint64
+                          |        |     +--rw pir?      uint64
+                          |        |     +--rw pbs?      uint64
+                          |        +--:(other)
+                          |           +--rw cir?   uint64
+                          |           +--rw cbs?   uint64
+                          |           +--rw eir?   uint64
+                          |           +--rw ebs?   uint64
+                          |           +--rw pir?   uint64
+                          |           +--rw pbs?   uint64
                           +--rw svc-ce-to-pe-bandwidth
                           |       {vpn-common:outbound-bw}?
                           |  +--rw ce-to-pe-bandwidth* [bw-type]
-                          |     +--rw bw-type   identityref
-                          |     +--rw cos-id?   uint8
-                          |     |       {vpn-common:qos}?
-                          |     +--rw cir?      uint64
-                          |     +--rw cbs?      uint64
-                          |     +--rw eir?      uint64
-                          |     +--rw ebs?      uint64
-                          |     +--rw pir?      uint64
-                          |     +--rw pbs?      uint64
-                          ...         ]]></artwork>
+                          |     +--rw bw-type      identityref
+                          |     +--rw (type)?
+                          |        +--:(per-cos)
+                          |        |  +--rw cos* [cos-id]
+                          |        |     +--rw cos-id    uint8
+                          |        |     +--rw cir?      uint64
+                          |        |     +--rw cbs?      uint64
+                          |        |     +--rw eir?      uint64
+                          |        |     +--rw ebs?      uint64
+                          |        |     +--rw pir?      uint64
+                          |        |     +--rw pbs?      uint64
+                          |        +--:(other)
+                          |           +--rw cir?   uint64
+                          |           +--rw cbs?   uint64
+                          |           +--rw eir?   uint64
+                          |           +--rw ebs?   uint64
+                          |           +--rw pir?   uint64
+                          |           +--rw pbs?   uint64
+                          ...         
+
+]]></artwork>
                 </figure></t>
 
               <t hangText="'qos':">Is used to define a set of QoS policies to
@@ -2880,14 +2900,14 @@ module ietf-ethernet-segment {
       "RFC 7432: BGP MPLS-Based Ethernet VPN, Section 5";
   }
 
-  identity esi-type-0 {
+  identity esi-type-0-operator {
     base esi-type;
     description
       "This type indicates an arbitrary 9-octet ESI value,
        which is managed and configured by the operator.";
   }
 
-  identity esi-type-1 {
+  identity esi-type-1-lacp {
     base esi-type;
     description
       "When IEEE 802.1AX Link Aggregation Control Protocol (LACP)
@@ -2898,28 +2918,28 @@ module ietf-ethernet-segment {
       "IEEE Std. 802.1AX: Link Aggregation";
   }
 
-  identity esi-type-2 {
+  identity esi-type-2-bridge {
     base esi-type;
     description
       "The ESI value is auto-generated and determined based
        on the Layer 2 bridge protocol.";
   }
 
-  identity esi-type-3 {
+  identity esi-type-3-mac {
     base esi-type;
     description
       "This type indicates a MAC-based ESI value that can be
        auto-generated or configured by the operator.";
   }
 
-  identity esi-type-4 {
+  identity esi-type-4-router-id {
     base esi-type;
     description
       "This type indicates a Router ID ESI value that can be
        auto-generated or configured by the operator.";
   }
 
-  identity esi-type-5 {
+  identity esi-type-5-asn {
     base esi-type;
     description
       "This type indicates an Autonomous System (AS)-based ESI value
@@ -3002,7 +3022,7 @@ module ietf-ethernet-segment {
         type identityref {
           base esi-type;
         }
-        default "esi-type-0";
+        default "esi-type-0-operator";
         description
           "T-(ESI Type) is a 1-octet field (most significant
            octet) that specifies the format of the remaining
@@ -3187,7 +3207,7 @@ module ietf-ethernet-segment {
         target="RFC8294"></xref>.</t>
 
         <figure align="center">
-          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2021-10-01.yang"
+          <artwork align="center"><![CDATA[<CODE BEGINS>file "ietf-l2vpn-ntw@2022-04-05.yang"
 module ietf-l2vpn-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-l2vpn-ntw";
@@ -3254,7 +3274,7 @@ module ietf-l2vpn-ntw {
      This version of this YANG module is part of RFC XXXX; see
      the RFC itself for full legal notices.";
 
-  revision 2021-10-01 {
+  revision 2022-04-05 {
     description
       "Initial version.";
     reference
@@ -3335,7 +3355,7 @@ module ietf-l2vpn-ntw {
   identity green {
     base color-type;
     description
-      "'green' color type.  A service frame is 'green' if it is 
+      "'green' color type.  A service frame is 'green' if it is
        conformant with the committed rate of the bandwidth profile.";
   }
 
@@ -3344,15 +3364,15 @@ module ietf-l2vpn-ntw {
     description
       "'yellow' color type. A service frame is 'yellow' if it exceeds
         the committed rate but is conformant with the excess rate
-       of the bandwidth profile."; 
+       of the bandwidth profile.";
   }
 
   identity red {
     base color-type;
     description
-      "'red' color type. A service famre is 'red' if it is not        
+      "'red' color type. A service famre is 'red' if it is not
        conformant with both the committed and excess rates of the
-       bandwidth profile."; 
+       bandwidth profile.";
   }
 
   identity t-ldp-pw-type {
@@ -3470,7 +3490,7 @@ module ietf-l2vpn-ntw {
   identity warning {
     base mac-action;
     description
-      "Sending a warning log message as the MAC action.";
+      "Sending a warning message as the MAC action.";
   }
 
   identity precedence-type {
@@ -3712,8 +3732,9 @@ module ietf-l2vpn-ntw {
     leaf svc-mtu {
       type uint32;
       description
-        "Service MTU, it is also known as the maximum transmission
-         unit or maximum frame size. When a frame is larger than 
+        "Layer 2 service MTU.
+         It is also known as the maximum transmission
+         unit or maximum frame size. When a frame is larger than
          the MTU, it is fragmented to accommodate the MTU of the
          network.";
     }
@@ -3772,8 +3793,8 @@ module ietf-l2vpn-ntw {
           description
             "Specifies the action when the upper limit is
              exceeded: drop the packet, flood the
-             packet, or simply send a warning log message 
-            (without dropping the packet).";
+             packet, or simply send a warning message
+             (without dropping the packet).";
         }
       }
       container mac-loop-prevention {
@@ -3837,6 +3858,64 @@ module ietf-l2vpn-ntw {
     }
   }
 
+  grouping bandwidth-parameters {
+    description
+      "Container for bandwidth parameters.";
+    leaf cir {
+      type uint64;
+      units "bps";
+      description
+        "Committed Information Rate. The maximum
+         number of bits that a port can receive or
+         send during one-second over an
+         interface.";
+    }
+    leaf cbs {
+      type uint64;
+      units "bytes";
+      description
+        "Committed Burst Size. CBS controls the
+         bursty nature of the traffic. Traffic
+         that does not use the configured CIR
+         accumulates credits until the credits
+         reach the configured CBS.";
+    }
+    leaf eir {
+      type uint64;
+      units "bps";
+      description
+        "Excess Information Rate, i.e., excess
+         frame delivery allowed not subject to
+         SLA. The traffic rate can be limited
+         by EIR.";
+    }
+    leaf ebs {
+      type uint64;
+      units "bytes";
+      description
+        "Excess Burst Size. The bandwidth
+         available for burst traffic from the
+         EBS is subject to the amount of
+         bandwidth that is accumulated during
+         periods when traffic allocated by the
+         EIR policy is not used.";
+    }
+    leaf pir {
+      type uint64;
+      units "bps";
+      description
+        "Peak Information Rate, i.e., maximum
+         frame delivery allowed. It is equal
+         to or less than sum of CIR and EIR.";
+    }
+    leaf pbs {
+      type uint64;
+      units "bytes";
+      description
+        "Peak Burst Size.";
+    }
+  }
+
   /* Main L2NM Container */
 
   container l2vpn-ntw {
@@ -3895,7 +3974,7 @@ module ietf-l2vpn-ntw {
         }
         container global-parameters-profiles {
           description
-            "Container for a list of global parameters 
+            "Container for a list of global parameters
              profiles.";
           list global-parameters-profile {
             key "profile-id";
@@ -3959,7 +4038,7 @@ module ietf-l2vpn-ntw {
             }
             container active-global-parameters-profiles {
               description
-                "Container for a list of global parameters 
+                "Container for a list of global parameters
                  profiles.";
               list global-parameters-profile {
                 key "profile-id";
@@ -3997,10 +4076,10 @@ module ietf-l2vpn-ntw {
                     type vpn-common:vpn-id;
                     description
                       "VPN Identifier. This identifier serves to
-                       unify components of a given VPN for the 
+                       unify components of a given VPN for the
                        sake of auto-discovery.";
                     reference
-                      "RFC 6624: Layer 2 Virtual Private Networks 
+                      "RFC 6624: Layer 2 Virtual Private Networks
                                  Using BGP for Auto-Discovery and
                                  Signaling";
                   }
@@ -4124,9 +4203,9 @@ module ietf-l2vpn-ntw {
                         leaf vpls-edge-id-range {
                           type uint16;
                           description
-                            "Specifies the size of the range of 
-                             VE ID in a VPLS service. The range 
-                             controls the size of the label 
+                            "Specifies the size of the range of
+                             VE ID in a VPLS service. The range
+                             controls the size of the label
                              block advertised in the context of
                              a VPLS instance.";
                           reference
@@ -4158,14 +4237,14 @@ module ietf-l2vpn-ntw {
                       container evpn-policies {
                         description
                           "Includes a set of EVPN policies such
-                           as those related to handling MAC 
+                           as those related to handling MAC
                            addresses.";
                         leaf mac-learning-mode {
                           type identityref {
                             base mac-learning-mode;
                           }
                           description
-                            "Indicates through which plane MAC 
+                            "Indicates through which plane MAC
                              addresses are advertised.";
                         }
                         leaf ingress-replication {
@@ -4194,8 +4273,8 @@ module ietf-l2vpn-ntw {
                             type boolean;
                             default "false";
                             description
-                              "Enables (when set to 'true') or 
-                               disables (when set to 'false') 
+                              "Enables (when set to 'true') or
+                               disables (when set to 'false')
                                ARP proxy.";
                             reference
                               "RFC 7432: BGP MPLS-Based Ethernet VPN,
@@ -4205,28 +4284,28 @@ module ietf-l2vpn-ntw {
                             type boolean;
                             default "false";
                             description
-                              "Enables (when set to 'true') or 
-                               disables (when set to 'false') ARP 
+                              "Enables (when set to 'true') or
+                               disables (when set to 'false') ARP
                                suppression.";
                             reference
-                              "RFC 7432: BGP MPLS-Based Ethernet 
+                              "RFC 7432: BGP MPLS-Based Ethernet
                                          VPN";
                           }
                           leaf ip-mobility-threshold {
                             type uint16;
                             description
                               "It is possible for a given host (as
-                               defined by its IP address) to move 
+                               defined by its IP address) to move
                                from one ES  to another.
                                IP mobility threshold specifies the
                                number of IP mobility events
-                               that are detected for a given IP 
-                               address within the 
+                               that are detected for a given IP
+                               address within the
                                detection-threshold before it
                                is identified as a duplicate IP
-                               address. 
-                               Once the detection threshold is 
-                               reached, updates for the IP address 
+                               address.
+                               Once the detection threshold is
+                               reached, updates for the IP address
                                are suppressed.";
                           }
                           leaf duplicate-ip-detection-interval {
@@ -4248,7 +4327,7 @@ module ietf-l2vpn-ntw {
                             type boolean;
                             default "false";
                             description
-                              "Enables (when set to 'true') or 
+                              "Enables (when set to 'true') or
                                disables (when set to 'false') ND
                                proxy.";
                             reference
@@ -4259,31 +4338,31 @@ module ietf-l2vpn-ntw {
                             type boolean;
                             default "false";
                             description
-                              "Enables (when set to 'true') or 
-                               disables (when set to 'false') 
-                               Neighbor Discovery (ND) message 
+                              "Enables (when set to 'true') or
+                               disables (when set to 'false')
+                               Neighbor Discovery (ND) message
                                suppression.
                                ND suppression is a technique that
-                               is used to reduce the amount of ND 
-                               packets flooding within individual 
+                               is used to reduce the amount of ND
+                               packets flooding within individual
                                segments, that is between hosts
-                               connected to the same logical 
+                               connected to the same logical
                                switch.";
                           }
                           leaf ip-mobility-threshold {
                             type uint16;
                             description
                               "It is possible for a given host (as
-                               defined by its IP address) to move 
+                               defined by its IP address) to move
                                from one ES to another.
                                IP mobility threshold specifies the
                                number of IP mobility events
-                               that are detected for a given IP 
-                               address within the 
+                               that are detected for a given IP
+                               address within the
                                detection-threshold before it
                                is identified as a duplicate IP
                                address.
-                               Once the detection threshold is 
+                               Once the detection threshold is
                                reached, updates for the IP address
                                are suppressed.";
                           }
@@ -4303,7 +4382,7 @@ module ietf-l2vpn-ntw {
                           default "false";
                           description
                             "Enables (when set to 'true') or disables
-                             (when set to 'false') underlay 
+                             (when set to 'false') underlay
                              multicast.";
                         }
                         leaf flood-unknown-unicast-supression {
@@ -4311,7 +4390,7 @@ module ietf-l2vpn-ntw {
                           default "false";
                           description
                             "Enables (when set to 'true') or disables
-                             (when set to 'false') unknown flood 
+                             (when set to 'false') unknown flood
                              unicast suppression.";
                         }
                         leaf vpws-vlan-aware {
@@ -4342,7 +4421,7 @@ module ietf-l2vpn-ntw {
                             type boolean;
                             default "false";
                             description
-                              "Discards unknown unicast, when 
+                              "Discards unknown unicast, when
                                enabled.";
                           }
                         }
@@ -4380,23 +4459,23 @@ module ietf-l2vpn-ntw {
                       "Attachment Group Identifier. Also, called
                        VPLS-Id.";
                     reference
-                      "RFC 4667: Layer 2 Virtual Private Network 
-                                 (L2VPN) Extensions for Layer 2 
-                                 Tunneling Protocol (L2TP), 
+                      "RFC 4667: Layer 2 Virtual Private Network
+                                 (L2VPN) Extensions for Layer 2
+                                 Tunneling Protocol (L2TP),
                                  Section 4.3
                        RFC 4762: Virtual Private LAN Service (VPLS)
-                                 Using Label Distribution Protocol 
+                                 Using Label Distribution Protocol
                                  (LDP) Signaling, Section 6.1.1";
                   }
                   leaf saii {
                     type uint32;
                     description
-                      "Source Attachment Individual Identifier 
-                      (SAII).";
+                      "Source Attachment Individual Identifier
+                       (SAII).";
                     reference
-                      "RFC 4667: Layer 2 Virtual Private Network 
-                                 (L2VPN) Extensions for Layer 2 
-                                 Tunneling Protocol (L2TP), 
+                      "RFC 4667: Layer 2 Virtual Private Network
+                                 (L2VPN) Extensions for Layer 2
+                                 Tunneling Protocol (L2TP),
                                  Section 3";
                   }
                   list remote-targets {
@@ -4405,9 +4484,9 @@ module ietf-l2vpn-ntw {
                       "List of allowed target Attachment Individual
                        Identifier (AII) and peers.";
                     reference
-                      "RFC 4667: Layer 2 Virtual Private Network 
-                                 (L2VPN) Extensions for Layer 2 
-                                 Tunneling Protocol (L2TP), 
+                      "RFC 4667: Layer 2 Virtual Private Network
+                                 (L2VPN) Extensions for Layer 2
+                                 Tunneling Protocol (L2TP),
                                  Section 5";
                     leaf taii {
                       type uint32;
@@ -4446,33 +4525,33 @@ module ietf-l2vpn-ntw {
                           "PW encapsulation type.";
                         reference
                           "RFC 4762: Virtual Private LAN Service
-                                     (VPLS) Using Label Distribution 
-                                     Protocol (LDP) Signaling, 
+                                     (VPLS) Using Label Distribution
+                                     Protocol (LDP) Signaling,
                                      Section 6.1.1";
                       }
                       leaf pw-description {
                         type string;
                         description
-                          "Includes a human-readable description  
-                           of the interface. This may be used when 
+                          "Includes a human-readable description
+                           of the interface. This may be used when
                            communicating with a remote peer.";
                         reference
                           "RFC 4762: Virtual Private LAN Service
-                                     (VPLS) Using Label Distribution 
-                                     Protocol (LDP) Signaling, 
+                                     (VPLS) Using Label Distribution
+                                     Protocol (LDP) Signaling,
                                      Section 6.1.1";
                       }
                       leaf mac-addr-withdraw {
                         type boolean;
                         description
-                          "If set to 'true', then MAC address 
-                           withdrawal is enabled.  If 'false', 
-                           then MAC address withdrawal is 
+                          "If set to 'true', then MAC address
+                           withdrawal is enabled.  If 'false',
+                           then MAC address withdrawal is
                            disabled.";
                         reference
                           "RFC 4762: Virtual Private LAN Service
-                                     (VPLS) Using Label Distribution 
-                                     Protocol (LDP) Signaling, 
+                                     (VPLS) Using Label Distribution
+                                     Protocol (LDP) Signaling,
                                      Section 6.2";
                       }
                       list pw-peer-list {
@@ -4494,7 +4573,7 @@ module ietf-l2vpn-ntw {
                           description
                             "Defines the priority for the PW.
                              The higher the pw-priority value, the
-                             higher the preference of the PW will 
+                             higher the preference of the PW will
                              be.";
                         }
                       }
@@ -4502,7 +4581,7 @@ module ietf-l2vpn-ntw {
                         when "derived-from-or-self("
                            + "../t-ldp-pw-type, 'hvpls')" {
                           description
-                            "Only applies when t-ldp pw type 
+                            "Only applies when t-ldp pw type
                              is h-vpls.";
                         }
                         description
@@ -4568,7 +4647,7 @@ module ietf-l2vpn-ntw {
                 leaf description {
                   type string;
                   description
-                    "A textual description of the VPN network 
+                    "A textual description of the VPN network
                      access.";
                 }
                 leaf interface-id {
@@ -4584,7 +4663,7 @@ module ietf-l2vpn-ntw {
                        + "/global-parameters-profile/profile-id";
                   }
                   description
-                    "An identifier of an active VPN instance 
+                    "An identifier of an active VPN instance
                      profile.";
                 }
                 uses vpn-common:service-status;
@@ -4623,8 +4702,8 @@ module ietf-l2vpn-ntw {
                       }
                       default "vpn-common:priority-tagged";
                       description
-                        "Tagged interface type. By default, the 
-                         type of the tagged interface is 
+                        "Tagged interface type. By default, the
+                         type of the tagged interface is
                          'priority-tagged'.";
                     }
                     container dot1q {
@@ -4654,14 +4733,14 @@ module ietf-l2vpn-ntw {
                         description
                           "Sets the tag rewriting policy for this
                            'vpn-network-accesses'. Enables the
-                           manipulation of the layer-2 frame header 
+                           manipulation of the layer-2 frame header
                            for data frames as they are processed on
                            the 'vpn-network-access'.";
                         choice tag-choice {
                           description
-                            "Selects the tag rewriting policy for a 
+                            "Selects the tag rewriting policy for a
                              VPN network access. It defines a set of
-                             standard tag manipulations that allow 
+                             standard tag manipulations that allow
                              for the insertion, removal, or rewriting
                              of one or two 802.1Q VLAN tags.";
                           leaf pop {
@@ -4710,7 +4789,7 @@ module ietf-l2vpn-ntw {
                               "Replaces tags with other tags.
                                Translate operations are expressed as
                                as a combination of tag push and pop
-                               operations. For example, translating 
+                               operations. For example, translating
                                the outer tag is expressed as popping
                                a single tag.";
                           }
@@ -4729,9 +4808,9 @@ module ietf-l2vpn-ntw {
                                  symmetric way.
 
                                  The operation is performed on the
-                                 outbound traffic on an interface, 
-                                 then the reverse operation is 
-                                 performed on the inbound traffic 
+                                 outbound traffic on an interface,
+                                 then the reverse operation is
+                                 performed on the inbound traffic
                                  out of the same interface.";
                             }
                           }
@@ -4827,8 +4906,8 @@ module ietf-l2vpn-ntw {
                       leaf mini-link-num {
                         type uint32;
                         description
-                          "Defines the minimum number of links that 
-                           must be active before the aggregating 
+                          "Defines the minimum number of links that
+                           must be active before the aggregating
                            link is put into service.";
                       }
                       leaf system-id {
@@ -4839,7 +4918,7 @@ module ietf-l2vpn-ntw {
                       leaf admin-key {
                         type uint16;
                         description
-                          "Indicates the value of the key used for 
+                          "Indicates the value of the key used for
                            the aggregate interface.";
                       }
                       leaf system-priority {
@@ -4939,9 +5018,9 @@ module ietf-l2vpn-ntw {
                           description
                             "Identifies the CE within the VPN.";
                           reference
-                            "RFC 6624: Layer 2 Virtual Private 
-                                       Networks Using BGP for 
-                                       Auto-Discovery and 
+                            "RFC 6624: Layer 2 Virtual Private
+                                       Networks Using BGP for
+                                       Auto-Discovery and
                                        Signaling";
                         }
                         leaf remote-ce-id {
@@ -4978,15 +5057,15 @@ module ietf-l2vpn-ntw {
                           type uint16;
                           default "32767";
                           description
-                            "Defines a 2-octet value that indicates 
-                             the PE preference to become the DF in 
+                            "Defines a 2-octet value that indicates
+                             the PE preference to become the DF in
                              the ES.
 
                              The preference value is only applicable
                              to the preference based method.";
                           reference
-                            "RFC 8584: Framework for Ethernet VPN 
-                                       Designated Forwarder Election 
+                            "RFC 8584: Framework for Ethernet VPN
+                                       Designated Forwarder Election
                                        Extensibility";
                         }
                         container vpws-service-instance {
@@ -5013,7 +5092,7 @@ module ietf-l2vpn-ntw {
                                   range "1..16777215";
                                 }
                                 description
-                                  "Indicates the assigned local 
+                                  "Indicates the assigned local
                                    VSI.";
                               }
                             }
@@ -5025,21 +5104,21 @@ module ietf-l2vpn-ntw {
                                   "The local VSI is auto-assigned.";
                                 choice auto-mode {
                                   description
-                                    "Indicates the auto-assignment 
-                                     mode of local VSI. VSI can be 
-                                     automatically assigned either  
-                                     with or without indicating a 
-                                     pool from which the VSI 
+                                    "Indicates the auto-assignment
+                                     mode of local VSI. VSI can be
+                                     automatically assigned either
+                                     with or without indicating a
+                                     pool from which the VSI
                                      should be taken.
 
-                                     For both cases, the server 
-                                     will auto-assign a local VSI 
+                                     For both cases, the server
+                                     will auto-assign a local VSI
                                      value and use that value.";
                                   case from-pool {
                                     leaf vsi-pool-name {
                                       type string;
                                       description
-                                        "The auto-assignment will be 
+                                        "The auto-assignment will be
                                          made from this pool.";
                                     }
                                   }
@@ -5047,7 +5126,7 @@ module ietf-l2vpn-ntw {
                                     leaf auto {
                                       type empty;
                                       description
-                                        "Indicates that a local VSI 
+                                        "Indicates that a local VSI
                                          is fully auto-assigned.";
                                     }
                                   }
@@ -5058,7 +5137,7 @@ module ietf-l2vpn-ntw {
                                   }
                                   config false;
                                   description
-                                    "The value of the auto-assigned 
+                                    "The value of the auto-assigned
                                      local VSI.";
                                 }
                               }
@@ -5087,15 +5166,15 @@ module ietf-l2vpn-ntw {
                                   "The remote VSI is auto-assigned.";
                                 choice auto-mode {
                                   description
-                                    "Indicates the auto-assignment 
+                                    "Indicates the auto-assignment
                                      mode of remote VSI. VSI can be
-                                     automatically assigned either  
-                                     with or without indicating a 
-                                     pool from which the VSI 
+                                     automatically assigned either
+                                     with or without indicating a
+                                     pool from which the VSI
                                      should be taken.
 
-                                     For both cases, the server 
-                                     will auto-assign a remote VSI 
+                                     For both cases, the server
+                                     will auto-assign a remote VSI
                                      value and use that value.";
                                   case from-pool {
                                     leaf vsi-pool-name {
@@ -5109,7 +5188,7 @@ module ietf-l2vpn-ntw {
                                     leaf auto {
                                       type empty;
                                       description
-                                        "Indicates that a remote VSI 
+                                        "Indicates that a remote VSI
                                          is fully auto-assigned.";
                                     }
                                   }
@@ -5195,9 +5274,9 @@ module ietf-l2vpn-ntw {
                     description
                       "MTU, it is also known as the maximum
                        transmission unit or maximum frame size. When
-                       a frame is larger than the MTU, it is broken 
-                       down, or fragmented, into smaller pieces by 
-                       the network protocol to accommodate the MTU 
+                       a frame is larger than the MTU, it is broken
+                       down, or fragmented, into smaller pieces by
+                       the network protocol to accommodate the MTU
                        of the network";
                   }
                   container svc-pe-to-ce-bandwidth {
@@ -5219,69 +5298,34 @@ module ietf-l2vpn-ntw {
                         description
                           "Indicates the bandwidth type.";
                       }
-                      leaf cos-id {
-                        if-feature "vpn-common:qos";
-                        type uint8;
+                      choice type {
                         description
-                          "Identifier of the Class of Service (CoS),
-                           indicated by DSCP or a CE-CLAN
-                           CoS (802.1p) value in the service frame.";
-                        reference
-                          "IEEE Std 802.1Q: Bridges and Bridged
-                                            Networks";
-                      }
-                      leaf cir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Committed Information Rate. The maximum
-                           number of bits that a port can receive or
-                           send during one-second over an 
-                           interface.";
-                      }
-                      leaf cbs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Committed Burst Size. CBS controls the 
-                           bursty nature of the traffic. Traffic 
-                           that does not use the configured CIR 
-                           accumulates credits until the credits 
-                           reach the configured CBS.";
-                      }
-                      leaf eir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Excess Information Rate, i.e., excess 
-                           frame delivery allowed not subject to 
-                           SLA. The traffic rate can be limited 
-                           by EIR.";
-                      }
-                      leaf ebs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Excess Burst Size. The bandwidth
-                           available for burst traffic from the 
-                           EBS is subject to the amount of 
-                           bandwidth that is accumulated during 
-                           periods when traffic allocated by the 
-                           EIR policy is not used.";
-                      }
-                      leaf pir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Peak Information Rate, i.e., maximum 
-                           frame delivery allowed. It is equal 
-                           to or less than sum of CIR and EIR.";
-                      }
-                      leaf pbs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Peak Burst Size.";
+                          "Choice based upon bandwidth type.";
+                        case per-cos {
+                          description
+                            "Bandwidth per CoS.";
+                          list cos {
+                            key "cos-id";
+                            description
+                              "List of class of services.";
+                            leaf cos-id {
+                              type uint8;
+                              description
+                                "Identifier of the CoS, indicated by
+                                 DSCP or a CE-CLAN CoS (802.1p) value in
+                                 the service frame.";
+                              reference
+                                "IEEE Std 802.1Q: Bridges and Bridged
+                                                  Networks";
+                            }
+                            uses bandwidth-parameters;
+                          }
+                        }
+                        case other {
+                          description
+                            "Other bandwidth types.";
+                          uses bandwidth-parameters;
+                        }
                       }
                     }
                   }
@@ -5303,71 +5347,36 @@ module ietf-l2vpn-ntw {
                           base vpn-common:bw-type;
                         }
                         description
-                          "Bandwidth Type.";
+                          "Indicates the bandwidth type.";
                       }
-                      leaf cos-id {
-                        if-feature "vpn-common:qos";
-                        type uint8;
+                      choice type {
                         description
-                          "Identifier of the CoS, indicated by
-                           DSCP or a CE-CLAN CoS (802.1p) value in
-                           the service frame.";
-                        reference
-                          "IEEE Std 802.1Q: Bridges and Bridged
-                                            Networks";
-                      }
-                      leaf cir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Committed Information Rate. The maximum
-                           number of bits that a port can receive or
-                           send during one-second over an 
-                           interface.";
-                      }
-                      leaf cbs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Committed Burst Size. CBS controls the 
-                           bursty nature of the traffic. Traffic 
-                           that does not use the configured CIR 
-                           accumulates credits until the credits 
-                           reach the configured CBS.";
-                      }
-                      leaf eir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Excess Information Rate, i.e., excess 
-                           frame delivery allowed not subject to 
-                           SLA. The traffic rate can be limited 
-                           by EIR.";
-                      }
-                      leaf ebs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Excess Burst Size. The bandwidth
-                           available for burst traffic from the 
-                           EBS is subject to the amount of 
-                           bandwidth that is accumulated during 
-                           periods when traffic allocated by the 
-                           EIR policy is not used.";
-                      }
-                      leaf pir {
-                        type uint64;
-                        units "bps";
-                        description
-                          "Peak Information Rate, i.e., maximum 
-                           frame delivery allowed. It is equal 
-                           to or less than sum of CIR and EIR.";
-                      }
-                      leaf pbs {
-                        type uint64;
-                        units "bytes";
-                        description
-                          "Peak Burst Size.";
+                          "Choice based upon bandwidth type.";
+                        case per-cos {
+                          description
+                            "Bandwidth per CoS.";
+                          list cos {
+                            key "cos-id";
+                            description
+                              "List of class of services.";
+                            leaf cos-id {
+                              type uint8;
+                              description
+                                "Identifier of the CoS, indicated by
+                                 DSCP or a CE-CLAN CoS (802.1p) value in
+                                 the service frame.";
+                              reference
+                                "IEEE Std 802.1Q: Bridges and Bridged
+                                                  Networks";
+                            }
+                            uses bandwidth-parameters;
+                          }
+                        }
+                        case other {
+                          description
+                            "Other bandwidth types.";
+                          uses bandwidth-parameters;
+                        }
                       }
                     }
                   }
@@ -5409,8 +5418,8 @@ module ietf-l2vpn-ntw {
                                   "802.1Q matching. It is a VLAN tag
                                    added into a frame.";
                                 reference
-                                  "IEEE Std 802.1Q: Bridges and  
-                                                    Bridged 
+                                  "IEEE Std 802.1Q: Bridges and
+                                                    Bridged
                                                     Networks";
                               }
                               leaf pcp {
@@ -5524,7 +5533,7 @@ module ietf-l2vpn-ntw {
                       leaf-list dst-mac-address-mask {
                         type yang:mac-address;
                         description
-                          "Specifies the destination MAC address 
+                          "Specifies the destination MAC address
                            mask.";
                       }
                       leaf action {
@@ -5566,10 +5575,10 @@ module ietf-l2vpn-ntw {
                         default "5";
                         description
                           "The number of times to detect MAC
-                           duplication, where a 'duplicate MAC 
-                           address' situation has occurred and 
-                           the duplicate MAC address has been 
-                           added to a list of duplicate MAC 
+                           duplication, where a 'duplicate MAC
+                           address' situation has occurred and
+                           the duplicate MAC address has been
+                           added to a list of duplicate MAC
                            addresses.";
                       }
                       leaf retry-timer {
@@ -5577,7 +5586,7 @@ module ietf-l2vpn-ntw {
                         units "seconds";
                         description
                           "The retry timer. When the retry timer
-                           expires, the duplicate MAC address will 
+                           expires, the duplicate MAC address will
                            be flushed from the MAC-VRF.";
                       }
                       leaf protection-type {
@@ -5615,7 +5624,7 @@ module ietf-l2vpn-ntw {
                         description
                           "Specifies the action when the upper limit
                            is exceeded: drop the packet, flood the
-                           packet, or simply send a warning log
+                           packet, or simply send a warning
                            message (without dropping the packet). ";
                       }
                     }
@@ -5636,7 +5645,7 @@ module ietf-l2vpn-ntw {
                         }
                         enum source-receiver {
                           description
-                            "The site has both sources and 
+                            "The site has both sources and
                              receivers.";
                         }
                       }
@@ -6732,8 +6741,7 @@ module ietf-l2vpn-ntw {
                         "svc-pe-to-ce-bandwidth": {
                           "pe-to-ce-bandwidth": [
                             {
-                              "bw-type": "ietf-vpn-common:bw-per-\
-service",
+                              "bw-type": "ietf-vpn-common:bw-per-port",
                               "cir": "20480000"
                             }
                           ]
@@ -6815,8 +6823,7 @@ service",
                         "svc-pe-to-ce-bandwidth": {
                           "pe-to-ce-bandwidth": [
                             {
-                              "bw-type": "ietf-vpn-common:bw-per-\
-service",
+                              "bw-type": "ietf-vpn-common:bw-per-port",
                               "cir": "20480000"
                             }
                           ]
@@ -7170,7 +7177,7 @@ service",
     "ethernet-segment": [
       {
         "name": "esi1", 
-        "esi-type": "esi-type-1",
+        "esi-type": "esi-type-1-lacp",
         "esi-redundancy-mode": "all-active"
       }
     ]
@@ -7281,7 +7288,7 @@ service",
     "ethernet-segment": [
       {
         "name": "esi1",
-        "ethernet-segment-identifier": "esi-type-1",
+        "ethernet-segment-identifier": "esi-type-1-lacp",
         "esi-auto": {
           "auto-ethernet-segment-identifier": "01:11:00:11:00:11:\
 11:9a:00:00"
