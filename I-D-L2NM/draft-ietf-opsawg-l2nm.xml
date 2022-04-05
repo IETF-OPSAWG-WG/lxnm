@@ -168,7 +168,7 @@
       </address>
     </author>
 
-    <date day="22" month="November" year="2021" />
+    <date day="05" month="April" year="2021" />
 
     <!-- Meta-data Declarations -->
 
@@ -230,10 +230,10 @@
       example, by a network controller to a service controller within the
       service provider's network. In particular, the model can be used in the
       communication interface between the entity that interacts directly with
-      the customer, the service orchestrator (either fully automated or a
-      human operator), and the entity in charge of network orchestration and
-      control (a.k.a., network controller/orchestrator) by allowing for more
-      network-centric information to be included.</t>
+      the customer (i.e., the service orchestrator) and the entity in charge
+      of network orchestration and control (a.k.a., network
+      controller/orchestrator) by allowing for more network-centric
+      information to be included.</t>
 
       <t>The L2NM supports capabilities, such as exposing operational
       parameters, transport protocols selection, and precedence. It can also
@@ -1091,7 +1091,7 @@ CLI:  Command-Line Interface            ]]></artwork>
            |     +--rw control-word-negotiation?   boolean
            |     +--rw mac-policies
            |     |  +--rw mac-addr-limit
-           |     |  |  +--rw mac-num-limit?   uint16
+           |     |  |  +--rw limit-number?    uint16
            |     |  |  +--rw time-interval?   uint32
            |     |  |  +--rw action?          identityref
            |     |  +--rw mac-loop-prevention
@@ -1099,7 +1099,7 @@ CLI:  Command-Line Interface            ]]></artwork>
            |     |     +--rw frequency?         uint32
            |     |     +--rw retry-timer?       uint32
            |     |     +--rw protection-type?   identityref
-           |     +--rw multicast-like {vpn-common:multicast}?
+           |     +--rw multicast {vpn-common:multicast}?
            |        +--rw enabled?                 boolean
            |        +--rw customer-tree-flavors
            |           +--rw tree-flavor*   identityref
@@ -1160,7 +1160,7 @@ CLI:  Command-Line Interface            ]]></artwork>
                 <t hangText="'mac-addr-limit':">Is a container of MAC address
                 limit configuration. It includes the following data nodes:
                 <list style="hanging">
-                    <t hangText="'mac-num-limit':">Maximum number of MAC
+                    <t hangText="'limit-number':">Maximum number of MAC
                     addresses learned from the customer for a single service
                     instance.</t>
 
@@ -1191,8 +1191,8 @@ CLI:  Command-Line Interface            ]]></artwork>
                   </list></t>
               </list></t>
 
-            <t hangText="'multicast-like':">Controls whether multicast is
-            allowed in the service.</t>
+            <t hangText="'multicast':">Controls whether multicast is allowed
+            in the service.</t>
           </list></t>
       </section>
 
@@ -1229,7 +1229,7 @@ CLI:  Command-Line Interface            ]]></artwork>
                  |     +--rw control-word-negotiation?   boolean
                  |     +--rw mac-policies
                  |     |  +--rw mac-addr-limit
-                 |     |  |  +--rw mac-num-limit?   uint16
+                 |     |  |  +--rw limit-number?    uint16
                  |     |  |  +--rw time-interval?   uint32
                  |     |  |  +--rw action?          identityref
                  |     |  +--rw mac-loop-prevention
@@ -1237,7 +1237,7 @@ CLI:  Command-Line Interface            ]]></artwork>
                  |     |     +--rw frequency?         uint32
                  |     |     +--rw retry-timer?       uint32
                  |     |     +--rw protection-type?   identityref
-                 |     +--rw multicast-like {vpn-common:multicast}?
+                 |     +--rw multicast {vpn-common:multicast}?
                  |        +--rw enabled?                 boolean
                  |        +--rw customer-tree-flavors
                  |           +--rw tree-flavor*   identityref
@@ -1297,9 +1297,9 @@ CLI:  Command-Line Interface            ]]></artwork>
             <t hangText="'vpn-network-accesses':">Represents the point to
             which sites are connected. <vspace blankLines="1" />Note that,
             unlike the L2SM, the L2NM does not need to model the customer site
-            -- only the points that receive the traffic from the site are
-            received (i.e., the PE side of Provider Edge to Customer Edge
-            (PE-CE) connections). Hence, the VPN network access contains the
+            -- only the points that receive traffic from the site are covered
+            (i.e., the PE side of Provider Edge to Customer Edge (PE-CE)
+            connections). Hence, the VPN network access contains the
             connectivity information between the provider's network and the
             customer premises. The VPN profiles ('vpn-profiles') have a set of
             routing policies that can be applied during the service creation.
@@ -2129,7 +2129,7 @@ CLI:  Command-Line Interface            ]]></artwork>
                           |  |  +--rw retry-timer?       uint32
                           |  |  +--rw protection-type?   identityref
                           |  +--rw mac-addr-limit
-                          |     +--rw mac-num-limit?   uint16
+                          |     +--rw limit-number?    uint16
                           |     +--rw time-interval?   uint32
                           |     +--rw action?          identityref
                           ...         ]]></artwork>
@@ -3749,8 +3749,8 @@ module ietf-l2vpn-ntw {
         "Container of MAC policies.";
       container mac-addr-limit {
         description
-          "Container of MAC-Addr limit configuration.";
-        leaf mac-num-limit {
+          "Container of MAC address limit configuration.";
+        leaf limit-number {
           type uint16;
           default "2";
           description
@@ -3772,7 +3772,8 @@ module ietf-l2vpn-ntw {
           description
             "Specifies the action when the upper limit is
              exceeded: drop the packet, flood the
-             packet, or simply send a warning log message.";
+             packet, or simply send a warning log message 
+            (without dropping the packet).";
         }
       }
       container mac-loop-prevention {
@@ -3812,10 +3813,10 @@ module ietf-l2vpn-ntw {
         }
       }
     }
-    container multicast-like {
+    container multicast {
       if-feature "vpn-common:multicast";
       description
-        "Multicast-like container.";
+        "Multicast container.";
       leaf enabled {
         type boolean;
         default "false";
@@ -5588,7 +5589,7 @@ module ietf-l2vpn-ntw {
                     container mac-addr-limit {
                       description
                         "Container of MAC-Addr limit configurations";
-                      leaf mac-num-limit {
+                      leaf limit-number {
                         type uint16;
                         default "2";
                         description
@@ -5609,10 +5610,10 @@ module ietf-l2vpn-ntw {
                         }
                         default "warning";
                         description
-                          "specify the action when the upper limit is
-                           exceeded: drop the packet, flood the
+                          "Specifies the action when the upper limit
+                           is exceeded: drop the packet, flood the
                            packet, or simply send a warning log
-                           message (without droping the packet). ";
+                           message (without dropping the packet). ";
                       }
                     }
                   }
@@ -5843,7 +5844,7 @@ module ietf-l2vpn-ntw {
 
         <t>When the "iana-bgp-l2-encaps" YANG module is updated, a new
         "revision" statement with a unique revision date must be added in
-        front of the existing revision statements. </t>
+        front of the existing revision statements.</t>
 
         <t>IANA is requested to add this note to <xref
         target="IANA-BGP-L2"></xref>:</t>
@@ -5886,7 +5887,7 @@ module ietf-l2vpn-ntw {
 
         <t>When the "iana-pseudowire-types" YANG module is updated, a new
         "revision" statement with a unique revision date must be added in
-        front of the existing revision statements. </t>
+        front of the existing revision statements.</t>
 
         <t>IANA is requested to add this note to <xref
         target="IANA-PW-Types"></xref>:</t>
@@ -7386,7 +7387,8 @@ service",
       <t>Thanks to Yingzhen Qu and Himanshu Shah for the rtgdir reviews,
       Ladislav Lhotka for the yangdoctors review, and Chris Lonvick for the
       secdir review. Special thanks to Adrian Farrel for the careful Shepherd
-      review.</t>
+      review. <vspace blankLines="1" />Thanks to Robert Wilton for the AD
+      review. </t>
 
       <t>A YANG module for Ethernet segments was first defined in the context
       of the EVPN device module <xref target="I-D.ietf-bess-evpn-yang" />.</t>
