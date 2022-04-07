@@ -602,9 +602,9 @@ module ietf-l2vpn-ntw {
           default "5";
           description
             "The number of times to detect MAC duplication, where
-             a 'duplicate MAC address' situation has occurred 
-             within the 'window' time interval and the duplicate 
-             MAC address has been added to a list of duplicate 
+             a 'duplicate MAC address' situation has occurred
+             within the 'window' time interval and the duplicate
+             MAC address has been added to a list of duplicate
              MAC addresses.";
         }
         leaf retry-timer {
@@ -1520,93 +1520,44 @@ module ietf-l2vpn-ntw {
                         description
                           "VLAN identifier.";
                       }
-                      container rewrite {
+                      container tag-operations {
                         description
-                          "Sets the tag rewriting policy for this
-                           'vpn-network-accesses'. Enables the
-                           manipulation of the layer-2 frame header
-                           for data frames as they are processed on
-                           the 'vpn-network-access'.";
-                        choice tag-choice {
+                          "Sets the tag manipulation policy for this
+                           VPN network access. It defines a set of
+                           tag manipulations that allow for the
+                           insertion, removal, or rewriting
+                           of 802.1Q VLAN tags.";
+                        choice op-choice {
                           description
                             "Selects the tag rewriting policy for a
-                             VPN network access. It defines a set of
-                             standard tag manipulations that allow
-                             for the insertion, removal, or rewriting
-                             of one or two 802.1Q VLAN tags.";
+                             VPN network access.";
                           leaf pop {
-                            type enumeration {
-                              enum 1 {
-                                description
-                                  "Allows one (1) tag removal.";
-                              }
-                              enum 2 {
-                                description
-                                  "Allows two (2) tags removal.";
-                              }
-                            }
+                            type empty;
                             description
-                              "Tag removal.";
+                              "Pop the outer tag.";
                           }
                           leaf push {
                             type empty;
                             description
-                              "Tag Push.";
+                              "Puhs a tag.";
                           }
                           leaf translate {
-                            type enumeration {
-                              enum 1-to-1 {
-                                description
-                                  "Allows one (1) to one (1) tag
-                                   translation.";
-                              }
-                              enum 1-to-2 {
-                                description
-                                  "Allows one (1) to two (2) tags
-                                   translation.";
-                              }
-                              enum 2-to-1 {
-                                description
-                                  "Allows two (2) to one (1) tag
-                                   translation.";
-                              }
-                              enum 2-to-2 {
-                                description
-                                  "Allows two (2) to two (2) tags
-                                   translation.";
-                              }
-                            }
+                            type empty;
                             description
-                              "Replaces tags with other tags.
-                               Translate operations are expressed as
-                               as a combination of tag push and pop
-                               operations. For example, translating
-                               the outer tag is expressed as popping
-                               a single tag.";
+                              "Translate the outer tag to one or two tags.";
                           }
                         }
-                        leaf cvlan-id {
+                        leaf tag-1 {
                           when 'not(../pop)';
                           type uint16;
                           description
-                            "Push (or Translate) vlan tags.";
+                            "A first tag to be used for translation.";
                         }
-                        leaf direction {
-                          type enumeration {
-                            enum symmetric {
-                              description
-                                "TAGs operation is performed in a
-                                 symmetric way.
-
-                                 The operation is performed on the
-                                 outbound traffic on an interface,
-                                 then the reverse operation is
-                                 performed on the inbound traffic
-                                 out of the same interface.";
-                            }
-                          }
+                        leaf tag-2 {
+                          when '(../translate)';
+                          type uint16;
                           description
-                            "Indicates the direction.";
+                            "A second tag to be used for translation.";
                         }
                       }
                     }
@@ -1658,6 +1609,48 @@ module ietf-l2vpn-ntw {
                         mandatory true;
                         description
                           "C-VLAN identifier.";
+                      }
+                      container tag-operations {
+                        description
+                          "Sets the tag manipulation policy for this
+                           VPN network access. It defines a set of
+                           tag manipulations that allow for the
+                           insertion, removal, or rewriting
+                           of 802.1Q VLAN tags.";
+                        choice op-choice {
+                          description
+                            "Selects the tag rewriting policy for a
+                             VPN network access.";
+                          leaf pop {
+                            type uint8 {
+                              range "1|2";
+                            }
+                            description
+                              "Pop one or two out tags tag.";
+                          }
+                          leaf push {
+                            type empty;
+                            description
+                              "Puhs a tag.";
+                          }
+                          leaf translate {
+                            type empty;
+                            description
+                              "Translate the outer tag to one or two tags.";
+                          }
+                        }
+                        leaf tag-1 {
+                          when 'not(../pop)';
+                          type uint16;
+                          description
+                            "A first tag to be used for translation.";
+                        }
+                        leaf tag-2 {
+                          when 'not(../pop)';
+                          type uint16;
+                          description
+                            "A second tag to be used for translation.";
+                        }
                       }
                     }
                   }
