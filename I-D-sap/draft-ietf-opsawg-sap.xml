@@ -700,7 +700,7 @@
       nodes in service-specific YANG modules.</t>
 
       <figure>
-        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-04-11.yang"
+        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-02-17.yang"
 module ietf-sap-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-sap-ntw";
@@ -764,7 +764,7 @@ module ietf-sap-ntw {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2022-04-11 {
+  revision 2022-02-17 {
     description
       "Initial version";
     reference
@@ -890,13 +890,13 @@ module ietf-sap-ntw {
   grouping sap-information {
     description
       "Service Attachment Point (SAP) information.";
-    list service-attachment-point {
-      key "attachment-id";
+    list sap {
+      key "sap-id";
       description
         "The Service Attachment Points are abstraction of
          the points where network services such as L3VPNs,
          L2VPNs, or network slices can be attached to.";
-      leaf attachment-id {
+      leaf sap-id {
         type string;
         description
           "Indicates an identifier that uniquely identifies
@@ -907,17 +907,17 @@ module ietf-sap-ntw {
         description
           "A textual description of the SAP.";
       }
-      leaf attachment-interface {
-        type string;
-        description
-          "Indicates the interface to which the SAP is bound.";
-      }
       leaf parent-termination-point {
         type nt:tp-id;
         description
           "Indicates the parent termination point to 
            which the SAP is attached to. A termination
            point can be a physical port, an interface, etc.";
+      }
+      leaf attachment-interface {
+        type string;
+        description
+          "Indicates the interface to which the SAP is bound.";
       }
       leaf interface-type {
         type identityref {
@@ -939,9 +939,9 @@ module ietf-sap-ntw {
           base interface-role;
         }
         description
-          "Indicates whether the SAP is an UNI or a NNI.";
+          "Indicates the role of a SAP.";
       }
-      leaf peer-customer-sap-id {
+      leaf peer-sap-id {
         type string;
         description
           "Indicates an identifier of the peer's termination
@@ -969,11 +969,11 @@ module ietf-sap-ntw {
     description
       "Introduces a new network type for SAP network.";
     container sap-network {
-      presence "Indicates SAP network type.";
+      presence "Indicates SAP Network Type.";
       description
         "The presence of the container node indicates the 
          SAP network type.";
-      leaf-list sap-type {
+      leaf-list service-type {
         type identityref {
           base vpn-common:service-type;
         }
@@ -992,10 +992,10 @@ module ietf-sap-ntw {
     description
       "Parameters for the SAP level.";
     list service {
-      key "sap-type";
+      key "service-type";
       description
         "A list of supported service type for the node.";
-      leaf sap-type {
+      leaf service-type {
         type identityref {
           base vpn-common:service-type;
         }
@@ -1175,10 +1175,12 @@ module ietf-sap-ntw {
     "network": [
       {
         "network-types": {
-          "service-type": [
-            "ietf-vpn-common:l3vpn",
-            "ietf-vpn-common:vpls"
-          ]
+          "sap-network": {
+            "service-type": [
+              "ietf-vpn-common:l3vpn",
+              "ietf-vpn-common:vpls"
+            ]
+          }
         },
         "network-id": "foo:an-id",
         "node": [
@@ -1528,9 +1530,11 @@ module ietf-sap-ntw {
     "network": [
       {
         "network-types": {
-          "service-type": [
-            "ietf-vpn-common:l3vpn"
-          ]
+          "sap-network": {
+            "service-type": [
+              "ietf-vpn-common:l3vpn"
+            ]
+          }
         },
         "network-id": "foo:an-id",
         "node": [
