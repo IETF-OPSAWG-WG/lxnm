@@ -124,15 +124,15 @@ Internet-Draft                    L2NM                        April 2022
    9.  Security Considerations . . . . . . . . . . . . . . . . . . . 119
    10. IANA Considerations . . . . . . . . . . . . . . . . . . . . . 120
      10.1.  YANG Modules . . . . . . . . . . . . . . . . . . . . . . 120
-     10.2.  BGP Layer 2 Encapsulation Types  . . . . . . . . . . . . 121
+     10.2.  BGP Layer 2 Encapsulation Types  . . . . . . . . . . . . 122
      10.3.  Pseudowire Types . . . . . . . . . . . . . . . . . . . . 122
    11. References  . . . . . . . . . . . . . . . . . . . . . . . . . 123
      11.1.  Normative References . . . . . . . . . . . . . . . . . . 123
-     11.2.  Informative References . . . . . . . . . . . . . . . . . 125
-   Appendix A.  Examples . . . . . . . . . . . . . . . . . . . . . . 131
+     11.2.  Informative References . . . . . . . . . . . . . . . . . 126
+   Appendix A.  Examples . . . . . . . . . . . . . . . . . . . . . . 132
      A.1.  BGP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 132
      A.2.  BGP-based VPWS with LDP Signaling . . . . . . . . . . . . 137
-     A.3.  LDP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 140
+     A.3.  LDP-based VPLS  . . . . . . . . . . . . . . . . . . . . . 141
      A.4.  VPWS-EVPN Service Instance  . . . . . . . . . . . . . . . 145
      A.5.  Automatic ESI Assignment  . . . . . . . . . . . . . . . . 151
      A.6.  VPN Network Access Precedence . . . . . . . . . . . . . . 154
@@ -2273,7 +2273,7 @@ Internet-Draft                    L2NM                        April 2022
 
    The description of the service data nodes is as follows:
 
-   'mtu':  Specifies the MTU for the VPN network access.
+   'mtu':  Specifies the Layer 2 MTU for the VPN network access.
 
    'svc-pe-to-ce-bandwidth' and 'svc-ce-to-pe-bandwidth':  Specify the
       service bandwidth for the L2VPN service.  'svc-pe-to-ce-bandwidth'
@@ -4340,9 +4340,10 @@ Internet-Draft                    L2NM                        April 2022
        leaf ce-vlan-cos-preservation {
          type boolean;
          description
-           "CE VLAN CoS preservation. PCP bits in the CE-VLAN tag
-            of the egress frame are identical to those of the ingress
-            frame that yielded this egress service frame.";
+           "CE VLAN CoS preservation. Priority Code Point (PCP) bits
+            in the CE-VLAN tag of the egress frame are identical to
+            those of the ingress frame that yielded this egress
+            service frame.";
        }
        leaf control-word-negotiation {
          type boolean;
@@ -4350,7 +4351,9 @@ Internet-Draft                    L2NM                        April 2022
            "Controls whether Control-word negotiation is enabled
             (if set to true) or not (if set to false).";
          reference
-           "Section 7 of RFC 8077";
+           "RFC 8077: Pseudowire Setup and Maintenance
+                      Using the Label Distribution Protocol (LDP),
+                      Section 7";
        }
        container mac-policies {
          description
@@ -4359,9 +4362,6 @@ Internet-Draft                    L2NM                        April 2022
            description
              "Container of MAC address limit configuration.";
            leaf limit-number {
-             type uint16;
-             default "2";
-             description
 
 
 
@@ -4370,6 +4370,9 @@ Barguil, et al.          Expires 7 October 2022                [Page 78]
 Internet-Draft                    L2NM                        April 2022
 
 
+             type uint16;
+             default "2";
+             description
                "Maximum number of MAC addresses learned from
                 the customer for a single service instance.";
            }
@@ -4415,9 +4418,6 @@ Internet-Draft                    L2NM                        April 2022
            }
            leaf retry-timer {
              type uint32;
-             units "seconds";
-             description
-               "The retry timer. When the retry timer expires,
 
 
 
@@ -4426,6 +4426,9 @@ Barguil, et al.          Expires 7 October 2022                [Page 79]
 Internet-Draft                    L2NM                        April 2022
 
 
+             units "seconds";
+             description
+               "The retry timer. When the retry timer expires,
                 the duplicate MAC address will be flushed from
                 the MAC-VRF.";
            }
@@ -4451,7 +4454,7 @@ Internet-Draft                    L2NM                        April 2022
          }
          container customer-tree-flavors {
            description
-             "Type of trees used by customer.";
+             "Type of trees used by the customer.";
            leaf-list tree-flavor {
              type identityref {
                base vpn-common:multicast-tree-type;
@@ -4465,15 +4468,12 @@ Internet-Draft                    L2NM                        April 2022
 
      grouping bandwidth-parameters {
        description
-         "Container for bandwidth parameters.";
+         "A grouping for bandwidth parameters.";
        leaf cir {
          type uint64;
          units "bps";
          description
            "Committed Information Rate. The maximum
-            number of bits that a port can receive or
-            send during one-second over an
-            interface.";
 
 
 
@@ -4482,6 +4482,9 @@ Barguil, et al.          Expires 7 October 2022                [Page 80]
 Internet-Draft                    L2NM                        April 2022
 
 
+            number of bits that a port can receive or
+            send during one-second over an
+            interface.";
        }
        leaf cbs {
          type uint64;
@@ -4527,9 +4530,6 @@ Internet-Draft                    L2NM                        April 2022
          description
            "Peak Burst Size.";
        }
-     }
-
-     /* Main L2NM Container */
 
 
 
@@ -4537,6 +4537,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 81]
 
 Internet-Draft                    L2NM                        April 2022
 
+
+     }
+
+     /* Main L2NM Container */
 
      container l2vpn-ntw {
        description
@@ -4582,10 +4586,6 @@ Internet-Draft                    L2NM                        April 2022
            leaf bgp-ad-enabled {
              type boolean;
              description
-               "Indicates whether BGP auto-discovery is enabled
-                or disabled.";
-           }
-           leaf signaling-type {
 
 
 
@@ -4594,6 +4594,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 82]
 Internet-Draft                    L2NM                        April 2022
 
 
+               "Indicates whether BGP auto-discovery is enabled
+                or disabled.";
+           }
+           leaf signaling-type {
              type identityref {
                base vpn-common:vpn-signaling-type;
              }
@@ -4638,10 +4642,6 @@ Internet-Draft                    L2NM                        April 2022
                }
                leaf description {
                  type string;
-                 description
-                   "Textual description of a VPN node.";
-               }
-               leaf ne-id {
 
 
 
@@ -4650,6 +4650,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 83]
 Internet-Draft                    L2NM                        April 2022
 
 
+                 description
+                   "Textual description of a VPN node.";
+               }
+               leaf ne-id {
                  type string;
                  description
                    "An identifier of the network element where
@@ -4694,10 +4698,6 @@ Internet-Draft                    L2NM                        April 2022
                }
                uses vpn-common:service-status;
                container bgp-auto-discovery {
-                  when "../../../bgp-ad-enabled = 'true'" {
-                   description
-                     "Only applies when BGP auto-discovery is enabled.";
-                 }
 
 
 
@@ -4706,6 +4706,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 84]
 Internet-Draft                    L2NM                        April 2022
 
 
+                  when "../../../bgp-ad-enabled = 'true'" {
+                   description
+                     "Only applies when BGP auto-discovery is enabled.";
+                 }
                  description
                    "BGP is used for auto-discovery.";
                  choice bgp-type {
@@ -4750,10 +4754,6 @@ Internet-Draft                    L2NM                        April 2022
                        when "../auto-rt-enable = 'true'" {
                          description
                            "Can only be used when auto-RD is enabled.";
-                       }
-                       type rt-types:route-target;
-                       config false;
-                       description
 
 
 
@@ -4762,6 +4762,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 85]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       }
+                       type rt-types:route-target;
+                       config false;
+                       description
                          "The value of the auto-assigned RT.";
                      }
                    }
@@ -4806,10 +4810,6 @@ Internet-Draft                    L2NM                        April 2022
                      choice bgp-type {
                        description
                          "Choice for the BGP type.";
-                       case l2vpn-bgp {
-                         description
-                           "Container for BGP L2VPN.";
-                         leaf ce-range {
 
 
 
@@ -4818,6 +4818,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 86]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       case l2vpn-bgp {
+                         description
+                           "Container for BGP L2VPN.";
+                         leaf ce-range {
                            type uint16;
                            description
                              "Determines the number of remote CEs with
@@ -4862,10 +4866,6 @@ Internet-Draft                    L2NM                        April 2022
                                 VE ID in a VPLS service. The range
                                 controls the size of the label
                                 block advertised in the context of
-                                a VPLS instance.";
-                             reference
-                               "RFC 4761: Virtual Private LAN Service
-                                          (VPLS) Using BGP for Auto-
 
 
 
@@ -4874,6 +4874,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 87]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                a VPLS instance.";
+                             reference
+                               "RFC 4761: Virtual Private LAN Service
+                                          (VPLS) Using BGP for Auto-
                                           Discovery and Signaling";
                            }
                          }
@@ -4918,10 +4922,6 @@ Internet-Draft                    L2NM                        April 2022
                                           Section 8.3.1.1";
                            }
                            leaf p2mp-replication {
-                             type boolean;
-                             description
-                               "Controles whether P2MP replication is
-                                enabled/disabled.";
 
 
 
@@ -4930,6 +4930,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 88]
 Internet-Draft                    L2NM                        April 2022
 
 
+                             type boolean;
+                             description
+                               "Controles whether P2MP replication is
+                                enabled/disabled.";
                              reference
                                "RFC 7432: BGP MPLS-Based Ethernet VPN,
                                           Section 8.3.1.2";
@@ -4974,10 +4978,6 @@ Internet-Draft                    L2NM                        April 2022
                                   is identified as a duplicate IP
                                   address.
                                   Once the detection threshold is
-                                  reached, updates for the IP address
-                                  are suppressed.";
-                             }
-                             leaf duplicate-ip-detection-interval {
 
 
 
@@ -4986,6 +4986,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 89]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                  reached, updates for the IP address
+                                  are suppressed.";
+                             }
+                             leaf duplicate-ip-detection-interval {
                                type uint16;
                                units "seconds";
                                description
@@ -5030,10 +5034,6 @@ Internet-Draft                    L2NM                        April 2022
                                type uint16;
                                description
                                  "It is possible for a given host (as
-                                  defined by its IP address) to move
-                                  from one ES to another.
-                                  IP mobility threshold specifies the
-                                  number of IP mobility events
 
 
 
@@ -5042,6 +5042,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 90]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                  defined by its IP address) to move
+                                  from one ES to another.
+                                  IP mobility threshold specifies the
+                                  number of IP mobility events
                                   that are detected for a given IP
                                   address within the
                                   detection-threshold before it
@@ -5086,10 +5090,6 @@ Internet-Draft                    L2NM                        April 2022
                                 (when set to 'false') VPWS VLAN-aware.";
                            }
                            container bum-management {
-                             description
-                               "Broadcast-unknown-unicast-multicast
-                                management.";
-                             leaf discard-broadcast {
 
 
 
@@ -5098,6 +5098,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 91]
 Internet-Draft                    L2NM                        April 2022
 
 
+                             description
+                               "Broadcast-unknown-unicast-multicast
+                                management.";
+                             leaf discard-broadcast {
                                type boolean;
                                default "false";
                                description
@@ -5142,10 +5146,6 @@ Internet-Draft                    L2NM                        April 2022
                          }
                        }
                      }
-                   }
-                   container ldp-or-l2tp {
-                     description
-                       "Container for LDP or L2TP-signaled PWs.";
 
 
 
@@ -5154,6 +5154,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 92]
 Internet-Draft                    L2NM                        April 2022
 
 
+                   }
+                   container ldp-or-l2tp {
+                     description
+                       "Container for LDP or L2TP-signaled PWs.";
                      leaf agi {
                        type rt-types:route-distinguisher;
                        description
@@ -5198,10 +5202,6 @@ Internet-Draft                    L2NM                        April 2022
                                       (L2VPN) Extensions for Layer 2
                                       Tunneling  Protocol (L2TP),
                                       Section 3";
-                       }
-                       leaf peer-addr {
-                         type inet:ip-address;
-                         description
 
 
 
@@ -5210,6 +5210,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 93]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       }
+                       leaf peer-addr {
+                         type inet:ip-address;
+                         description
                            "Indicates the peer forwarder's IP address.";
                        }
                      }
@@ -5254,10 +5258,6 @@ Internet-Draft                    L2NM                        April 2022
                            type boolean;
                            description
                              "If set to 'true', then MAC address
-                              withdrawal is enabled.  If 'false',
-                              then MAC address withdrawal is
-                              disabled.";
-                           reference
 
 
 
@@ -5266,6 +5266,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 94]
 Internet-Draft                    L2NM                        April 2022
 
 
+                              withdrawal is enabled.  If 'false',
+                              then MAC address withdrawal is
+                              disabled.";
+                           reference
                              "RFC 4762: Virtual Private LAN Service
                                         (VPLS) Using Label Distribution
                                         Protocol (LDP) Signaling,
@@ -5310,10 +5314,6 @@ Internet-Draft                    L2NM                        April 2022
                                "S-TAG.";
                            }
                            leaf c-tag {
-                             type uint32;
-                             mandatory true;
-                             description
-                               "C-TAG.";
 
 
 
@@ -5322,6 +5322,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 95]
 Internet-Draft                    L2NM                        April 2022
 
 
+                             type uint32;
+                             mandatory true;
+                             description
+                               "C-TAG.";
                            }
                          }
                        }
@@ -5366,10 +5370,6 @@ Internet-Draft                    L2NM                        April 2022
                      "List of VPN network accesses.";
                    leaf id {
                      type vpn-common:vpn-id;
-                     description
-                       "Identifier of the network access";
-                   }
-                   leaf description {
 
 
 
@@ -5378,6 +5378,10 @@ Barguil, et al.          Expires 7 October 2022                [Page 96]
 Internet-Draft                    L2NM                        April 2022
 
 
+                     description
+                       "Identifier of the network access";
+                   }
+                   leaf description {
                      type string;
                      description
                        "A textual description of the VPN network
@@ -5390,7 +5394,8 @@ Internet-Draft                    L2NM                        April 2022
                    }
                    leaf global-parameters-profile {
                      type leafref {
-                         path "../../../active-global-parameters-profiles"
+                         path "../../.."
+                          + "/active-global-parameters-profiles";
                           + "/global-parameters-profile/profile-id";
                      }
                      description
@@ -5421,11 +5426,6 @@ Internet-Draft                    L2NM                        April 2022
                        type string;
                        description
                          "This is an internal reference for the service
-                          provider to identify the bearer associated
-                          with this VPN.";
-                     }
-                     container encapsulation {
-                       description
 
 
 
@@ -5434,6 +5434,11 @@ Barguil, et al.          Expires 7 October 2022                [Page 97]
 Internet-Draft                    L2NM                        April 2022
 
 
+                          provider to identify the bearer associated
+                          with this VPN.";
+                     }
+                     container encapsulation {
+                       description
                          "Container for Layer 2 encapsulation.";
                        leaf encap-type {
                          type identityref {
@@ -5477,11 +5482,6 @@ Internet-Draft                    L2NM                        April 2022
                               of 802.1Q VLAN tags. These operations are
                               indicated for the CE-PE direction.
                               By default, tag operations are symmetric.
-                              As such, the reverse tag operation is
-                              assumed on the PE-CE direction.";
-                           choice op-choice {
-                             description
-                               "Selects the tag rewriting policy for a
 
 
 
@@ -5490,6 +5490,11 @@ Barguil, et al.          Expires 7 October 2022                [Page 98]
 Internet-Draft                    L2NM                        April 2022
 
 
+                              As such, the reverse tag operation is
+                              assumed on the PE-CE direction.";
+                           choice op-choice {
+                             description
+                               "Selects the tag rewriting policy for a
                                 VPN network access.";
                              leaf pop {
                                type empty;
@@ -5504,7 +5509,8 @@ Internet-Draft                    L2NM                        April 2022
                              leaf translate {
                                type empty;
                                description
-                                 "Translate the outer tag to one or two tags.";
+                                 "Translate the outer tag to one or two
+                                  tags.";
                              }
                            }
                            leaf tag-1 {
@@ -5518,7 +5524,8 @@ Internet-Draft                    L2NM                        April 2022
                              when '(../translate)';
                              type uint16;
                              description
-                               "A second tag to be used for translation.";
+                               "A second tag to be used for
+                                translation.";
                            }
                          }
                        }
@@ -5531,13 +5538,6 @@ Internet-Draft                    L2NM                        April 2022
                          }
                          description
                            "Priority tagged container.";
-                         leaf tag-type {
-                           type identityref {
-                             base vpn-common:tag-type;
-                           }
-                           default "vpn-common:c-vlan";
-                           description
-                             "Tag type. By default, the tag type is
 
 
 
@@ -5546,6 +5546,13 @@ Barguil, et al.          Expires 7 October 2022                [Page 99]
 Internet-Draft                    L2NM                        April 2022
 
 
+                         leaf tag-type {
+                           type identityref {
+                             base vpn-common:tag-type;
+                           }
+                           default "vpn-common:c-vlan";
+                           description
+                             "Tag type. By default, the tag type is
                               'c-vlan'.";
                          }
                        }
@@ -5587,13 +5594,6 @@ Internet-Draft                    L2NM                        April 2022
                               insertion, removal, or rewriting
                               of 802.1Q VLAN tags. These operations are
                               indicated for the CE-PE direction.
-                              By default, tag operations are symmetric.
-                              As such, the reverse tag operation is
-                              assumed on the PE-CE direction.";
-                           choice op-choice {
-                             description
-                               "Selects the tag rewriting policy for a
-                                VPN network access.";
 
 
 
@@ -5602,6 +5602,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 100]
 Internet-Draft                    L2NM                        April 2022
 
 
+                              By default, tag operations are symmetric.
+                              As such, the reverse tag operation is
+                              assumed on the PE-CE direction.";
+                           choice op-choice {
+                             description
+                               "Selects the tag rewriting policy for a
+                                VPN network access.";
                              leaf pop {
                                type uint8 {
                                  range "1|2";
@@ -5643,13 +5650,6 @@ Internet-Draft                    L2NM                        April 2022
                        description
                          "Container of LAG interface attributes
                           configuration.";
-                       leaf lag-interface-id {
-                         type string;
-                         description
-                           "LAG interface identifier.";
-                       }
-                       container lacp {
-                         description
 
 
 
@@ -5658,6 +5658,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 101]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       leaf lag-interface-id {
+                         type string;
+                         description
+                           "LAG interface identifier.";
+                       }
+                       container lacp {
+                         description
                            "Container for LACP.";
                          leaf lacp-state {
                            type boolean;
@@ -5699,13 +5706,6 @@ Internet-Draft                    L2NM                        April 2022
                          }
                          leaf system-priority {
                            type uint16 {
-                             range "0..65535";
-                           }
-                           default "32768";
-                           description
-                             "Indicates the LACP priority for the
-                              system.";
-                         }
 
 
 
@@ -5714,6 +5714,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 102]
 Internet-Draft                    L2NM                        April 2022
 
 
+                             range "0..65535";
+                           }
+                           default "32768";
+                           description
+                             "Indicates the LACP priority for the
+                              system.";
+                         }
                          container member-link-list {
                            description
                              "Container of Member link list.";
@@ -5755,13 +5762,6 @@ Internet-Draft                    L2NM                        April 2022
                                  description
                                    "Indicates support of OAM 802.3ah
                                     link.";
-                               }
-                             }
-                           }
-                         }
-                         leaf flow-control {
-                           type boolean;
-                           default "false";
 
 
 
@@ -5770,6 +5770,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 103]
 Internet-Draft                    L2NM                        April 2022
 
 
+                               }
+                             }
+                           }
+                         }
+                         leaf flow-control {
+                           type boolean;
+                           default "false";
                            description
                              "Indicates whether flow control is
                               supported.";
@@ -5811,13 +5818,6 @@ Internet-Draft                    L2NM                        April 2022
                                "Identifies the CE within the VPN.";
                              reference
                                "RFC 6624: Layer 2 Virtual Private
-                                          Networks Using BGP for
-                                          Auto-Discovery and
-                                          Signaling";
-                           }
-                           leaf remote-ce-id {
-                             type uint16;
-                             description
 
 
 
@@ -5826,6 +5826,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 104]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                          Networks Using BGP for
+                                          Auto-Discovery and
+                                          Signaling";
+                           }
+                           leaf remote-ce-id {
+                             type uint16;
+                             description
                                "Indicates the identifier of the remote
                                 CE.";
                            }
@@ -5867,13 +5874,6 @@ Internet-Draft                    L2NM                        April 2022
                                           Designated Forwarder Election
                                           Extensibility";
                            }
-                           container vpws-service-instance {
-                             when "derived-from-or-self(../../../../../"
-                                + "vpn-type, 'vpn-common:vpws-evpn')" {
-                               description
-                                 "Only applies for EVPN-VPWS.";
-                             }
-                             description
 
 
 
@@ -5882,6 +5882,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 105]
 Internet-Draft                    L2NM                        April 2022
 
 
+                           container vpws-service-instance {
+                             when "derived-from-or-self(../../../../../"
+                                + "vpn-type, 'vpn-common:vpws-evpn')" {
+                               description
+                                 "Only applies for EVPN-VPWS.";
+                             }
+                             description
                                "Local and remote VPWS Service Instance
                                 (VSI)";
                              reference
@@ -5923,13 +5930,6 @@ Internet-Draft                    L2NM                        April 2022
                                      case from-pool {
                                        leaf vsi-pool-name {
                                          type string;
-                                         description
-                                           "The auto-assignment will be
-                                            made from this pool.";
-                                       }
-                                     }
-                                     case full-auto {
-                                       leaf auto {
 
 
 
@@ -5938,6 +5938,13 @@ Barguil, et al.          Expires 7 October 2022               [Page 106]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                         description
+                                           "The auto-assignment will be
+                                            made from this pool.";
+                                       }
+                                     }
+                                     case full-auto {
+                                       leaf auto {
                                          type empty;
                                          description
                                            "Indicates that a local VSI
@@ -5979,13 +5986,6 @@ Internet-Draft                    L2NM                        April 2022
                                    description
                                      "The remote VSI is auto-assigned.";
                                    choice auto-mode {
-                                     description
-                                       "Indicates the auto-assignment
-                                        mode of remote VSI. VSI can be
-                                        automatically assigned either
-                                        with or without indicating a
-                                        pool from which the VSI
-                                        should be taken.
 
 
 
@@ -5993,6 +5993,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 107]
 
 Internet-Draft                    L2NM                        April 2022
 
+
+                                     description
+                                       "Indicates the auto-assignment
+                                        mode of remote VSI. VSI can be
+                                        automatically assigned either
+                                        with or without indicating a
+                                        pool from which the VSI
+                                        should be taken.
 
                                         For both cases, the server
                                         will auto-assign a remote VSI
@@ -6034,14 +6042,6 @@ Internet-Draft                    L2NM                        April 2022
                    list group {
                      key "group-id";
                      description
-                       "List of group-ids.";
-                     leaf group-id {
-                       type string;
-                       description
-                         "Indicates the group-id to which the network
-                          access belongs to.";
-                     }
-                     leaf precedence {
 
 
 
@@ -6050,6 +6050,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 108]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       "List of group-ids.";
+                     leaf group-id {
+                       type string;
+                       description
+                         "Indicates the group-id to which the network
+                          access belongs to.";
+                     }
+                     leaf precedence {
                        type identityref {
                          base precedence-type;
                        }
@@ -6090,14 +6098,6 @@ Internet-Draft                    L2NM                        April 2022
                          key "maid";
                          description
                            "List of UNI-N to UNI-N.";
-                         uses cfm-802;
-                       }
-                     }
-                     uses y-1731;
-                   }
-                   container service {
-                     description
-                       "Container for service";
 
 
 
@@ -6106,24 +6106,33 @@ Barguil, et al.          Expires 7 October 2022               [Page 109]
 Internet-Draft                    L2NM                        April 2022
 
 
+                         uses cfm-802;
+                       }
+                     }
+                     uses y-1731;
+                   }
+                   container service {
+                     description
+                       "Container for service";
                      leaf mtu {
                        type uint32;
                        description
-                         "MTU, it is also known as the maximum
+                         "Layer 2 MTU, it is also known as the maximum
                           transmission unit or maximum frame size. When
                           a frame is larger than the MTU, it is broken
                           down, or fragmented, into smaller pieces by
                           the network protocol to accommodate the MTU
-                          of the network";
+                          of the network.";
                      }
                      container svc-pe-to-ce-bandwidth {
                        if-feature "vpn-common:inbound-bw";
                        description
                          "From the customer site's perspective, the
                           service inbound bandwidth of the connection
-                          or download bandwidth from the SP to
-                          the site. Note that the L2SM uses 'input-
-                          -bandwidth' to refer to the same concept.";
+                          or download bandwidth from the service
+                          provider the site. Note that the L2SM uses
+                          'input-bandwidth' to refer to the same
+                          concept.";
                        list pe-to-ce-bandwidth {
                          key "bw-type";
                          description
@@ -6145,15 +6154,6 @@ Internet-Draft                    L2NM                        April 2022
                                key "cos-id";
                                description
                                  "List of class of services.";
-                               leaf cos-id {
-                                 type uint8;
-                                 description
-                                   "Identifier of the CoS, indicated by
-                                    DSCP or a CE-CLAN CoS (802.1p) value in
-                                    the service frame.";
-                                 reference
-                                   "IEEE Std 802.1Q: Bridges and Bridged
-                                                     Networks";
 
 
 
@@ -6162,6 +6162,15 @@ Barguil, et al.          Expires 7 October 2022               [Page 110]
 Internet-Draft                    L2NM                        April 2022
 
 
+                               leaf cos-id {
+                                 type uint8;
+                                 description
+                                   "Identifier of the CoS, indicated by
+                                    DSCP or a CE-CLAN CoS (802.1p) value
+                                    in the service frame.";
+                                 reference
+                                   "IEEE Std 802.1Q: Bridges and Bridged
+                                                     Networks";
                                }
                                uses bandwidth-parameters;
                              }
@@ -6201,15 +6210,6 @@ Internet-Draft                    L2NM                        April 2022
                              description
                                "Bandwidth per CoS.";
                              list cos {
-                               key "cos-id";
-                               description
-                                 "List of class of services.";
-                               leaf cos-id {
-                                 type uint8;
-                                 description
-                                   "Identifier of the CoS, indicated by
-                                    DSCP or a CE-CLAN CoS (802.1p) value in
-                                    the service frame.";
 
 
 
@@ -6218,6 +6218,15 @@ Barguil, et al.          Expires 7 October 2022               [Page 111]
 Internet-Draft                    L2NM                        April 2022
 
 
+                               key "cos-id";
+                               description
+                                 "List of class of services.";
+                               leaf cos-id {
+                                 type uint8;
+                                 description
+                                   "Identifier of the CoS, indicated by
+                                    DSCP or a CE-CLAN CoS (802.1p) value
+                                    in the service frame.";
                                  reference
                                    "IEEE Std 802.1Q: Bridges and Bridged
                                                      Networks";
@@ -6257,6 +6266,14 @@ Internet-Draft                    L2NM                        April 2022
                              description
                                "Choice for classification.";
                              case match-flow {
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 112]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                                container match-flow {
                                  description
                                    "Describes flow-matching criteria.";
@@ -6266,14 +6283,6 @@ Internet-Draft                    L2NM                        April 2022
                                      "DSCP value.";
                                  }
                                  leaf dot1q {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 112]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                                    type uint16;
                                    description
                                      "802.1Q matching. It is a VLAN tag
@@ -6288,8 +6297,7 @@ Internet-Draft                    L2NM                        April 2022
                                      range "0..7";
                                    }
                                    description
-                                     "Priority Code Point (PCP)
-                                      value.";
+                                     "Priority Code Point (PCP) value.";
                                  }
                                  leaf src-mac-address {
                                    type yang:mac-address;
@@ -6314,14 +6322,6 @@ Internet-Draft                    L2NM                        April 2022
                                      "Allows all.";
                                  }
                                }
-                             }
-                             case match-application {
-                               leaf match-application {
-                                 type identityref {
-                                   base vpn-common:customer-application;
-                                 }
-                                 description
-                                   "Defines the application to match.";
 
 
 
@@ -6330,6 +6330,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 113]
 Internet-Draft                    L2NM                        April 2022
 
 
+                             }
+                             case match-application {
+                               leaf match-application {
+                                 type identityref {
+                                   base vpn-common:customer-application;
+                                 }
+                                 description
+                                   "Defines the application to match.";
                                }
                              }
                            }
@@ -6370,14 +6378,6 @@ Internet-Draft                    L2NM                        April 2022
                                 is applied.";
                            }
                          }
-                       }
-                     }
-                     container mac-policies {
-                       description
-                         "Container for MAC-related policies.";
-                       list access-control-list {
-                         key "name";
-                         description
 
 
 
@@ -6386,6 +6386,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 114]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       }
+                     }
+                     container mac-policies {
+                       description
+                         "Container for MAC-related policies.";
+                       list access-control-list {
+                         key "name";
+                         description
                            "Container for access control List.";
                          leaf name {
                            type string;
@@ -6426,14 +6434,6 @@ Internet-Draft                    L2NM                        April 2022
                               + "'flood')" {
                              description
                                "Rate-limit is valid only when the action
-                                is to accept the matching frame.";
-                           }
-                           type decimal64 {
-                             fraction-digits 2;
-                           }
-                           units "bytes per second";
-                           description
-                             "Specifies how to rate-limit the traffic.";
 
 
 
@@ -6442,6 +6442,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 115]
 Internet-Draft                    L2NM                        April 2022
 
 
+                                is to accept the matching frame.";
+                           }
+                           type decimal64 {
+                             fraction-digits 2;
+                           }
+                           units "bytes per second";
+                           description
+                             "Specifies how to rate-limit the traffic.";
                          }
                        }
                        container mac-loop-prevention {
@@ -6482,14 +6490,6 @@ Internet-Draft                    L2NM                        April 2022
                            description
                              "Protection type";
                          }
-                       }
-                       container mac-addr-limit {
-                         description
-                           "Container of MAC-Addr limit configurations";
-                         leaf limit-number {
-                           type uint16;
-                           default "2";
-                           description
 
 
 
@@ -6498,6 +6498,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 116]
 Internet-Draft                    L2NM                        April 2022
 
 
+                       }
+                       container mac-addr-limit {
+                         description
+                           "Container of MAC-Addr limit configurations";
+                         leaf limit-number {
+                           type uint16;
+                           default "2";
+                           description
                              "Maximum number of MAC addresses learned
                               from the subscriber for a single service
                               instance.";
@@ -6538,14 +6546,6 @@ Internet-Draft                    L2NM                        April 2022
                            }
                            enum source-receiver {
                              description
-                               "The site has both sources and
-                                receivers.";
-                           }
-                         }
-                         default "source-receiver";
-                         description
-                           "Type of the multicast site.";
-                       }
 
 
 
@@ -6554,6 +6554,14 @@ Barguil, et al.          Expires 7 October 2022               [Page 117]
 Internet-Draft                    L2NM                        April 2022
 
 
+                               "The site has both sources and
+                                receivers.";
+                           }
+                         }
+                         default "source-receiver";
+                         description
+                           "Type of the multicast site.";
+                       }
                        list multicast-gp-address-mapping {
                          key "id";
                          description
@@ -6594,14 +6602,6 @@ Internet-Draft                    L2NM                        April 2022
                }
              }
            }
-         }
-       }
-     }
-   }
-   <CODE ENDS>
-
-
-
 
 
 
@@ -6609,6 +6609,12 @@ Barguil, et al.          Expires 7 October 2022               [Page 118]
 
 Internet-Draft                    L2NM                        April 2022
 
+
+         }
+       }
+     }
+   }
+   <CODE ENDS>
 
 9.  Security Considerations
 
@@ -6643,17 +6649,11 @@ Internet-Draft                    L2NM                        April 2022
       properties.  These data nodes are defined with "nacm:default-deny-
       write" tagging [RFC9181].
 
-   *  'ethernet-segments' and 'vpn-services': An attacker who is able to
-      access network nodes can undertake various attacks, such as
-      deleting a running L2VPN service, interrupting all the traffic of
-      a client.  In addition, an attacker may modify the attributes of a
-      running service (e.g., QoS, bandwidth) or an ES, leading to
-      malfunctioning of the service and therefore to SLA violations.  In
-      addition, an attacker could attempt to create an L2VPN service,
-      add a new network access, or intercept/redirect the traffic to a
-      non-authorized node.  In addition to using NACM to prevent
-      authorized access, such activity can be detected by adequately
-      monitoring and tracking network configuration changes.
+
+
+
+
+
 
 
 
@@ -6665,6 +6665,18 @@ Barguil, et al.          Expires 7 October 2022               [Page 119]
 
 Internet-Draft                    L2NM                        April 2022
 
+
+   *  'ethernet-segments' and 'vpn-services': An attacker who is able to
+      access network nodes can undertake various attacks, such as
+      deleting a running L2VPN service, interrupting all the traffic of
+      a client.  In addition, an attacker may modify the attributes of a
+      running service (e.g., QoS, bandwidth) or an ES, leading to
+      malfunctioning of the service and therefore to SLA violations.  In
+      addition, an attacker could attempt to create an L2VPN service,
+      add a new network access, or intercept/redirect the traffic to a
+      non-authorized node.  In addition to using NACM to prevent
+      authorized access, such activity can be detected by adequately
+      monitoring and tracking network configuration changes.
 
    Some of the readable data nodes in the "ietf-l2vpn-ntw" YANG module
    may be considered sensitive or vulnerable in some network
@@ -6690,6 +6702,26 @@ Internet-Draft                    L2NM                        April 2022
    This document requests IANA to register the following URIs in the
    "ns" subregistry within the "IETF XML Registry" [RFC3688]:
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 120]
+
+Internet-Draft                    L2NM                        April 2022
+
+
          URI: urn:ietf:params:xml:ns:yang:iana-bgp-l2-encaps
          Registrant Contact: The IESG.
          XML: N/A; the requested URI is an XML namespace.
@@ -6709,18 +6741,6 @@ Internet-Draft                    L2NM                        April 2022
    This document requests IANA to register the following YANG modules in
    the "YANG Module Names" subregistry [RFC6020] within the "YANG
    Parameters" registry:
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 120]
-
-Internet-Draft                    L2NM                        April 2022
-
 
          name: iana-bgp-l2-encaps
          namespace: urn:ietf:params:xml:ns:yang:iana-bgp-l2-encaps
@@ -6747,6 +6767,17 @@ Internet-Draft                    L2NM                        April 2022
          reference: RFC XXXX
 
 
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 121]
+
+Internet-Draft                    L2NM                        April 2022
+
+
 10.2.  BGP Layer 2 Encapsulation Types
 
    This document defines the initial version of the IANA-maintained
@@ -6770,14 +6801,6 @@ Internet-Draft                    L2NM                        April 2022
    "description":  Replicates the description from the registry.
 
    "reference":   Replicates the reference from the registry and add the
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 121]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                   title of the document.
 
    Unassigned or reserved values are not present in the module.
@@ -6800,6 +6823,16 @@ Internet-Draft                    L2NM                        April 2022
       MPLS pseudowire types must not be directly added to the "iana-bgp-
       l2-encaps" YANG module.  They must instead be respectively added
       to the "MPLS Pseudowire Types" registry [IANA-PW-Types].
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 122]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    When a pseudowire type is added to the "iana-pseudowire-types"
    registry, a new "identity" statement must be added to the "iana-
@@ -6826,14 +6859,6 @@ Internet-Draft                    L2NM                        April 2022
       When this registry is modified, the YANG module "iana-pseudowire-
       types" must be updated as defined in RFCXXXX.
 
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 122]
-
-Internet-Draft                    L2NM                        April 2022
-
-
 11.  References
 
 11.1.  Normative References
@@ -6854,6 +6879,16 @@ Internet-Draft                    L2NM                        April 2022
               Metropolitan Area Networks - Virtual Bridged Local Area
               Networks Amendment 5: Connectivity Fault Management",
               2007, <DOI 10.1109/IEEESTD.2007.4431836>.
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 123]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    [ITU-T-Y-1731]
               Union, I. T., "Operations, administration and maintenance
@@ -6880,16 +6915,6 @@ Internet-Draft                    L2NM                        April 2022
               Signaling", RFC 4762, DOI 10.17487/RFC4762, January 2007,
               <https://www.rfc-editor.org/info/rfc4762>.
 
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 123]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
               the Network Configuration Protocol (NETCONF)", RFC 6020,
               DOI 10.17487/RFC6020, October 2010,
@@ -6914,6 +6939,13 @@ Internet-Draft                    L2NM                        April 2022
               RFC 6991, DOI 10.17487/RFC6991, July 2013,
               <https://www.rfc-editor.org/info/rfc6991>.
 
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 124]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    [RFC7432]  Sajassi, A., Ed., Aggarwal, R., Bitar, N., Isaac, A.,
               Uttaro, J., Drake, J., and W. Henderickx, "BGP MPLS-Based
               Ethernet VPN", RFC 7432, DOI 10.17487/RFC7432, February
@@ -6936,15 +6968,6 @@ Internet-Draft                    L2NM                        April 2022
               Maintenance Using the Label Distribution Protocol (LDP)",
               STD 84, RFC 8077, DOI 10.17487/RFC8077, February 2017,
               <https://www.rfc-editor.org/info/rfc8077>.
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 124]
-
-Internet-Draft                    L2NM                        April 2022
-
 
    [RFC8214]  Boutros, S., Sajassi, A., Salam, S., Drake, J., and J.
               Rabadan, "Virtual Private Wire Service Support in Ethernet
@@ -6972,6 +6995,13 @@ Internet-Draft                    L2NM                        April 2022
               DOI 10.17487/RFC8365, March 2018,
               <https://www.rfc-editor.org/info/rfc8365>.
 
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 125]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    [RFC8466]  Wen, B., Fioccola, G., Ed., Xie, C., and L. Jalil, "A YANG
               Data Model for Layer 2 Virtual Private Network (L2VPN)
               Service Delivery", RFC 8466, DOI 10.17487/RFC8466, October
@@ -6991,16 +7021,6 @@ Internet-Draft                    L2NM                        April 2022
               draft-ietf-bess-evpn-pref-df-08, 23 September 2021,
               <https://www.ietf.org/archive/id/draft-ietf-bess-evpn-
               pref-df-08.txt>.
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 125]
-
-Internet-Draft                    L2NM                        April 2022
-
 
    [I-D.ietf-bess-evpn-yang]
               Brissette, P., Shah, H., Hussain, I., Tiruveedhula, K.,
@@ -7023,6 +7043,20 @@ Internet-Draft                    L2NM                        April 2022
               opsawg-sap-04, 11 April 2022,
               <https://www.ietf.org/archive/id/draft-ietf-opsawg-sap-
               04.txt>.
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 126]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    [I-D.ietf-teas-enhanced-vpn]
               Dong, J., Bryant, S., Li, Z., Miyasaka, T., and Y. Lee, "A
@@ -7048,16 +7082,6 @@ Internet-Draft                    L2NM                        April 2022
               <https://www.ietf.org/archive/id/draft-ietf-teas-te-
               service-mapping-yang-10.txt>.
 
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 126]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    [IEEE-802-1ah]
               IEEE, "IEEE Standard for Local and metropolitan area
               networks -- Virtual Bridged Local Area Networks Amendment
@@ -7081,6 +7105,15 @@ Internet-Draft                    L2NM                        April 2022
               "Bridges and Bridged Networks", IEEE Std 802.1Q-2018, 6
               July 2018.
 
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 127]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    [MFA]      "The Use of Virtual Trunks for ATM/MPLS Control Plane
               Interworking Specification", MFA Forum 9.0.0 , February
               2006.
@@ -7101,18 +7134,6 @@ Internet-Draft                    L2NM                        April 2022
               Farinacci, D., Li, T., and A. Conta, "MPLS Label Stack
               Encoding", RFC 3032, DOI 10.17487/RFC3032, January 2001,
               <https://www.rfc-editor.org/info/rfc3032>.
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 127]
-
-Internet-Draft                    L2NM                        April 2022
-
 
    [RFC3545]  Koren, T., Casner, S., Geevarghese, J., Thompson, B., and
               P. Ruddy, "Enhanced Compressed RTP (CRTP) for Links with
@@ -7140,6 +7161,15 @@ Internet-Draft                    L2NM                        April 2022
               (SAToP)", RFC 4553, DOI 10.17487/RFC4553, June 2006,
               <https://www.rfc-editor.org/info/rfc4553>.
 
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 128]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    [RFC4618]  Martini, L., Rosen, E., Heron, G., and A. Malis,
               "Encapsulation Methods for Transport of PPP/High-Level
               Data Link Control (HDLC) over MPLS Networks", RFC 4618,
@@ -7163,13 +7193,6 @@ Internet-Draft                    L2NM                        April 2022
               Networks", RFC 4717, DOI 10.17487/RFC4717, December 2006,
               <https://www.rfc-editor.org/info/rfc4717>.
 
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 128]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    [RFC4816]  Malis, A., Martini, L., Brayley, J., and T. Walsh,
               "Pseudowire Emulation Edge-to-Edge (PWE3) Asynchronous
               Transfer Mode (ATM) Transparent Cell Transport Service",
@@ -7190,6 +7213,18 @@ Internet-Draft                    L2NM                        April 2022
               Extensions for Header Compression over MPLS", RFC 4901,
               DOI 10.17487/RFC4901, June 2007,
               <https://www.rfc-editor.org/info/rfc4901>.
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 129]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    [RFC5086]  Vainshtein, A., Ed., Sasson, I., Metz, E., Frost, T., and
               P. Pate, "Structure-Aware Time Division Multiplexed (TDM)
@@ -7218,14 +7253,6 @@ Internet-Draft                    L2NM                        April 2022
               (BFD)", RFC 5880, DOI 10.17487/RFC5880, June 2010,
               <https://www.rfc-editor.org/info/rfc5880>.
 
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 129]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    [RFC6307]  Black, D., Ed., Dunbar, L., Ed., Roth, M., and R. Solomon,
               "Encapsulation Methods for Transport of Fibre Channel
               Traffic over MPLS Networks", RFC 6307,
@@ -7246,6 +7273,14 @@ Internet-Draft                    L2NM                        April 2022
               "Dynamic Placement of Multi-Segment Pseudowires",
               RFC 7267, DOI 10.17487/RFC7267, June 2014,
               <https://www.rfc-editor.org/info/rfc7267>.
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 130]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    [RFC7297]  Boucadair, M., Jacquenet, C., and N. Wang, "IP
               Connectivity Provisioning Profile (CPP)", RFC 7297,
@@ -7273,15 +7308,6 @@ Internet-Draft                    L2NM                        April 2022
               Network Topologies", RFC 8345, DOI 10.17487/RFC8345, March
               2018, <https://www.rfc-editor.org/info/rfc8345>.
 
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 130]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/info/rfc8446>.
@@ -7301,6 +7327,16 @@ Internet-Draft                    L2NM                        April 2022
               VPN Designated Forwarder Election Extensibility",
               RFC 8584, DOI 10.17487/RFC8584, April 2019,
               <https://www.rfc-editor.org/info/rfc8584>.
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 131]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    [RFC8792]  Watsen, K., Auerswald, E., Farrel, A., and Q. Wu,
               "Handling Long Lines in Content of Internet-Drafts and
@@ -7327,17 +7363,6 @@ Appendix A.  Examples
 
    The examples use the folding defined in [RFC8792] for long lines.
 
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 131]
-
-Internet-Draft                    L2NM                        April 2022
-
-
 A.1.  BGP-based VPLS
 
    This section provides an example to illustrate how the L2NM can be
@@ -7360,6 +7385,14 @@ A.1.  BGP-based VPLS
                       +-----+   +--------------+   +-----+
 
                        Figure 23: An Example of VPLS
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 132]
+
+Internet-Draft                    L2NM                        April 2022
+
 
    Figure 24 show an example of a message body used to configure a VPLS
    instance using the L2NM.  In this example, BGP is used for both auto-
@@ -7386,14 +7419,6 @@ A.1.  BGP-based VPLS
                 "local-autonomous-system": 65535,
                 "svc-mtu": 1518,
                 "rd-suffix": 1,
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 132]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                 "vpn-target": [
                   {
                     "id": 1,
@@ -7417,6 +7442,14 @@ Internet-Draft                    L2NM                        April 2022
                   "global-parameters-profile": [
                     {
                       "profile-id": "simple-profile"
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 133]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                     }
                   ]
                 },
@@ -7442,14 +7475,6 @@ Internet-Draft                    L2NM                        April 2022
                         "admin-status": {
                           "status": "ietf-vpn-common:admin-up"
                         }
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 133]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                       },
                       "connection": {
                         "encapsulation": {
@@ -7473,6 +7498,14 @@ Internet-Draft                    L2NM                        April 2022
                     }
                   ]
                 },
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 134]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                 "bgp-auto-discovery": {
                   "vpn-id": "1"
                 },
@@ -7498,14 +7531,6 @@ Internet-Draft                    L2NM                        April 2022
                       },
                       "connection": {
                         "encapsulation": {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 134]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                           "encap-type": "ietf-vpn-common:dot1q",
                           "dot1q": {
                             "cvlan-id": 1
@@ -7529,6 +7554,14 @@ Internet-Draft                    L2NM                        April 2022
                 "bgp-auto-discovery": {
                   "vpn-id": "1"
                 },
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 135]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                 "signaling-option": {
                   "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
 -tagged-mode",
@@ -7554,14 +7587,6 @@ Internet-Draft                    L2NM                        April 2022
                           "encap-type": "ietf-vpn-common:dot1q",
                           "dot1q": {
                             "cvlan-id": 1
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 135]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                           }
                         }
                       }
@@ -7585,6 +7610,14 @@ Internet-Draft                    L2NM                        April 2022
                 "signaling-option": {
                   "pw-encapsulation-type": "iana-bgp-l2-encaps:ethernet\
 -tagged-mode",
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 136]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                   "vpls-instance": {
                     "vpls-edge-id": 4,
                     "vpls-edge-id-range": 100
@@ -7610,14 +7643,6 @@ Internet-Draft                    L2NM                        April 2022
                           }
                         }
                       }
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 136]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                     }
                   ]
                 }
@@ -7638,6 +7663,15 @@ A.2.  BGP-based VPWS with LDP Signaling
    Let's consider the simple architecture depicted in Figure 25 to offer
    a VPWS between CE1 and CE2.  The service uses BGP for auto-discovery
    and LDP for signaling.
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 137]
+
+Internet-Draft                    L2NM                        April 2022
 
 
                       +-----+   +--------------+   +-----+
@@ -7666,14 +7700,6 @@ A.2.  BGP-based VPWS with LDP Signaling
                    "local-autonomous-system": 65550,
                    "rd-auto": {
                      "auto": [
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 137]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                        null
                      ]
                    },
@@ -7696,6 +7722,14 @@ Internet-Draft                    L2NM                        April 2022
                  {
                    "vpn-node-id": "pe1",
                    "ne-id": "2001:db8:100::1",
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 138]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                    "active-global-parameters-profiles": {
                      "global-parameters-profile": [
                        {
@@ -7722,14 +7756,6 @@ Internet-Draft                    L2NM                        April 2022
                      "vpn-network-access": [
                        {
                          "id": "1/1/1.1",
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 138]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                          "interface-id": "1/1/1",
                          "description": "Interface to CE1",
                          "global-parameters-profile": "simple-profile",
@@ -7752,6 +7778,14 @@ Internet-Draft                    L2NM                        April 2022
                        }
                      ]
                    },
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 139]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                    "bgp-auto-discovery": {
                      "vpn-id": "587"
                    },
@@ -7778,14 +7812,6 @@ Internet-Draft                    L2NM                        April 2022
                            "admin-status": {
                              "status": "ietf-vpn-common:admin-up"
                            }
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 139]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                          }
                        }
                      ]
@@ -7801,6 +7827,19 @@ Internet-Draft                    L2NM                        April 2022
 
       Figure 26: Example of L2NM Message Body to Configure a BGP-based
                           VPWS with LDP Signaling
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 140]
+
+Internet-Draft                    L2NM                        April 2022
 
 
 A.3.  LDP-based VPLS
@@ -7829,19 +7868,6 @@ A.3.  LDP-based VPLS
    purpose.  Additionally, two VPN Nodes and each with a corresponding
    VPN network access is also created.
 
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 140]
-
-Internet-Draft                    L2NM                        April 2022
-
-
  =============== NOTE: '\' line wrapping per RFC 8792 ================
 
  {
@@ -7864,6 +7890,14 @@ Internet-Draft                    L2NM                        April 2022
                  "ce-vlan-preservation": true,
                  "ce-vlan-cos-preservation": true
                }
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 141]
+
+Internet-Draft                    L2NM                        April 2022
+
+
              ]
            },
            "vpn-nodes": {
@@ -7890,14 +7924,6 @@ Internet-Draft                    L2NM                        April 2022
                      "t-ldp-pw-type": "vpls-type",
                      "pw-peer-list": [
                        {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 141]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                          "peer-addr": "2001:db8:50::1",
                          "vc-id": "1543"
                        }
@@ -7920,6 +7946,14 @@ Internet-Draft                    L2NM                        April 2022
                          "encapsulation": {
                            "encap-type": "ietf-vpn-common:dot1q",
                            "dot1q": {
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 142]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                              "tag-type": "ietf-vpn-common:c-vlan",
                              "cvlan-id": 550
                            }
@@ -7946,14 +7980,6 @@ Internet-Draft                    L2NM                        April 2022
                          "qos": {
                            "qos-profile": {
                              "qos-profile": [
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 142]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                                {
                                  "profile": "QoS_Profile_A",
                                  "direction": "ietf-vpn-common:both"
@@ -7976,6 +8002,14 @@ Internet-Draft                    L2NM                        April 2022
                      "status": "ietf-vpn-common:admin-up"
                    }
                  },
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 143]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                  "active-global-parameters-profiles": {
                    "global-parameters-profile": [
                      {
@@ -8002,14 +8036,6 @@ Internet-Draft                    L2NM                        April 2022
                        "interface-id": "gigabithethernet0/0/1",
                        "status": {
                          "admin-status": {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 143]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                            "status": "ietf-vpn-common:admin-up"
                          }
                        },
@@ -8032,6 +8058,14 @@ Internet-Draft                    L2NM                        April 2022
                                "cir": "20480000"
                              }
                            ]
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 144]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                          },
                          "svc-ce-to-pe-bandwidth": {
                            "ce-to-pe-bandwidth": [
@@ -8058,14 +8092,6 @@ Internet-Draft                    L2NM                        April 2022
                }
              ]
            }
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 144]
-
-Internet-Draft                    L2NM                        April 2022
-
-
          }
        ]
      }
@@ -8080,6 +8106,21 @@ A.4.  VPWS-EVPN Service Instance
    between CE1 and CE2.  Both CEs are multi-homed.  BGP sessions are
    maintained between these PEs as per [RFC8214].  In this EVPN
    instance, an All-Active redundancy mode is used.
+
+
+
+
+
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 145]
+
+Internet-Draft                    L2NM                        April 2022
+
 
                       |<-------- EVPN Instance --------->|
                       |                                  |
@@ -8099,28 +8140,6 @@ A.4.  VPWS-EVPN Service Instance
                      Figure 29: An Example of VPWS-EVPN
 
    Let's first suppose that the following ES was created (Figure 30).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 145]
-
-Internet-Draft                    L2NM                        April 2022
-
 
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
@@ -8149,6 +8168,16 @@ Internet-Draft                    L2NM                        April 2022
    Figure 29 shows a simplified configuration to illustrate the use of
    the L2NM to configured VPWS-EVPN instance.
 
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 146]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    {
      "ietf-l2vpn-ntw:l2vpn-ntw": {
        "vpn-services": {
@@ -8170,14 +8199,6 @@ Internet-Draft                    L2NM                        April 2022
                      {
                        "id": 1,
                        "route-targets": [
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 146]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                          {
                            "route-target": "0:65535:1"
                          }
@@ -8205,6 +8226,14 @@ Internet-Draft                    L2NM                        April 2022
                        {
                          "id": "1/1/1.1",
                          "interface-id": "1/1/1",
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 147]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                          "description": "Interface to CE1",
                          "global-parameters-profile": "simple-profile",
                          "status": {
@@ -8226,14 +8255,6 @@ Internet-Draft                    L2NM                        April 2022
                          },
                          "group": [
                            {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 147]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                              "group-id": "gr1",
                              "ethernet-segment-identifier": "esi1"
                            }
@@ -8261,6 +8282,14 @@ Internet-Draft                    L2NM                        April 2022
                          "global-parameters-profile": "simple-profile",
                          "status": {
                            "admin-status": {
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 148]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                              "status": "ietf-vpn-common:admin-up"
                            }
                          },
@@ -8282,14 +8311,6 @@ Internet-Draft                    L2NM                        April 2022
                              "ethernet-segment-identifier": "esi1"
                            }
                          ]
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 148]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                        }
                      ]
                    }
@@ -8317,6 +8338,14 @@ Internet-Draft                    L2NM                        April 2022
                            }
                          },
                          "connection": {
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 149]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                            "encapsulation": {
                              "encap-type": "ietf-vpn-common:dot1q",
                              "dot1q": {
@@ -8338,14 +8367,6 @@ Internet-Draft                    L2NM                        April 2022
                      ]
                    }
                  },
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 149]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                  {
                    "vpn-node-id": "pe4",
                    "ne-id": "198.51.100.4",
@@ -8373,6 +8394,14 @@ Internet-Draft                    L2NM                        April 2022
                              "encap-type": "ietf-vpn-common:dot1q",
                              "dot1q": {
                                "cvlan-id": 1
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 150]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                              }
                            }
                          },
@@ -8394,14 +8423,6 @@ Internet-Draft                    L2NM                        April 2022
              }
            }
          ]
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 150]
-
-Internet-Draft                    L2NM                        April 2022
-
-
        }
      }
    }
@@ -8430,6 +8451,13 @@ A.5.  Automatic ESI Assignment
 
            Figure 32: An Example of Automatic ESI Assignment
 
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 151]
+
+Internet-Draft                    L2NM                        April 2022
+
+
    Figure 33 and Figure 34 show how the L2NM is used to instruct both
    PE1 and PE2 to auto-assign the ESI to identify the ES used with CE1.
    In this example, we suppose that LACP is enabled and that a Type 1
@@ -8448,15 +8476,6 @@ A.5.  Automatic ESI Assignment
        ]
      }
    }
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 151]
-
-Internet-Draft                    L2NM                        April 2022
-
 
       Figure 33: Example of L2NM Message Body to Auto-Assign Ethernet
                             Segment Identifiers
@@ -8487,6 +8506,14 @@ Internet-Draft                    L2NM                        April 2022
                          },
                          "connection": {
                            "lag-interface": {
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 152]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                              "lag-interface-id": "1",
                              "lacp": {
                                "lacp-state": true,
@@ -8506,14 +8533,6 @@ Internet-Draft                    L2NM                        April 2022
                    }
                  },
                  {
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 152]
-
-Internet-Draft                    L2NM                        April 2022
-
-
                    "vpn-node-id": "pe2",
                    "ne-id": "198.51.100.2",
                    "vpn-network-accesses": {
@@ -8543,6 +8562,14 @@ Internet-Draft                    L2NM                        April 2022
                              "ethernet-segment-identifier": "esi1"
                            }
                          ]
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 153]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                        }
                      ]
                    }
@@ -8560,15 +8587,6 @@ Internet-Draft                    L2NM                        April 2022
    The auto-assigned ESI can be retrieved using, e.g., a GET RESTCONF
    method.  The assigned value will be then returned as shown in the
    'esi-auto' data node in Figure 35.
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 153]
-
-Internet-Draft                    L2NM                        April 2022
-
 
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
@@ -8597,6 +8615,17 @@ A.6.  VPN Network Access Precedence
    involves two VPN network accesses to sites that belong to the same
    customer.
 
+
+
+
+
+
+
+Barguil, et al.          Expires 7 October 2022               [Page 154]
+
+Internet-Draft                    L2NM                        April 2022
+
+
                 +--------------+
                 |VPN-NODE      |
                 |           +--+-------+
@@ -8613,41 +8642,12 @@ A.6.  VPN Network Access Precedence
 
             Figure 36: Example of Multiple VPN Network Accesses
 
-
-
-
-
-
-
-
-
-Barguil, et al.          Expires 7 October 2022               [Page 154]
-
-Internet-Draft                    L2NM                        April 2022
-
-
    In order to tag one of these VPN network accesses as "primary" and
    the other one as "secondary", Figure 37 shows an excerpt of the
    corresponding L2NM configuration.  In such a configuration, both
    accesses are bound to the same "group-id" and the "precedence" data
    node set as function of the intended role of each access (primary or
    secondary).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
