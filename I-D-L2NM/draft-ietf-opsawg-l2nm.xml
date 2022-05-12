@@ -287,8 +287,9 @@
     <section anchor="terminology" title="Terminology">
       <t>This document assumes that the reader is familiar with <xref
       target="RFC6241"></xref>, <xref target="RFC7950"></xref>, <xref
-      target="RFC8466"></xref>, and <xref target="RFC8309"></xref>. This
-      document uses terminology from those documents.</t>
+      target="RFC8466"></xref>, <xref target="RFC4026"></xref> and <xref
+      target="RFC8309"></xref>. This document uses terminology from those
+      documents.</t>
 
       <t>This document uses the term "network model" as defined in Section 2.1
       of <xref target="RFC8969"></xref>.</t>
@@ -345,10 +346,7 @@
           the network interfaces that are associated with a given VPN node.
           Traffic coming from the VPN network access belongs to the VPN. The
           attachment circuits (bearers) between Customer Edges (CEs) and
-          Provider Edges (PEs) are terminated in the VPN network access.
-          <vspace blankLines="1" />A reference to the bearer is maintained to
-          allow keeping the link between the L2SM and the L2NM when both data
-          models are used in a given deployment.</t>
+          Provider Edges (PEs) are terminated in the VPN network access. </t>
 
           <t hangText="VPN service provider:">Is a service provider that
           offers L2VPN-related services.</t>
@@ -418,7 +416,7 @@
       attachment is achieved through a bearer with a Layer 2 connection on
       top. The bearer refers to properties of the attachment that are below
       Layer 2, while the connection refers to Layer 2 protocol-oriented
-      properties.</t>
+      properties. </t>
 
       <t>The reader may refer to <xref target="RFC8309"></xref> for the
       distinction between the "Customer Service Model", the "Service Delivery
@@ -439,7 +437,7 @@
                           | Orchestration |
                           +-------+-------+
            Network Model          |
-l2vpn-ntw + ietf-ethernet-segment |
+        l2vpn-ntw + l2vpn-es      |
                           +-------+-------+
                           |   Network     |
                           | Orchestration |
@@ -461,14 +459,13 @@ l2vpn-ntw + ietf-ethernet-segment |
                  |        |                   |
                  | NETCONF/CLI..................
                  |        |                   |
-          +------------------------------------------------+
-                              Network
+               +--------------------------------+
+               \              Network         /  
++----+  Bearer  \ +----+              +----+ /       +----+
+|CE A+ ---------- +PE A+              +PE B+ ------- +CE B|
++----+ Connection +----+              +----+         +----+
 
- +------+  Bearer    +------+      +------+         +------+
- | CE A + ---------- + PE A +      + PE B + ------- + CE B |
- +------+ Connection +------+      +------+         +------+
-
-            Site A                           Site B
+        Site A                                 Site B
 
 NETCONF:  Network Configuration Protocol
 CLI:  Command-Line Interface            ]]></artwork>
@@ -738,8 +735,8 @@ CLI:  Command-Line Interface            ]]></artwork>
         target="ietf-l2vpn-ntw_tree"></xref>).</t>
 
         <t>The 'vpn-profiles' container is used by the provider to maintain a
-        set of common VPN profiles that apply to one or several VPN services
-        (<xref target="vpn_profiles"></xref>).</t>
+        set of common VPN profiles that apply to VPN services (<xref
+        target="vpn_profiles"></xref>).</t>
 
         <t hangText="'ethernet-segments':">The 'vpn-services' container
         maintains the set of L2VPN services managed in the service provider
@@ -1764,6 +1761,10 @@ CLI:  Command-Line Interface            ]]></artwork>
           the service level and lower the risk of impacting other services
           sharing the same physical interface.</t>
 
+          <t>A reference to the bearer is maintained to allow keeping the link
+          between the L2SM and the L2NM when both data models are used in a
+          given deployment.</t>
+
           <t>Some consistency checks should be ensured by implementations
           (typically, network controllers) for LAG interface as the same
           information (e.g., LACP system-id) should be provided to the
@@ -2297,7 +2298,7 @@ module iana-bgp-l2-encaps {
   identity atm-cell {
     base bgp-l2-encaps-type;
     description
-      "ATM transparent cell transport";
+      "ATM transparent cell transport.";
     reference
       "RFC 4816: Pseudowire Emulation Edge-to-Edge (PWE3)
                  Asynchronous Transfer Mode (ATM) Transparent
@@ -2583,7 +2584,7 @@ module iana-pseudowire-types {
   identity atm-cell {
     base iana-pw-types;
     description
-      "ATM transparent cell transport";
+      "ATM transparent cell transport.";
     reference
       "RFC 4717: Encapsulation Methods for Transport of
                  Asynchronous Transfer Mode (ATM) over MPLS
@@ -5871,7 +5872,7 @@ module ietf-l2vpn-ntw {
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <section title="YANG Modules">
+      <section title="Registering YANG Modules">
         <t>This document requests IANA to register the following URIs in the
         "ns" subregistry within the "IETF XML Registry" <xref
         target="RFC3688"></xref>:</t>
@@ -5930,19 +5931,18 @@ module ietf-l2vpn-ntw {
       <section title="BGP Layer 2 Encapsulation Types">
         <t>This document defines the initial version of the IANA-maintained
         "iana-bgp-l2-encaps" YANG module (<xref target="iana-bgp"></xref>).
-        IANA is requested to add this note for both modules:<list
-            style="empty">
+        IANA is requested to add this note to the registry:<list style="empty">
             <t>BGP Layer 2 encapsulation types must not be directly added to
-            the "iana-bgp-l2-encaps" YANG module. They must instead be
-            respectively added to the "BGP Layer 2 Encapsulation Types"
-            registry <xref target="IANA-BGP-L2"></xref>.</t>
+            the "iana-bgp-l2-encaps" YANG module. They must instead be added
+            to the "BGP Layer 2 Encapsulation Types" registry <xref
+            target="IANA-BGP-L2"></xref>.</t>
           </list></t>
 
         <t>When a Layer 2 encapsulation type is added to the "BGP Layer 2
         Encapsulation Types" registry, a new "identity" statement must be
         added to the "iana-bgp-l2-encaps" YANG module. The name of the
-        "identity" is the lower-case of the encapsulation name provided in the
-        description. The "identity" statement should have the following
+        "identity" is a lower-case version of the encapsulation name provided
+        in the description. The "identity" statement should have the following
         sub-statements defined:</t>
 
         <t><list hangIndent="15" style="hanging">
@@ -5952,7 +5952,7 @@ module ietf-l2vpn-ntw {
             from the registry.</t>
 
             <t hangText="&quot;reference&quot;:">Replicates the reference from
-            the registry and add the title of the document.</t>
+            the registry with the title of the document added.</t>
           </list></t>
 
         <t>Unassigned or reserved values are not present in the module.</t>
@@ -5973,19 +5973,18 @@ module ietf-l2vpn-ntw {
       <section title="Pseudowire Types">
         <t>This document defines the initial version of the IANA-maintained
         "iana-pseudowire-types" YANG module (<xref target="iana-pw"></xref>).
-        IANA is requested to add this note for both modules:<list
-            style="empty">
+        IANA is requested to add this note to the registry:<list style="empty">
             <t>MPLS pseudowire types must not be directly added to the
-            "iana-bgp-l2-encaps" YANG module. They must instead be
-            respectively added to the "MPLS Pseudowire Types" registry <xref
+            "iana-bgp-l2-encaps" YANG module. They must instead be added to
+            the "MPLS Pseudowire Types" registry <xref
             target="IANA-PW-Types"></xref>.</t>
           </list></t>
 
         <t>When a pseudowire type is added to the "iana-pseudowire-types"
         registry, a new "identity" statement must be added to the
-        "iana-pseudowire-types" YANG module. The name of the "identity" is the
-        lower-case of encapsulation name provided in the description. The
-        "identity" statement should have the following sub-statements
+        "iana-pseudowire-types" YANG module. The name of the "identity" is a
+        lower-case version of encapsulation name provided in the description.
+        The "identity" statement should have the following sub-statements
         defined:</t>
 
         <t><list hangIndent="15" style="hanging">
@@ -5995,7 +5994,7 @@ module ietf-l2vpn-ntw {
             from the registry.</t>
 
             <t hangText="&quot;reference&quot;:">Replicates the reference from
-            the registry and add the title of the document.</t>
+            the registry with the title of the document added</t>
           </list></t>
 
         <t>Unassigned or reserved values are not present in the module.</t>
@@ -6241,6 +6240,8 @@ module ietf-l2vpn-ntw {
       <?rfc include='reference.I-D.ietf-teas-te-service-mapping-yang'?>
 
       <?rfc include='reference.I-D.ietf-opsawg-sap'?>
+
+      <?rfc include='reference.RFC.4026'?>
 
       <reference anchor="PYANG" target="https://github.com/mbj4668/pyang">
         <front>
@@ -6992,7 +6993,7 @@ module ietf-l2vpn-ntw {
             title="An Example of VPWS-EVPN">
             <artwork><![CDATA[                   |<-------- EVPN Instance --------->|   
                    |                                  |  
-             |     V                                  V  |
+             ESI1  V                                  V  ESI2
              |     +-----+   +--------------+   +-----+  |
       +----+ |     | PE1 |===|              |===| PE3 |  |    +----+
       |    +-------+     |   |              |   |     +-------+    |
@@ -7001,8 +7002,8 @@ module ietf-l2vpn-ntw {
       |    | |     +-----+   |              |   +-----+  |    |    |
       |    +-------+     |   |              |   |     +-------+    |
       +----+ |     | PE2 |===|              |===| PE4 |  |    +----+
-           ^  ESI1 +-----+   +--------------+   +-----+  ESI2 ^
-           |                                                  |
+           ^ |     +-----+   +--------------+   +-----+  |    ^
+           | ESI1                                        ESI2 |
            |<-------------- Emulated Service ---------------->|]]></artwork>
           </figure></t>
 
@@ -7277,8 +7278,8 @@ module ietf-l2vpn-ntw {
       |    | |     +-----+      |              |   +-----+       +----+
       |    +-------+     |      |              |   |     +-------+ CE2|
       +----+ |     | PE2 |======|              |===| PE4 |       +----+
-           LACP    +-----+      +--------------+   +-----+          
- ]]></artwork>
+             |     +-----+      +--------------+   +-----+          
+           LACP ]]></artwork>
           </figure></t>
 
         <t><xref target="es2"></xref> and <xref target="auto-lacp"></xref>
@@ -7514,10 +7515,11 @@ module ietf-l2vpn-ntw {
       early version of this document.</t>
 
       <t>Thanks to Yingzhen Qu and Himanshu Shah for the rtgdir reviews,
-      Ladislav Lhotka for the yangdoctors review, and Chris Lonvick for the
-      secdir review. Special thanks to Adrian Farrel for the careful Shepherd
-      review. <vspace blankLines="1" />Thanks to Robert Wilton for the careful
-      AD review and various suggestions to enhance the model.</t>
+      Ladislav Lhotka for the yangdoctors review, Chris Lonvick for the secdir
+      review and Dale Worley for the gen-art review. Special thanks to Adrian
+      Farrel for the careful Shepherd review. <vspace blankLines="1" />Thanks
+      to Robert Wilton for the careful AD review and various suggestions to
+      enhance the model.</t>
 
       <t>A YANG module for Ethernet segments was first defined in the context
       of the EVPN device module <xref target="I-D.ietf-bess-evpn-yang" />.</t>
