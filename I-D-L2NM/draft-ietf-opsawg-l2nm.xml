@@ -46,7 +46,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-l2nm-15" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-l2nm-16" ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN"
@@ -168,7 +168,7 @@
       </address>
     </author>
 
-    <date day="29" month="April" year="2022" />
+    <date day="13" month="May" year="2022" />
 
     <!-- Meta-data Declarations -->
 
@@ -346,7 +346,7 @@
           the network interfaces that are associated with a given VPN node.
           Traffic coming from the VPN network access belongs to the VPN. The
           attachment circuits (bearers) between Customer Edges (CEs) and
-          Provider Edges (PEs) are terminated in the VPN network access. </t>
+          Provider Edges (PEs) are terminated in the VPN network access.</t>
 
           <t hangText="VPN service provider:">Is a service provider that
           offers L2VPN-related services.</t>
@@ -416,7 +416,7 @@
       attachment is achieved through a bearer with a Layer 2 connection on
       top. The bearer refers to properties of the attachment that are below
       Layer 2, while the connection refers to Layer 2 protocol-oriented
-      properties. </t>
+      properties.</t>
 
       <t>The reader may refer to <xref target="RFC8309"></xref> for the
       distinction between the "Customer Service Model", the "Service Delivery
@@ -471,6 +471,8 @@
 NETCONF:  Network Configuration Protocol
 CLI:  Command-Line Interface            ]]></artwork>
       </figure>
+
+      <t></t>
 
       <t>The customer may use various means to request a service that may
       trigger the instantiation of an L2NM. The customer may use the L2SM or
@@ -544,7 +546,10 @@ CLI:  Command-Line Interface            ]]></artwork>
 
       <t>Also, the L2NM uses the IANA-maintained modules "iana-bgp-l2-encaps"
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
-      target="iana-pw"></xref>) to identify a Layer 2 encapsulation type.</t>
+      target="iana-pw"></xref>) to identify a Layer 2 encapsulation type. More
+      details are provided in Sections <xref format="counter"
+      target="bgp"></xref> and <xref format="counter" target="l2tp"></xref>.
+      </t>
 
       <t>For the particular case of EVPN, the L2NM includes a name that refers
       to an Ethernet segment that is created using the "ietf-ethernet-segment"
@@ -555,10 +560,10 @@ CLI:  Command-Line Interface            ]]></artwork>
 
       <t>As discussed in <xref target="ref"></xref>, the L2NM is used to
       manage L2VPN services within a service provider network. The module
-      provides a network view of the service. Such a view is only visible
-      within the service provider and is not exposed outside (to customers,
-      for example). The following discusses how L2NM interfaces with other
-      YANG modules:</t>
+      provides a network view of the L2VPN service. Such a view is only
+      visible within the service provider and is not exposed outside (to
+      customers, for example). The following discusses how the L2NM interfaces
+      with other YANG modules:</t>
 
       <t><list style="hanging">
           <t hangText="L2SM:">The L2NM is not a customer service model.<vspace
@@ -1279,11 +1284,13 @@ CLI:  Command-Line Interface            ]]></artwork>
             <t hangText="'active-global-parameters-profiles':">Lists the set
             of active global VPN parameters profiles for this VPN node.
             Concretely, one or more global profiles that are defined at the
-            VPN service level can be activated at the VPN node level; each of
-            these profiles is uniquely identified by means of 'profile-id'.
-            The structure of 'active-global-parameters-profiles' uses the same
-            data nodes as <xref target="profile"></xref> except RD and RT
-            related data nodes.<vspace blankLines="1" />Values defined in
+            VPN service level (i.e., under
+            'l2vpn-ntw/vpn-services/vpn-service' level) can be activated at
+            the VPN node level; each of these profiles is uniquely identified
+            by means of 'profile-id'. The structure of
+            'active-global-parameters-profiles' uses the same data nodes as
+            <xref target="profile"></xref> except RD and RT related data
+            nodes.<vspace blankLines="1" />Values defined in
             'active-global-parameters-profiles' overrides the values defined
             in the VPN service level.</t>
 
@@ -2152,16 +2159,17 @@ CLI:  Command-Line Interface            ]]></artwork>
                 </figure></t>
 
               <t hangText="'mac-policies':">Lists a set of MAC-related
-              policies such as MAC ACLs. An ACL can be based on source MAC
-              address, source MAC address mask, destination MAC address, and
-              destination MAC address mask. <vspace blankLines="1" />A data
-              frame that matches an ACL can be dropped, flooded, or trigger an
-              alarm. A rate-limit policy can be defined for handling frames
-              that match an ACL entry with 'flood' action. <vspace
-              blankLines="1" />When 'mac-loop-prevention' or 'mac-addr-limit'
-              data nodes are provided, they take precedence over the ones
-              inlcuded in the 'global-parameters-profile' at the VPN service
-              or VPN node levels.<figure align="center"
+              policies such as MAC ACLs. Similar to <xref
+              target="RFC8519"></xref>, an ACL match can be based upon source
+              MAC address, source MAC address mask, destination MAC address,
+              and/or destination MAC address mask.<vspace blankLines="1" />A
+              data frame that matches an ACL can be dropped, flooded, or
+              trigger an alarm. A rate-limit policy can be defined for
+              handling frames that match an ACL entry with 'flood' action.
+              <vspace blankLines="1" />When 'mac-loop-prevention' or
+              'mac-addr-limit' data nodes are provided, they take precedence
+              over the ones inlcuded in the 'global-parameters-profile' at the
+              VPN service or VPN node levels.<figure align="center"
                   anchor="mac-policies-tree" title="MAC Policies Subtree">
                   <artwork align="center"><![CDATA[                       +--rw service
                           ...
@@ -2216,7 +2224,8 @@ CLI:  Command-Line Interface            ]]></artwork>
     <section title="YANG Modules">
       <t></t>
 
-      <section anchor="iana-bgp" title="IANA BGP Layer 2 Encapsulation Types">
+      <section anchor="iana-bgp"
+               title="IANA-Maintained Module for BGP Layer 2 Encapsulation Types">
         <t>The "iana-bgp-l2-encaps" YANG module echoes the registry available
         at <xref target="IANA-BGP-L2"></xref>.</t>
 
@@ -2246,9 +2255,9 @@ module iana-bgp-l2-encaps {
      Tel:    +1 310 301 5800
      <mailto:iana@iana.org>";
   description
-    "This module contains a collection of YANG data types defined
-     by IANA and used for referring to BGP Layer 2 encapsulation
-     types.
+    "This module contains a collection of IANA-maintained YANG 
+     data types that are used for referring to BGP Layer 2 
+     encapsulation types.
 
      Copyright (c) 2022 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
@@ -2500,7 +2509,8 @@ module iana-bgp-l2-encaps {
           </figure></t>
       </section>
 
-      <section anchor="iana-pw" title="IANA Encapsulation Types">
+      <section anchor="iana-pw"
+               title="IANA-Maintained Module for Pseudowire Types">
         <t>The initial version of the "iana-pseudowire-types" YANG module
         echoes the registry available at <xref
         target="IANA-PW-Types"></xref>.</t>
@@ -2534,8 +2544,8 @@ module iana-pseudowire-types {
      Tel:    +1 310 301 5800
      <mailto:iana@iana.org>";
   description
-    "This module contains a collection of YANG data types defined
-     by IANA and used for referring to Pseudowire Types.
+    "This module contains a collection of IANA-maintained YANG 
+     data types that are used for referring to Pseudowire Types.
 
      Copyright (c) 2022 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
@@ -5984,9 +5994,9 @@ module ietf-l2vpn-ntw {
         <t>When a pseudowire type is added to the "iana-pseudowire-types"
         registry, a new "identity" statement must be added to the
         "iana-pseudowire-types" YANG module. The name of the "identity" is a
-        lower-case version of encapsulation name provided in the description.
-        The "identity" statement should have the following sub-statements
-        defined:</t>
+        lower-case version of the encapsulation name provided in the
+        description. The "identity" statement should have the following
+        sub-statements defined:</t>
 
         <t><list hangIndent="15" style="hanging">
             <t hangText="&quot;base&quot;:">Contains 'iana-pw-types'.</t>
