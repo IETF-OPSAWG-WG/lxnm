@@ -224,7 +224,17 @@
       YANG data model that can be used between customers and service providers
       for ordering Layer 2 Virtual Private Network (L2VPN) services. This
       document complements the L2SM by creating a network-centric view of the
-      service: the L2VPN Network Model (L2NM).</t>
+      service: the L2VPN Network Model (L2NM). </t>
+
+      <t>Also, this document defines the initial versions of two
+      IANA-maintained modules that define a set of identities of BGP Layer 2
+      encapsulation types (<xref target="iana-bgp"></xref>) and pseudowire
+      types (<xref target="iana-pw"></xref>). Relying upon these
+      IANA-maintained modules is meant to provide more flexibility in handling
+      new types rather than being limited by a set of identities defined in
+      the L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
+      manage Ethernet Segments (ESes) that are required for instantiating
+      EVPNs.</t>
 
       <t>The L2NM (<xref target="YANG_module"></xref>) can be exposed, for
       example, by a network controller to a service controller within the
@@ -265,16 +275,6 @@
       pseudowires resilience or Multi-Segment pseudowires <xref
       target="RFC7267"></xref>). A set of examples to illustrate the use of
       the L2NM are provided in <xref target="examples"></xref>.</t>
-
-      <t>Also, this document defines the initial versions of two
-      IANA-maintained modules that define a set of identities of BGP Layer 2
-      encapsulation types (<xref target="iana-bgp"></xref>) and pseudowire
-      types (<xref target="iana-pw"></xref>). Relying upon these
-      IANA-maintained modules is meant to provide more flexibility in handling
-      new types rather than being limited by a set of identities defined in
-      the L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
-      manage Ethernet Segments (ESes) that are required for instantiating
-      EVPNs.</t>
 
       <t>This document uses the common Virtual Private Network (VPN) YANG
       module defined in <xref target="RFC9181"></xref>.</t>
@@ -548,8 +548,8 @@ CLI:  Command-Line Interface            ]]></artwork>
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
       target="iana-pw"></xref>) to identify a Layer 2 encapsulation type. More
       details are provided in Sections <xref format="counter"
-      target="bgp"></xref> and <xref format="counter" target="l2tp"></xref>.
-      </t>
+      target="bgp"></xref> and <xref format="counter"
+      target="l2tp"></xref>.</t>
 
       <t>For the particular case of EVPN, the L2NM includes a name that refers
       to an Ethernet segment that is created using the "ietf-ethernet-segment"
@@ -1426,11 +1426,15 @@ CLI:  Command-Line Interface            ]]></artwork>
    |     +--:(bgp)
    |     |  ...
    |     +--:(ldp-or-l2tp)
+   |        +--rw ldp-or-l2tp
+   |           ...
    |           +--rw (ldp-or-l2tp)?
    |              +--:(ldp)
    |              |  ... 
    |              +--:(l2tp)
-   |                 ...]]></artwork>
+   |                 ...
+
+]]></artwork>
             </figure></t>
 
           <t>The following signaling data nodes are supported:<list
@@ -1464,7 +1468,10 @@ CLI:  Command-Line Interface            ]]></artwork>
               for more details.</t>
             </list></t>
 
-          <t></t>
+          <t>Note that LDP and L2TP choices are bundled ("ldp-or-l2tp")
+          because they share a set of common parameters that are further
+          detailed in Sections <xref format="counter" target="ldp"></xref> and
+          <xref format="counter" target="l2tp"></xref>. </t>
 
           <section anchor="bgp" title="BGP">
             <t>The structure of the BGP-related data nodes is provided in
@@ -1899,6 +1906,7 @@ CLI:  Command-Line Interface            ]]></artwork>
             |        +--:(l2vpn-bgp)
             |        |  ...
             |        +--:(evpn-bgp)
+            |           +--rw df-preference?     uint16
             |           +--rw vpws-service-instance
             |              +--rw (local-vsi-choice)?
             |              |  +--:(directly-assigned)
@@ -4507,7 +4515,8 @@ module ietf-l2vpn-ntw {
                 }
                 container ldp-or-l2tp {
                   description
-                    "Container for LDP or L2TP-signaled PWs.";
+                    "Container for LDP or L2TP-signaled PWs 
+                     choice.";
                   leaf agi {
                     type rt-types:route-distinguisher;
                     description
