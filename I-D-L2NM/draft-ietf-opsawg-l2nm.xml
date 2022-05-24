@@ -199,7 +199,7 @@
       relevant network devices.</t>
 
       <t>Also, this document defines a YANG module to manage Ethernet segments
-      and the initial versions of two IANA-maintained modules that defines a
+      and the initial versions of two IANA-maintained modules that define a
       set of identities of BGP Layer 2 encapsulation types and pseudowire
       types.</t>
     </abstract>
@@ -224,17 +224,21 @@
       YANG data model that can be used between customers and service providers
       for ordering Layer 2 Virtual Private Network (L2VPN) services. This
       document complements the L2SM by creating a network-centric view of the
-      service: the L2VPN Network Model (L2NM). </t>
+      service: the L2VPN Network Model (L2NM).</t>
 
       <t>Also, this document defines the initial versions of two
       IANA-maintained modules that define a set of identities of BGP Layer 2
       encapsulation types (<xref target="iana-bgp"></xref>) and pseudowire
-      types (<xref target="iana-pw"></xref>). Relying upon these
+      types (<xref target="iana-pw"></xref>). These types are used in the L2NM
+      to identify a Layer 2 encapsulation type as a function of the signalling
+      option used to deliver an L2VPN service. Relying upon these
       IANA-maintained modules is meant to provide more flexibility in handling
       new types rather than being limited by a set of identities defined in
-      the L2NM itself. <xref target="es-yang"></xref> defines a YANG module to
-      manage Ethernet Segments (ESes) that are required for instantiating
-      EVPNs.</t>
+      the L2NM itself. <xref target="es-yang"></xref> defines another YANG
+      module to manage Ethernet Segments (ESes) that are required for
+      instantiating Ethernet VPNs (EVPNs). References to Ethernet segments
+      that are created using the module in <xref target="es-yang"></xref> can
+      be included in the L2NM for EVPNs.</t>
 
       <t>The L2NM (<xref target="YANG_module"></xref>) can be exposed, for
       example, by a network controller to a service controller within the
@@ -257,7 +261,7 @@
           <t>Virtual Private Wire Service (VPWS) (Section 3.1.1 of <xref
           target="RFC4664"></xref>)</t>
 
-          <t>Various flavors of Ethernet VPNs (EVPNs): <list style="symbols">
+          <t>Various flavors of EVPNs: <list style="symbols">
               <t>VPWS EVPN <xref target="RFC8214"></xref>,</t>
 
               <t>Provider Backbone Bridging Ethernet VPNs (PBB EVPNs) <xref
@@ -546,9 +550,9 @@ CLI:  Command-Line Interface            ]]></artwork>
 
       <t>Also, the L2NM uses the IANA-maintained modules "iana-bgp-l2-encaps"
       (<xref target="iana-bgp"></xref>) and "iana-pseudowire-types" (<xref
-      target="iana-pw"></xref>) to identify a Layer 2 encapsulation type. More
-      details are provided in Sections <xref format="counter"
-      target="bgp"></xref> and <xref format="counter"
+      target="iana-pw"></xref>) to identify Layer 2 encapsulation and
+      pseudowire types. More details are provided in Sections <xref
+      format="counter" target="bgp"></xref> and <xref format="counter"
       target="l2tp"></xref>.</t>
 
       <t>For the particular case of EVPN, the L2NM includes a name that refers
@@ -561,7 +565,7 @@ CLI:  Command-Line Interface            ]]></artwork>
       <t>As discussed in <xref target="ref"></xref>, the L2NM is used to
       manage L2VPN services within a service provider network. The module
       provides a network view of the L2VPN service. Such a view is only
-      visible within the service provider and is not exposed outside (to
+      visible to the service provider and is not exposed outside (to
       customers, for example). The following discusses how the L2NM interfaces
       with other YANG modules:</t>
 
@@ -654,7 +658,8 @@ CLI:  Command-Line Interface            ]]></artwork>
       target="es-tree"></xref> are as follows:<list style="hanging">
           <t hangText="'name':">Sets a name to uniquely identify an ES within
           a service provider network. This name is referenced in the VPN
-          network access level of the L2NM (<xref target="sna"></xref>).</t>
+          network access level of the L2NM (<xref target="sna"></xref>). An
+          example is provided in <xref target="evpn-vpws-app"></xref>.</t>
 
           <t hangText="'esi-type':">Indicates the Ethernet Segment Identifier
           (ESI) type as discussed in Section 5 of <xref
@@ -740,9 +745,9 @@ CLI:  Command-Line Interface            ]]></artwork>
         'vpn-profiles' and 'vpn-services' (see <xref
         target="ietf-l2vpn-ntw_tree"></xref>).</t>
 
-        <t>The 'vpn-profiles' container is used by the provider to maintain a
-        set of common VPN profiles that apply to VPN services (<xref
-        target="vpn_profiles"></xref>).</t>
+        <t>The 'vpn-profiles' container is used by the provider to define and
+        maintain a set of common VPN profiles that apply to VPN services
+        (<xref target="vpn_profiles"></xref>).</t>
 
         <t hangText="'ethernet-segments':">The 'vpn-services' container
         maintains the set of L2VPN services managed in the service provider
@@ -798,13 +803,11 @@ CLI:  Command-Line Interface            ]]></artwork>
         ...                   ]]></artwork>
           </figure></t>
 
-        <t>This document does not make any assumption about the exact
-        definition of these profiles. The exact definition of the profiles is
-        local to each VPN service provider. The model only includes an
-        identifier for these profiles in order to ease identifying and binding
-        local policies when building a VPN service. As shown in <xref
-        target="vpn_profiles_tree"></xref>, the following identifiers can be
-        included:<list style="hanging">
+        <t>The exact definition of these profiles is local to each VPN service
+        provider. The model only includes an identifier for these profiles in
+        order to ease identifying and binding local policies when building a
+        VPN service. As shown in <xref target="vpn_profiles_tree"></xref>, the
+        following identifiers can be included:<list style="hanging">
             <t hangText="'external-connectivity-identifier':">This identifier
             refers to a profile that defines the external connectivity
             provided to a VPN service (or a subset of VPN sites). External
@@ -1471,7 +1474,7 @@ CLI:  Command-Line Interface            ]]></artwork>
           <t>Note that LDP and L2TP choices are bundled ("ldp-or-l2tp")
           because they share a set of common parameters that are further
           detailed in Sections <xref format="counter" target="ldp"></xref> and
-          <xref format="counter" target="l2tp"></xref>. </t>
+          <xref format="counter" target="l2tp"></xref>.</t>
 
           <section anchor="bgp" title="BGP">
             <t>The structure of the BGP-related data nodes is provided in
@@ -3070,7 +3073,8 @@ module ietf-ethernet-segment {
       leaf name {
         type string;
         description
-          "Includes the name of the Ethernet Segment (ES).";
+          "Includes the name of the Ethernet Segment (ES) that 
+           is used to unambiguously identify an ES.";
       }
       leaf esi-type {
         type identityref {
@@ -3839,7 +3843,7 @@ module ietf-l2vpn-ntw {
             "Maximum number of MAC addresses learned from
              the customer for a single service instance.
              The default value is '2' when this grouping 
-             is used at the service level";
+             is used at the service level.";
         }
         leaf time-interval {
           type uint32;
@@ -3847,7 +3851,7 @@ module ietf-l2vpn-ntw {
           description
             "The aging time of the mac address.
              The default value is '300' when this grouping 
-             is used at the service level";
+             is used at the service level.";
         }
         leaf action {
           type identityref {
@@ -3859,7 +3863,7 @@ module ietf-l2vpn-ntw {
              or log a warning message (without dropping 
              the packet).
              The default value is 'warning' when this 
-             grouping is used at the service level";
+             grouping is used at the service level.";
         }
       }
       container mac-loop-prevention {
@@ -3872,7 +3876,7 @@ module ietf-l2vpn-ntw {
             "The time interval over which a MAC mobility event
              is detected and checked.
              The default value is '180' when this grouping 
-             is used at the service level";
+             is used at the service level.";
         }
         leaf frequency {
           type uint32;
@@ -3883,7 +3887,7 @@ module ietf-l2vpn-ntw {
              MAC address has been added to a list of duplicate
              MAC addresses.
              The default value is '5' when this grouping is 
-             called at the service level";
+             called at the service level.";
         }
         leaf retry-timer {
           type uint32;
@@ -3900,7 +3904,7 @@ module ietf-l2vpn-ntw {
           description
             "Protection type.
              The default value is 'trap' when this grouping 
-             is used at the service level";
+             is used at the service level.";
         }
       }
     }
@@ -6700,7 +6704,7 @@ module ietf-l2vpn-ntw {
                         "taii": 2
                       }
                     ],
-                    "ldp-pw-type": "ethernet"
+                    "t-ldp-pw-type": "ethernet"
                   }
                 },
                 "vpn-network-accesses": {
@@ -6741,7 +6745,7 @@ module ietf-l2vpn-ntw {
                         "taii": 1
                       }
                     ],
-                    "ldp-pw-type": "ethernet"
+                    "t-ldp-pw-type": "ethernet"
                   }
                 },
                 "vpn-network-accesses": {
