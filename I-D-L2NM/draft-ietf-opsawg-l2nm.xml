@@ -199,7 +199,7 @@
       relevant network devices.</t>
 
       <t>Also, this document defines a YANG module to manage Ethernet segments
-      and the initial versions of two IANA-maintained modules that define a
+      and the initial versions of two IANA-maintained modules that include a
       set of identities of BGP Layer 2 encapsulation types and pseudowire
       types.</t>
     </abstract>
@@ -657,9 +657,12 @@ CLI:  Command-Line Interface            ]]></artwork>
       <t>The descriptions of the data nodes depicted in <xref
       target="es-tree"></xref> are as follows:<list style="hanging">
           <t hangText="'name':">Sets a name to uniquely identify an ES within
-          a service provider network. This name is referenced in the VPN
-          network access level of the L2NM (<xref target="sna"></xref>). An
-          example is provided in <xref target="evpn-vpws-app"></xref>.</t>
+          a service provider network. In order to ease referencing ESes by
+          their name in other modules, "es-ref" typedef is defined.<vspace
+          blankLines="1" />This typedef is used in the VPN network access
+          level of the L2NM to reference an ES (<xref target="sna"></xref>).
+          An example to illustrate such a use in the L2NM is provided in <xref
+          target="evpn-vpws-app"></xref>.</t>
 
           <t hangText="'esi-type':">Indicates the Ethernet Segment Identifier
           (ESI) type as discussed in Section 5 of <xref
@@ -705,8 +708,8 @@ CLI:  Command-Line Interface            ]]></artwork>
           target="RFC7432"></xref>). For example, this data node can be used
           to indicate an election method (e.g., <xref target="RFC8584"></xref>
           or <xref target="I-D.ietf-bess-evpn-pref-df"></xref>). If no
-          election method is indicated, the default one defined in Section 8.5
-          of <xref target="RFC7432"></xref> is used.</t>
+          election method is indicated, the default method defined in Section
+          8.5 of <xref target="RFC7432"></xref> is used.</t>
 
           <t hangText="'split-horizon-filtering':">Controls the activation of
           the split-horizon filtering for an ES (Section 8.3 of <xref
@@ -1699,9 +1702,9 @@ CLI:  Command-Line Interface            ]]></artwork>
                        |              ...
                        +--rw group* [group-id]
                        |  +--rw group-id                       string
-                       |  +--rw precedence?
-                       |  |       identityref
-                       |  +--rw ethernet-segment-identifier?   string
+                       |  +--rw precedence?               identityref
+                       |  +--rw ethernet-segment-identifier?   
+                       |                              l2vpn-es:es-ref
                        +--rw ethernet-service-oam
                        |  ...
                        +--rw service
@@ -2946,6 +2949,18 @@ module ietf-ethernet-segment {
       "RFC XXXX: A YANG Network Data Model for Layer 2 VPNs.";
   }
 
+  /* Typedefs */
+
+  typedef es-ref {
+    type leafref {
+      path "/l2vpn-es:ethernet-segments/l2vpn-es:ethernet-segment"
+         + "/l2vpn-es:name";
+    }
+    description
+      "Defines a type for referencing an Ethernet segment in
+       other modules.";
+  }
+
   /* Identities */
 
   identity esi-type {
@@ -3295,6 +3310,11 @@ module ietf-l2vpn-ntw {
   }
   import iana-pseudowire-types {
     prefix iana-pw-types;
+    reference
+      "RFC XXXX: A YANG Network Data Model for Layer 2 VPNs.";
+  }
+  import ietf-ethernet-segment {
+    prefix l2vpn-es;
     reference
       "RFC XXXX: A YANG Network Data Model for Layer 2 VPNs.";
   }
@@ -5363,7 +5383,7 @@ module ietf-l2vpn-ntw {
                        network.";
                   }
                   leaf ethernet-segment-identifier {
-                    type string;
+                    type l2vpn-es:es-ref;
                     description
                       "Reference to the ESI associated with the VPN
                        network access.";
