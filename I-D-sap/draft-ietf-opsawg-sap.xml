@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-sap-09" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-sap-10" ipr="trust200902">
   <front>
     <title abbrev="A YANG Model for SAPs">A YANG Network Model for Service
     Attachment Points (SAPs)</title>
@@ -315,7 +315,8 @@
     <section anchor="usage" title="Sample SAP Network Model Usage">
       <t>Management operations of a service provider network can be automated
       using a variety of means such as interfaces based on YANG modules <xref
-      target="RFC8969"></xref>. From that standpoint, and considering the
+      target="RFC8969"></xref><xref target="RFC6241"></xref><xref
+      target="RFC8040"></xref>. From that standpoint, and considering the
       architecture depicted in <xref target="fi1"></xref>, a goal of this
       document is to provide a mechanism to show via a YANG-based interface an
       abstracted network view from the network controller to the service
@@ -350,7 +351,7 @@
 
       <t></t>
 
-      <t>The service orchestration layer does not need to know about the
+      <t>The service orchestration layer does not need to know about all the
       internals of the underlying network (e.g., P nodes). <xref
       target="fi2a"></xref> shows the abstract network view as seen by a
       service orchestrator. However, this view is not enough to provide to the
@@ -597,8 +598,9 @@
 
       <t>These service types build on the types that are already defined in
       <xref target="RFC9181" /> and additional types that are defined in this
-      document. Other service types can be defined in future YANG modules, if
-      needed.</t>
+      document. Other service types can be defined in future YANG modules
+      (including future revisions of the YANG model defined in this document),
+      if needed.</t>
 
       <aside pn="section-5">
         <t indent="0" pn="section-5.1">Leveraging the service types defined in
@@ -623,7 +625,7 @@
           the interfaces that are directly hosting services, interfaces that
           are ready to host per-service sub-interfaces (but not yet
           activated), or service that are already instantiated on
-          sub-interfaces are listed as SAPs.<vspace blankLines="1" />For
+          sub-interfaces are listed as SAPs. <vspace blankLines="1" />For
           example, 'sap-id' may be the VPN network access identifier in
           Section 7.6 of <xref target="RFC9182" />. An example to illustrate
           the use of this attribute during service creation is provided in
@@ -690,9 +692,9 @@
           <t hangText="'sap-status':">Indicates the operational status of a
           SAP. Values are taken from the values defined in <xref
           target="RFC9181" />.<vspace blankLines="1" />When both a
-          sub-interface and its parent interface are present, the status of
-          the parent interface takes precedence over the status indicated for
-          the sub-interface.</t>
+          sub-interface and its parent interface are present but the parent
+          interface is disabled, the status of the parent interface takes
+          precedence over the status indicated for the sub-interface.</t>
 
           <t hangText="'service-status':">Reports the operational status of
           service for a given SAP. This information is particularly useful
@@ -897,7 +899,8 @@ module ietf-sap-ntw {
     description
       "Refers to a logical sub-interface that is typically
        used to bind a service. This type is used only
-       if none of the other logical types can be used.";
+       if none of the other types (i.e., loopback, lag, 
+       irb, or local-bridge) can be used.";
   }
 
   grouping sap-entry {
@@ -1085,7 +1088,7 @@ module ietf-sap-ntw {
       important to control read access (e.g., via get, get-config, or
       notification) to these data nodes. These are the subtrees and data nodes
       and their sensitivity/vulnerability:<list style="symbols">
-          <t>/nw:networks/nw:network/nw:node/sap:service-type/sap:sap<vspace
+          <t>/nw:networks/nw:network/nw:node/sap:service/sap:service-type/sap:sap<vspace
           blankLines="1" />Unauthorized access to this subtree can disclose
           the operational state information of the nodes in a SAP network
           model (e.g., disclose the identity of a customer 'peer-sap-id').</t>
@@ -1102,7 +1105,8 @@ module ietf-sap-ntw {
       <t>Thanks to Martin Bj&ouml;rklund for yang-doctors review, Menachem
       Dodge for the opsdir review, and Mach Chen for the rtgdir review.</t>
 
-      <t>Special thanks to Adrian Farrel for the Shepherd review.</t>
+      <t>Special thanks to Adrian Farrel for the Shepherd review and Rob
+      Wilton for the careful AD review.</t>
     </section>
   </middle>
 
@@ -1235,7 +1239,12 @@ module ietf-sap-ntw {
       <t>An example of a SAP topology that is reported by a network controller
       is depicted in <xref target="ex1"></xref>. This example echoes the
       topology shown in <xref target="fi3a"></xref>. Only a minimum set of
-      information is provided for each SAP.</t>
+      information is provided for each SAP. Particularly,
+      "parent-termination-point", "attachment-interface", interface-type",
+      "encapsulation-type", "role", and "sap-status" are not shown in the
+      example. SAPs that are ready to host per-service (but not yet activated)
+      are identified by the "service-status" set to
+      "ietf-vpn-common:op-down".</t>
 
       <t><figure anchor="ex1" title="A Simplified SAP Network Example">
           <artwork><![CDATA[{
@@ -1266,13 +1275,22 @@ module ietf-sap-ntw {
                     }
                   },
                   {
-                    "sap-id": "sap#12"
+                    "sap-id": "sap#12",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   },
                   {
-                    "sap-id": "sap#13"
+                    "sap-id": "sap#13",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   },
                   {
-                    "sap-id": "sap#14"
+                    "sap-id": "sap#14",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   }
                 ]
               }
@@ -1305,10 +1323,16 @@ module ietf-sap-ntw {
                 "service-type": "ietf-vpn-common:l3vpn",
                 "sap": [
                   {
-                    "sap-id": "sap#31"
+                    "sap-id": "sap#31",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   },
                   {
-                    "sap-id": "sap#32"
+                    "sap-id": "sap#32",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   },
                   {
                     "sap-id": "sap#33",
@@ -1342,7 +1366,10 @@ module ietf-sap-ntw {
                     }
                   },
                   {
-                    "sap-id": "sap#43"
+                    "sap-id": "sap#43",
+                    "service-status": {
+                      "status": "ietf-vpn-common:op-down"
+                    }
                   },
                   {
                     "sap-id": "sap#44",
