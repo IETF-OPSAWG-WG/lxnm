@@ -81,18 +81,18 @@ Table of Contents
    5.  SAP Module Tree Structure . . . . . . . . . . . . . . . . . .   9
    6.  SAP YANG Module . . . . . . . . . . . . . . . . . . . . . . .  13
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  20
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  20
-   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  21
-   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  21
-     10.1.  Normative References . . . . . . . . . . . . . . . . . .  21
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  21
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  22
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  22
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .  22
      10.2.  Informative References . . . . . . . . . . . . . . . . .  23
-   Appendix A.  A Simplified SAP Network Example . . . . . . . . . .  26
+   Appendix A.  A Simplified SAP Network Example . . . . . . . . . .  27
    Appendix B.  A Simple Example of SAP Network Model: Node
-           Filter  . . . . . . . . . . . . . . . . . . . . . . . . .  30
-   Appendix C.  An Example of NNI SAP: Inter-AS VPN Option A . . . .  35
+           Filter  . . . . . . . . . . . . . . . . . . . . . . . . .  31
+   Appendix C.  An Example of NNI SAP: Inter-AS VPN Option A . . . .  36
    Appendix D.  An Example of Using the SAP Network Model in Service
-           Creation  . . . . . . . . . . . . . . . . . . . . . . . .  38
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  39
+           Creation  . . . . . . . . . . . . . . . . . . . . . . . .  39
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  40
 
 1.  Introduction
 
@@ -521,6 +521,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                     +--rw interface-type?             identityref
                     +--rw encapsulation-type?         identityref
                     +--rw role?                       identityref
+                    +--rw ready-child-sap?            boolean
                     +--rw peer-sap-id?                string
                     +--ro sap-status
                     |  +--ro status?        identityref
@@ -553,7 +554,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
    *  Virtual Networks [RFC8453],
 
-   *  Enhanced VPN (VPN+) [I-D.ietf-teas-enhanced-vpn],
 
 
 
@@ -561,6 +561,8 @@ Boucadair, et al.         Expires 30 March 2023                [Page 10]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
+
+   *  Enhanced VPN (VPN+) [I-D.ietf-teas-enhanced-vpn],
 
    *  Network slice [I-D.ietf-teas-ietf-network-slices],
 
@@ -597,9 +599,9 @@ Internet-Draft            A YANG Model for SAPs           September 2022
       SAPs that are associated with the interfaces that are directly
       hosting services, interfaces that are ready to host per-service
       sub-interfaces (but not yet activated), or services that are
-      already instantiated on sub-interfaces are listed as SAPs.  An
-      example to illustrate interfaces that are ready to host per-
-      service sub-interfaces is provided in Figure 9.
+      already instantiated on sub-interfaces are listed as SAPs.  For
+      illustration purposes, Figure 9 depicts how to indicate interfaces
+      that are ready to host per-service sub-interfaces.
 
       For example, 'sap-id' may be the VPN network access identifier in
       Section 7.6 of [RFC9182].  An example to illustrate the use of
@@ -608,8 +610,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
    'description':  Includes a textual description of the SAP.
 
    'parent-termination-point':  Includes a reference to the parent
-
-
 
 
 
@@ -677,6 +677,11 @@ Internet-Draft            A YANG Model for SAPs           September 2022
       A SAP inherits the role of its parent interface ('parent-
       termination-point').
 
+   'ready-child-sap':  Some SAPs are not bound directly to a given
+      interface but to its sub-interfaces.  When set to 'true', this
+      data node indicates that the attachment interface is ready to host
+      per-service sub-interfaces.
+
    'peer-sap-id':  Includes a reference to the remote endpoint of an
       attachment circuit.
 
@@ -717,11 +722,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
        reference
          "RFC 8345: A YANG Data Model for Network
                     Topologies, Section 6.2";
-     }
-     import ietf-network {
-       prefix nw;
-       reference
-         "RFC 8345: A YANG Data Model for Network
 
 
 
@@ -730,6 +730,11 @@ Boucadair, et al.         Expires 30 March 2023                [Page 13]
 Internet-Draft            A YANG Model for SAPs           September 2022
 
 
+     }
+     import ietf-network {
+       prefix nw;
+       reference
+         "RFC 8345: A YANG Data Model for Network
                     Topologies, Section 6.1";
      }
      import ietf-vpn-common {
@@ -774,17 +779,16 @@ Internet-Draft            A YANG Model for SAPs           September 2022
         Relating to IETF Documents
         (https://trustee.ietf.org/license-info).
 
-        This version of this YANG module is part of RFC XXXX
-        (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
-        for full legal notices.";
-
-
 
 
 Boucadair, et al.         Expires 30 March 2023                [Page 14]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
+
+        This version of this YANG module is part of RFC XXXX
+        (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
+        for full legal notices.";
 
      revision 2022-09-15 {
        description
@@ -830,10 +834,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
             Framework for IETF Network Slices";
      }
 
-     identity sdwan {
-       base vpn-common:service-type;
-       description
-         "PE-based Software-Defined Wide Area Network (SDWAN).";
 
 
 
@@ -842,6 +842,10 @@ Boucadair, et al.         Expires 30 March 2023                [Page 15]
 Internet-Draft            A YANG Model for SAPs           September 2022
 
 
+     identity sdwan {
+       base vpn-common:service-type;
+       description
+         "PE-based Software-Defined Wide Area Network (SDWAN).";
        reference
          "draft-ietf-bess-bgp-sdwan-usage: BGP Usage for SDWAN
             Overlay Network";
@@ -886,10 +890,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
      identity loopback {
        base interface-type;
        description
-         "Loopback interface.";
-     }
-
-     identity lag {
 
 
 
@@ -898,6 +898,10 @@ Boucadair, et al.         Expires 30 March 2023                [Page 16]
 Internet-Draft            A YANG Model for SAPs           September 2022
 
 
+         "Loopback interface.";
+     }
+
+     identity lag {
        base interface-type;
        description
          "Link Aggregation Group (LAG) interface.";
@@ -942,10 +946,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
          description
            "A textual description of the SAP.";
        }
-       leaf parent-termination-point {
-         type nt:tp-id;
-         description
-           "Indicates the parent termination point to
 
 
 
@@ -954,6 +954,10 @@ Boucadair, et al.         Expires 30 March 2023                [Page 17]
 Internet-Draft            A YANG Model for SAPs           September 2022
 
 
+       leaf parent-termination-point {
+         type nt:tp-id;
+         description
+           "Indicates the parent termination point to
             which the SAP is attached to. A termination
             point can be a physical port, an interface, etc.";
        }
@@ -984,6 +988,12 @@ Internet-Draft            A YANG Model for SAPs           September 2022
          description
            "Indicates the role of a SAP.";
        }
+       leaf ready-child-sap {
+         type boolean;
+         description
+           "Indicates whether a SAP is ready to host per-service
+            sub-interfaces.";
+       }
        leaf peer-sap-id {
          type string;
          description
@@ -992,6 +1002,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
             information can be used for correlation purposes,
             such as identifying the SAP that is attached to
             an endpoint that is provided in a service request.";
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 18]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
        }
      }
 
@@ -1002,14 +1020,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
          key "sap-id";
          description
            "The Service Attachment Points are abstraction of
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 18]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
             the points where network services such as L3VPNs,
             L2VPNs, or network slices can be attached to.";
          uses sap-entry;
@@ -1048,6 +1058,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
      augment "/nw:networks/nw:network/nw:node" {
        when '../nw:network-types/sap:sap-network' {
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 19]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
          description
            "Augmentation parameters apply only for SAP
             networks.";
@@ -1058,14 +1076,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
          key "service-type";
          description
            "A list of supported service types for the node.";
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 19]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
          leaf service-type {
            type identityref {
              base vpn-common:service-type;
@@ -1097,6 +1107,21 @@ Internet-Draft            A YANG Model for SAPs           September 2022
        prefix: sap
        reference: RFC XXXX
 
+
+
+
+
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 20]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
 8.  Security Considerations
 
    The YANG module specified in this document defines schema for data
@@ -1111,16 +1136,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
    provides the means to restrict access for particular NETCONF or
    RESTCONF users to a preconfigured subset of all available NETCONF or
    RESTCONF protocol operations and content.
-
-
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 20]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    There are a number of data nodes defined in this YANG module that are
    writable/creatable/deletable (i.e., config true, which is the
@@ -1152,6 +1167,17 @@ Internet-Draft            A YANG Model for SAPs           September 2022
       disclose the identity of a customer 'peer-sap-id').
 
 
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 21]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
 9.  Acknowledgements
 
    Thanks to Adrian Farrell, Daniel King, Dhruv Dhody, Benoit Claise, Bo
@@ -1167,16 +1193,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 10.  References
 
 10.1.  Normative References
-
-
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 21]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    [RFC3688]  Mealling, M., "The IETF XML Registry", BCP 81, RFC 3688,
               DOI 10.17487/RFC3688, January 2004,
@@ -1209,6 +1225,15 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               DOI 10.17487/RFC8341, March 2018,
               <https://www.rfc-editor.org/info/rfc8341>.
 
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 22]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    [RFC8345]  Clemm, A., Medved, J., Varga, R., Bahadur, N.,
               Ananthakrishnan, H., and X. Liu, "A YANG Data Model for
               Network Topologies", RFC 8345, DOI 10.17487/RFC8345, March
@@ -1222,17 +1247,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/info/rfc8446>.
-
-
-
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 22]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    [RFC8795]  Liu, X., Bryskin, I., Beeram, V., Saad, T., Shah, H., and
               O. Gonzalez de Dios, "YANG Data Model for Traffic
@@ -1262,6 +1276,20 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               June 2022, <https://www.ietf.org/archive/id/draft-ietf-
               opsawg-l2nm-19.txt>.
 
+
+
+
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 23]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    [I-D.ietf-teas-enhanced-vpn]
               Dong, J., Bryant, S., Li, Z., Miyasaka, T., and Y. Lee, "A
               Framework for Enhanced Virtual Private Network (VPN+)",
@@ -1280,15 +1308,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
    [IEEE802.1AX]
               "Link Aggregation", IEEE Std 802.1AX-2020, 2020.
-
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 23]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    [MEF17]    The Metro Ethernet Forum, "Technical Specification MEF 17,
               Service OAM Requirements & Framework - Phase 1", April
@@ -1319,6 +1338,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               Signaling", RFC 4762, DOI 10.17487/RFC4762, January 2007,
               <https://www.rfc-editor.org/info/rfc4762>.
 
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 24]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    [RFC6004]  Berger, L. and D. Fedyk, "Generalized MPLS (GMPLS) Support
               for Metro Ethernet Forum and G.8011 Ethernet Service
               Switching", RFC 6004, DOI 10.17487/RFC6004, October 2010,
@@ -1337,14 +1364,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
    [RFC7224]  Bjorklund, M., "IANA Interface Type YANG Module",
               RFC 7224, DOI 10.17487/RFC7224, May 2014,
               <https://www.rfc-editor.org/info/rfc7224>.
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 24]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    [RFC7426]  Haleplidis, E., Ed., Pentikousis, K., Ed., Denazis, S.,
               Hadi Salim, J., Meyer, D., and O. Koufopavlou, "Software-
@@ -1376,6 +1395,13 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               Explained", RFC 8309, DOI 10.17487/RFC8309, January 2018,
               <https://www.rfc-editor.org/info/rfc8309>.
 
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 25]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    [RFC8340]  Bjorklund, M. and L. Berger, Ed., "YANG Tree Diagrams",
               BCP 215, RFC 8340, DOI 10.17487/RFC8340, March 2018,
               <https://www.rfc-editor.org/info/rfc8340>.
@@ -1394,13 +1420,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               Overlay Solution Using Ethernet VPN (EVPN)", RFC 8365,
               DOI 10.17487/RFC8365, March 2018,
               <https://www.rfc-editor.org/info/rfc8365>.
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 25]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
    [RFC8453]  Ceccarelli, D., Ed. and Y. Lee, Ed., "Framework for
               Abstraction and Control of TE Networks (ACTN)", RFC 8453,
@@ -1427,6 +1446,18 @@ Internet-Draft            A YANG Model for SAPs           September 2022
               for Layer 3 VPNs", RFC 9182, DOI 10.17487/RFC9182,
               February 2022, <https://www.rfc-editor.org/info/rfc9182>.
 
+
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 26]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
 Appendix A.  A Simplified SAP Network Example
 
    An example of a SAP topology that is reported by a network controller
@@ -1450,14 +1481,6 @@ Appendix A.  A Simplified SAP Network Example
                ]
              }
            },
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 26]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
            "network-id": "foo:an-id",
            "node": [
              {
@@ -1483,6 +1506,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                        },
                        "service-status": {
                          "status": "ietf-vpn-common:op-down"
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 27]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
                        }
                      },
                      {
@@ -1506,14 +1537,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                    ]
                  }
                ]
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 27]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
              },
              {
                "node-id": "foo:pe2",
@@ -1539,6 +1562,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                        "service-status": {
                          "status": "ietf-vpn-common:op-up"
                        }
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 28]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
                      }
                    ]
                  }
@@ -1562,14 +1593,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                      {
                        "sap-id": "sap#32",
                        "sap-status": {
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 28]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
                          "status": "ietf-vpn-common:op-down"
                        },
                        "service-status": {
@@ -1595,6 +1618,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                "ietf-sap-ntw:service": [
                  {
                    "service-type": "ietf-vpn-common:l3vpn",
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 29]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
                    "sap": [
                      {
                        "sap-id": "sap#41",
@@ -1618,14 +1649,6 @@ Internet-Draft            A YANG Model for SAPs           September 2022
                      },
                      {
                        "sap-id": "sap#43",
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 29]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
                        "sap-status": {
                          "status": "ietf-vpn-common:op-down"
                        },
@@ -1651,6 +1674,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
          }
        ]
      }
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 30]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    }
 
                  Figure 7: A Simplified SAP Network Example
@@ -1664,23 +1695,6 @@ Appendix B.  A Simple Example of SAP Network Model: Node Filter
    physical interface "GE0/6/4".  Let us consider that four SAPs are
    exposed to the service orchestrator and mapped to these physical
    interfaces and sub-interfaces.
-
-
-
-
-
-
-
-
-
-
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 30]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
 
                   .-------------------------.
                   |                 GE0/6/4 |
@@ -1710,9 +1724,19 @@ Internet-Draft            A YANG Model for SAPs           September 2022
    the SAPs that are associated with the physical interface "GE0/6/4",
    VPLS and L3VPN services are activated on the two sub-interfaces
    "GE0/6/4.1" and "GE0/6/4.2", respectively.  Both "sap#1" and "sap#2"
-   are listed as SAPs that are attached to a physical port.  This
-   indicates that these two ports are ready to host per-service sub-
-   interfaces.
+   are tagged as ready to host per-service sub-interfaces ('ready-child-
+   sap' is set to 'true').
+
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 31]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
 
    A service orchestrator can query what services are provided on which
    SAPs of PE1 from the network controller by sending, e.g., a GET
@@ -1730,14 +1754,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/1",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 31]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1748,6 +1765,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/4",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1768,6 +1786,14 @@ Internet-Draft            A YANG Model for SAPs           September 2022
            }
          ]
        },
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 32]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
        {
          "service-type": "ietf-vpn-common:vpls",
          "sap": [
@@ -1776,6 +1802,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/1",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1786,14 +1813,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/4",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
-
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 32]
-
-Internet-Draft            A YANG Model for SAPs           September 2022
-
-
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1820,6 +1840,16 @@ Internet-Draft            A YANG Model for SAPs           September 2022
       Figure 9: An Example of a Response Body to a Request with a Node
                                    Filter
 
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 33]
+
+Internet-Draft            A YANG Model for SAPs           September 2022
+
+
    Figure 10 shows the message body of a response that is received from
    the network controller if the request includes a filter on the
    service type for a particular node:
@@ -1845,7 +1875,33 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 33]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Boucadair, et al.         Expires 30 March 2023                [Page 34]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -1861,6 +1917,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/1",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1871,6 +1928,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
              "attachment-interface": "GE0/6/4",
              "interface-type": "ietf-sap-ntw:phy",
              "role": "ietf-sap-ntw:uni",
+             "ready-child-sap": true,
              "sap-status": {
                "status": "ietf-vpn-common:op-up"
              }
@@ -1899,9 +1957,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
 
 
-
-
-Boucadair, et al.         Expires 30 March 2023                [Page 34]
+Boucadair, et al.         Expires 30 March 2023                [Page 35]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -1957,7 +2013,7 @@ Appendix C.  An Example of NNI SAP: Inter-AS VPN Option A
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 35]
+Boucadair, et al.         Expires 30 March 2023                [Page 36]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -2013,7 +2069,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 36]
+Boucadair, et al.         Expires 30 March 2023                [Page 37]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -2069,7 +2125,7 @@ Internet-Draft            A YANG Model for SAPs           September 2022
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 37]
+Boucadair, et al.         Expires 30 March 2023                [Page 38]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -2125,7 +2181,7 @@ Appendix D.  An Example of Using the SAP Network Model in Service
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 38]
+Boucadair, et al.         Expires 30 March 2023                [Page 39]
 
 Internet-Draft            A YANG Model for SAPs           September 2022
 
@@ -2181,4 +2237,4 @@ Authors' Addresses
 
 
 
-Boucadair, et al.         Expires 30 March 2023                [Page 39]
+Boucadair, et al.         Expires 30 March 2023                [Page 40]
