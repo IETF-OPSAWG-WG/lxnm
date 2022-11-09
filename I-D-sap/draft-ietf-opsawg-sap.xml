@@ -235,7 +235,7 @@
       also be used to retrieve where such services are delivered to customers
       through the network configuration described in the Layer 3 VPN Network
       Model (L3NM) <xref target="RFC9182"></xref> and the Layer 2 VPN Network
-      Model (L2NM) <xref target="I-D.ietf-opsawg-l2nm"></xref>.</t>
+      Model (L2NM) <xref target="RFC9291"></xref>.</t>
 
       <t>This document defines a YANG network model (<xref
       target="mod"></xref>) for representing, managing, and controlling the
@@ -508,17 +508,16 @@
       target="RFC7149"></xref><xref target="RFC7426"></xref>, the SAP YANG
       data model can be used to exchange information between control elements,
       so as to support VPN service provision and resource management discussed
-      in <xref target="RFC9182"></xref><xref
-      target="I-D.ietf-opsawg-l2nm"></xref>. Through this data model, the
-      service orchestration layer can learn the available endpoints (i.e.,
-      SAPs) of interconnection resources of the underlying network. The
-      service orchestration layer can determine which interconnection
-      endpoints to add to an L2VPN or L3VPN service. With the help of other
-      data models (e.g., L3SM <xref target="RFC8299"></xref> or L2SM <xref
-      target="RFC8466"></xref>), hierarchical control elements can also assess
-      the feasibility of an end-to-end IP connectivity or L2VPN connectivity
-      and, therefore, derive the sequence of domains and the points of
-      interconnection to use.</t>
+      in <xref target="RFC9182"></xref><xref target="RFC9291"></xref>. Through
+      this data model, the service orchestration layer can learn the available
+      endpoints (i.e., SAPs) of interconnection resources of the underlying
+      network. The service orchestration layer can determine which
+      interconnection endpoints to add to an L2VPN or L3VPN service. With the
+      help of other data models (e.g., L3SM <xref target="RFC8299"></xref> or
+      L2SM <xref target="RFC8466"></xref>), hierarchical control elements can
+      also assess the feasibility of an end-to-end IP connectivity or L2VPN
+      connectivity and, therefore, derive the sequence of domains and the
+      points of interconnection to use.</t>
 
       <t>Advanced interface-specific data nodes are not included in the SAP
       model. The interface identifiers listed in the SAP model can be used as
@@ -550,14 +549,18 @@
           +--rw interface-type?             identityref
           +--rw encapsulation-type?         identityref
           +--rw role?                       identityref
-          +--rw ready-child-sap?            boolean
+          +--rw allows-child-sap?           boolean
           +--rw peer-sap-id?                string
           +--ro sap-status
           |  +--ro status?        identityref
           |  +--ro last-change?   yang:date-and-time
-          +--ro service-status
-             +--ro status?        identityref
-             +--ro last-change?   yang:date-and-time
+          +--rw service-status
+             +--rw admin-status
+             |  +--rw status?        identityref
+             |  +--rw last-change?   yang:date-and-time
+             +--ro oper-status
+                +--ro status?        identityref
+                +--ro last-change?   yang:date-and-time
 
 ]]></artwork>
       </figure>
@@ -684,14 +687,16 @@
           NNI). <vspace blankLines="1" />A SAP inherits the role of its parent
           interface ('parent-termination-point').</t>
 
-          <t hangText="'ready-child-sap':">When set to 'true', this data node
-          indicates that the attachment interface is ready to host per-service
-          sub-interfaces.</t>
+          <t hangText="'allows-child-sap':">When set to 'true', this data node
+          indicates that the attachment interface for this SAP is capable to
+          host per-service sub-interfaces. <vspace blankLines="1" />Whether a
+          service can be directly attached to the parent SAP in addition to
+          child SAPs depends on the service.</t>
 
           <t hangText="'peer-sap-id':">Includes a reference to the remote
           endpoint of an attachment circuit. This identifier may or may not be
           the same as the SAP identifier used in the peer's configuration.
-          Note that the use of identical identifiers eases correlation between
+          Note that the use of identical identifiers eases correlating between
           a peer's service request with a local SAP. <vspace
           blankLines="1" />Examples of such a reference are: a site identifier
           (Section 6.3 of <xref target="RFC8299" />), a Service Demarcation
@@ -706,10 +711,12 @@
           interface is disabled, the status of the parent interface takes
           precedence over the status indicated for the sub-interface.</t>
 
-          <t hangText="'service-status':">Reports the operational status of
-          the service for a given SAP. This information is particularly useful
-          when many services are enabled for the same SAP, but only a subset
-          of them are activated.</t>
+          <t hangText="'service-status':">Reports the status of the service
+          for a given SAP. This information is particularly useful when many
+          services are enabled for the same SAP, but only a subset of them are
+          activated. This data node indicates whether a service is bound to
+          this SAP and, as such, it is not influenced by the value of the
+          'sap-status'.</t>
         </list></t>
 
       <t />
@@ -920,7 +927,7 @@ module ietf-sap-ntw {
       type string;
       description
         "Indicates an identifier that uniquely identifies
-         SAP within a node.";
+         SAP.";
     }
     leaf description {
       type string;
@@ -961,11 +968,11 @@ module ietf-sap-ntw {
       description
         "Indicates the role of a SAP.";
     }
-    leaf ready-child-sap {
+    leaf allows-child-sap {
       type boolean;
       description
         "Indicates whether the attachment interface of this
-         SAP is ready to host per-service sub-interfaces.";
+         SAP is capable to host per-service sub-interfaces.";
     }
     leaf peer-sap-id {
       type string;
@@ -995,10 +1002,31 @@ module ietf-sap-ntw {
         uses vpn-common:oper-status-timestamp;
       }
       container service-status {
-        config false;
         description
           "Indicates the service status.";
-        uses vpn-common:oper-status-timestamp;
+        container admin-status {
+          description
+            "Administrative service status.";
+          leaf status {
+            type identityref {
+              base vpn-common:administrative-status;
+            }
+            description
+              "Administrative service status.";
+          }
+          leaf last-change {
+            type yang:date-and-time;
+            description
+              "Indicates the actual date and time of the service
+               status change.";
+          }
+        }
+        container oper-status {
+          config false;
+          description
+            "Operational service status.";
+          uses vpn-common:oper-status-timestamp;
+        }
       }
     }
   }
@@ -1172,7 +1200,7 @@ module ietf-sap-ntw {
 
       <?rfc include='reference.RFC.9182'?>
 
-      <?rfc include='reference.I-D.ietf-opsawg-l2nm'?>
+      <?rfc include='reference.RFC.9291'?>
 
       <?rfc include='reference.RFC.8969'?>
 
@@ -1289,7 +1317,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1298,7 +1328,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1307,7 +1339,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   },
                   {
@@ -1316,7 +1350,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   }
                 ]
@@ -1335,7 +1371,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   },
                   {
@@ -1345,7 +1383,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   }
                 ]
@@ -1364,7 +1404,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   },
                   {
@@ -1373,7 +1415,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   },
                   {
@@ -1383,7 +1427,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   }
                 ]
@@ -1403,7 +1449,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1413,7 +1461,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1422,7 +1472,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-down"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-down"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-down"
+                      }
                     }
                   },
                   {
@@ -1432,7 +1484,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   }
                 ]
@@ -1487,8 +1541,8 @@ module ietf-sap-ntw {
       with the physical interface "GE0/6/1". Also, let us assume that, for the
       SAPs that are associated with the physical interface "GE0/6/4", VPLS and
       L3VPN services are activated on the two sub-interfaces "GE0/6/4.1" and
-      "GE0/6/4.2", respectively. Both "sap#1" and "sap#2" are tagged as ready
-      to host per-service sub-interfaces ('ready-child-sap' is set to
+      "GE0/6/4.2", respectively. Both "sap#1" and "sap#2" are tagged as
+      capable to host per-service sub-interfaces ('allows-child-sap' is set to
       'true').</t>
 
       <t>A service orchestrator can query what services are provided on which
@@ -1509,7 +1563,7 @@ module ietf-sap-ntw {
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1520,7 +1574,7 @@ module ietf-sap-ntw {
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1536,7 +1590,9 @@ module ietf-sap-ntw {
             "status": "ietf-vpn-common:op-up"
           },
           "service-status": {
-            "status": "ietf-vpn-common:op-up"
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            }
           }
         }
       ]
@@ -1544,12 +1600,13 @@ module ietf-sap-ntw {
     {
       "service-type": "ietf-vpn-common:vpls",
       "sap": [
+        {
           "sap-id": "sap#1",
           "description": "Ready to host SAPs",
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1560,7 +1617,7 @@ module ietf-sap-ntw {
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1576,7 +1633,9 @@ module ietf-sap-ntw {
             "status": "ietf-vpn-common:op-up"
           },
           "service-status": {
-            "status": "ietf-vpn-common:op-up"
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            }
           }
         }
       ]
@@ -1603,7 +1662,7 @@ module ietf-sap-ntw {
           "attachment-interface": "GE0/6/1",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1614,7 +1673,7 @@ module ietf-sap-ntw {
           "attachment-interface": "GE0/6/4",
           "interface-type": "ietf-sap-ntw:phy",
           "role": "ietf-sap-ntw:uni",
-          "ready-child-sap": true,
+          "allows-child-sap": true,
           "sap-status": {
             "status": "ietf-vpn-common:op-up"
           }
@@ -1630,7 +1689,9 @@ module ietf-sap-ntw {
             "status": "ietf-vpn-common:op-up"
           },
           "service-status": {
-            "status": "ietf-vpn-common:op-up"
+            "admin-status": {
+              "status": "ietf-vpn-common:admin-up"
+            }
           }
         }
       ]
@@ -1712,9 +1773,9 @@ module ietf-sap-ntw {
                     "sap-id": "sap#11",
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
-                    "ready-child-sap": true,
+                    "allows-child-sap": true,
                     "peer-sap-id": "asbr-b1",
-                    "service-status": {
+                    "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
@@ -1722,9 +1783,9 @@ module ietf-sap-ntw {
                     "sap-id": "sap#12",
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
-                    "ready-child-sap": true,
+                    "allows-child-sap": true,
                     "peer-sap-id": "asbr-b1",
-                    "service-status": {
+                    "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
@@ -1737,7 +1798,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1749,7 +1812,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   }
                 ]
@@ -1766,9 +1831,9 @@ module ietf-sap-ntw {
                     "sap-id": "sap#11",
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
-                    "ready-child-sap": true,
+                    "allows-child-sap": true,
                     "peer-sap-id": "asbr-b2",
-                    "service-status": {
+                    "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
@@ -1776,9 +1841,9 @@ module ietf-sap-ntw {
                     "sap-id": "sap#12",
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
-                    "ready-child-sap": true,
+                    "allows-child-sap": true,
                     "peer-sap-id": "asbr-b2",
-                    "service-status": {
+                    "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
                   },
@@ -1791,7 +1856,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   },
                   {
@@ -1803,7 +1870,9 @@ module ietf-sap-ntw {
                       "status": "ietf-vpn-common:op-up"
                     },
                     "service-status": {
-                      "status": "ietf-vpn-common:op-up"
+                      "admin-status": {
+                        "status": "ietf-vpn-common:admin-up"
+                      }
                     }
                   }
                 ]
@@ -1821,7 +1890,7 @@ module ietf-sap-ntw {
     </section>
 
     <section anchor="servicesap"
-             title="An Example of Using the SAP Network Model in Service Creation">
+             title="Examples of Using the SAP Network Model in Service Creation">
       <t>This section describes an example to illustrate the use of the SAP
       model for service creation purposes.</t>
 
@@ -1842,13 +1911,28 @@ module ietf-sap-ntw {
       be used as the VPN network access identifier in an L3NM create
       query.</t>
 
+      <t>A similar process can be followed for creating the so-called
+      "Inter-AS VPN Option A" services. Unlike the previous example, let us
+      assume that an operator wants to create an L3VPN service between two PEs
+      (PE3 and PE4) but these PEs are not in the same AS: PE3 belongs to AS A
+      while PE4 belongs to AS B. The NNIs between these ASes are represented
+      in <xref target="optiona"></xref>. The operator of AS A would query, via
+      the controller of its AS, the SAP topology and would obtain not only the
+      information that is depicted in <xref target="ex1"></xref>, but also the
+      information shown in <xref target="nniex1"></xref> representing the
+      NNIs. The operator would create the service in the AS A between PE3 and
+      a free, compatible SAP in the ASBR A1. The same procedure is followed by
+      the operator of AS B to create the service in the AS B between a free,
+      compatible SAP in the ASBR B1 and PE4. The services can be provisioned
+      in each of these ASes using the L3NM.</t>
+
       <t>Let us now assume that, instead of the L3VPN service, the operator
       wants to set up an L2VPN service. If the 'interface-type' is a physical
       port, a new logical SAP can be created using the SAP model to cope with
       the service needs (e.g., the 'encapsulation-type' attribute can be set
       to 'ietf-vpn-common:vlan-type'). Once the logical SAP is created, the
       'attachment-id' of the new SAP is used to create an L2NM instance
-      (Section 7.6 of <xref target="I-D.ietf-opsawg-l2nm"></xref>).</t>
+      (Section 7.6 of <xref target="RFC9291"></xref>).</t>
     </section>
   </back>
 </rfc>
