@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-sap-10" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-sap-11" ipr="trust200902">
   <front>
     <title abbrev="A YANG Model for SAPs">A YANG Network Model for Service
     Attachment Points (SAPs)</title>
@@ -94,7 +94,7 @@
     </author>
 
     <author fullname="Samier Barguil" initials="S." surname="Barguil">
-      <organization>Telefonica</organization>
+      <organization>Nokia</organization>
 
       <address>
         <postal>
@@ -113,7 +113,7 @@
 
         <facsimile></facsimile>
 
-        <email>samier.barguilgiraldo.ext@telefonica.com</email>
+        <email>samier.barguil_giraldo@nokia.com</email>
 
         <uri></uri>
       </address>
@@ -273,6 +273,12 @@
     </section>
 
     <section anchor="terminology" title="Terminology">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in BCP 14
+      <xref target="RFC2119"></xref> <xref target="RFC8174"></xref> when, and
+      only when, they appear in all capitals, as shown here.</t>
+
       <t>This document assumes that the reader is familiar with the contents
       of <xref target="RFC6241"></xref>, <xref target="RFC7950"></xref>, <xref
       target="RFC8345"></xref>, and <xref target="RFC8309"></xref>. The
@@ -549,7 +555,7 @@
           +--rw interface-type?             identityref
           +--rw encapsulation-type?         identityref
           +--rw role?                       identityref
-          +--rw allows-child-saps?           boolean
+          +--rw allows-child-saps?          boolean
           +--rw peer-sap-id?                string
           +--ro sap-status
           |  +--ro status?        identityref
@@ -631,7 +637,7 @@
           activated), or services that are already instantiated on
           sub-interfaces are listed as SAPs. For illustration purposes, <xref
           target="app-ex-res-body" /> depicts how to indicate interfaces that
-          are ready to host per-service sub-interfaces.<vspace
+          are capable for hosting per-service sub-interfaces.<vspace
           blankLines="1" />For example, 'sap-id' may be the VPN network access
           identifier in Section 7.6 of <xref target="RFC9182" />. An example
           to illustrate the use of this attribute during service creation is
@@ -689,9 +695,9 @@
 
           <t hangText="'allows-child-saps':">When set to 'true', this data
           node indicates that the attachment interface for this SAP is capable
-          to host per-service sub-interfaces. <vspace blankLines="1" />Whether
-          a service can be directly attached to the parent SAP in addition to
-          child SAPs depends on the service.</t>
+          of hosting per-service sub-interfaces. <vspace
+          blankLines="1" />Whether a service can be directly attached to the
+          parent SAP in addition to child SAPs depends on the service.</t>
 
           <t hangText="'peer-sap-id':">Includes a reference to the remote
           endpoint of an attachment circuit. This identifier may or may not be
@@ -709,14 +715,35 @@
           target="RFC9181" />.<vspace blankLines="1" />When both a
           sub-interface and its parent interface are present but the parent
           interface is disabled, the status of the parent interface takes
-          precedence over the status indicated for the sub-interface.</t>
+          precedence over the status indicated for the sub-interface. </t>
 
-          <t hangText="'service-status':">Reports the status of the service
-          for a given SAP. This information is particularly useful when many
-          services are enabled for the same SAP, but only a subset of them are
-          activated. This data node indicates whether a service is bound to
-          this SAP and, as such, it is not influenced by the value of the
-          'sap-status'.</t>
+          <t hangText="'service-status':">Indicates the administrative and
+          operational status of the service for a given SAP. This information
+          is particularly useful when many services are enabled for the same
+          SAP, but only a subset of these services are activated. As such, the
+          administrative 'service-status' MUST NOT be influenced by the value
+          of the 'sap-status'.<vspace blankLines="1" />The service
+          'oper-status' reflects the service operational status as observed
+          for a specific SAP, not the status that is determined at the network
+          level for a service that involves many SAPs. That network level
+          status can be retrieved using specific network models, e.g., Section
+          7.3 of <xref target="RFC9182" /> or Section 7.3 of <xref
+          target="RFC9291" />. <vspace blankLines="1" />In order to assess the
+          service delivery status for a given SAP, it is recommended to check
+          both the administrative and operational service status
+          ('service-status') in addition to the 'sap-status'. In doing so, a
+          network controller (or an operator) can detect anomalies. For
+          example, if a service is administratively enabled for a SAP and the
+          'sap-status' of that SAP is reported as being down, the service
+          'oper-status' is also expected to be down. Retrieving a distinct
+          service operational status under these conditions can be used as a
+          trigger to detect an anomaly. Likewise, administrative status and
+          operational status can be used as a trigger to detect
+          service-specific SAP activation anomalies. For example, a service
+          that is administratively declared as inactive for a SAP but reported
+          as operationally active for that SAP is an indication that some
+          service provision actions are needed to align the observed service
+          status with the expected service status. </t>
         </list></t>
 
       <t />
@@ -774,7 +801,7 @@ module ietf-sap-ntw {
                <mailto:oscar.gonzalezdedios@telefonica.com>
 
      Author:   Samier Barguil
-               <mailto:samier.barguilgiraldo.ext@telefonica.com>
+               <mailto:samier.barguil_giraldo@nokia.com>
 
      Author:   Qin Wu
                <mailto:bill.wu@huawei.com>
@@ -933,7 +960,7 @@ module ietf-sap-ntw {
       type string;
       description
         "Indicates an identifier that uniquely identifies
-         SAP.";
+         a SAP.";
     }
     leaf description {
       type string;
@@ -978,7 +1005,7 @@ module ietf-sap-ntw {
       type boolean;
       description
         "Indicates whether the attachment interface of this
-         SAP is capable to host per-service sub-interfaces.";
+         SAP is capable of hosting per-service sub-interfaces.";
     }
     leaf peer-sap-id {
       type string;
@@ -1187,6 +1214,10 @@ module ietf-sap-ntw {
       <?rfc include='reference.RFC.9181'?>
 
       <?rfc include='reference.RFC.6991'?>
+
+      <?rfc include='reference.RFC.2119'?>
+
+      <?rfc include='reference.RFC.8174'?>
     </references>
 
     <references title="Informative References">
@@ -1292,10 +1323,17 @@ module ietf-sap-ntw {
       is depicted in <xref target="ex1"></xref>. This example echoes the
       topology shown in <xref target="fi3a"></xref>. Only a minimum set of
       information is provided for each SAP. Particularly,
-      "parent-termination-point", "attachment-interface", interface-type",
-      "encapsulation-type", and "role" are not shown in the example. SAPs that
-      are ready to host the service but not yet activated are identified by
-      the "sap-status" set to "ietf-vpn-common:op-down".</t>
+      'parent-termination-point', 'attachment-interface', 'interface-type',
+      'encapsulation-type', and 'role' are not shown in the example. </t>
+
+      <t>In this example, SAPs that are capable of hosting the service but not
+      yet activated are identified by the 'sap-status/status' set to
+      'ietf-vpn-common:op-down' and 'service-status/admin-status/status' set
+      to 'ietf-vpn-common:admin-down'. SAPs that are enabled to deliver the
+      service are identified by 'service-status/admin-status/status' set to
+      'ietf-vpn-common:admin-up' and 'service-status/oper-status/status' set
+      to 'ietf-vpn-common:op-up'. None of the anomalies discussed in <xref
+      target="tree"></xref> are detected for these SAPs. </t>
 
       <t><figure anchor="ex1" title="A Simplified SAP Network Example">
           <artwork><![CDATA[{
@@ -1327,6 +1365,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   },
@@ -1337,7 +1378,7 @@ module ietf-sap-ntw {
                     },
                     "service-status": {
                       "admin-status": {
-                        "status": "ietf-vpn-common:admin-up"
+                        "status": "ietf-vpn-common:admin-down"
                       }
                     }
                   },
@@ -1393,6 +1434,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   }
@@ -1437,6 +1481,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   }
@@ -1459,6 +1506,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   },
@@ -1471,6 +1521,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   },
@@ -1494,6 +1547,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   }
@@ -1549,14 +1605,15 @@ module ietf-sap-ntw {
       with the physical interface "GE0/6/1". Also, let us assume that, for the
       SAPs that are associated with the physical interface "GE0/6/4", VPLS and
       L3VPN services are activated on the two sub-interfaces "GE0/6/4.1" and
-      "GE0/6/4.2", respectively. Both "sap#1" and "sap#2" are tagged as
-      capable to host per-service sub-interfaces ('allows-child-saps' is set
-      to 'true').</t>
+      "GE0/6/4.2", respectively. Both "sap#1" and "sap#2" are tagged as being
+      capable of hosting per-service sub-interfaces ('allows-child-saps' is
+      set to 'true').</t>
 
       <t>A service orchestrator can query what services are provided on which
       SAPs of PE1 from the network controller by sending, e.g., a GET RESTCONF
-      request. <xref target="app-ex-res-body"></xref> shows the body of the
-      RESTCONF response that is received from the network controller.</t>
+      request. <xref target="app-ex-res-body"></xref> shows an example of the
+      body of the RESTCONF response that is received from the network
+      controller.</t>
 
       <t><figure anchor="app-ex-res-body"
           title="An Example of a Response Body to a Request with a Node Filter">
@@ -1600,6 +1657,9 @@ module ietf-sap-ntw {
           "service-status": {
             "admin-status": {
               "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
             }
           }
         }
@@ -1643,6 +1703,9 @@ module ietf-sap-ntw {
           "service-status": {
             "admin-status": {
               "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
             }
           }
         }
@@ -1653,9 +1716,10 @@ module ietf-sap-ntw {
 ]]></artwork>
         </figure></t>
 
-      <t><xref target="app-ex-res-body-filter"></xref> shows the message body
-      of a response that is received from the network controller if the
-      request includes a filter on the service type for a particular node:</t>
+      <t><xref target="app-ex-res-body-filter"></xref> shows an example of the
+      response message body that is received from the network controller if
+      the request includes a filter on the service type for a particular
+      node:</t>
 
       <t><figure anchor="app-ex-res-body-filter"
           title="An Example of a Response Body to a Request with a Service Filter">
@@ -1699,6 +1763,9 @@ module ietf-sap-ntw {
           "service-status": {
             "admin-status": {
               "status": "ietf-vpn-common:admin-up"
+            },
+            "oper-status": {
+              "status": "ietf-vpn-common:op-up"
             }
           }
         }
@@ -1808,6 +1875,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   },
@@ -1822,6 +1892,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   }
@@ -1866,6 +1939,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   },
@@ -1880,6 +1956,9 @@ module ietf-sap-ntw {
                     "service-status": {
                       "admin-status": {
                         "status": "ietf-vpn-common:admin-up"
+                      },
+                      "oper-status": {
+                        "status": "ietf-vpn-common:op-up"
                       }
                     }
                   }
@@ -1911,13 +1990,16 @@ module ietf-sap-ntw {
       To that aim, the operator would query the SAP topology and would obtain
       a response similar to what is depicted in <xref target="ex1"></xref>.
       That response indicates that the SAPs having "sap#31" and "sap#43" as
-      attachment identifiers do not have any installed services. Once the
-      "free" SAPs are identified, the 'interface-type' and
-      'encapsulation-type' are checked to see if the requested L3VPN service
-      is compatible with the SAP characteristics. If they are compatible, as
-      proposed in <xref target="tree"></xref>, the 'attachment-id' value can
-      be used as the VPN network access identifier in an L3NM create
-      query.</t>
+      attachment identifiers do not have any installed services. This is
+      particularly inferred from the administrative 'service-status' which is
+      set to 'ietf-vpn-common:admin-down' for all the services that are
+      supported by these two SAPs and that none of the anomalies discussed in
+      <xref target="tree"></xref> are detected. Once the "free" SAPs are
+      identified, the 'interface-type' and 'encapsulation-type' are checked to
+      see if the requested L3VPN service is compatible with the SAP
+      characteristics. If they are compatible, the 'attachment-id' value can
+      be used as the VPN network access identifier in an L3NM create query.
+      </t>
 
       <t>A similar process can be followed for creating the so-called
       "Inter-AS VPN Option A" services. Unlike the previous example, let us
