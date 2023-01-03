@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-ietf-opsawg-sap-11" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-opsawg-sap-12" ipr="trust200902">
   <front>
     <title abbrev="A YANG Model for SAPs">A YANG Network Model for Service
     Attachment Points (SAPs)</title>
@@ -165,7 +165,7 @@
       </address>
     </author>
 
-    <date year="2022" />
+    <date year="2023" />
 
     <area>ops</area>
 
@@ -207,8 +207,11 @@
       concept of Service Attachment Points (SAPs). The SAPs are the network
       reference points to which network services, such as Layer 3 Virtual
       Private Network (L3VPN) or Layer 2 Virtual Private Network (L2VPN), can
-      be attached. Both User-Network Interface (UNI) and Network-to-Network
-      Interface (NNI) are supported in the SAP data model.</t>
+      be attached. One or multiple services can be bound to the same SAP. Both
+      User-Network Interface (UNI) and Network-to-Network Interface (NNI) are
+      supported in the SAP data model.</t>
+
+      <t><!--leaf-list peer saps to cover the case where the AC for a SAP is terminated in multiple CEs--></t>
     </abstract>
   </front>
 
@@ -291,7 +294,7 @@
       <xref target="RFC8969"></xref>.</t>
 
       <t>This document uses the following terms:<list style="hanging">
-          <t hangText="Service povider: ">The organization responsible for
+          <t hangText="Service provider: ">The organization responsible for
           operating the network that offers a service (e.g., a VPN) to
           customers.</t>
 
@@ -715,35 +718,35 @@
           target="RFC9181" />.<vspace blankLines="1" />When both a
           sub-interface and its parent interface are present but the parent
           interface is disabled, the status of the parent interface takes
-          precedence over the status indicated for the sub-interface. </t>
+          precedence over the status indicated for the sub-interface.</t>
 
           <t hangText="'service-status':">Indicates the administrative and
           operational status of the service for a given SAP. This information
-          is particularly useful when many services are enabled for the same
-          SAP, but only a subset of these services are activated. As such, the
-          administrative 'service-status' MUST NOT be influenced by the value
-          of the 'sap-status'.<vspace blankLines="1" />The service
-          'oper-status' reflects the service operational status as observed
-          for a specific SAP, not the status that is determined at the network
-          level for a service that involves many SAPs. That network level
-          status can be retrieved using specific network models, e.g., Section
-          7.3 of <xref target="RFC9182" /> or Section 7.3 of <xref
-          target="RFC9291" />. <vspace blankLines="1" />In order to assess the
-          service delivery status for a given SAP, it is recommended to check
-          both the administrative and operational service status
-          ('service-status') in addition to the 'sap-status'. In doing so, a
-          network controller (or an operator) can detect anomalies. For
-          example, if a service is administratively enabled for a SAP and the
-          'sap-status' of that SAP is reported as being down, the service
-          'oper-status' is also expected to be down. Retrieving a distinct
-          service operational status under these conditions can be used as a
-          trigger to detect an anomaly. Likewise, administrative status and
-          operational status can be used as a trigger to detect
-          service-specific SAP activation anomalies. For example, a service
-          that is administratively declared as inactive for a SAP but reported
-          as operationally active for that SAP is an indication that some
-          service provision actions are needed to align the observed service
-          status with the expected service status. </t>
+          is particularly useful when many services are provisioned for the
+          same SAP, but only a subset of these services are activated. As
+          such, the administrative 'service-status' MUST NOT be influenced by
+          the value of the operational 'sap-status'. <vspace
+          blankLines="1" />The service 'oper-status' reflects the operational
+          status of the service only as observed at a specific SAP, not the
+          overall network level status of the service connecting many SAPs.
+          The network level service status can be retrieved using specific
+          network models, e.g., Section 7.3 of <xref target="RFC9182" /> or
+          Section 7.3 of <xref target="RFC9291" />. <vspace
+          blankLines="1" />In order to assess the service delivery status for
+          a given SAP, it is recommended to check both the administrative and
+          operational service status ('service-status') in addition to the
+          'sap-status'. In doing so, a network controller (or operator) can
+          detect anomalies. For example, if a service is administratively
+          enabled for a SAP and the 'sap-status' of that SAP is reported as
+          being down, the service 'oper-status' is also expected to be down.
+          Retrieving a distinct service operational status under these
+          conditions can be used as a trigger to detect an anomaly. Likewise,
+          administrative status and operational status can be compared to
+          detect service-specific SAP activation anomalies. For example, a
+          service that is administratively declared as inactive for a SAP but
+          reported as operationally active for that SAP is an indication that
+          some service provision actions are needed to align the observed
+          service status with the expected service status.</t>
         </list></t>
 
       <t />
@@ -1031,7 +1034,9 @@ module ietf-sap-ntw {
       container sap-status {
         config false;
         description
-          "Indicates the SAP status.";
+          "Indicates the operational status of the SAP, 
+           independent of any service provisioned over it.";
+
         uses vpn-common:oper-status-timestamp;
       }
       container service-status {
@@ -1045,7 +1050,8 @@ module ietf-sap-ntw {
               base vpn-common:administrative-status;
             }
             description
-              "Administrative service status.";
+              "Administrative status of the service provisioned
+               at the SAP.";
           }
           leaf last-change {
             type yang:date-and-time;
@@ -1057,7 +1063,8 @@ module ietf-sap-ntw {
         container oper-status {
           config false;
           description
-            "Operational service status.";
+            "Operational status of the service provisioned
+             at the SAP.";
           uses vpn-common:oper-status-timestamp;
         }
       }
@@ -1324,16 +1331,15 @@ module ietf-sap-ntw {
       topology shown in <xref target="fi3a"></xref>. Only a minimum set of
       information is provided for each SAP. Particularly,
       'parent-termination-point', 'attachment-interface', 'interface-type',
-      'encapsulation-type', and 'role' are not shown in the example. </t>
-
-      <t>In this example, SAPs that are capable of hosting the service but not
-      yet activated are identified by the 'sap-status/status' set to
-      'ietf-vpn-common:op-down' and 'service-status/admin-status/status' set
-      to 'ietf-vpn-common:admin-down'. SAPs that are enabled to deliver the
-      service are identified by 'service-status/admin-status/status' set to
+      'encapsulation-type', and 'role' are not shown in the example. SAPs that
+      are capable of hosting a service, but not yet activated, are identified
+      by the 'sap-status/status' set to 'ietf-vpn-common:op-down' and
+      'service-status/admin-status/status' set to
+      'ietf-vpn-common:admin-down'. SAPs that are enabled to deliver a service
+      are identified by 'service-status/admin-status/status' set to
       'ietf-vpn-common:admin-up' and 'service-status/oper-status/status' set
-      to 'ietf-vpn-common:op-up'. None of the anomalies discussed in <xref
-      target="tree"></xref> are detected for these SAPs. </t>
+      to 'ietf-vpn-common:op-up'. Note that none of the anomalies discussed in
+      <xref target="tree"></xref> are detected for these SAPs.</t>
 
       <t><figure anchor="ex1" title="A Simplified SAP Network Example">
           <artwork><![CDATA[{
@@ -1998,8 +2004,8 @@ module ietf-sap-ntw {
       identified, the 'interface-type' and 'encapsulation-type' are checked to
       see if the requested L3VPN service is compatible with the SAP
       characteristics. If they are compatible, the 'attachment-id' value can
-      be used as the VPN network access identifier in an L3NM create query.
-      </t>
+      be used as the VPN network access identifier in an L3NM create
+      query.</t>
 
       <t>A similar process can be followed for creating the so-called
       "Inter-AS VPN Option A" services. Unlike the previous example, let us
