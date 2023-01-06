@@ -165,7 +165,7 @@
       </address>
     </author>
 
-    <date year="2023" />
+    <date year="" />
 
     <area>ops</area>
 
@@ -210,8 +210,6 @@
       be attached. One or multiple services can be bound to the same SAP. Both
       User-Network Interface (UNI) and Network-to-Network Interface (NNI) are
       supported in the SAP data model.</t>
-
-      <t><!--leaf-list peer saps to cover the case where the AC for a SAP is terminated in multiple CEs--></t>
     </abstract>
   </front>
 
@@ -317,7 +315,8 @@
           <t hangText="Service Attachment Points (SAPs):">An abstraction of
           the network reference points (e.g., PE side of an AC, CE side of an
           AC for a provider-managed CE) where network services can be
-          delivered and/or are delivered to customers.</t>
+          delivered and/or are delivered to customers. A SAP can be bound to
+          one or multiple ACs.</t>
         </list></t>
     </section>
 
@@ -463,7 +462,7 @@
                          |                  |     | 
                        .-+-.                |   .-+-.
                        |CE3+----------------'   |CE4|
-                       '-+-'                    '-+-'   
+                       '---'                    '---'   
 ]]></artwork>
         </figure></t>
 
@@ -510,8 +509,12 @@
       or Layer 3 Topologies model <xref target="RFC8346"></xref>) augment the
       Network Topology model.</t>
 
-      <t>Also, the SAP is not a tunnel termination point (TTP) (Section 3.6 of
-      <xref target="RFC8795"></xref>) nor a link.</t>
+      <t>SAPs can be seen as customer-facing termination points (TPs) with
+      specific service provisions. However, a difference between SAPs and TPs
+      is that links are terminated by a single TP (Section 4.4.6 of <xref
+      target="RFC8345"></xref>) while an AC can be terminated by multiple
+      SAPs. Also, a SAP is not a tunnel termination point (TTP) (Section 3.6
+      of <xref target="RFC8795"></xref>) nor a link.</t>
 
       <t>In the context of Software-Defined Networking (SDN) <xref
       target="RFC7149"></xref><xref target="RFC7426"></xref>, the SAP YANG
@@ -559,7 +562,7 @@
           +--rw encapsulation-type?         identityref
           +--rw role?                       identityref
           +--rw allows-child-saps?          boolean
-          +--rw peer-sap-id?                string
+          +--rw peer-sap-id*                string
           +--ro sap-status
           |  +--ro status?        identityref
           |  +--ro last-change?   yang:date-and-time
@@ -671,7 +674,7 @@
           'local-bridge-reference', 'bearer-reference', or 'lag-interface-id')
           defined in Section 7.6.1 of <xref target="RFC9182" /> or
           'l3-termination-point' defined in Section 7.6.2 of <xref
-          target="RFC9182" />. It is responsibility of the controller to
+          target="RFC9182" />. It is the responsibility of the controller to
           ensure that consistent references are used in the SAP and underlying
           device modes or any other device inventory mechanism.</t>
 
@@ -682,8 +685,8 @@
           reference, etc. <vspace blankLines="1" />The mapping to the detailed
           interface types as per <xref target="RFC7224" /> is maintained by
           the controller. That mapping is used, for example, when the
-          controller translates this SAP network module into device
-          modules.</t>
+          controller translates this SAP network module into device modules
+          (Section 4.4 of <xref target="RFC8969" />).</t>
 
           <t hangText="'encapsulation-type':">Indicates the encapsulation type
           for the interface indicated in the 'attachment-interface' attribute.
@@ -702,16 +705,16 @@
           blankLines="1" />Whether a service can be directly attached to the
           parent SAP in addition to child SAPs depends on the service.</t>
 
-          <t hangText="'peer-sap-id':">Includes a reference to the remote
-          endpoint of an attachment circuit. This identifier may or may not be
-          the same as the SAP identifier used in the peer's configuration.
+          <t hangText="'peer-sap-id':">Includes references to the remote
+          endpoints of an attachment circuit. This identifier may or may not
+          be the same as the SAP identifier used in the peer's configuration.
           Note that the use of identical identifiers eases correlating between
           a peer's service request with a local SAP. <vspace
           blankLines="1" />Examples of such a reference are: a site identifier
           (Section 6.3 of <xref target="RFC8299" />), a Service Demarcation
           Point (SDP) identifier (Section 2.1 of <xref
-          target="I-D.ietf-teas-ietf-network-slices" />), the IP address of a
-          peer Autonomous System Border Router (ASBR).</t>
+          target="I-D.ietf-teas-ietf-network-slices" />), and the IP address
+          of a peer Autonomous System Border Router (ASBR).</t>
 
           <t hangText="'sap-status':">Indicates the operational status of a
           SAP. Values are taken from the values defined in <xref
@@ -761,7 +764,7 @@
       of these nodes in service-specific YANG modules.</t>
 
       <figure>
-        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2022-11-09.yang"
+        <artwork><![CDATA[<CODE BEGINS>  file "ietf-sap-ntw@2023-01-09.yang"
 module ietf-sap-ntw {
   yang-version 1.1;
   namespace "urn:ietf:params:xml:ns:yang:ietf-sap-ntw";
@@ -792,7 +795,7 @@ module ietf-sap-ntw {
   }
 
   organization
-    "IETF OPSA (Operations and Management Area) Working Group ";
+    "IETF OPSA (Operations and Management Area) Working Group";
   contact
     "WG Web:   <https://datatracker.ietf.org/wg/opsawg/>
      WG List:  <mailto:opsawg@ietf.org>
@@ -816,7 +819,7 @@ module ietf-sap-ntw {
      and controlling the Service Attachment Points (SAPs) in the
      network topology.
 
-     Copyright (c) 2022 IETF Trust and the persons identified as
+     Copyright (c) 2023 IETF Trust and the persons identified as
      authors of the code.  All rights reserved.
 
      Redistribution and use in source and binary forms, with or
@@ -830,7 +833,7 @@ module ietf-sap-ntw {
      (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
      for full legal notices.";
 
-  revision 2022-11-09 {
+  revision 2023-01-09 {
     description
       "Initial version";
     reference
@@ -871,7 +874,7 @@ module ietf-sap-ntw {
        objectives.";
     reference
       "draft-ietf-teas-ietf-network-slices:
-         Framework for IETF Network Slices";
+         A Framework for IETF Network Slices";
   }
 
   identity sdwan {
@@ -1010,7 +1013,7 @@ module ietf-sap-ntw {
         "Indicates whether the attachment interface of this
          SAP is capable of hosting per-service sub-interfaces.";
     }
-    leaf peer-sap-id {
+    leaf-list peer-sap-id {
       type string;
       description
         "Indicates an identifier of the peer's termination
@@ -1184,10 +1187,11 @@ module ietf-sap-ntw {
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>Thanks to Adrian Farrell, Daniel King, Dhruv Dhody, Benoit Claise, Bo
       Wu, Erez Segev, Raul Arco, Joe Clarke, Riyas Valiyapalathingal, Tom
-      Petch, and Olga Havel for the comments.</t>
+      Petch, Olga Havel, and Richard Roberts for the comments.</t>
 
-      <t>Thanks to Martin Bj&ouml;rklund for yang-doctors review, Menachem
-      Dodge for the opsdir review, and Mach Chen for the rtgdir review.</t>
+      <t>Thanks to Martin Bj&ouml;rklund for the YANG Doctors review, Menachem
+      Dodge for the opsdir review, Mach Chen for the rtgdir review, and Linda
+      Dunbar for the genart review.</t>
 
       <t>Special thanks to Adrian Farrel for the Shepherd review and Rob
       Wilton for the careful AD review.</t>
@@ -1364,7 +1368,7 @@ module ietf-sap-ntw {
                 "sap": [
                   {
                     "sap-id": "sap#11",
-                    "peer-sap-id": "ce-1",
+                    "peer-sap-id": ["ce-1"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1433,7 +1437,7 @@ module ietf-sap-ntw {
                   },
                   {
                     "sap-id": "sap#22",
-                    "peer-sap-id": "ce-2",
+                    "peer-sap-id": ["ce-2"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1480,7 +1484,7 @@ module ietf-sap-ntw {
                   },
                   {
                     "sap-id": "sap#33",
-                    "peer-sap-id": "ce-3",
+                    "peer-sap-id": ["ce-3"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1505,7 +1509,7 @@ module ietf-sap-ntw {
                 "sap": [
                   {
                     "sap-id": "sap#41",
-                    "peer-sap-id": "ce-3",
+                    "peer-sap-id": ["ce-3"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1520,7 +1524,7 @@ module ietf-sap-ntw {
                   },
                   {
                     "sap-id": "sap#42",
-                    "peer-sap-id": "ce-4",
+                    "peer-sap-id": ["ce-4"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1546,7 +1550,7 @@ module ietf-sap-ntw {
                   },
                   {
                     "sap-id": "sap#44",
-                    "peer-sap-id": "ce-5",
+                    "peer-sap-id": ["ce-5"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1855,7 +1859,7 @@ module ietf-sap-ntw {
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
                     "allows-child-saps": true,
-                    "peer-sap-id": "asbr-b1",
+                    "peer-sap-id": ["asbr-b1"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1865,7 +1869,7 @@ module ietf-sap-ntw {
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
                     "allows-child-saps": true,
-                    "peer-sap-id": "asbr-b1",
+                    "peer-sap-id": ["asbr-b1"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1874,7 +1878,7 @@ module ietf-sap-ntw {
                     "sap-id": "sap#13",
                     "description": "vpn1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-sap-id": "asbr-b1",
+                    "peer-sap-id": ["asbr-b1"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1891,7 +1895,7 @@ module ietf-sap-ntw {
                     "sap-id": "sap#14",
                     "description": "vpn2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-sap-id": "asbr-b1",
+                    "peer-sap-id": ["asbr-b1"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1919,7 +1923,7 @@ module ietf-sap-ntw {
                     "description": "parent inter-as link#1",
                     "role": "ietf-sap-ntw:nni",
                     "allows-child-saps": true,
-                    "peer-sap-id": "asbr-b2",
+                    "peer-sap-id": ["asbr-b2"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1929,7 +1933,7 @@ module ietf-sap-ntw {
                     "description": "parent inter-as link#2",
                     "role": "ietf-sap-ntw:nni",
                     "allows-child-saps": true,
-                    "peer-sap-id": "asbr-b2",
+                    "peer-sap-id": ["asbr-b2"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     }
@@ -1938,7 +1942,7 @@ module ietf-sap-ntw {
                     "sap-id": "sap#21",
                     "description": "vpn1",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-sap-id": "asbr-b2",
+                    "peer-sap-id": ["asbr-b2"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
@@ -1955,7 +1959,7 @@ module ietf-sap-ntw {
                     "sap-id": "sap#22",
                     "description": "vpn2",
                     "role": "ietf-sap-ntw:nni",
-                    "peer-sap-id": "asbr-b2",
+                    "peer-sap-id": ["asbr-b2"],
                     "sap-status": {
                       "status": "ietf-vpn-common:op-up"
                     },
